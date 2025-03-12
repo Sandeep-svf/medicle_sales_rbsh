@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
-
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:get/get_state_manager/src/simple/get_controllers.dart';
+import 'package:medicle_sales_rbsh/features/salesActivity/screens/salesActivity.dart';
+import 'package:medicle_sales_rbsh/features/visitDoctor/screens/visitDoctor.dart';
 import '../../../utils/constants/text_strings.dart';
 
 class LoginViistScheduleButton extends StatelessWidget {
@@ -14,7 +18,7 @@ class LoginViistScheduleButton extends StatelessWidget {
       children: [
         /// LoginActivityButton
         ElevatedButton(
-            onPressed: () {},
+            onPressed: ()  => Get.to( const SalesactivityScreen()),
             style: ElevatedButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 10),
             ),
@@ -24,7 +28,7 @@ class LoginViistScheduleButton extends StatelessWidget {
 
         /// Schedule Visit Button
         ElevatedButton(
-            onPressed: () {},
+            onPressed: () => Get.to( const VisitDoctorScreen()),
             style: ElevatedButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 10),
             ),

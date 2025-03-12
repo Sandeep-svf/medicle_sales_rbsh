@@ -53,6 +53,14 @@ class TTexts {
   static const String areYouSureYouWantToDeleteThisDoctor = "Are you sure you want to delete this doctor?";
   static const String searchDoctor = "Search Doctor";
   static const String noDoctorAvailable = "No doctors available";
+  static const String location = "Location";
+  static const String email = "Email";
+  static const String phone = "Phone";
+  static const String registrationNumber = "Registration Number";
+  static const String yearOfExperience = "Year of Experience";
+  static const String dob = "Date of Birth";
+  static const String gender = "Gender";
+  static const String anniversary = "Anniversary";
 
   // -- Sales Activity
   static const String salesActivityTitle = "Sales Activity";

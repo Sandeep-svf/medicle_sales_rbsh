@@ -24,56 +24,138 @@ class _DoctorListScreenState extends State<AddDoctorScreen> {
   void _showAddDoctorDialog() {
     TextEditingController nameController = TextEditingController();
     TextEditingController specializationController = TextEditingController();
+    TextEditingController locationController = TextEditingController();
+    TextEditingController emailController = TextEditingController();
+    TextEditingController phoneController = TextEditingController();
+    TextEditingController registrationNumberController = TextEditingController();
+    TextEditingController yearOfExperienceController = TextEditingController();
+    TextEditingController dobController = TextEditingController();
+    TextEditingController genderController = TextEditingController();
+    TextEditingController anniversaryController = TextEditingController();
+
+
 
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return ZoomInOutDialog(
-          child: AlertDialog(
-            shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            title: const Text(TTexts.addDoctorTitle),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: nameController,
-                  decoration: const InputDecoration(
-                    labelText: TTexts.doctorName,
-                    border: OutlineInputBorder(),
+        return SingleChildScrollView(
+          child: ZoomInOutDialog(
+            child: AlertDialog(
+              shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              title: const Text(TTexts.addDoctorTitle),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: nameController,
+                    decoration: const InputDecoration(
+                      labelText: TTexts.doctorName,
+                      border: OutlineInputBorder(),
+                    ),
                   ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: specializationController,
+                    decoration: const InputDecoration(
+                      labelText: TTexts.specialization,
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+          
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: locationController,
+                    decoration: const InputDecoration(
+                      labelText: TTexts.location,
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+          
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: emailController,
+                    decoration: const InputDecoration(
+                      labelText: TTexts.email,
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+          
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: phoneController,
+                    decoration: const InputDecoration(
+                      labelText: TTexts.phone,
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+          
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: registrationNumberController,
+                    decoration: const InputDecoration(
+                      labelText: TTexts.registrationNumber,
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+          
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: yearOfExperienceController,
+                    decoration: const InputDecoration(
+                      labelText: TTexts.yearOfExperience,
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+          
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: dobController,
+                    decoration: const InputDecoration(
+                      labelText: TTexts.dob,
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: genderController,
+                    decoration: const InputDecoration(
+                      labelText: TTexts.gender,
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: anniversaryController,
+                    decoration: const InputDecoration(
+                      labelText: TTexts.anniversary,
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text(TTexts.cancel),
                 ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: specializationController,
-                  decoration: const InputDecoration(
-                    labelText: TTexts.specialization,
-                    border: OutlineInputBorder(),
-                  ),
+                ElevatedButton(
+                  onPressed: () {
+                    if (nameController.text.isNotEmpty &&
+                        specializationController.text.isNotEmpty) {
+                      setState(() {
+                        _doctors.add({
+                          "name": nameController.text,
+                          "specialization": specializationController.text,
+                        });
+                      });
+                      Navigator.pop(context);
+                    }
+                  },
+                  child: const Text(TTexts.submit),
                 ),
               ],
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text(TTexts.cancel),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  if (nameController.text.isNotEmpty &&
-                      specializationController.text.isNotEmpty) {
-                    setState(() {
-                      _doctors.add({
-                        "name": nameController.text,
-                        "specialization": specializationController.text,
-                      });
-                    });
-                    Navigator.pop(context);
-                  }
-                },
-                child: const Text(TTexts.submit),
-              ),
-            ],
           ),
         );
       },
