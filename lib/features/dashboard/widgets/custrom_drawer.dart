@@ -6,8 +6,11 @@ import 'package:medicle_sales_rbsh/features/expenses/screens/expenses.dart';
 import 'package:medicle_sales_rbsh/features/order/screens/order.dart';
 import 'package:medicle_sales_rbsh/features/report/screens/report.dart';
 import 'package:medicle_sales_rbsh/features/salesActivity/screens/salesActivity.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 import 'package:medicle_sales_rbsh/utils/helpers/helper_functions.dart';
+import 'package:quickalert/models/quickalert_type.dart';
+import 'package:quickalert/widgets/quickalert_dialog.dart';
 
 import '../../visitDoctor/screens/visitDoctor.dart';
 
@@ -76,7 +79,6 @@ class CustomDrawer extends StatelessWidget {
           ),
           const Divider(height: 1, color: Colors.grey),
 
-
           _buildDrawerItem(
             icon: Icons.settings,
             text: TTexts.settings,
@@ -85,23 +87,29 @@ class CustomDrawer extends StatelessWidget {
 
           const Divider(height: 1, color: Colors.grey),
 
-
           _buildDrawerItem(
-            icon: Icons.logout,
-            text: TTexts.logout,
-            onTap: () => onMenuSelected(SalesChartHomeScreen()),
-          ),
-
+              icon: Icons.logout,
+              text: TTexts.logout,
+              onTap: () {
+                QuickAlert.show(
+                  context: context,
+                  type: QuickAlertType.confirm,
+                  text: TTexts.doYouWantToLogout,
+                  confirmBtnText: TTexts.yes,
+                  cancelBtnText: TTexts.no,
+                  confirmBtnColor: TColors.primary,
+                );
+              }),
         ],
       ),
     );
   }
 
-  /// User Header Section**
+  /// User Header Section
   Widget _buildHeader(BuildContext context) {
     final dark = THelperFunctions.isDarkMode(context);
     return Container(
-      color: dark? Colors.black : Colors.grey[300], //  Gray Background
+      color: dark ? Colors.black : Colors.grey[300], //  Gray Background
       padding: EdgeInsets.symmetric(vertical: 50, horizontal: 16),
       width: double.infinity, //  Take full width
       child: Row(
@@ -112,14 +120,18 @@ class CustomDrawer extends StatelessWidget {
             backgroundColor: Colors.blue, //  Background color instead of image
             child: Text(
               "A", //  First letter of name
-              style: TextStyle(fontSize: 60, fontWeight: FontWeight.bold, color: Colors.white),
+              style: TextStyle(
+                  fontSize: 60,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white),
             ),
           ),
           SizedBox(width: 16), //  Space between avatar and text
           Column(
             crossAxisAlignment: CrossAxisAlignment.start, //  Align text to left
             children: [
-              Text("Aarav Maurya", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              Text("Aarav Maurya",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               Text("aarav@rbsh.com", style: TextStyle(fontSize: 14)),
             ],
           ),
@@ -129,10 +141,13 @@ class CustomDrawer extends StatelessWidget {
   }
 
   /// **Drawer Item Template**
-  Widget _buildDrawerItem({required IconData icon, required String text, required VoidCallback onTap}) {
+  Widget _buildDrawerItem(
+      {required IconData icon,
+      required String text,
+      required VoidCallback onTap}) {
     return ListTile(
       leading: Icon(icon, color: Colors.blue),
-      title: Text(text, style: TextStyle(fontSize: 16)),
+      title: Text(text, style: const TextStyle(fontSize: 16)),
       onTap: onTap,
     );
   }

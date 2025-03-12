@@ -7,6 +7,7 @@ class TTexts {
   static const String no = "No";
   static const String yes = "Yes";
   static const String submit = "Submit";
+  static const String doYouWantToLogout = "Do you want to logout?";
 
   // -- OnBoarding Texts
 
@@ -64,6 +65,35 @@ class TTexts {
 
   // -- Visit Doctor
   static const String date = "Date";
+  static const String scheduleVisitTitle = "Schedule New Visit";
+  static const String notes = "Notes";
+  static const String confirmVisit = "Confirm Visit";
+  static const String confirmVisitSuccessfullyMarked = "Confirm Visit Successfully Marked";
+
+
+  // -- Add Product
+  static const String addProductTitle = "Add Product";
+  static const String productName = "Product Name";
+  static const String description = "Description";
+  static const String dosage = "Dosage";
+  static const String brochure = "Brochure URL";
+
+  // -- Order
+  static const String quantity = "Quantity";
+  static const String orderNotes = "Order Notes (Optional)";
+  static const String searchOrder = "SearchOrder";
+
+  // -- Expenses
+  static const String amount = "Amount";
+  static const String searchExpenses = "SearchExpenses";
+
+  // -- Report
+  static const String salesPerformance = "Sales Performance";
+  static const String saleCalls = "Sale Calls";
+  static const String visitFrequency = "Visit Frequency";
+  static const String totalCompletedVisit = "Total Completed Visit";
+  static const String frequency = "Frequency";
+
 
 
 

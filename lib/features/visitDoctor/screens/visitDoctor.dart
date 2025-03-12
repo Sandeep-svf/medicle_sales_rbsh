@@ -1,6 +1,9 @@
 import 'package:date_picker_plus/date_picker_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:quickalert/models/quickalert_type.dart';
+import 'package:quickalert/widgets/quickalert_dialog.dart';
 import '../../../utils/constants/colors.dart';
 import '../../../utils/constants/text_strings.dart';
 import '../../../utils/helpers/zoom_in_out_anim.dart';
@@ -46,6 +49,23 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
         minDate: DateTime(2020),
         maxDate: DateTime(2034), // Increased maxDate to avoid the issue
         initialDate: DateTime.now(), // Set initial date to today
+        selectedCellDecoration: const BoxDecoration(
+          color: Colors.blue, // Selected date background color
+          shape: BoxShape.circle,
+        ),
+        selectedCellTextStyle: const TextStyle(
+          color: Colors.white, // Selected date text color
+          fontWeight: FontWeight.bold,
+        ),
+        leadingDateTextStyle: const TextStyle(
+          color: Colors.white, // Month & Year text color
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+        ),
+        highlightColor: Colors.blue, // Highlight color for the selected area
+        splashColor: Colors.blueAccent, // Splash effect color
+        splashRadius: 20.0, // Radius for the ripple effect
+
       );
 
       if (pickedDate != null) {
@@ -62,7 +82,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
         return ZoomInOutDialog(
           child: AlertDialog(
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            title: const Text(TTexts.salesActivityTitle),
+            title: const Text(TTexts.scheduleVisitTitle),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -90,7 +110,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
                   controller: callNotesController,
                   maxLines: 3, // Increased height
                   decoration: const InputDecoration(
-                    labelText: TTexts.callNotes,
+                    labelText: TTexts.notes,
                     border: OutlineInputBorder(),
                   ),
                 ),
@@ -222,12 +242,33 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
                         Text("Time: ${doctor["time"] ?? ""}"),
                         Text("Call Notes: ${doctor["callnotes"] ?? ""}"),
 
+                        const SizedBox( height: TSizes.spaceBtwText),
+                        Center(
+                          child: SizedBox(
+
+                            child: ElevatedButton(onPressed: (){
+                              QuickAlert.show(
+                                context: context,
+                                type: QuickAlertType.success,
+                                text: TTexts.confirmVisitSuccessfullyMarked,
+                                backgroundColor: Colors.blue.shade50, // Light blue background
+                                confirmBtnColor: Colors.blue, // Blue confirm button
+
+                              );
+                            }, child:
+                            const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 20), // Left & Right Margin
+                              child: Text(TTexts.confirmVisit,
+                              ),
+                            )),
+                          ),
+                        ),
                       ],
                     ),
-                    /*trailing: IconButton(
-                      icon: const Icon(Icons.delete, color: TColors.primary),
-                      onPressed: () => _showDeleteConfirmationDialog(index),
-                    ),*/
+
+
+
+
                   ),
                 );
               },
