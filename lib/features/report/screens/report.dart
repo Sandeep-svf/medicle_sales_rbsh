@@ -4,7 +4,6 @@ import 'package:medicle_sales_rbsh/features/report/screens/widgets/export_report
 import 'package:medicle_sales_rbsh/features/report/screens/widgets/sales_performance.dart';
 import 'package:medicle_sales_rbsh/features/report/screens/widgets/visit_frequency.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
-import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class ReportScreen extends StatelessWidget {
   const ReportScreen({super.key});
@@ -14,8 +13,7 @@ class ReportScreen extends StatelessWidget {
     return const Scaffold(
       body: SingleChildScrollView(
         child: Column(
-            children: [
-
+          children: [
             /// Sales Performance
             SalesPerformances(),
 
@@ -25,12 +23,15 @@ class ReportScreen extends StatelessWidget {
             /// Customer Satisfaction feedback
             CustomerFeedback(),
 
-              /// Export Report Button
-              ExportReportButton(),
-        ],
+            SizedBox(
+              height: TSizes.spaceBtwSections,
+            ),
+
+            /// Export Report Button
+            ExportReportButton(),
+          ],
+        ),
       ),
-    ),);
+    );
   }
 }
-
-

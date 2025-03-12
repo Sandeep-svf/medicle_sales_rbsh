@@ -93,6 +93,8 @@ class TTexts {
   static const String visitFrequency = "Visit Frequency";
   static const String totalCompletedVisit = "Total Completed Visit";
   static const String frequency = "Frequency";
+  static const String exportReport = "Export Report";
+  static const String customerFeedback = "Customer Feedback";
 
 
 
