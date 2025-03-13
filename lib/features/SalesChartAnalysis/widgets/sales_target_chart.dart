@@ -79,6 +79,7 @@ class BarChartWidget extends StatelessWidget {
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
+              reservedSize: 30, // Increase reserved space for better visibility
               getTitlesWidget: (value, _) {
                 if (value.toInt() == 0) return _buildTitle(TTexts.calls);
                 if (value.toInt() == 1) return _buildTitle(TTexts.visits);

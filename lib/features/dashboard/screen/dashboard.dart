@@ -10,25 +10,27 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   Widget _currentScreen = SalesChartHomeScreen(); // Default screen
+  String _currentTitle = TTexts.dashboard; // Initial title
 
-  void _onMenuSelected(Widget screen) {
+  void _onMenuSelected(Widget screen, String title) {
+    Navigator.of(context).pop(); // Close the drawer first
     setState(() {
       _currentScreen = screen;
+      _currentTitle = title; // Assign the correct title
     });
-    Navigator.of(context).pop(); // Close the drawer after selection
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(TTexts.dashboard),
-        leading: Builder( // Wrap with Builder to access Scaffold.of(context)
+        title: Center(child: Text(_currentTitle)),
+        leading: Builder(
           builder: (context) {
             return IconButton(
               icon: const Icon(Icons.menu),
               onPressed: () {
-                Scaffold.of(context).openDrawer(); // Correctly opens the drawer
+                Scaffold.of(context).openDrawer();
               },
             );
           },

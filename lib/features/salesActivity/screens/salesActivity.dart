@@ -4,6 +4,8 @@ import 'package:intl/intl.dart'; // For formatting time
 import '../../../utils/constants/colors.dart';
 import '../../../utils/constants/text_strings.dart';
 import '../../../utils/helpers/zoom_in_out_anim.dart';
+import '../../dashboard/screen/dashboard.dart';
+import '../../dashboard/widgets/custrom_drawer.dart';
 
 
 class SalesactivityScreen extends StatefulWidget {
@@ -153,6 +155,15 @@ class _SalesactivityScreenState extends State<SalesactivityScreen> {
         .toList();
 
     return Scaffold(
+     /* appBar: AppBar(title: Text(TTexts.salesActivity),),
+      drawer: CustomDrawer(
+        onMenuSelected: (screen){
+          // This will ensure navigation happens within the drawer structure
+          Navigator.of(context).pushReplacement(MaterialPageRoute(
+              builder: (context) => DashboardScreen()
+          ));
+        },
+      ),*/
       body: Column(
         children: [
           Padding(

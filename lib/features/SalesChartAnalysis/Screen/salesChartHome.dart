@@ -26,10 +26,10 @@ class SalesChartHomeScreen extends StatelessWidget {
             const QuickStatsCards(),
 
             /// Login Activity and Schedule Visit Button
-            const LoginViistScheduleButton(),
+           // const LoginViistScheduleButton(),
 
             //space
-            const SizedBox(height: TSizes.spaceBtwText,)
+           // const SizedBox(height: TSizes.spaceBtwText,)
           ],
         ),
       ),

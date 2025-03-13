@@ -15,7 +15,7 @@ import 'package:quickalert/widgets/quickalert_dialog.dart';
 import '../../visitDoctor/screens/visitDoctor.dart';
 
 class CustomDrawer extends StatelessWidget {
-  final Function(Widget) onMenuSelected;
+  final Function(Widget,String) onMenuSelected;
 
   const CustomDrawer({required this.onMenuSelected});
 
@@ -28,64 +28,57 @@ class CustomDrawer extends StatelessWidget {
           _buildDrawerItem(
             icon: Icons.home,
             text: TTexts.dashboard,
-            onTap: () => onMenuSelected(SalesChartHomeScreen()),
+            onTap: () => onMenuSelected(SalesChartHomeScreen(),TTexts.dashboard),
           ),
           const Divider(height: 1, color: Colors.grey),
           _buildDrawerItem(
             icon: Icons.person,
             text: TTexts.addDoctor,
-            onTap: () => onMenuSelected(AddDoctorScreen()),
+            onTap: () => onMenuSelected(AddDoctorScreen(),TTexts.addDoctor),
           ),
           const Divider(height: 1, color: Colors.grey),
           _buildDrawerItem(
             icon: Icons.money,
             text: TTexts.salesActivity,
-            onTap: () => onMenuSelected(SalesactivityScreen()),
+            onTap: () => onMenuSelected(SalesactivityScreen(),TTexts.salesActivity),
           ),
           const Divider(height: 1, color: Colors.grey),
 
           _buildDrawerItem(
             icon: Icons.place,
             text: TTexts.doctorVisit,
-            onTap: () => onMenuSelected(VisitDoctorScreen()),
+            onTap: () => onMenuSelected(VisitDoctorScreen(),TTexts.doctorVisit),
           ),
           const Divider(height: 1, color: Colors.grey),
 
           _buildDrawerItem(
             icon: Icons.add,
             text: TTexts.addProduct,
-            onTap: () => onMenuSelected(AddproductScreen()),
+            onTap: () => onMenuSelected(AddproductScreen(),TTexts.addProduct),
           ),
           const Divider(height: 1, color: Colors.grey),
 
           _buildDrawerItem(
             icon: Icons.reorder,
             text: TTexts.order,
-            onTap: () => onMenuSelected(OrderScreen()),
+            onTap: () => onMenuSelected(OrderScreen(),TTexts.order),
           ),
           const Divider(height: 1, color: Colors.grey),
 
           _buildDrawerItem(
             icon: Icons.expand,
             text: TTexts.expenses,
-            onTap: () => onMenuSelected(ExpensesScreen()),
+            onTap: () => onMenuSelected(ExpensesScreen(),TTexts.expenses),
           ),
           const Divider(height: 1, color: Colors.grey),
 
           _buildDrawerItem(
             icon: Icons.report,
             text: TTexts.report,
-            onTap: () => onMenuSelected(ReportScreen()),
+            onTap: () => onMenuSelected(ReportScreen(),TTexts.report),
           ),
           const Divider(height: 1, color: Colors.grey),
 
-          _buildDrawerItem(
-            icon: Icons.settings,
-            text: TTexts.settings,
-            onTap: () => onMenuSelected(SalesChartHomeScreen()),
-          ),
-
-          const Divider(height: 1, color: Colors.grey),
 
           _buildDrawerItem(
               icon: Icons.logout,

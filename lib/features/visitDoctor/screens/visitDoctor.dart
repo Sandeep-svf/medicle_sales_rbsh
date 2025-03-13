@@ -1,12 +1,14 @@
 import 'package:date_picker_plus/date_picker_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:medicle_sales_rbsh/features/dashboard/widgets/custrom_drawer.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import '../../../utils/constants/colors.dart';
 import '../../../utils/constants/text_strings.dart';
 import '../../../utils/helpers/zoom_in_out_anim.dart';
+import '../../dashboard/screen/dashboard.dart';
 
 class VisitDoctorScreen extends StatefulWidget {
   const VisitDoctorScreen({super.key});
@@ -187,6 +189,15 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
         .toList();
 
     return Scaffold(
+     /* appBar: AppBar(title: Text(TTexts.doctorVisit),),
+      drawer: CustomDrawer(
+        onMenuSelected: (screen){
+          // This will ensure navigation happens within the drawer structure
+          Navigator.of(context).pushReplacement(MaterialPageRoute(
+              builder: (context) => DashboardScreen()
+          ));
+        },
+      ),*/
       body: Column(
         children: [
           Padding(

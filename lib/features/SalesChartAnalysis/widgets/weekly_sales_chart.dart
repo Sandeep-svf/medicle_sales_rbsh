@@ -37,13 +37,13 @@ class AnimatedLineChart extends StatefulWidget {
 
 class _AnimatedLineChartState extends State<AnimatedLineChart> {
   List<SalesData> weeklySales = [
-    SalesData("Mon", 10),
-    SalesData("Tue", 25),
-    SalesData("Wed", 15),
-    SalesData("Thu", 30),
+    SalesData("Mon", 12),
+    SalesData("Tue", 24),
+    SalesData("Wed", 17),
+    SalesData("Thu", 37),
     SalesData("Fri", 40),
-    SalesData("Sat", 35),
-    SalesData("Sun", 50),
+    SalesData("Sat", 38),
+    SalesData("Sun", 49),
   ];
 
   @override
@@ -84,6 +84,8 @@ class _AnimatedLineChartState extends State<AnimatedLineChart> {
         bottomTitles: AxisTitles(
           sideTitles: SideTitles(
             showTitles: true,
+            reservedSize: 30, // Increase reserved space for better visibility
+
             getTitlesWidget: (value, _) {
               if (value >= 0 && value < weeklySales.length) {
                 return Padding(
@@ -98,7 +100,7 @@ class _AnimatedLineChartState extends State<AnimatedLineChart> {
         leftTitles: AxisTitles(
           sideTitles: SideTitles(
             showTitles: true,
-            interval: 10, // Y-axis interval for better readability
+            reservedSize: 30,
           ),
         ),
         topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
