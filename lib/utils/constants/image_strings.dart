@@ -27,6 +27,11 @@ class TImages {
   //Profile
   static const String user = "assets/images/content/user.png";
 
+  // Pdf
+  static const String pdf = "assets/pdf/sample.pdf";
+  static const String pdf2 = "assets/pdf/sample_2.pdf";
+  static const String pdf3 = "assets/pdf/sample_3.pdf";
+
 
 }
 

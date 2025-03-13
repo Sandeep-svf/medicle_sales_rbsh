@@ -104,6 +104,10 @@ class TTexts {
   static const String exportReport = "Export Report";
   static const String customerFeedback = "Customer Feedback";
 
+  // -- Marketing
+ static const String marketing = "Marketing";
+ static const String filesAndPdfs = "Files & PDFs";
+
 
 
 

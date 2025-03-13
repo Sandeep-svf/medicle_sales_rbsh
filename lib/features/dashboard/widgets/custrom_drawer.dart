@@ -12,6 +12,7 @@ import 'package:medicle_sales_rbsh/utils/helpers/helper_functions.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 
+import '../../marketing/screen/marketing.dart';
 import '../../visitDoctor/screens/visitDoctor.dart';
 
 class CustomDrawer extends StatelessWidget {
@@ -29,6 +30,12 @@ class CustomDrawer extends StatelessWidget {
             icon: Icons.home,
             text: TTexts.dashboard,
             onTap: () => onMenuSelected(SalesChartHomeScreen(),TTexts.dashboard),
+          ),
+          const Divider(height: 1, color: Colors.grey),
+          _buildDrawerItem(
+            icon: Icons.picture_as_pdf,
+            text: TTexts.filesAndPdfs,
+            onTap: () => onMenuSelected(MarketingScreen(),TTexts.filesAndPdfs),
           ),
           const Divider(height: 1, color: Colors.grey),
           _buildDrawerItem(
