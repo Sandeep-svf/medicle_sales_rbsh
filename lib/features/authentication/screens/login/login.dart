@@ -11,20 +11,22 @@ class LoginScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final dark = THelperFunctions.isDarkMode(context);
     return Scaffold(
-      body: SingleChildScrollView(
-          child: Padding(
-        padding: TSpaceingStyle.paddingWithAppBarHeight,
-        child: Column(
-          children: [
-            /// Logo, title and subTitle
-            LoginHeader(dark: dark),
+      body: Center(
+        child: SingleChildScrollView(
+            child: Padding(
+          padding: TSpaceingStyle.paddingWithAppBarHeight,
+          child: Column(
+            children: [
+              /// Logo, title and subTitle
+              LoginHeader(dark: dark),
 
-            /// Form
-            LoginForm(dark: dark),
+              /// Form
+              LoginForm(dark: dark),
 
-          ],
-        ),
-      )),
+            ],
+          ),
+        )),
+      ),
     );
   }
 }

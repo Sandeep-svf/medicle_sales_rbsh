@@ -1,5 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class SalesTargetChartScreen extends StatelessWidget {
@@ -36,7 +37,7 @@ class SalesTargetChartScreen extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _legendItem(Colors.red, TTexts.pending),
+        _legendItem(TColors.primary, TTexts.pending),
         const SizedBox(width: 16),
         _legendItem(Colors.green, TTexts.completed),
       ],
@@ -112,7 +113,7 @@ class BarChartWidget extends StatelessWidget {
           toY: totalHeight,
           rodStackItems: [
             BarChartRodStackItem(0, greenHeight, Colors.green), // Achieved
-            BarChartRodStackItem(greenHeight, totalHeight, Colors.red), // Pending
+            BarChartRodStackItem(greenHeight, totalHeight, TColors.primary), // Pending
           ],
           width: 30,
           borderRadius: BorderRadius.circular(4),

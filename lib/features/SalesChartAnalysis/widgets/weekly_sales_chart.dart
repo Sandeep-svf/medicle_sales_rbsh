@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
@@ -66,13 +67,13 @@ class _AnimatedLineChartState extends State<AnimatedLineChart> {
               FlSpot(entry.key.toDouble(), entry.value.sales.toDouble()))
               .toList(),
           isCurved: true,
-          color: Colors.blueAccent,
+          color: TColors.primary,
           barWidth: 4,
           isStrokeCapRound: true,
           belowBarData: BarAreaData(
             show: true,
             gradient: LinearGradient(
-              colors: [Colors.blue.withOpacity(0.3), Colors.transparent],
+              colors: [TColors.primary.withOpacity(0.3), Colors.transparent],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
             ),

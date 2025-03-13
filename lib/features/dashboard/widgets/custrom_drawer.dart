@@ -110,7 +110,7 @@ class CustomDrawer extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 50, //  Circular Avatar
-            backgroundColor: Colors.blue, //  Background color instead of image
+            backgroundColor: TColors.primary, //  Background color instead of image
             child: Text(
               "A", //  First letter of name
               style: TextStyle(
@@ -139,7 +139,7 @@ class CustomDrawer extends StatelessWidget {
       required String text,
       required VoidCallback onTap}) {
     return ListTile(
-      leading: Icon(icon, color: Colors.blue),
+      leading: Icon(icon, color: TColors.primary),
       title: Text(text, style: const TextStyle(fontSize: 16)),
       onTap: onTap,
     );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 
 import 'custom_theme/checkbox_theme.dart';
 import 'custom_theme/elevated_button_theme.dart';
@@ -18,7 +19,7 @@ class SAppTheme{
     useMaterial3: true,  // for better performance using material design 3
     fontFamily: 'Poppins',
     brightness: Brightness.light,
-    primaryColor: Colors.blue,
+    primaryColor: TColors.primary,
     scaffoldBackgroundColor: Colors.white,
     textTheme: STextTheme.lightTextTheme,
     elevatedButtonTheme: SElevatedButtonTheme.lightElevatedButtonTheme,
@@ -32,7 +33,7 @@ class SAppTheme{
       useMaterial3: true,  // for better performance using material design 3
       fontFamily: 'Poppins',
       brightness: Brightness.dark,
-      primaryColor: Colors.blue,
+      primaryColor:  TColors.primary,
       scaffoldBackgroundColor: Colors.black,
       textTheme: STextTheme.darkTextTheme,
       elevatedButtonTheme: SElevatedButtonTheme.darkElevatedButtonTheme,

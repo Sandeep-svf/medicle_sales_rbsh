@@ -19,6 +19,12 @@ class LoginHeader extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       // because align all in the left in header
       children: [
+        /*Image(
+          image: AssetImage(
+              dark ? TImages.lightAppLogo : TImages.darkAppLogo),
+          height: 150,
+        ),*/
+
         Image(
           image: AssetImage(
               dark ? TImages.lightAppLogo : TImages.darkAppLogo),
