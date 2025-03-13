@@ -69,6 +69,11 @@ class _DoctorListScreenState extends State<AddDoctorScreen> {
                     controller: locationController,
                     decoration: const InputDecoration(
                       labelText: TTexts.location,
+                      // Fetch user current location.
+                      // If failed to fetch than let user enter it manually.
+                      // also check if location is enabled or not if not than ask to user for enable it.
+
+
                       border: OutlineInputBorder(),
                     ),
                   ),

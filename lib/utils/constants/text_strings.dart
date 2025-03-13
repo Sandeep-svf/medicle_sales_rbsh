@@ -107,6 +107,23 @@ class TTexts {
   // -- Marketing
  static const String marketing = "Marketing";
  static const String filesAndPdfs = "Files & PDFs";
+ static const String faildToLoaddPdf = "Failed to load PDF";
+ static const String projectProposal = "Project Proposal";
+ static const String designMockup = "Design Mockup";
+ static const String userGuide = "User Guide";
+ static const String teamPhoto = "Team Photo";
+ static const String download = "Download";
+ static const String salesReport = "Sales Report";
+ static const String downloadReport = "Download Report";
+ static const String salesReportTitle = "Sales Report";
+ static const String dateRange = "Date Range";
+ static const String faildToDownloadFile = "Failed to download file";
+ static const String downloadFile = "Download File";
+ static const String downloadFiles = "Download Files";
+ static const String downloadAllFiles = "Download All Files";
+ static const String downloadAllFilesSuccessfully = "Download All Files Successfully";
+ static const String downloadFileSuccessfully = "Download File Successfully";
+ static const String pdfViewer = "PDF Viewer";
 
 
 

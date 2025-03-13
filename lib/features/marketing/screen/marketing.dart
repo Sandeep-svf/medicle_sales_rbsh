@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -61,7 +62,9 @@ class _MarketingScreenState extends State<MarketingScreen> {
 
       return filePath;
     } catch (e) {
-      print("Download error: $e");
+      if (kDebugMode) {
+        print("Download error: $e");
+      }
       return null;
     }
   }
@@ -77,7 +80,7 @@ class _MarketingScreenState extends State<MarketingScreen> {
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Failed to load PDF")),
+        const SnackBar(content: Text(TTexts.faildToLoaddPdf)),
       );
     }
   }
@@ -125,7 +128,7 @@ class _MarketingScreenState extends State<MarketingScreen> {
                   }
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("Failed to download file")),
+                    const SnackBar(content: Text(TTexts.faildToDownloadFile)),
                   );
                 }
               },
@@ -145,7 +148,7 @@ class PDFViewerScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("PDF Viewer")),
+      appBar: AppBar(title: const Text(TTexts.pdfViewer)),
       body: PDFView(
         filePath: pdfPath,
         enableSwipe: true,
@@ -158,7 +161,9 @@ class PDFViewerScreen extends StatelessWidget {
           print(": $error");
         },
         onPageError: (page, error) {
-          print("Error PDF Load Erroron page $page: $error");
+          if (kDebugMode) {
+            print("Error PDF Load Erroron page $page: $error");
+          }
         },
       ),
     );
