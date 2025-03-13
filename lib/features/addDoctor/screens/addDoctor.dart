@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:medicle_sales_rbsh/features/addDoctor/screens/doctorDetails.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 import 'package:medicle_sales_rbsh/utils/helpers/zoom_in_out_anim.dart';
 import '../../../utils/constants/colors.dart';
@@ -235,6 +236,7 @@ class _DoctorListScreenState extends State<AddDoctorScreen> {
               padding: const EdgeInsets.all(16),
               itemCount: filteredDoctors.length,
               itemBuilder: (context, index) {
+                final doctor = filteredDoctors[index];
                 return Card(
                   elevation: 2,
                   margin: const EdgeInsets.symmetric(vertical: 8),
@@ -243,18 +245,27 @@ class _DoctorListScreenState extends State<AddDoctorScreen> {
                   child: ListTile(
                     leading: CircleAvatar(
                       backgroundColor: Colors.blue.shade100,
-                      child: const Icon(Icons.person, color: Colors.blue),
+                      child: const Icon(Icons.person, color: TColors.primary),
                     ),
                     title: Text(filteredDoctors[index]["name"]!,
                         style:
                         const TextStyle(fontWeight: FontWeight.bold)),
                     subtitle:
                     Text(filteredDoctors[index]["specialization"]!),
-                    trailing: IconButton(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              DoctordetailsScreen(doctor: doctor),
+                        ),
+                      );
+                    },
+                  /*  trailing: IconButton(
                       icon: const Icon(Icons.delete, color: TColors.primary),
                       onPressed: () =>
                           _showDeleteConfirmationDialog(index),
-                    ),
+                    ),*/
                   ),
                 );
               },
