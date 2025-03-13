@@ -31,7 +31,7 @@ class _MarketingScreenState extends State<MarketingScreen> {
     },
     {
       "name": "User Guide",
-      "url": "https://morth.nic.in/sites/default/files/dd12-13_0.pdf",
+      "url": "https://tourism.gov.in/sites/default/files/2019-04/dummy-pdf_2.pdf",
       "type": "pdf"
     },
     {
@@ -155,10 +155,10 @@ class PDFViewerScreen extends StatelessWidget {
         defaultPage: 0,
         pageFling: true,
         onError: (error) {
-          print("PDF Load Error: $error");
+          print(": $error");
         },
         onPageError: (page, error) {
-          print("Error on page $page: $error");
+          print("Error PDF Load Erroron page $page: $error");
         },
       ),
     );
@@ -178,9 +178,9 @@ class ImageViewerScreen extends StatelessWidget {
       body: Center(
         child: CachedNetworkImage(
           imageUrl: imagePath,
-          placeholder: (context, url) => CircularProgressIndicator(),
+          placeholder: (context, url) => const CircularProgressIndicator(),
           errorWidget: (context, url, error) =>
-              Icon(Icons.broken_image, size: 100, color: Colors.white),
+              const Icon(Icons.broken_image, size: 100, color: Colors.white),
           fit: BoxFit.contain,
         ),
       ),
