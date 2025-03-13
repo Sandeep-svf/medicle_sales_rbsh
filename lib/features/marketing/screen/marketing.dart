@@ -85,7 +85,6 @@ class _MarketingScreenState extends State<MarketingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Marketing Files")),
       body: ListView.builder(
         padding: EdgeInsets.all(12),
         itemCount: files.length,
