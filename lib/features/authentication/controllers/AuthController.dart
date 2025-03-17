@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:medicle_sales_rbsh/features/authentication/screens/login/login.dart';
@@ -23,6 +24,51 @@ class AuthController extends GetxController {
     try {
       isLoading.value = true;
 
+      // Close any existing dialogs before opening a new one
+      if (Get.isDialogOpen ?? false) {
+        Get.back();
+      }
+
+      // Show Loading Dialog
+      Get.dialog(
+        WillPopScope(
+          onWillPop: () async => false, // Prevent back button press
+          child: Center(
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+              decoration: BoxDecoration(
+                color: Colors.black87, // Dark background
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    "Loading...",
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.white, // White text
+                      fontWeight: FontWeight.bold,
+                      decoration: TextDecoration.none, // Ensure no underline
+                    ),
+                  ),
+                  SizedBox(width: 10),
+                  SizedBox(
+                    height: 20, // Adjust circle size
+                    width: 20,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2.5, // Slightly thinner stroke
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        barrierDismissible: false, // Prevent user interaction
+      );
+
       final response = await http.post(
         Uri.parse("$_baseUrl/auth/login"),
         headers: {"Content-Type": "application/json"},
@@ -31,11 +77,12 @@ class AuthController extends GetxController {
 
       final data = jsonDecode(response.body);
 
-
+      // Close loading overlay
+      if (Get.isDialogOpen ?? false) {
+        Get.back();
+      }
 
       if (response.statusCode == 200) {
-        var data = jsonDecode(response.body);
-
         // Ensure 'user' key exists before parsing
         if (data.containsKey("user")) {
           UserModel userModel = UserModel.fromJson(data);
@@ -55,8 +102,10 @@ class AuthController extends GetxController {
       } else {
         Get.snackbar("Error", data["message"] ?? "Login Failed");
       }
-
     } catch (e) {
+      if (Get.isDialogOpen ?? false) {
+        Get.back(); // Close loading overlay in case of error
+      }
       Get.snackbar("Error", "Something went wrong: $e");
     } finally {
       isLoading.value = false;
