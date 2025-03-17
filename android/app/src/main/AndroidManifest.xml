@@ -18,7 +18,7 @@
         android:largeHeap="true"
         android:usesCleartextTraffic="true"
         android:requestLegacyExternalStorage="true"
-        android:label="Glusk Care"
+        android:label="GlucksCare"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         tools:targetApi="m">
