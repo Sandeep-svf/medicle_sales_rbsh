@@ -6,7 +6,9 @@ class TImages {
 
   // -- App Logos
   static const String darkAppLogo = "assets/logos/glucks_care_logo_auth.png";
+  static const String darkAppLogoSmall = "assets/app_icon/app_icon.png";
   static const String lightAppLogo = "assets/logos/glucks_care_logo_auth.png";
+  static const String lightAppLogoSmall = "assets/app_icon/app_icon.png";
   // -- Social Logos
   static const String google = "assets/logos/google-icon.png";
   static const String facebook = "assets/logos/facebook-icon.png";

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
+import 'package:medicle_sales_rbsh/features/MarketingMaterials/Screens/MarketingMaterials.dart';
 import 'package:medicle_sales_rbsh/features/SalesChartAnalysis/Screen/salesChartHome.dart';
 import 'package:medicle_sales_rbsh/features/addDoctor/screens/addDoctor.dart';
 import 'package:medicle_sales_rbsh/features/addProduct/screens/addProduct.dart';
@@ -13,8 +14,10 @@ import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 import 'package:medicle_sales_rbsh/utils/helpers/helper_functions.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
-
+import '../../../utils/local_storage/auth_manager.dart';
+import '../../Blog/screen/blog.dart';
 import '../../authentication/controllers/AuthController.dart';
+import '../../authentication/screens/login/login.dart';
 import '../../marketing/screen/marketing.dart';
 import '../../visitDoctor/screens/visitDoctor.dart';
 
@@ -26,91 +29,126 @@ class CustomDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      child: Column(
-        children: [
-          _buildHeader(context), // User Header
-          _buildDrawerItem(
-            icon: Icons.home,
-            text: TTexts.dashboard,
-            onTap: () =>
-                onMenuSelected(SalesChartHomeScreen(), TTexts.dashboard),
-          ),
-          const Divider(height: 1, color: Colors.grey),
-          _buildDrawerItem(
-            icon: Icons.picture_as_pdf,
-            text: TTexts.filesAndPdfs,
-            onTap: () => onMenuSelected(MarketingScreen(), TTexts.filesAndPdfs),
-          ),
-          const Divider(height: 1, color: Colors.grey),
-          _buildDrawerItem(
-            icon: Icons.person,
-            text: TTexts.addDoctor,
-            onTap: () => onMenuSelected(AddDoctorScreen(), TTexts.addDoctor),
-          ),
-          const Divider(height: 1, color: Colors.grey),
-          _buildDrawerItem(
-            icon: Icons.money,
-            text: TTexts.salesActivity,
-            onTap: () =>
-                onMenuSelected(SalesactivityScreen(), TTexts.salesActivity),
-          ),
-          const Divider(height: 1, color: Colors.grey),
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            _buildHeader(context), // User Header
+            _buildDrawerItem(
+              icon: Icons.home,
+              text: TTexts.dashboard,
+              onTap: () =>
+                  onMenuSelected(SalesChartHomeScreen(), TTexts.dashboard),
+            ),
+            const Divider(height: 1, color: Colors.grey),
 
-          _buildDrawerItem(
-            icon: Icons.place,
-            text: TTexts.doctorVisit,
-            onTap: () =>
-                onMenuSelected(VisitDoctorScreen(), TTexts.doctorVisit),
-          ),
-          const Divider(height: 1, color: Colors.grey),
 
-          _buildDrawerItem(
-            icon: Icons.add,
-            text: TTexts.addProduct,
-            onTap: () => onMenuSelected(AddproductScreen(), TTexts.addProduct),
-          ),
-          const Divider(height: 1, color: Colors.grey),
+            _buildDrawerItem(
+              icon: Icons.money,
+              text: TTexts.marketingMaterial,
+              onTap: () => onMenuSelected(
+                  MarketingmaterialsScreen(), TTexts.marketingMaterial),
+            ),
+            const Divider(height: 1, color: Colors.grey),
 
-          _buildDrawerItem(
-            icon: Icons.reorder,
-            text: TTexts.order,
-            onTap: () => onMenuSelected(OrderScreen(), TTexts.order),
-          ),
-          const Divider(height: 1, color: Colors.grey),
+            _buildDrawerItem(
+              icon: Icons.picture_as_pdf,
+              text: TTexts.filesAndPdfs,
+              onTap: () =>
+                  onMenuSelected(MarketingScreen(), TTexts.filesAndPdfs),
+            ),
+            const Divider(height: 1, color: Colors.grey),
+            _buildDrawerItem(
+              icon: Icons.person,
+              text: TTexts.addDoctor,
+              onTap: () => onMenuSelected(AddDoctorScreen(), TTexts.addDoctor),
+            ),
+            const Divider(height: 1, color: Colors.grey),
+            _buildDrawerItem(
+              icon: Icons.money,
+              text: TTexts.salesActivity,
+              onTap: () =>
+                  onMenuSelected(SalesactivityScreen(), TTexts.salesActivity),
+            ),
+            const Divider(height: 1, color: Colors.grey),
 
-          _buildDrawerItem(
-            icon: Icons.expand,
-            text: TTexts.expenses,
-            onTap: () => onMenuSelected(ExpensesScreen(), TTexts.expenses),
-          ),
-          const Divider(height: 1, color: Colors.grey),
+            _buildDrawerItem(
+              icon: Icons.place,
+              text: TTexts.doctorVisit,
+              onTap: () =>
+                  onMenuSelected(VisitDoctorScreen(), TTexts.doctorVisit),
+            ),
+            const Divider(height: 1, color: Colors.grey),
 
-          _buildDrawerItem(
-            icon: Icons.report,
-            text: TTexts.report,
-            onTap: () => onMenuSelected(ReportScreen(), TTexts.report),
-          ),
-          const Divider(height: 1, color: Colors.grey),
+            _buildDrawerItem(
+              icon: Icons.add,
+              text: TTexts.addProduct,
+              onTap: () =>
+                  onMenuSelected(AddproductScreen(), TTexts.addProduct),
+            ),
+            const Divider(height: 1, color: Colors.grey),
 
-          _buildDrawerItem(
-            icon: Icons.logout,
-            text: TTexts.logout,
-            onTap: () {
-              QuickAlert.show(
-                context: context,
-                type: QuickAlertType.confirm,
-                text: TTexts.doYouWantToLogout,
-                confirmBtnText: TTexts.yes,
-                cancelBtnText: TTexts.no,
-                confirmBtnColor: TColors.primary,
-                onConfirmBtnTap: () {
-                  Get.back(); // Close the dialog
-                  Get.find<AuthController>().logout(); // Call logout function
-                },
-              );
-            },
-          ),
-        ],
+            _buildDrawerItem(
+              icon: Icons.reorder,
+              text: TTexts.order,
+              onTap: () => onMenuSelected(OrderScreen(), TTexts.order),
+            ),
+            const Divider(height: 1, color: Colors.grey),
+
+            _buildDrawerItem(
+              icon: Icons.expand,
+              text: TTexts.expenses,
+              onTap: () => onMenuSelected(ExpensesScreen(), TTexts.expenses),
+            ),
+            const Divider(height: 1, color: Colors.grey),
+
+
+            _buildDrawerItem(
+              icon: Icons.post_add,
+              text: TTexts.blog,
+              onTap: () => onMenuSelected(Blogscreen(), TTexts.blog),
+            ),
+            const Divider(height: 1, color: Colors.grey),
+
+            _buildDrawerItem(
+              icon: Icons.report,
+              text: TTexts.report,
+              onTap: () => onMenuSelected(ReportScreen(), TTexts.report),
+            ),
+            const Divider(height: 1, color: Colors.grey),
+
+
+
+
+
+        _buildDrawerItem(
+          icon: Icons.logout,
+          text: TTexts.logout,
+          onTap: () {
+            QuickAlert.show(
+              context: context,
+              type: QuickAlertType.confirm,
+              text: TTexts.doYouWantToLogout,
+              confirmBtnText: TTexts.yes,
+              cancelBtnText: TTexts.no,
+              confirmBtnColor: TColors.primary,
+              onConfirmBtnTap: () async {
+                Get.back(); // Close the dialog
+
+                AuthManager authManager = AuthManager();
+                await authManager.logout(); // Clear SharedPreferences
+
+                Get.offAll(() => LoginScreen()); // Navigate to LoginScreen
+              },
+            );
+          },
+        ),
+
+
+        const SizedBox(
+              height: 50,
+            )
+          ],
+        ),
       ),
     );
   }

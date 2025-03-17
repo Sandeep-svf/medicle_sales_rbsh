@@ -15,9 +15,10 @@
 
 
     <application
+        android:largeHeap="true"
         android:usesCleartextTraffic="true"
         android:requestLegacyExternalStorage="true"
-        android:label="medicle_sales_rbsh"
+        android:label="Glusk Care"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         tools:targetApi="m">

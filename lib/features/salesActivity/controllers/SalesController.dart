@@ -1,45 +1,83 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:medicle_sales_rbsh/utils/http/http_client.dart';
+import 'package:medicle_sales_rbsh/utils/local_storage/storage_utility.dart';
 import '../models/SalesModel.dart';
 
 class SalesController with ChangeNotifier {
-  List<SalesLogModel> _salesLogs = [];
+  List<SalesLogModel> _salesList = [];
   bool _isLoading = false;
+  String? userId;
 
-  List<SalesLogModel> get salesLogs => _salesLogs;
+  List<SalesLogModel> get salesList => _salesList;
   bool get isLoading => _isLoading;
 
-  final String apiUrl = "https://your-api.com/get-sales-log"; // Replace with your API URL
+  final String fetchApiUrl = THttpHelper.baseUrl;
+  final String addApiUrl = THttpHelper.baseUrl;
 
-  Future<void> fetchSalesLogs() async {
+  // Fetching user id
+  void fetchUserId() async {
+     userId = await TLocalStorage.getUserIdFromPrefs();
+    if (userId != null) {
+      print("User ID: $userId");
+    } else {
+      print("No user data found!");
+    }
+  }
+
+
+  /// Fetch sales list from the server
+  Future<void> fetchSalesList() async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      final response = await http.get(Uri.parse(apiUrl));
+      final response = await http.get(Uri.parse("$fetchApiUrl/sales/user/67d51bed2282347e40e1e164"));
+     // final response = await http.get(Uri.parse("$fetchApiUrl/sales/user/${userId!}"));
 
       if (response.statusCode == 200) {
         List<dynamic> data = jsonDecode(response.body);
-        _salesLogs = data.map((item) => SalesLogModel.fromJson(item)).toList();
+        _salesList = data.map((item) => SalesLogModel.fromJson(item)).toList();
       } else {
         throw Exception("Failed to fetch sales logs");
       }
     } catch (e) {
-      print("Error: $e");
+      if (kDebugMode) {
+        print("Error: $e");
+      }
     }
 
     _isLoading = false;
     notifyListeners();
   }
 
-  void addSalesLog(SalesLogModel newLog) {
-    _salesLogs.add(newLog);
-    notifyListeners();
-  }
+  /// Add new sales data via API
+  Future<void> addSalesData(
+      String name, String salesRep, String time, String callNotes) async {
+    try {
+      final response = await http.post(
+        Uri.parse(addApiUrl),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "name": name,
+          "salesRepresentative": salesRep,
+          "time": time,
+          "callNotes": callNotes,
+        }),
+      );
 
-  void deleteSalesLog(int index) {
-    _salesLogs.removeAt(index);
-    notifyListeners();
+      if (response.statusCode == 200) {
+        // After successful addition, fetch the updated list
+        await fetchSalesList();
+      } else {
+        throw Exception("Failed to add sales log");
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error: $e");
+      }
+    }
   }
 }

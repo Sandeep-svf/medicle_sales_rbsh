@@ -124,6 +124,8 @@ class TTexts {
  static const String downloadAllFilesSuccessfully = "Download All Files Successfully";
  static const String downloadFileSuccessfully = "Download File Successfully";
  static const String pdfViewer = "PDF Viewer";
+ static const String marketingMaterial = "Marketing Material";
+ static const String blog = "Blog";
 
 
 

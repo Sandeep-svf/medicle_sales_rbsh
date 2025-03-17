@@ -2,17 +2,17 @@ import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:medicle_sales_rbsh/features/authentication/screens/login/login.dart';
+import 'package:medicle_sales_rbsh/utils/http/http_client.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:medicle_sales_rbsh/features/dashboard/screen/dashboard.dart';
-
-
+import '../../../utils/local_storage/auth_manager.dart';
 import '../models/UserModel.dart';
 
 class AuthController extends GetxController {
   var isLoading = false.obs;
   var user = Rxn<UserModel>(); // Store user model in state
 
-  static const String _baseUrl = "https://medi-glucks-erp.onrender.com/api/auth";
+  static const String _baseUrl = THttpHelper.baseUrl;
 
   Future<void> login(String email, String password) async {
     if (email.isEmpty || password.isEmpty) {
@@ -24,27 +24,38 @@ class AuthController extends GetxController {
       isLoading.value = true;
 
       final response = await http.post(
-        Uri.parse("$_baseUrl/login"),
+        Uri.parse("$_baseUrl/auth/login"),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({"email": email, "password": password}),
       );
 
       final data = jsonDecode(response.body);
 
+
+
       if (response.statusCode == 200) {
-        // Directly pass API response to UserModel (No manual mapping)
-        UserModel userModel = UserModel.fromJson(data);
+        var data = jsonDecode(response.body);
 
-        // Save UserModel as JSON in SharedPreferences
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setString("userData", userModel.toJsonString());
+        // Ensure 'user' key exists before parsing
+        if (data.containsKey("user")) {
+          UserModel userModel = UserModel.fromJson(data);
 
-        user.value = userModel; // Update state
-        Get.snackbar("Success", "Login Successful");
-        Get.offAll(() => DashboardScreen());
+          AuthManager authManager = AuthManager();
+          await authManager.saveUserData(userModel); // Save full user model
+          await authManager.saveUserId(userModel.id); // Save only user ID
+
+          user.value = userModel; // Update state
+          Get.snackbar("Success", "Login Successful");
+
+          // Navigate to Dashboard
+          Get.offAll(() => DashboardScreen());
+        } else {
+          Get.snackbar("Error", "Invalid response from server");
+        }
       } else {
         Get.snackbar("Error", data["message"] ?? "Login Failed");
       }
+
     } catch (e) {
       Get.snackbar("Error", "Something went wrong: $e");
     } finally {

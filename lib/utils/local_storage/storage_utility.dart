@@ -1,7 +1,22 @@
 import 'package:get_storage/get_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../features/authentication/models/UserModel.dart';
 
 class TLocalStorage {
   static final TLocalStorage _instance = TLocalStorage._internal();
+
+
+ static Future<String?> getUserIdFromPrefs() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? userData = prefs.getString("userData");
+
+    if (userData != null) {
+      UserModel user = UserModel.fromJsonString(userData);
+      return user.id;  //  Return the ID
+    }
+    return null;  // Return null if no user data found
+  }
 
   factory TLocalStorage() {
     return _instance;

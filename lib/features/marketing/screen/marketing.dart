@@ -1,14 +1,9 @@
 import 'dart:io';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
-import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
-import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 class MarketingScreen extends StatefulWidget {
   const MarketingScreen({super.key});
@@ -18,59 +13,95 @@ class MarketingScreen extends StatefulWidget {
 }
 
 class _MarketingScreenState extends State<MarketingScreen> {
-  List<Map<String, String>> files = [
-    {
-      "name": "Project Proposal",
-      "url": "https://morth.nic.in/sites/default/files/dd12-13_0.pdf",
-      "type": "pdf"
-    },
-    {
-      "name": "Design Mockup",
-      "url":
-          "https://media.istockphoto.com/id/1313742092/photo/business-partnership-business-man-investor-handshake-with-effect-global-network-link.jpg?s=1024x1024&w=is&k=20&c=uWAW24rxmFCuzlVDTO8EyZe1I6OBcoiP4g7vY233r8Q=",
-      "type": "image"
-    },
-    {
-      "name": "User Guide",
-      "url": "https://tourism.gov.in/sites/default/files/2019-04/dummy-pdf_2.pdf",
-      "type": "pdf"
-    },
-    {
-      "name": "Team Photo",
-      "url":
-          "https://media.istockphoto.com/id/1313742092/photo/business-partnership-business-man-investor-handshake-with-effect-global-network-link.jpg?s=1024x1024&w=is&k=20&c=uWAW24rxmFCuzlVDTO8EyZe1I6OBcoiP4g7vY233r8Q=",
-      "type": "image"
-    },
-  ];
+  List<Map<String, String>> pdfFiles = [];
+  bool isLoading = true;
 
+  @override
+  void initState() {
+    super.initState();
+    fetchPdfList();
+  }
+
+  // Fetch PDFs from backend
+  Future<void> fetchPdfList() async {
+    try {
+      Dio dio = Dio();
+      Response response =
+      await dio.get("https://medi-glucks-erp.onrender.com/api/pdfs");
+
+      if (response.statusCode == 200 && response.data is List) {
+        setState(() {
+          pdfFiles = (response.data as List)
+              .map((item) => {
+            "title": item["title"]?.toString() ?? "Untitled",
+            "fileKey": item["fileKey"]?.toString() ?? "",
+          })
+              .toList();
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (kDebugMode) print("Error fetching PDFs: $e");
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  // Fetch signed URL from backend
+  Future<String?> fetchSignedUrl(String fileKey) async {
+    try {
+      String url = "https://medi-glucks-erp.onrender.com/api/pdfs/signed-url/$fileKey";
+      Dio dio = Dio();
+      Response response = await dio.get(url);
+
+      if (response.statusCode == 200 && response.data["fileUrl"] != null) {
+        return response.data["fileUrl"];
+      } else {
+        return null;
+      }
+    } catch (e) {
+      if (kDebugMode) print("Error fetching signed URL: $e");
+      return null;
+    }
+  }
+
+  // Download the PDF file
   Future<String?> downloadFile(String url, String filename) async {
     try {
       Directory directory = await getTemporaryDirectory();
       String filePath = "${directory.path}/$filename";
 
-      // Check if the file already exists
       if (await File(filePath).exists()) {
-        return filePath;
+        return filePath; // Return cached file
       }
 
       Dio dio = Dio();
-      Response response = await dio.get(url,
-          options: Options(responseType: ResponseType.bytes));
+      Response response = await dio.get(url, options: Options(responseType: ResponseType.bytes));
 
       File file = File(filePath);
       await file.writeAsBytes(response.data, flush: true);
 
       return filePath;
     } catch (e) {
-      if (kDebugMode) {
-        print("Download error: $e");
-      }
+      if (kDebugMode) print("Download error: $e");
       return null;
     }
   }
 
-  void openPDFViewer(String url, String filename) async {
-    String? filePath = await downloadFile(url, filename);
+  // Fetch signed URL, download and open PDF
+  void openPDFViewer(String fileKey) async {
+    String? signedUrl = await fetchSignedUrl(fileKey);
+    if (signedUrl == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Failed to retrieve signed URL")),
+      );
+      return;
+    }
+
+    String filename = fileKey.split('/').last;
+    String? filePath = await downloadFile(signedUrl, filename);
+
     if (filePath != null) {
       Navigator.push(
         context,
@@ -80,7 +111,7 @@ class _MarketingScreenState extends State<MarketingScreen> {
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(TTexts.faildToLoaddPdf)),
+        const SnackBar(content: Text("Failed to load PDF")),
       );
     }
   }
@@ -88,49 +119,24 @@ class _MarketingScreenState extends State<MarketingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: ListView.builder(
-        padding: EdgeInsets.all(12),
-        itemCount: files.length,
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : pdfFiles.isEmpty
+          ? const Center(child: Text("No PDFs available"))
+          : ListView.builder(
+        padding: const EdgeInsets.all(12),
+        itemCount: pdfFiles.length,
         itemBuilder: (context, index) {
-          var file = files[index];
+          var file = pdfFiles[index];
           return Card(
-            margin: EdgeInsets.only(bottom: 12),
+            margin: const EdgeInsets.only(bottom: 12),
             elevation: 4,
             child: ListTile(
-              leading: file['type'] == 'pdf'
-                  ? Icon(Icons.picture_as_pdf, size: 40, color: Colors.red)
-                  : CachedNetworkImage(
-                      imageUrl: file['url']!,
-                      width: 60,
-                      height: 60,
-                      fit: BoxFit.cover,
-                      errorWidget: (context, url, error) =>
-                          Icon(Icons.broken_image, size: 60),
-                    ),
-              title: Text(file['name']!),
-              subtitle: Text(file['type']!.toUpperCase()),
-              trailing: Icon(Icons.download),
+              leading: const Icon(Icons.picture_as_pdf, size: 40, color: Colors.red),
+              title: Text(file['title']!),
+              trailing: const Icon(Icons.download),
               onTap: () async {
-                String filename = file['url']!.split('/').last;
-                String? filePath = await downloadFile(file['url']!, filename);
-
-                if (filePath != null) {
-                  if (file['type'] == 'pdf') {
-                    openPDFViewer(file['url']!, filename);
-                  } else {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            ImageViewerScreen(imagePath: filePath),
-                      ),
-                    );
-                  }
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text(TTexts.faildToDownloadFile)),
-                  );
-                }
+                openPDFViewer(file['fileKey']!);
               },
             ),
           );
@@ -143,12 +149,12 @@ class _MarketingScreenState extends State<MarketingScreen> {
 class PDFViewerScreen extends StatelessWidget {
   final String pdfPath;
 
-  PDFViewerScreen({required this.pdfPath});
+  const PDFViewerScreen({super.key, required this.pdfPath});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text(TTexts.pdfViewer)),
+      appBar: AppBar(title: const Text("PDF Viewer")),
       body: PDFView(
         filePath: pdfPath,
         enableSwipe: true,
@@ -158,36 +164,11 @@ class PDFViewerScreen extends StatelessWidget {
         defaultPage: 0,
         pageFling: true,
         onError: (error) {
-          print(": $error");
+          if (kDebugMode) print("Error loading PDF: $error");
         },
         onPageError: (page, error) {
-          if (kDebugMode) {
-            print("Error PDF Load Erroron page $page: $error");
-          }
+          if (kDebugMode) print("Error on page $page: $error");
         },
-      ),
-    );
-  }
-}
-
-class ImageViewerScreen extends StatelessWidget {
-  final String imagePath;
-
-  ImageViewerScreen({required this.imagePath});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(backgroundColor: Colors.black),
-      body: Center(
-        child: CachedNetworkImage(
-          imageUrl: imagePath,
-          placeholder: (context, url) => const CircularProgressIndicator(),
-          errorWidget: (context, url, error) =>
-              const Icon(Icons.broken_image, size: 100, color: Colors.white),
-          fit: BoxFit.contain,
-        ),
       ),
     );
   }

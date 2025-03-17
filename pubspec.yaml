@@ -21,6 +21,7 @@ dependencies:
   date_picker_plus: ^4.1.0
   quickalert: ^1.1.0
   shared_preferences: ^2.5.2
+  provider: ^6.1.2
 
 
   #Icons
@@ -53,6 +54,14 @@ dev_dependencies:
     sdk: flutter
 
   flutter_lints: ^4.0.0
+  flutter_launcher_icons: ^0.14.3
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/app_icon/app_icon.png" # Update with your icon path
+  adaptive_icon_background: "#ffffff" # Background color for Android adaptive icons
+  #adaptive_icon_foreground: "assets/app_icon/adaptive_icon.png" # Optional foreground
 
 flutter:
   uses-material-design: true
@@ -60,10 +69,12 @@ flutter:
 
   assets:
     - assets/logos/
+    - assets/app_icon/
     - assets/pdf/sample.pdf
     - assets/pdf/sample_2.pdf
     - assets/pdf/sample_3.pdf
     - assets/images/dummy.jpeg
+    - assets/images/pdf.png
 
   #------------- Local fonts-------------------#
 
