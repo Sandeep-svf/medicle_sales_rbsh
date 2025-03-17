@@ -1,67 +1,64 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
-import 'package:medicle_sales_rbsh/features/dashboard/screen/dashboard.dart';
 
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
-import '../../../../../utils/constants/sizes.dart';
-import '../../../../../utils/constants/text_strings.dart';
-
-
+import '../../../controllers/AuthController.dart';
 
 class LoginForm extends StatelessWidget {
-  const LoginForm({
-    super.key,
-    required this.dark,
-  });
-
   final bool dark;
+  final AuthController authController;
+
+  const LoginForm({super.key, required this.dark, required this.authController});
 
   @override
   Widget build(BuildContext context) {
+    final TextEditingController emailController = TextEditingController();
+    final TextEditingController passwordController = TextEditingController();
+
     return Form(
-      // Form only contain single child...
       child: Padding(
-        padding: const EdgeInsets.symmetric(
-          vertical: TSizes.spaceBtwSections,
-        ),
+        padding: const EdgeInsets.symmetric(vertical: TSizes.spaceBtwSections),
         child: Column(
           children: [
-            ///Email
+            /// Email
             TextFormField(
+              controller: emailController,
               decoration: InputDecoration(
-                // bcoz use icon in text field
                 prefixIcon: Icon(Iconsax.direct_right),
                 labelText: TTexts.userEmail,
               ),
             ),
 
-            const SizedBox(height: TSizes.spaceBtwItems,),
+            const SizedBox(height: TSizes.spaceBtwItems),
 
-            ///password
+            /// Password
             TextFormField(
+              controller: passwordController,
+              obscureText: true,
               decoration: InputDecoration(
-                // bcoz use icon in text field
-                  prefixIcon: Icon(Iconsax.password_check),
-                  labelText: TTexts.password,
-                  suffixIcon: Icon(Iconsax.eye_slash)),
+                prefixIcon: Icon(Iconsax.password_check),
+                labelText: TTexts.password,
+                suffixIcon: Icon(Iconsax.eye_slash),
+              ),
             ),
 
-            const SizedBox(
-              height: TSizes.spaceBtwInputFields / 2,
-            ),
+            const SizedBox(height: TSizes.spaceBtwSections),
 
-
-            const SizedBox(
-              height: TSizes.spaceBtwSections,
-            ),
-
-            ///SignIn button
+            /// Sign In Button
             SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                onPressed: () => Get.to( DashboardScreen()),
-                    child: const Text(TTexts.logIn))),
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  String email = emailController.text.trim();
+                  String password = passwordController.text.trim();
+                  authController.login(email, password);
+                },
+                child: const Text(TTexts.logIn),
+              ),
+            ),
           ],
         ),
       ),

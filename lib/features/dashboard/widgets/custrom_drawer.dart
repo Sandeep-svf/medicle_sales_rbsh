@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:medicle_sales_rbsh/features/SalesChartAnalysis/Screen/salesChartHome.dart';
 import 'package:medicle_sales_rbsh/features/addDoctor/screens/addDoctor.dart';
 import 'package:medicle_sales_rbsh/features/addProduct/screens/addProduct.dart';
@@ -12,11 +14,12 @@ import 'package:medicle_sales_rbsh/utils/helpers/helper_functions.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 
+import '../../authentication/controllers/AuthController.dart';
 import '../../marketing/screen/marketing.dart';
 import '../../visitDoctor/screens/visitDoctor.dart';
 
 class CustomDrawer extends StatelessWidget {
-  final Function(Widget,String) onMenuSelected;
+  final Function(Widget, String) onMenuSelected;
 
   const CustomDrawer({required this.onMenuSelected});
 
@@ -29,77 +32,84 @@ class CustomDrawer extends StatelessWidget {
           _buildDrawerItem(
             icon: Icons.home,
             text: TTexts.dashboard,
-            onTap: () => onMenuSelected(SalesChartHomeScreen(),TTexts.dashboard),
+            onTap: () =>
+                onMenuSelected(SalesChartHomeScreen(), TTexts.dashboard),
           ),
           const Divider(height: 1, color: Colors.grey),
           _buildDrawerItem(
             icon: Icons.picture_as_pdf,
             text: TTexts.filesAndPdfs,
-            onTap: () => onMenuSelected(MarketingScreen(),TTexts.filesAndPdfs),
+            onTap: () => onMenuSelected(MarketingScreen(), TTexts.filesAndPdfs),
           ),
           const Divider(height: 1, color: Colors.grey),
           _buildDrawerItem(
             icon: Icons.person,
             text: TTexts.addDoctor,
-            onTap: () => onMenuSelected(AddDoctorScreen(),TTexts.addDoctor),
+            onTap: () => onMenuSelected(AddDoctorScreen(), TTexts.addDoctor),
           ),
           const Divider(height: 1, color: Colors.grey),
           _buildDrawerItem(
             icon: Icons.money,
             text: TTexts.salesActivity,
-            onTap: () => onMenuSelected(SalesactivityScreen(),TTexts.salesActivity),
+            onTap: () =>
+                onMenuSelected(SalesactivityScreen(), TTexts.salesActivity),
           ),
           const Divider(height: 1, color: Colors.grey),
 
           _buildDrawerItem(
             icon: Icons.place,
             text: TTexts.doctorVisit,
-            onTap: () => onMenuSelected(VisitDoctorScreen(),TTexts.doctorVisit),
+            onTap: () =>
+                onMenuSelected(VisitDoctorScreen(), TTexts.doctorVisit),
           ),
           const Divider(height: 1, color: Colors.grey),
 
           _buildDrawerItem(
             icon: Icons.add,
             text: TTexts.addProduct,
-            onTap: () => onMenuSelected(AddproductScreen(),TTexts.addProduct),
+            onTap: () => onMenuSelected(AddproductScreen(), TTexts.addProduct),
           ),
           const Divider(height: 1, color: Colors.grey),
 
           _buildDrawerItem(
             icon: Icons.reorder,
             text: TTexts.order,
-            onTap: () => onMenuSelected(OrderScreen(),TTexts.order),
+            onTap: () => onMenuSelected(OrderScreen(), TTexts.order),
           ),
           const Divider(height: 1, color: Colors.grey),
 
           _buildDrawerItem(
             icon: Icons.expand,
             text: TTexts.expenses,
-            onTap: () => onMenuSelected(ExpensesScreen(),TTexts.expenses),
+            onTap: () => onMenuSelected(ExpensesScreen(), TTexts.expenses),
           ),
           const Divider(height: 1, color: Colors.grey),
 
           _buildDrawerItem(
             icon: Icons.report,
             text: TTexts.report,
-            onTap: () => onMenuSelected(ReportScreen(),TTexts.report),
+            onTap: () => onMenuSelected(ReportScreen(), TTexts.report),
           ),
           const Divider(height: 1, color: Colors.grey),
 
-
           _buildDrawerItem(
-              icon: Icons.logout,
-              text: TTexts.logout,
-              onTap: () {
-                QuickAlert.show(
-                  context: context,
-                  type: QuickAlertType.confirm,
-                  text: TTexts.doYouWantToLogout,
-                  confirmBtnText: TTexts.yes,
-                  cancelBtnText: TTexts.no,
-                  confirmBtnColor: TColors.primary,
-                );
-              }),
+            icon: Icons.logout,
+            text: TTexts.logout,
+            onTap: () {
+              QuickAlert.show(
+                context: context,
+                type: QuickAlertType.confirm,
+                text: TTexts.doYouWantToLogout,
+                confirmBtnText: TTexts.yes,
+                cancelBtnText: TTexts.no,
+                confirmBtnColor: TColors.primary,
+                onConfirmBtnTap: () {
+                  Get.back(); // Close the dialog
+                  Get.find<AuthController>().logout(); // Call logout function
+                },
+              );
+            },
+          ),
         ],
       ),
     );
@@ -116,8 +126,10 @@ class CustomDrawer extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           CircleAvatar(
-            radius: 50, //  Circular Avatar
-            backgroundColor: TColors.primary, //  Background color instead of image
+            radius: 50,
+            //  Circular Avatar
+            backgroundColor: TColors.primary,
+            //  Background color instead of image
             child: Text(
               "A", //  First letter of name
               style: TextStyle(
