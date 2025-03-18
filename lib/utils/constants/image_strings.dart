@@ -9,9 +9,7 @@ class TImages {
   static const String darkAppLogoSmall = "assets/app_icon/app_icon.png";
   static const String lightAppLogo = "assets/logos/glucks_care_logo_auth.png";
   static const String lightAppLogoSmall = "assets/app_icon/app_icon.png";
-  // -- Social Logos
-  static const String google = "assets/logos/google-icon.png";
-  static const String facebook = "assets/logos/facebook-icon.png";
+
   // -- Category Icons
   static const String sportIcon = "assets/icons/categories/icons8-bowling-64.png";
   // -- Brand Icons

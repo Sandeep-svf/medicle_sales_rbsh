@@ -41,11 +41,27 @@ android {
         versionName = flutter.versionName
     }
 
+
+
+    signingConfigs {
+        create("release") {
+            storeFile = file("C:\\Users\\admin\\AndroidStudioProjects\\medicle_sales_rbsh\\android\\app\\upload-keystore.jks")
+            storePassword = "GlucksCare@12345" // Use actual keystore password
+            keyAlias = "upload" // Your alias name
+            keyPassword = "GlucksCare@12345" // Use actual key password
+        }
+    }
+
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
+            signingConfig = signingConfigs["release"]  // Use correct release signing config
+            minifyEnabled = true  //  Enable ProGuard (optional)
+            shrinkResources = true  //  Remove unused resources (optional)
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+
             // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.debug
+            //signingConfig = signingConfigs.debug
         }
     }
 }

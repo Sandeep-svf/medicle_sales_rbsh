@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:medicle_sales_rbsh/features/MarketingMaterials/Screens/MarketingMaterials.dart';
 import 'package:medicle_sales_rbsh/features/SalesChartAnalysis/Screen/salesChartHome.dart';
 import 'package:medicle_sales_rbsh/features/addDoctor/screens/addDoctor.dart';
@@ -16,173 +15,184 @@ import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import '../../../utils/local_storage/auth_manager.dart';
 import '../../Blog/screen/blog.dart';
-import '../../authentication/controllers/AuthController.dart';
+import '../../authentication/models/UserModel.dart';
 import '../../authentication/screens/login/login.dart';
 import '../../marketing/screen/marketing.dart';
 import '../../visitDoctor/screens/visitDoctor.dart';
 
 class CustomDrawer extends StatelessWidget {
   final Function(Widget, String) onMenuSelected;
+  final String currentScreen; // ✅ Add this parameter to track selected item
 
-  const CustomDrawer({required this.onMenuSelected});
+  const CustomDrawer({required this.onMenuSelected, required this.currentScreen, Key? key})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      child: SingleChildScrollView(
-        child: Column(
-          children: [
-            _buildHeader(context), // User Header
-            _buildDrawerItem(
-              icon: Icons.home,
-              text: TTexts.dashboard,
-              onTap: () =>
-                  onMenuSelected(SalesChartHomeScreen(), TTexts.dashboard),
+      child: Column(
+        children: [
+          _buildHeader(context),
+          Expanded(
+            child: ListView(
+              children: [
+                _buildDrawerItem(
+                  icon: Icons.home,
+                  text: TTexts.dashboard,
+                  onTap: () =>
+                      onMenuSelected(SalesChartHomeScreen(), TTexts.dashboard),
+                  isSelected: currentScreen == TTexts.dashboard,
+                ),
+                _buildDrawerItem(
+                  icon: Icons.money,
+                  text: TTexts.marketingMaterial,
+                  onTap: () => onMenuSelected(
+                      MarketingmaterialsScreen(), TTexts.marketingMaterial),
+                  isSelected: currentScreen == TTexts.marketingMaterial,
+                ),
+                _buildDrawerItem(
+                  icon: Icons.picture_as_pdf,
+                  text: TTexts.filesAndPdfs,
+                  onTap: () =>
+                      onMenuSelected(MarketingScreen(), TTexts.filesAndPdfs),
+                  isSelected: currentScreen == TTexts.filesAndPdfs,
+                ),
+                _buildDrawerItem(
+                  icon: Icons.person,
+                  text: TTexts.addDoctor,
+                  onTap: () =>
+                      onMenuSelected(AddDoctorScreen(), TTexts.addDoctor),
+                  isSelected: currentScreen == TTexts.addDoctor,
+                ),
+                _buildDrawerItem(
+                  icon: Icons.money,
+                  text: TTexts.salesActivity,
+                  onTap: () =>
+                      onMenuSelected(SalesactivityScreen(), TTexts.salesActivity),
+                  isSelected: currentScreen == TTexts.salesActivity,
+                ),
+                _buildDrawerItem(
+                  icon: Icons.place,
+                  text: TTexts.doctorVisit,
+                  onTap: () =>
+                      onMenuSelected(VisitDoctorScreen(), TTexts.doctorVisit),
+                  isSelected: currentScreen == TTexts.doctorVisit,
+                ),
+                _buildDrawerItem(
+                  icon: Icons.add,
+                  text: TTexts.addProduct,
+                  onTap: () =>
+                      onMenuSelected(AddproductScreen(), TTexts.addProduct),
+                  isSelected: currentScreen == TTexts.addProduct,
+                ),
+                _buildDrawerItem(
+                  icon: Icons.reorder,
+                  text: TTexts.order,
+                  onTap: () => onMenuSelected(OrderScreen(), TTexts.order),
+                  isSelected: currentScreen == TTexts.order,
+                ),
+                _buildDrawerItem(
+                  icon: Icons.expand,
+                  text: TTexts.expenses,
+                  onTap: () => onMenuSelected(ExpensesScreen(), TTexts.expenses),
+                  isSelected: currentScreen == TTexts.expenses,
+                ),
+                _buildDrawerItem(
+                  icon: Icons.post_add,
+                  text: TTexts.blog,
+                  onTap: () => onMenuSelected(Blogscreen(), TTexts.blog),
+                  isSelected: currentScreen == TTexts.blog,
+                ),
+                _buildDrawerItem(
+                  icon: Icons.report,
+                  text: TTexts.report,
+                  onTap: () => onMenuSelected(ReportScreen(), TTexts.report),
+                  isSelected: currentScreen == TTexts.report,
+                ),
+                _buildDrawerItem(
+                  icon: Icons.logout,
+                  text: TTexts.logout,
+                  onTap: () {
+                    QuickAlert.show(
+                      context: context,
+                      type: QuickAlertType.confirm,
+                      text: TTexts.doYouWantToLogout,
+                      confirmBtnText: TTexts.yes,
+                      cancelBtnText: TTexts.no,
+                      confirmBtnColor: TColors.primary,
+                      onConfirmBtnTap: () async {
+                        Get.back();
+                        await AuthManager().logout();
+                        Get.offAll(() => LoginScreen());
+                      },
+                    );
+                  },
+                ),
+              ],
             ),
-            const Divider(height: 1, color: Colors.grey),
-
-
-            _buildDrawerItem(
-              icon: Icons.money,
-              text: TTexts.marketingMaterial,
-              onTap: () => onMenuSelected(
-                  MarketingmaterialsScreen(), TTexts.marketingMaterial),
-            ),
-            const Divider(height: 1, color: Colors.grey),
-
-            _buildDrawerItem(
-              icon: Icons.picture_as_pdf,
-              text: TTexts.filesAndPdfs,
-              onTap: () =>
-                  onMenuSelected(MarketingScreen(), TTexts.filesAndPdfs),
-            ),
-            const Divider(height: 1, color: Colors.grey),
-            _buildDrawerItem(
-              icon: Icons.person,
-              text: TTexts.addDoctor,
-              onTap: () => onMenuSelected(AddDoctorScreen(), TTexts.addDoctor),
-            ),
-            const Divider(height: 1, color: Colors.grey),
-            _buildDrawerItem(
-              icon: Icons.money,
-              text: TTexts.salesActivity,
-              onTap: () =>
-                  onMenuSelected(SalesactivityScreen(), TTexts.salesActivity),
-            ),
-            const Divider(height: 1, color: Colors.grey),
-
-            _buildDrawerItem(
-              icon: Icons.place,
-              text: TTexts.doctorVisit,
-              onTap: () =>
-                  onMenuSelected(VisitDoctorScreen(), TTexts.doctorVisit),
-            ),
-            const Divider(height: 1, color: Colors.grey),
-
-            _buildDrawerItem(
-              icon: Icons.add,
-              text: TTexts.addProduct,
-              onTap: () =>
-                  onMenuSelected(AddproductScreen(), TTexts.addProduct),
-            ),
-            const Divider(height: 1, color: Colors.grey),
-
-            _buildDrawerItem(
-              icon: Icons.reorder,
-              text: TTexts.order,
-              onTap: () => onMenuSelected(OrderScreen(), TTexts.order),
-            ),
-            const Divider(height: 1, color: Colors.grey),
-
-            _buildDrawerItem(
-              icon: Icons.expand,
-              text: TTexts.expenses,
-              onTap: () => onMenuSelected(ExpensesScreen(), TTexts.expenses),
-            ),
-            const Divider(height: 1, color: Colors.grey),
-
-
-            _buildDrawerItem(
-              icon: Icons.post_add,
-              text: TTexts.blog,
-              onTap: () => onMenuSelected(Blogscreen(), TTexts.blog),
-            ),
-            const Divider(height: 1, color: Colors.grey),
-
-            _buildDrawerItem(
-              icon: Icons.report,
-              text: TTexts.report,
-              onTap: () => onMenuSelected(ReportScreen(), TTexts.report),
-            ),
-            const Divider(height: 1, color: Colors.grey),
-
-
-
-
-
-        _buildDrawerItem(
-          icon: Icons.logout,
-          text: TTexts.logout,
-          onTap: () {
-            QuickAlert.show(
-              context: context,
-              type: QuickAlertType.confirm,
-              text: TTexts.doYouWantToLogout,
-              confirmBtnText: TTexts.yes,
-              cancelBtnText: TTexts.no,
-              confirmBtnColor: TColors.primary,
-              onConfirmBtnTap: () async {
-                Get.back(); // Close the dialog
-
-                AuthManager authManager = AuthManager();
-                await authManager.logout(); // Clear SharedPreferences
-
-                Get.offAll(() => LoginScreen()); // Navigate to LoginScreen
-              },
-            );
-          },
-        ),
-
-
-        const SizedBox(
-              height: 50,
-            )
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
-  /// User Header Section
+  /// **User Header Section**
   Widget _buildHeader(BuildContext context) {
     final dark = THelperFunctions.isDarkMode(context);
-    return Container(
-      color: dark ? Colors.black : Colors.grey[300], //  Gray Background
-      padding: EdgeInsets.symmetric(vertical: 50, horizontal: 16),
-      width: double.infinity, //  Take full width
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          CircleAvatar(
-            radius: 50,
-            //  Circular Avatar
-            backgroundColor: TColors.primary,
-            //  Background color instead of image
-            child: Text(
-              "A", //  First letter of name
-              style: TextStyle(
-                  fontSize: 60,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white),
-            ),
-          ),
-          SizedBox(width: 16), //  Space between avatar and text
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start, //  Align text to left
+
+    return FutureBuilder<UserModel?>(
+      future: AuthManager().getUserData(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return _loadingHeader(dark);
+        } else if (snapshot.hasError || !snapshot.hasData) {
+          return Text("Error loading user data");
+        }
+
+        final user = snapshot.data!;
+
+        return Container(
+          color: dark ? Colors.black : Colors.grey[300],
+          padding: EdgeInsets.symmetric(vertical: 50, horizontal: 16),
+          width: double.infinity,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Text("Aarav Maurya",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              Text("aarav@rbsh.com", style: TextStyle(fontSize: 14)),
+              CircleAvatar(
+                radius: 50,
+                backgroundColor: TColors.primary,
+                child: Icon(Icons.person, size: 50, color: Colors.white),
+              ),
+              SizedBox(width: 16),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(user.name, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text(user.email, style: TextStyle(fontSize: 14)),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  /// **Loading Header Placeholder**
+  Widget _loadingHeader(bool dark) {
+    return Container(
+      color: dark ? Colors.black : Colors.grey[300],
+      padding: const EdgeInsets.symmetric(vertical: 50, horizontal: 16),
+      width: double.infinity,
+      child: Row(
+        children: [
+          const CircleAvatar(radius: 50, backgroundColor: Colors.grey),
+          const SizedBox(width: 16),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: const [
+              Text("Loading...", style: TextStyle(fontSize: 18)),
+              Text("Please wait", style: TextStyle(fontSize: 14)),
             ],
           ),
         ],
@@ -191,13 +201,16 @@ class CustomDrawer extends StatelessWidget {
   }
 
   /// **Drawer Item Template**
-  Widget _buildDrawerItem(
-      {required IconData icon,
-      required String text,
-      required VoidCallback onTap}) {
+  Widget _buildDrawerItem({
+    required IconData icon,
+    required String text,
+    required VoidCallback onTap,
+    bool isSelected = false,
+  }) {
     return ListTile(
-      leading: Icon(icon, color: TColors.primary),
-      title: Text(text, style: const TextStyle(fontSize: 16)),
+      leading: Icon(icon, color: isSelected ? TColors.primary : Colors.grey),
+      title: Text(text, style: TextStyle(fontSize: 16, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
+      tileColor: isSelected ? Colors.blue.withOpacity(0.1) : Colors.transparent,
       onTap: onTap,
     );
   }

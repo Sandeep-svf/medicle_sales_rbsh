@@ -22,6 +22,7 @@ dependencies:
   quickalert: ^1.1.0
   shared_preferences: ^2.5.2
   provider: ^6.1.2
+  flutter_secure_storage: ^9.0.0
 
 
   #Icons
@@ -41,6 +42,7 @@ dependencies:
   permission_handler: ^11.3.1
   path_provider: ^2.1.2
   open_filex: ^4.4.0
+  stylish_bottom_bar: ^1.1.0
 
 
 #-------------------- /PACKAGE END ------------#
@@ -70,9 +72,6 @@ flutter:
   assets:
     - assets/logos/
     - assets/app_icon/
-    - assets/pdf/sample.pdf
-    - assets/pdf/sample_2.pdf
-    - assets/pdf/sample_3.pdf
     - assets/images/dummy.jpeg
     - assets/images/pdf.png
 
