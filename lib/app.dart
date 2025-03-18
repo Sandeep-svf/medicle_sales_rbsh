@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:medicle_sales_rbsh/features/authentication/screens/onboarding/splash.dart';
+import 'package:medicle_sales_rbsh/utils/anim/CustomPageTransition.dart';
 import 'package:medicle_sales_rbsh/utils/theam/theme.dart';
 
 class App extends StatelessWidget {
@@ -14,6 +15,8 @@ class App extends StatelessWidget {
       theme: SAppTheme.lightTheme,
       debugShowCheckedModeBanner: false,
       home: const SplashScreen(),
+      defaultTransition: Transition.noTransition, // Disable default transition
+      customTransition: CustomPageTransition(), // Apply custom transition
     );
   }
 }
