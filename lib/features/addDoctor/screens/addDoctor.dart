@@ -1,40 +1,49 @@
 import 'package:flutter/material.dart';
-import 'package:medicle_sales_rbsh/features/addDoctor/screens/doctorDetails.dart';
-import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
-import 'package:medicle_sales_rbsh/utils/helpers/zoom_in_out_anim.dart';
+import 'package:get/get.dart';
+import '../../../utils/constants/text_strings.dart';
+import '../../../utils/helpers/zoom_in_out_anim.dart';
 import '../../../utils/constants/colors.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import '../controllers/DoctroController.dart';
 
 class AddDoctorScreen extends StatefulWidget {
   const AddDoctorScreen({super.key});
 
-
   @override
-  _DoctorListScreenState createState() => _DoctorListScreenState();
+  _AddDoctorScreenState createState() => _AddDoctorScreenState();
 }
 
-class _DoctorListScreenState extends State<AddDoctorScreen> {
-  final List<Map<String, String>> _doctors = [
-    {"name": "Dr. John Doe", "specialization": "Cardiologist"},
-    {"name": "Dr. Emily Smith", "specialization": "Neurologist"},
-    {"name": "Dr. Michael Brown", "specialization": "Orthopedic"},
-  ];
-
+class _AddDoctorScreenState extends State<AddDoctorScreen> {
+  final DoctorListController _doctorListController = Get.put(DoctorListController());
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = "";
+  String? selectedCity;
+  List<Map<String, String>> cities = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _doctorListController.fetchDoctorList();
+    fetchCities();
+  }
+
+  Future<void> fetchCities() async {
+    final response = await http.get(Uri.parse('https://medi-glucks-erp.onrender.com/api/headoffices'));
+    if (response.statusCode == 200) {
+      List<dynamic> cityList = json.decode(response.body);
+      setState(() {
+        cities = cityList
+            .map((city) => {'id': city['id'].toString(), 'name': city['name'].toString()})
+            .toList();
+      });
+    }
+  }
 
   void _showAddDoctorDialog() {
     TextEditingController nameController = TextEditingController();
     TextEditingController specializationController = TextEditingController();
-    TextEditingController locationController = TextEditingController();
-    TextEditingController emailController = TextEditingController();
     TextEditingController phoneController = TextEditingController();
-    TextEditingController registrationNumberController = TextEditingController();
-    TextEditingController yearOfExperienceController = TextEditingController();
-    TextEditingController dobController = TextEditingController();
-    TextEditingController genderController = TextEditingController();
-    TextEditingController anniversaryController = TextEditingController();
-
-
 
     showDialog(
       context: context,
@@ -42,8 +51,7 @@ class _DoctorListScreenState extends State<AddDoctorScreen> {
         return SingleChildScrollView(
           child: ZoomInOutDialog(
             child: AlertDialog(
-              shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               title: const Text(TTexts.addDoctorTitle),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -63,80 +71,24 @@ class _DoctorListScreenState extends State<AddDoctorScreen> {
                       border: OutlineInputBorder(),
                     ),
                   ),
-          
                   const SizedBox(height: 12),
-                  TextField(
-                    controller: locationController,
+                  DropdownButtonFormField<String>(
+                    value: selectedCity,
                     decoration: const InputDecoration(
-                      labelText: TTexts.location,
-                      // Fetch user current location.
-                      // If failed to fetch than let user enter it manually.
-                      // also check if location is enabled or not if not than ask to user for enable it.
-
-
+                      labelText: "Select Head Office",
                       border: OutlineInputBorder(),
                     ),
-                  ),
-          
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: emailController,
-                    decoration: const InputDecoration(
-                      labelText: TTexts.email,
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-          
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: phoneController,
-                    decoration: const InputDecoration(
-                      labelText: TTexts.phone,
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-          
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: registrationNumberController,
-                    decoration: const InputDecoration(
-                      labelText: TTexts.registrationNumber,
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-          
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: yearOfExperienceController,
-                    decoration: const InputDecoration(
-                      labelText: TTexts.yearOfExperience,
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-          
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: dobController,
-                    decoration: const InputDecoration(
-                      labelText: TTexts.dob,
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: genderController,
-                    decoration: const InputDecoration(
-                      labelText: TTexts.gender,
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: anniversaryController,
-                    decoration: const InputDecoration(
-                      labelText: TTexts.anniversary,
-                      border: OutlineInputBorder(),
-                    ),
+                    items: cities.map((city) {
+                      return DropdownMenuItem(
+                        value: city['id'],
+                        child: Text(city['name']!),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        selectedCity = value;
+                      });
+                    },
                   ),
                 ],
               ),
@@ -147,16 +99,14 @@ class _DoctorListScreenState extends State<AddDoctorScreen> {
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    if (nameController.text.isNotEmpty &&
-                        specializationController.text.isNotEmpty) {
-                      setState(() {
-                        _doctors.add({
-                          "name": nameController.text,
-                          "specialization": specializationController.text,
-                        });
-                      });
+                   /* if (nameController.text.isNotEmpty && specializationController.text.isNotEmpty) {
+                      _doctorListController.addDoctor(
+                        nameController.text,
+                        specializationController.text,
+                        selectedCity,
+                      );
                       Navigator.pop(context);
-                    }
+                    }*/
                   },
                   child: const Text(TTexts.submit),
                 ),
@@ -168,42 +118,8 @@ class _DoctorListScreenState extends State<AddDoctorScreen> {
     );
   }
 
-  void _showDeleteConfirmationDialog(int index) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: const Text(TTexts.confirmDeletion),
-          content: const Text(TTexts.areYouSureYouWantToDeleteThisDoctor),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text(TTexts.no, style: TextStyle(color: Colors.grey)),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  _doctors.removeAt(index);
-                });
-                Navigator.pop(context);
-              },
-              child: const Text(TTexts.yes),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    List<Map<String, String>> filteredDoctors = _doctors
-        .where((doctor) =>
-        doctor["name"]!.toLowerCase().contains(_searchQuery.toLowerCase()))
-        .toList();
-
     return Scaffold(
       body: Column(
         children: [
@@ -235,46 +151,40 @@ class _DoctorListScreenState extends State<AddDoctorScreen> {
             ),
           ),
           Expanded(
-            child: filteredDoctors.isEmpty
-                ? const Center(child: Text(TTexts.noDoctorAvailable))
-                : ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: filteredDoctors.length,
-              itemBuilder: (context, index) {
-                final doctor = filteredDoctors[index];
-                return Card(
-                  elevation: 2,
-                  margin: const EdgeInsets.symmetric(vertical: 8),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: Colors.blue.shade100,
-                      child: const Icon(Icons.person, color: TColors.primary),
+            child: Obx(() {
+              if (_doctorListController.isLoading.value) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              var filteredDoctors = _doctorListController.doctorList.where(
+                    (doctor) => doctor.name.toLowerCase().contains(_searchQuery.toLowerCase()),
+              ).toList();
+
+              return filteredDoctors.isEmpty
+                  ? const Center(child: Text(TTexts.noDoctorAvailable))
+                  : ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: filteredDoctors.length,
+                itemBuilder: (context, index) {
+                  final doctor = filteredDoctors[index];
+                  return Card(
+                    elevation: 2,
+                    margin: const EdgeInsets.symmetric(vertical: 8),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    child: ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: Colors.blue.shade100,
+                        child: const Icon(Icons.person, color: TColors.primary),
+                      ),
+                      title: Text(
+                        doctor.name,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      subtitle: Text(doctor.specialization),
                     ),
-                    title: Text(filteredDoctors[index]["name"]!,
-                        style:
-                        const TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle:
-                    Text(filteredDoctors[index]["specialization"]!),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              DoctordetailsScreen(doctor: doctor),
-                        ),
-                      );
-                    },
-                  /*  trailing: IconButton(
-                      icon: const Icon(Icons.delete, color: TColors.primary),
-                      onPressed: () =>
-                          _showDeleteConfirmationDialog(index),
-                    ),*/
-                  ),
-                );
-              },
-            ),
+                  );
+                },
+              );
+            }),
           ),
         ],
       ),

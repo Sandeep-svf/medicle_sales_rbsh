@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:in_app_update/in_app_update.dart'; // Import In-App Update package
+import 'package:in_app_update/in_app_update.dart';
 import 'package:medicle_sales_rbsh/features/authentication/screens/login/login.dart';
 import '../../../../utils/constants/image_strings.dart';
 import '../../../dashboard/screen/dashboard.dart';
