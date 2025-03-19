@@ -41,6 +41,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     Blogscreen(),
   ];
 
+
   List<BottomBarItem> _navBarsItems() => [
     BottomBarItem(
       icon: const Icon(Icons.home),

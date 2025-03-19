@@ -10,6 +10,11 @@ class TTexts {
   static const String doYouWantToLogout = "Do you want to logout?";
 
   // -- OnBoarding Texts
+  static const String updateAvailable = "Update Available";
+  static const String updateAvailableContent = "A new version is available. Update for the best experience.";
+  static const String skip = "Skip";
+  static const String updateNow = "Update Now";
+  static const String appUpdate = "App Update";
 
   // -- Authentication Forms
   static const String logIn = "Log In";
@@ -19,6 +24,7 @@ class TTexts {
 
   // -- Slide Menu Text
   static const String dashboard = "Dashboard";
+  static const String home = "Home";
   static const String addDoctor = "Add Doctor";
   static const String salesActivity = "Sales Activity";
   static const String doctorVisit = "Doctor Visit";
@@ -124,7 +130,7 @@ class TTexts {
  static const String downloadAllFilesSuccessfully = "Download All Files Successfully";
  static const String downloadFileSuccessfully = "Download File Successfully";
  static const String pdfViewer = "PDF Viewer";
- static const String marketingMaterial = "Marketing Material";
+ static const String marketingMaterial = "Digital Material";
  static const String blog = "Social";
 
 

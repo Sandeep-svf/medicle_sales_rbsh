@@ -22,7 +22,7 @@ import '../../visitDoctor/screens/visitDoctor.dart';
 
 class CustomDrawer extends StatelessWidget {
   final Function(Widget, String) onMenuSelected;
-  final String currentScreen; // ✅ Add this parameter to track selected item
+  final String currentScreen; //  Added this parameter to track selected item
 
   const CustomDrawer({required this.onMenuSelected, required this.currentScreen, Key? key})
       : super(key: key);
