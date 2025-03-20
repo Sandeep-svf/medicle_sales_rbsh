@@ -33,8 +33,9 @@ class SalesController with ChangeNotifier {
     _isLoading = true;
     notifyListeners();
 
+
     try {
-      final response = await http.get(Uri.parse("$fetchApiUrl/sales/user/67d51bed2282347e40e1e164"));
+      final response = await http.get(Uri.parse("$fetchApiUrl/sales"));
      // final response = await http.get(Uri.parse("$fetchApiUrl/sales/user/${userId!}"));
 
       if (response.statusCode == 200) {

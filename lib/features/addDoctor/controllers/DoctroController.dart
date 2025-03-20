@@ -12,11 +12,12 @@ class DoctorListController extends GetxController {
   static const String _baseUrl = THttpHelper.baseUrl;
 
   Future<void> fetchDoctorList() async {
+    print("Doctors Data: Fetching doctor list...");
     try {
       isLoading.value = true;
 
       // Show loading dialog
-      if (!Get.isDialogOpen!) {
+      /*if (!Get.isDialogOpen!) {
         Get.dialog(
           WillPopScope(
             onWillPop: () async => false,
@@ -50,17 +51,24 @@ class DoctorListController extends GetxController {
           ),
           barrierDismissible: false,
         );
-      }
+      }*/
 
       final response = await http.get(
         Uri.parse("$_baseUrl/doctors"),
         headers: {"Content-Type": "application/json"},
       );
 
+      print("Response: ${response.body}");
+
       if (Get.isDialogOpen!) Get.back(); // Close the loading dialog
 
       if (response.statusCode == 200) {
         List<dynamic> jsonData = jsonDecode(response.body);
+
+        // Debugging log to check the API response
+        print("Doctors Data: $jsonData");
+
+        // Update doctor list if data is fetched
         doctorList.assignAll(jsonData.map((json) => Doctor.fromJson(json)).toList());
       } else {
         Get.snackbar("Error", "Failed to load doctors: ${response.statusCode}",
@@ -70,6 +78,7 @@ class DoctorListController extends GetxController {
         );
       }
     } catch (e) {
+      print("Doctors Data: falling in catch block $e");
       if (Get.isDialogOpen!) Get.back(); // Ensure dialog is closed
       Get.snackbar("Error", "Something went wrong: $e",
         snackPosition: SnackPosition.BOTTOM,
@@ -77,7 +86,9 @@ class DoctorListController extends GetxController {
         colorText: Colors.white,
       );
     } finally {
+      print("Doctors Data: Falling in finally block");
       isLoading.value = false;
     }
   }
+
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:medicle_sales_rbsh/features/authentication/screens/onboarding/splash.dart';
+import 'package:medicle_sales_rbsh/utils/LocationHelper/backgrond_services.dart';
 import 'package:medicle_sales_rbsh/utils/anim/CustomPageTransition.dart';
 import 'package:medicle_sales_rbsh/utils/theam/theme.dart';
 
@@ -10,6 +11,7 @@ class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
+      navigatorKey: navigatorKey, // ✅ Set global navigator key
       themeMode: ThemeMode.system,
       darkTheme: SAppTheme.darkTheme,
       theme: SAppTheme.lightTheme,

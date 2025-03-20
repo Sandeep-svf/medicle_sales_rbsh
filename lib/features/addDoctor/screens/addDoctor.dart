@@ -18,7 +18,8 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
   final DoctorListController _doctorListController = Get.put(DoctorListController());
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = "";
-  String? selectedCity;
+  String? selectedCityId;  // Store the selected city ID
+  String? selectedCityName; // Store the selected city name
   List<Map<String, String>> cities = [];
 
   @override
@@ -34,8 +35,10 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
       List<dynamic> cityList = json.decode(response.body);
       setState(() {
         cities = cityList
-            .map((city) => {'id': city['id'].toString(), 'name': city['name'].toString()})
+            .map((city) => {'id': city['_id'].toString(), 'name': city['name'].toString()})
             .toList();
+
+        print("city lsit: $cities");
       });
     }
   }
@@ -73,23 +76,25 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
-                    value: selectedCity,
+                    value: selectedCityId,  // Use selectedCityId here
                     decoration: const InputDecoration(
                       labelText: "Select Head Office",
                       border: OutlineInputBorder(),
                     ),
                     items: cities.map((city) {
                       return DropdownMenuItem(
-                        value: city['id'],
+                        value: city['id'],  // Use city ID as value
                         child: Text(city['name']!),
                       );
                     }).toList(),
                     onChanged: (value) {
                       setState(() {
-                        selectedCity = value;
+                        selectedCityId = value; // Update selectedCityId
+                        selectedCityName = cities.firstWhere((city) => city['id'] == value)['name']; // Update selectedCityName
                       });
                     },
                   ),
+
                 ],
               ),
               actions: [
@@ -155,6 +160,10 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
               if (_doctorListController.isLoading.value) {
                 return const Center(child: CircularProgressIndicator());
               }
+
+              // Debugging log to check the doctor list
+              print("Doctors List: ${_doctorListController.doctorList}");
+
               var filteredDoctors = _doctorListController.doctorList.where(
                     (doctor) => doctor.name.toLowerCase().contains(_searchQuery.toLowerCase()),
               ).toList();
@@ -186,6 +195,8 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
               );
             }),
           ),
+
+
         ],
       ),
       floatingActionButton: FloatingActionButton(
