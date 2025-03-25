@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:intl/intl.dart';
 
 import '../../../utils/constants/colors.dart';
@@ -56,6 +59,8 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
               children: [
                 TextField(
                   controller: amountController,
+                  keyboardType: TextInputType.number, // Numeric keyboard
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly], // Allows only numbers
                   decoration: const InputDecoration(
                     labelText: TTexts.amount,
                     border: OutlineInputBorder(),
@@ -92,9 +97,14 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                       });
                     });
                     Navigator.pop(context);
+                  }else{
+                    Get.snackbar("Error", "Field can not be empty.");
                   }
                 },
-                child: const Text(TTexts.submit),
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16.0), // Adjust the value as needed
+                  child: Text(TTexts.submit),
+                ),
               ),
             ],
           ),
@@ -150,7 +160,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
               decoration: InputDecoration(
                 labelText: TTexts.searchExpenses,
                 border: OutlineInputBorder(),
-                prefixIcon: const Icon(Icons.search),
+                prefixIcon: const Icon(Icons.search,color: TColors.primary,),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(
                   icon: const Icon(Icons.clear),
@@ -186,30 +196,57 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                     : Colors.red;
 
                 return Card(
-                  elevation: 2,
-                  margin: const EdgeInsets.symmetric(vertical: 8),
+                  elevation: 4,
+                  margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                  child: ListTile(
-                    title: Text(
-                      doctor["amount"] ?? "",
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: Column(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(" ${doctor["description"] ?? ""}"),
-                    Text(
-                      "$statusText | ${doctor["Date"] ?? ""}",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: statusColor,
-                      ),
-                      ),
+                        Text(
+                          doctor["amount"] ?? "",
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          doctor["description"] ?? "",
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              statusText,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: statusColor,
+                              ),
+                            ),
+                            Text(
+                              doctor["Date"] ?? "",
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.black54,
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                   ),
                 );
+
               },
             ),
           ),

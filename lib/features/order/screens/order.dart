@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 
 import '../../../utils/constants/colors.dart';
 import '../../../utils/constants/text_strings.dart';
@@ -109,9 +111,14 @@ class _OrderScreenState extends State<OrderScreen> {
                       });
                     });
                     Navigator.pop(context);
+                  }else{
+                    Get.snackbar("Error", "Field can not be empty.");
                   }
                 },
-                child: const Text(TTexts.submit),
+                child:const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16.0), // Adjust the value as needed
+                  child: Text(TTexts.submit),
+                ),
               ),
             ],
           ),
@@ -167,7 +174,7 @@ class _OrderScreenState extends State<OrderScreen> {
               decoration: InputDecoration(
                 labelText: TTexts.searchOrder,
                 border: OutlineInputBorder(),
-                prefixIcon: const Icon(Icons.search),
+                prefixIcon: const Icon(Icons.search,color: TColors.primary),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(
                   icon: const Icon(Icons.clear),
@@ -197,25 +204,82 @@ class _OrderScreenState extends State<OrderScreen> {
                 final doctor = filteredDoctors[index];
 
                 return Card(
-                  elevation: 2,
-                  margin: const EdgeInsets.symmetric(vertical: 8),
+                  elevation: 4,
+                  margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                  child: ListTile(
-                    title: Text(
-                      doctor["doctorName"] ?? "",
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: Column(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(" ${doctor["productName"] ?? ""}"),
-                        Text(" ${doctor["orderNotes"] ?? ""}"),
-                        Text(" ${doctor["quantity"] ?? ""}"),
+                        // Doctor Icon
+                        CircleAvatar(
+                          backgroundColor: Colors.blueAccent.shade100,
+                          child: const Icon(Icons.person, color: TColors.primary),
+                        ),
+                        const SizedBox(width: 12),
+
+                        // Doctor & Product Details
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                doctor["doctorName"] ?? "Unknown Doctor",
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  const Icon(Icons.medical_services, size: 16, color: TColors.primary),
+                                  const SizedBox(width: 4),
+                                  Expanded(
+                                    child: Text(
+                                      doctor["productName"] ?? "No Product",
+                                      style: const TextStyle(fontSize: 14, color: Colors.black87),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  const Icon(Icons.notes, size: 16, color: TColors.primary),
+                                  const SizedBox(width: 4),
+                                  Expanded(
+                                    child: Text(
+                                      doctor["orderNotes"] ?? "No Notes",
+                                      style: const TextStyle(fontSize: 14, color: Colors.black54),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  const Icon(Icons.format_list_numbered, size: 16, color: TColors.primary),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    "Qty: ${doctor["quantity"] ?? "0"}",
+                                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                   ),
                 );
+
               },
             ),
           ),

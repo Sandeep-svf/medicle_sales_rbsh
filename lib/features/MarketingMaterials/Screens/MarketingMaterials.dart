@@ -27,11 +27,11 @@ class MarketingmaterialsScreen extends StatelessWidget {
                   "Brochure",
                   cardWidth,
                       () {
-                    Navigator.push(
+                   /* Navigator.push(
                       context,
                       MaterialPageRoute(
                           builder: (context) => const BrochureScreen()),
-                    );
+                    );*/
                   },
                 ),
 
@@ -42,11 +42,11 @@ class MarketingmaterialsScreen extends StatelessWidget {
                   "Promotion",
                   cardWidth,
                       () {
-                    Navigator.push(
+                   /* Navigator.push(
                       context,
                       MaterialPageRoute(
                           builder: (context) => const PromotionScreen()),
-                    );
+                    );*/
                   },
                 ),
               ],

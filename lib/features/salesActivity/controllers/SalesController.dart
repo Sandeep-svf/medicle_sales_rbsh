@@ -21,9 +21,13 @@ class SalesController with ChangeNotifier {
   void fetchUserId() async {
      userId = await TLocalStorage.getUserIdFromPrefs();
     if (userId != null) {
-      print("User ID: $userId");
+      if (kDebugMode) {
+        print("User ID: $userId");
+      }
     } else {
-      print("No user data found!");
+      if (kDebugMode) {
+        print("No user data found!");
+      }
     }
   }
 

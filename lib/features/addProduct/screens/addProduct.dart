@@ -1,5 +1,7 @@
 import 'package:date_picker_plus/date_picker_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:intl/intl.dart';
 import '../../../utils/constants/colors.dart';
 import '../../../utils/constants/sizes.dart';
@@ -20,7 +22,7 @@ class _AddproductScreenState extends State<AddproductScreen> {
       "description":
           "Paracetamol is a medicine used for mild to moderate pain.",
       "dosage":
-          "he usual dose of paracetamol is one or two 500mg tablets at a time, up to 4 times in 24 hours.",
+          "One or two 500mg tablets at a time, up to 4 times in 24 hours.",
       "brochureUrl": "www.google.com",
     },
     {
@@ -28,7 +30,7 @@ class _AddproductScreenState extends State<AddproductScreen> {
       "description":
           "Paracetamol is a medicine used for mild to moderate pain.",
       "dosage":
-          "he usual dose of paracetamol is one or two 500mg tablets at a time, up to 4 times in 24 hours.",
+      "One or two 500mg tablets at a time, up to 4 times in 24 hours.",
       "brochureUrl": "www.google.com",
     },
     {
@@ -36,7 +38,7 @@ class _AddproductScreenState extends State<AddproductScreen> {
       "description":
           "Paracetamol is a medicine used for mild to moderate pain.",
       "dosage":
-          "he usual dose of paracetamol is one or two 500mg tablets at a time, up to 4 times in 24 hours.",
+      "One or two 500mg tablets at a time, up to 4 times in 24 hours.",
       "brochureUrl": "www.google.com",
     },
   ];
@@ -117,9 +119,14 @@ class _AddproductScreenState extends State<AddproductScreen> {
                       });
                     });
                     Navigator.pop(context);
+                  }else{
+                    Get.snackbar("Error", "Field can not be empty.");
                   }
                 },
-                child: const Text(TTexts.submit),
+                child:const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16.0), // Adjust the value as needed
+                  child: Text(TTexts.submit),
+                ),
               ),
             ],
           ),
@@ -175,7 +182,7 @@ class _AddproductScreenState extends State<AddproductScreen> {
               decoration: InputDecoration(
                 labelText: TTexts.searchDoctor,
                 border: OutlineInputBorder(),
-                prefixIcon: const Icon(Icons.search),
+                prefixIcon: const Icon(Icons.search,color: TColors.primary,),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(
                         icon: const Icon(Icons.clear),
@@ -205,26 +212,122 @@ class _AddproductScreenState extends State<AddproductScreen> {
                       final doctor = filteredDoctors[index];
 
                       return Card(
-                        elevation: 2,
-                        margin: const EdgeInsets.symmetric(vertical: 8),
+                        elevation: 4,
+                        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12)),
-                        child: ListTile(
-                          title: Text(
-                            doctor["name"] ?? "",
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          subtitle: Column(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(" ${doctor["productName"] ?? ""}"),
-                              Text(" ${doctor["description"] ?? ""}"),
-                              Text(" ${doctor["dosage"] ?? ""}"),
-                              Text(" ${doctor["brochureUrl"] ?? ""}"),
+                              // Doctor Name with Icon
+                              Row(
+                                children: [
+                                  Icon(Icons.person, color: TColors.primary,),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      doctor["name"] ?? "Unknown Doctor",
+                                      style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+
+                              const Divider(thickness: 1, height: 16),
+
+                              // Product Name
+                              Row(
+                                children: [
+                                  Icon(Icons.medical_services, color: TColors.primary),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      doctor["productName"] ?? "No Product",
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.black54,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+
+                              const SizedBox(height: 8),
+
+                              // Description
+                              Row(
+                                children: [
+                                  Icon(Icons.description, color: TColors.primary),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      doctor["description"] ?? "No Description",
+                                      style: const TextStyle(fontSize: 14, color: Colors.black54),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+
+                              const SizedBox(height: 8),
+
+                              // Dosage Information
+                              Row(
+                                children: [
+                                  Icon(Icons.local_hospital, color: TColors.primary),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      "Dosage: ${doctor["dosage"] ?? "N/A"}",
+                                      style: const TextStyle(fontSize: 14, color: Colors.black54),
+                                    ),
+                                  ),
+                                ],
+                              ),
+
+                              const SizedBox(height: 8),
+
+                              // Brochure URL (Clickable)
+                              if (doctor["brochureUrl"] != null && doctor["brochureUrl"]!.isNotEmpty)
+                                Row(
+                                  children: [
+                                    Icon(Icons.insert_link, color: TColors.primary),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: GestureDetector(
+                                        onTap: () {
+                                          Get.snackbar("Note","This brochure is not available.");
+                                        },
+                                        child:const Text(
+                                          "View Brochure",
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: TColors.primary, // Text color
+                                            decoration: TextDecoration.underline,
+                                            decorationColor: Colors.red, // Underline color
+                                            decorationThickness: 2, // Optional: Adjust thickness
+                                          ),
+                                        )
+
+
+                                      ),
+                                    ),
+                                  ],
+                                ),
                             ],
                           ),
                         ),
                       );
+
                     },
                   ),
           ),

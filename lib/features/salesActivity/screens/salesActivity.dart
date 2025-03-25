@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:provider/provider.dart';
 import '../../../utils/constants/text_strings.dart';
 import '../controllers/SalesController.dart';
@@ -18,7 +21,9 @@ class _SalesactivityScreenState extends State<SalesactivityScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<SalesController>(context, listen: false).fetchSalesList();
+      Provider.of<SalesController>(context, listen: false).fetchSalesList().then((_) {
+        setState(() {});
+      });
     });
   }
 
@@ -61,20 +66,15 @@ class _SalesactivityScreenState extends State<SalesactivityScreen> {
             ),
             ElevatedButton(
               onPressed: () async {
-                // Call your API to add data
-                await Provider.of<SalesController>(context, listen: false).addSalesData(
-                  nameController.text,
-                  salesRepController.text,
-                  timeController.text,
-                  callNotesController.text,
-                );
-
-                // Refresh the list after adding new data
+                Get.snackbar("Note", "This feature is in maintenance.");
                 await Provider.of<SalesController>(context, listen: false).fetchSalesList();
-
+                setState(() {});
                 Navigator.pop(context);
               },
-              child: const Text("Add Data"),
+              child: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.0),
+                child: Text("Add Data"),
+              ),
             ),
           ],
         );
@@ -86,8 +86,9 @@ class _SalesactivityScreenState extends State<SalesactivityScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       floatingActionButton: FloatingActionButton(
+        backgroundColor: TColors.primary,
         onPressed: () => _showAddDataDialog(context),
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.add, color: Colors.white),
       ),
       body: Consumer<SalesController>(
         builder: (context, salesController, child) {
@@ -100,7 +101,7 @@ class _SalesactivityScreenState extends State<SalesactivityScreen> {
           }
 
           final filteredSales = salesController.salesList
-              .where((sale) => sale.name.toLowerCase().contains(_searchQuery.toLowerCase()))
+              .where((sale) => sale.doctorName.toLowerCase().contains(_searchQuery.toLowerCase()))
               .toList();
 
           return Column(
@@ -112,7 +113,7 @@ class _SalesactivityScreenState extends State<SalesactivityScreen> {
                   decoration: InputDecoration(
                     labelText: TTexts.searchDoctor,
                     border: OutlineInputBorder(),
-                    prefixIcon: const Icon(Icons.search),
+                    prefixIcon: const Icon(Icons.search,color: TColors.primary,),
                     suffixIcon: _searchQuery.isNotEmpty
                         ? IconButton(
                       icon: const Icon(Icons.clear),
@@ -140,25 +141,88 @@ class _SalesactivityScreenState extends State<SalesactivityScreen> {
                     final sale = filteredSales[index];
 
                     return Card(
-                      elevation: 2,
-                      margin: const EdgeInsets.symmetric(vertical: 8),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
-                      child: ListTile(
-                        title: Text(
-                          sale.name,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        subtitle: Column(
+                      elevation: 4,
+                      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text("Sales Rep: ${sale.salesRepresentative}"),
-                            Text("Time: ${sale.time}"),
-                            Text("Call Notes: ${sale.callNotes}"),
+                            Row(
+                              children: [
+                                Icon(Icons.person, color: TColors.primary, size: 28),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    sale.doctorName ?? "Unknown Doctor",
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                const Icon(Icons.business, color: TColors.primary, size: 20),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    "Sales Rep: ${sale.salesRep ?? "N/A"}",
+                                    style: const TextStyle(fontSize: 14, color: Colors.black54),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            Row(
+                              children: [
+                                const Icon(Icons.comment, color: TColors.primary, size: 20),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    "Call Notes: ${sale.callNotes ?? "No notes"}",
+                                    style: const TextStyle(fontSize: 14, color: Colors.black54),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            Row(
+                              children: [
+                                const Icon(Icons.person_outline, color: TColors.primary, size: 20),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    "User: ${sale.userName ?? "Unknown"}",
+                                    style: const TextStyle(fontSize: 14, color: Colors.black54),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            Row(
+                              children: [
+                                const Icon(Icons.calendar_today, color: TColors.primary, size: 20),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    "Date: ${sale.dateTime ?? "N/A"}",
+                                    style: const TextStyle(fontSize: 14, color: Colors.black54),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ],
                         ),
                       ),
                     );
+
+
                   },
                 ),
               ),

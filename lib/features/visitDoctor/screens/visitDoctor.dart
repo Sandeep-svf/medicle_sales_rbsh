@@ -1,5 +1,7 @@
 import 'package:date_picker_plus/date_picker_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:intl/intl.dart';
 import 'package:medicle_sales_rbsh/features/dashboard/widgets/custrom_drawer.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
@@ -141,8 +143,14 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
                     });
                     Navigator.pop(context);
                   }
+                  else{
+                    Get.snackbar("Error", "Field can not be empty.");
+                  }
                 },
-                child: const Text(TTexts.submit),
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16.0), // Adjust the value as needed
+                  child: Text(TTexts.submit),
+                ),
               ),
             ],
           ),
@@ -207,7 +215,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
               decoration: InputDecoration(
                 labelText: TTexts.searchDoctor,
                 border: OutlineInputBorder(),
-                prefixIcon: const Icon(Icons.search),
+                prefixIcon: const Icon(Icons.search,color: TColors.primary,),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(
                   icon: const Icon(Icons.clear),
@@ -256,6 +264,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
                         const SizedBox( height: TSizes.spaceBtwText),
                         Center(
                           child: SizedBox(
+
 
                             child: ElevatedButton(onPressed: (){
                               QuickAlert.show(

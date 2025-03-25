@@ -112,8 +112,13 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                       );
                       Navigator.pop(context);
                     }*/
+
+                    Get.snackbar("Note", "This features is in maintenance.");
                   },
-                  child: const Text(TTexts.submit),
+                  child: const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16.0), // Adjust the value as needed
+                    child: Text(TTexts.submit),
+                  ),
                 ),
               ],
             ),
@@ -135,7 +140,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
               decoration: InputDecoration(
                 labelText: TTexts.searchDoctor,
                 border: OutlineInputBorder(),
-                prefixIcon: const Icon(Icons.search),
+                prefixIcon: const Icon(Icons.search,color: TColors.primary,),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(
                   icon: const Icon(Icons.clear),

@@ -1,33 +1,28 @@
 class SalesLogModel {
-  final String name;
-  final String salesRepresentative;
-  final String time;
+  final String id;
+  final String doctorName;
+  final String salesRep;
   final String callNotes;
+  final String userName;
+  final String dateTime;
 
   SalesLogModel({
-    required this.name,
-    required this.salesRepresentative,
-    required this.time,
+    required this.id,
+    required this.doctorName,
+    required this.salesRep,
     required this.callNotes,
+    required this.userName,
+    required this.dateTime,
   });
 
-  // Factory method to create an instance from JSON
   factory SalesLogModel.fromJson(Map<String, dynamic> json) {
     return SalesLogModel(
-      name: json["doctor_name"] ?? "",
-      salesRepresentative: json["sales_rep"] ?? "",
-      time: json["call_time"] ?? "",
-      callNotes: json["call_notes"] ?? "",
+      id: json["_id"] ?? "",
+      doctorName: json["doctorName"] ?? "Unknown Doctor",
+      salesRep: json["salesRep"] ?? "Unknown Sales Rep",
+      callNotes: json["callNotes"] ?? "No Notes",
+      userName: json["userName"] ?? "Unknown User",
+      dateTime: json["dateTime"] ?? "",
     );
-  }
-
-  // Convert model to JSON (optional, for POST requests)
-  Map<String, dynamic> toJson() {
-    return {
-      "doctor_name": name,
-      "sales_rep": salesRepresentative,
-      "call_time": time,
-      "call_notes": callNotes,
-    };
   }
 }
