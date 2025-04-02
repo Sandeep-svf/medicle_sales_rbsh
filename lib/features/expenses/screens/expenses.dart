@@ -1,12 +1,16 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-
+import 'package:medicle_sales_rbsh/features/expenses/models/expanseModel.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../../../utils/constants/colors.dart';
-import '../../../utils/constants/text_strings.dart';
-import '../../../utils/helpers/zoom_in_out_anim.dart';
+import '../../../utils/local_storage/auth_manager.dart';
+import '../controllers/expenseController.dart';
+
 
 class ExpensesScreen extends StatefulWidget {
   const ExpensesScreen({super.key});
@@ -16,95 +20,175 @@ class ExpensesScreen extends StatefulWidget {
 }
 
 class _ExpensesScreenState extends State<ExpensesScreen> {
-  final List<Map<String, String>> _orderInfo = [
-    {
-      "amount": "₹15,97,400",
-      "description": "Travel to clinic.",
-      "Date" : "14/2/2024",
-      "status" : "1"
-    },
-    {
-      "amount": "₹15,97,400",
-      "description": "Lunch with doctor.",
-      "Date" : "14/2/2024",
-      "status" : "0"
-    },
-    {
-      "amount": "₹15,97,400",
-      "description": "Park ticket for meeting.",
-      "Date" : "14/2/2024",
-      "status" : "1"
-    },
-  ];
-
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = "";
 
-  void _showAddDoctorDialog() {
+  late ExpenseController _expenseController;
+  AuthManager authManager = AuthManager();
+
+
+
+
+  @override
+  void initState()  {
+    super.initState();
+    _expenseController = ExpenseController();
+    _expenseController.fetchExpenses(); // Call fetchExpenses with userId
+  }
+
+
+  /*import 'dart:io';
+  import 'package:flutter/material.dart';
+  import 'package:flutter/services.dart';
+  import 'package:image_picker/image_picker.dart';
+  import 'package:permission_handler/permission_handler.dart';*/
+
+  void _showAddExpenseDialog() {
     TextEditingController amountController = TextEditingController();
     TextEditingController descriptionController = TextEditingController();
+    File? imageFile;
 
+    final _formKey = GlobalKey<FormState>(); // Create a form key to validate the form
 
     showDialog(
-
       context: context,
       builder: (BuildContext context) {
-        return ZoomInOutDialog(
-          child: AlertDialog(
-            shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            title: const Text(TTexts.scheduleVisitTitle),
-            content: Column(
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Text("Add Expense"),
+          content: Form(
+            key: _formKey, // Attach the form key to validate the form
+            child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                TextField(
+                // Amount field with validation
+                TextFormField(
                   controller: amountController,
-                  keyboardType: TextInputType.number, // Numeric keyboard
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly], // Allows only numbers
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   decoration: const InputDecoration(
-                    labelText: TTexts.amount,
+                    labelText: "Amount",
                     border: OutlineInputBorder(),
                   ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter an amount';
+                    }
+                    return null;
+                  },
                 ),
                 const SizedBox(height: 12),
-                TextField(
+                // Description field with validation
+                TextFormField(
                   controller: descriptionController,
                   decoration: const InputDecoration(
-                    labelText: TTexts.description,
+                    labelText: "Description",
                     border: OutlineInputBorder(),
                   ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter a description';
+                    }
+                    return null;
+                  },
                 ),
+                const SizedBox(height: 12),
+                // Image Picker (optional)
+                GestureDetector(
+                  onTap: () async {
+                    // Check for camera and photos permissions
+                    await _requestPermission(Permission.camera);
+                    await _requestPermission(Permission.photos);
+                    await _requestPermission(Permission.storage);
 
+                    if (await Permission.camera.isGranted && await Permission.photos.isGranted) {
+                      _showImagePickerDialog(context, (pickedFile) {
+                        if (pickedFile != null) {
+                          setState(() {
+                            imageFile = File(pickedFile.path);
+                          });
+                        }
+                      });
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("Permission Denied: Please allow camera and gallery permissions.")),
+                      );
+                    }
+                  },
+                  child: imageFile == null
+                      ? const Icon(Icons.add_a_photo)
+                      : Image.file(imageFile!, width: 100, height: 100),
+                ),
               ],
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text(TTexts.cancel),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                // Validate the form
+                if (_formKey.currentState?.validate() ?? false) {
+                  // If the form is valid, you can process the data
+                  // Here, we're just closing the dialog for now.
+                  Navigator.pop(context);
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Please fill out all required fields.")),
+                  );
+                }
+              },
+              child: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.0),
+                child: Text("Submit"),
               ),
-              ElevatedButton(
-                onPressed: () {
-                  if (amountController.text.isNotEmpty &&
-                      descriptionController.text.isNotEmpty
-                     ) {
+            ),
+          ],
+        );
+      },
+    );
+  }
 
-                    setState(() {
-                      _orderInfo.add({
-                        "amount": "₹${amountController.text}",
-                        "description": descriptionController.text,
-                        "status" : "0",
-                        "Date" :DateFormat('dd/MM/yyyy').format(DateTime.now()),
-                      });
-                    });
-                    Navigator.pop(context);
-                  }else{
-                    Get.snackbar("Error", "Field can not be empty.");
-                  }
+// Request permission for Camera and Photos
+  Future<void> _requestPermission(Permission permission) async {
+    final status = await permission.request();
+    if (status != PermissionStatus.granted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Permission Required: You need to allow permission to proceed.")),
+      );
+    }
+  }
+
+// Show Image Picker Dialog (Camera or Gallery)
+  void _showImagePickerDialog(BuildContext context, Function(PickedFile?) onImagePicked) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Text("Pick an Image"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                title: const Text("Take a photo"),
+                onTap: () async {
+                  final picker = ImagePicker();
+                  final pickedFile = await picker.pickImage(source: ImageSource.camera);
+                  onImagePicked(pickedFile as PickedFile?);
+                  Navigator.pop(context);
                 },
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.0), // Adjust the value as needed
-                  child: Text(TTexts.submit),
-                ),
+              ),
+              ListTile(
+                title: const Text("Pick from gallery"),
+                onTap: () async {
+                  final picker = ImagePicker();
+                  final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+                  onImagePicked(pickedFile as PickedFile?);
+                  Navigator.pop(context);
+                },
               ),
             ],
           ),
@@ -113,41 +197,99 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
     );
   }
 
-  void _showDeleteConfirmationDialog(int index) {
+
+
+  /* void _showAddExpenseDialog() {
+    TextEditingController amountController = TextEditingController();
+    TextEditingController descriptionController = TextEditingController();
+
+    final _formKey = GlobalKey<FormState>(); // Create a form key to validate the form
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: const Text(TTexts.confirmDeletion),
-          content: const Text(TTexts.areYouSureYouWantToDeleteThisLog),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Text("Add Expense"),
+          content: Form(
+            key: _formKey, // Attach the form key to validate the form
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Amount field with validation
+                TextFormField(
+                  controller: amountController,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  decoration: const InputDecoration(
+                    labelText: "Amount",
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter an amount';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 12),
+                // Description field with validation
+                TextFormField(
+                  controller: descriptionController,
+                  decoration: const InputDecoration(
+                    labelText: "Description",
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter a description';
+                    }
+                    return null;
+                  },
+                ),
+
+
+
+
+              ],
+            ),
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child:
-              const Text(TTexts.no, style: TextStyle(color: Colors.grey)),
+              child: const Text("Cancel"),
             ),
             ElevatedButton(
               onPressed: () {
-                setState(() {
-                  _orderInfo.removeAt(index);
-                });
-                Navigator.pop(context);
+                // Validate the form
+                if (_formKey.currentState?.validate() ?? false) {
+                  // If the form is valid, you can process the data
+                  // Here, we're just closing the dialog for now.
+                  Navigator.pop(context);
+                } else {
+                  // Show a Snackbar if the form is invalid
+                  Get.snackbar("Error", "Please fill out all fields.");
+                }
               },
-              child: const Text(TTexts.yes),
+              child: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.0),
+                child: Text("Submit"),
+              ),
             ),
           ],
         );
       },
     );
-  }
+  }*/
+
+
+
 
   @override
   Widget build(BuildContext context) {
-    List<Map<String, String>> filteredDoctors = _orderInfo
-        .where((doctor) =>
-        doctor["amount"]!.toLowerCase().contains(_searchQuery.toLowerCase()))
+    List<Expense> filteredExpenses = _expenseController.expenses
+        .where((expense) =>
+        expense.description.toLowerCase().contains(_searchQuery.toLowerCase()))
         .toList();
 
     return Scaffold(
@@ -158,9 +300,9 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                labelText: TTexts.searchExpenses,
+                labelText: "Search Expenses",
                 border: OutlineInputBorder(),
-                prefixIcon: const Icon(Icons.search,color: TColors.primary,),
+                prefixIcon: const Icon(Icons.search),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(
                   icon: const Icon(Icons.clear),
@@ -181,19 +323,25 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
             ),
           ),
           Expanded(
-            child: filteredDoctors.isEmpty
-                ? const Center(child: Text(TTexts.noRecentCallAvailable))
+            child: _expenseController.isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : filteredExpenses.isEmpty
+                ? const Center(child: Text("No recent expenses available"))
                 : ListView.builder(
               padding: const EdgeInsets.all(16),
-              itemCount: filteredDoctors.length,
+              itemCount: filteredExpenses.length,
               itemBuilder: (context, index) {
-                final doctor = filteredDoctors[index];
-                String statusText = doctor["status"] == "1"
+                final expense = filteredExpenses[index];
+                String statusText = expense.status == "approved"
                     ? "Approved"
-                    : "Pending";
-                Color statusColor = doctor["status"] == "1"
+                    : expense.status == "pending"
+                    ? "Pending"
+                    : "Unknown";
+                Color statusColor = expense.status == "approved"
                     ? Colors.green
-                    : Colors.red;
+                    : expense.status == "pending"
+                    ? Colors.orange
+                    : Colors.grey;
 
                 return Card(
                   elevation: 4,
@@ -207,7 +355,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          doctor["amount"] ?? "",
+                          "₹${expense.amount}",
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -215,7 +363,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          doctor["description"] ?? "",
+                          expense.description,
                           style: const TextStyle(
                             fontSize: 14,
                             color: Colors.grey,
@@ -233,7 +381,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                               ),
                             ),
                             Text(
-                              doctor["Date"] ?? "",
+                              DateFormat('dd/MM/yyyy').format(expense.date),
                               style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w500,
@@ -246,14 +394,13 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                     ),
                   ),
                 );
-
               },
             ),
           ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _showAddDoctorDialog,
+        onPressed: _showAddExpenseDialog,
         backgroundColor: TColors.primary,
         child: const Icon(Icons.add, color: Colors.white),
       ),

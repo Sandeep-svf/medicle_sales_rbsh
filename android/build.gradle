@@ -1,3 +1,14 @@
+// android/build.gradle (Top-Level)
+buildscript {
+    repositories {
+        google()  // This is where we fetch Google services dependencies
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.0.2'
+    }
+}
+
 allprojects {
     repositories {
         google()

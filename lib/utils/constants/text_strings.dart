@@ -82,6 +82,7 @@ class TTexts {
   static const String scheduleVisitTitle = "Schedule New Visit";
   static const String notes = "Notes";
   static const String confirmVisit = "Confirm Visit";
+  static const String visitConfirmed = "Visit Confirmed";
   static const String confirmVisitSuccessfullyMarked = "Confirm Visit Successfully Marked";
 
 

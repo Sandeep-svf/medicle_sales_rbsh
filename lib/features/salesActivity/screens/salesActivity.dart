@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
+import 'package:medicle_sales_rbsh/features/salesActivity/controllers/addSalesController.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:provider/provider.dart';
 import '../../../utils/constants/text_strings.dart';
@@ -16,6 +17,7 @@ class SalesactivityScreen extends StatefulWidget {
 class _SalesactivityScreenState extends State<SalesactivityScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = "";
+  AddSalesController addSalesController = AddSalesController();
 
   @override
   void initState() {
@@ -28,6 +30,96 @@ class _SalesactivityScreenState extends State<SalesactivityScreen> {
   }
 
   void _showAddDataDialog(BuildContext context) {
+    final TextEditingController nameController = TextEditingController();
+    final TextEditingController salesRepController = TextEditingController();
+    final TextEditingController callNotesController = TextEditingController();
+
+    // Create a GlobalKey to manage the form state
+    final _formKey = GlobalKey<FormState>();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Add Sales Data"),
+          content: Form(
+            key: _formKey, // Assign the form key
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Doctor Name Field
+                TextFormField(
+                  controller: nameController,
+                  decoration: const InputDecoration(labelText: "Doctor Name"),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'This field is required';
+                    }
+                    return null;
+                  },
+                ),
+                // Sales Rep Field
+                TextFormField(
+                  controller: salesRepController,
+                  decoration: const InputDecoration(labelText: "Sales Rep"),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'This field is required';
+                    }
+                    return null;
+                  },
+                ),
+                // Call Notes Field
+                TextFormField(
+                  controller: callNotesController,
+                  decoration: const InputDecoration(labelText: "Call Notes"),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'This field is required';
+                    }
+                    return null;
+                  },
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                // Check if the form is valid
+                if (_formKey.currentState?.validate() ?? false) {
+                  // If the form is valid, call addSales
+                  addSalesController.addSales(
+                    context: context,
+                    nameController: nameController,
+                    salesRepController: salesRepController,
+                    callNotesController: callNotesController,
+                  );
+                  Navigator.pop(context); // Close the dialog
+                } else {
+                  // If form is not valid, show an error snack bar
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Please fill in all required fields')),
+                  );
+                }
+              },
+              child: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.0),
+                child: Text("Add Data"),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
+  /*void _showAddDataDialog(BuildContext context) {
     final TextEditingController nameController = TextEditingController();
     final TextEditingController salesRepController = TextEditingController();
     final TextEditingController timeController = TextEditingController();
@@ -43,16 +135,23 @@ class _SalesactivityScreenState extends State<SalesactivityScreen> {
             children: [
               TextField(
                 controller: nameController,
-                decoration: const InputDecoration(labelText: "Name"),
+                decoration: const InputDecoration(labelText: "Doctor Name"),
+              ),
+
+              TextFormField(
+                controller: nameController,
+                decoration: const InputDecoration(
+                  labelText: TTexts.doctorName,
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) =>
+                value == null || value.isEmpty ? 'This field is required' : null,
               ),
               TextField(
                 controller: salesRepController,
                 decoration: const InputDecoration(labelText: "Sales Rep"),
               ),
-              TextField(
-                controller: timeController,
-                decoration: const InputDecoration(labelText: "Time"),
-              ),
+
               TextField(
                 controller: callNotesController,
                 decoration: const InputDecoration(labelText: "Call Notes"),
@@ -66,10 +165,18 @@ class _SalesactivityScreenState extends State<SalesactivityScreen> {
             ),
             ElevatedButton(
               onPressed: () async {
-                Get.snackbar("Note", "This feature is in maintenance.");
+                *//*Get.snackbar("Note", "This feature is in maintenance.");
                 await Provider.of<SalesController>(context, listen: false).fetchSalesList();
                 setState(() {});
-                Navigator.pop(context);
+                Navigator.pop(context);*//*
+
+                addSalesController.addSales(
+                  context: context,
+                  nameController: nameController,
+                  salesRepController: salesRepController,
+                  callNotesController: callNotesController,
+                );
+
               },
               child: const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16.0),
@@ -80,7 +187,7 @@ class _SalesactivityScreenState extends State<SalesactivityScreen> {
         );
       },
     );
-  }
+  }*/
 
   @override
   Widget build(BuildContext context) {

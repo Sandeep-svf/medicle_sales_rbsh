@@ -1,0 +1,2 @@
+C:/Users/admin/AndroidStudioProjects/medicle_sales_rbsh/android/app/.cxx/Debug/552662ni/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/Users/admin/AndroidStudioProjects/medicle_sales_rbsh/android/app/.cxx/Debug/552662ni/armeabi-v7a/CMakeFiles/rebuild_cache.dir

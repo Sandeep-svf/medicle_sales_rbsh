@@ -4,9 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:medicle_sales_rbsh/utils/http/http_client.dart';
 import 'package:medicle_sales_rbsh/utils/local_storage/storage_utility.dart';
+import '../../../utils/local_storage/auth_manager.dart';
 import '../models/SalesModel.dart';
 
 class SalesController with ChangeNotifier {
+
+
+  AuthManager authManager = AuthManager();
+
   List<SalesLogModel> _salesList = [];
   bool _isLoading = false;
   String? userId;
@@ -17,29 +22,28 @@ class SalesController with ChangeNotifier {
   final String fetchApiUrl = THttpHelper.baseUrl;
   final String addApiUrl = THttpHelper.baseUrl;
 
-  // Fetching user id
-  void fetchUserId() async {
-     userId = await TLocalStorage.getUserIdFromPrefs();
-    if (userId != null) {
-      if (kDebugMode) {
-        print("User ID: $userId");
-      }
-    } else {
-      if (kDebugMode) {
-        print("No user data found!");
-      }
-    }
-  }
-
 
   /// Fetch sales list from the server
   Future<void> fetchSalesList() async {
+
+    String? userId = await authManager.getUserId();
+
+    if (kDebugMode) {
+      print("Sales Controller: user id: $userId");
+    }
+
+
     _isLoading = true;
     notifyListeners();
 
 
     try {
-      final response = await http.get(Uri.parse("$fetchApiUrl/sales"));
+      final response = await http.get(Uri.parse("$fetchApiUrl/sales/user/$userId"));
+
+      if (kDebugMode) {
+        print("Sales Controller: user id: $fetchApiUrl/sales/user/$userId");
+      }
+
      // final response = await http.get(Uri.parse("$fetchApiUrl/sales/user/${userId!}"));
 
       if (response.statusCode == 200) {

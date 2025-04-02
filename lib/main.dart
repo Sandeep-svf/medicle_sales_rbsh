@@ -4,11 +4,12 @@ import 'features/salesActivity/controllers/SalesController.dart';
 import 'app.dart'; // Import your App widget
 
 void main() async{
-  debugPrint('LocationTag: A.');
-  WidgetsFlutterBinding.ensureInitialized();
+  /*debugPrint('LocationTag: A.');
+  WidgetsFlutterBinding.ensureInitialized();// Required for async operations before runApp
+  debugPrint('LocationTag: Initializing background service...');
+  await BackgroundLocationService.requestPermissions(); // Request permissions and start service
 
-
-  debugPrint('LocationTag: B');
+  debugPrint('LocationTag: B');*/
   runApp(
     MultiProvider(
       providers: [
