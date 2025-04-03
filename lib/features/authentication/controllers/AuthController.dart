@@ -90,6 +90,7 @@ class AuthController extends GetxController {
           AuthManager authManager = AuthManager();
           await authManager.saveUserData(userModel); // Save full user model
           await authManager.saveUserId(userModel.id); // Save only user ID
+          await authManager.saveHeadOffice(userModel.headOffice.id); // Save head office
 
           user.value = userModel; // Update state
           Get.snackbar("Success", "Login Successful");
@@ -127,6 +128,6 @@ class AuthController extends GetxController {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove("userData");
     user.value = null;
-    Get.offAll(() => LoginScreen());
+    Get.offAll(() => const LoginScreen());
   }
 }

@@ -9,6 +9,7 @@ import 'package:quickalert/widgets/quickalert_dialog.dart';
 import '../../../utils/constants/colors.dart';
 import '../../../utils/constants/text_strings.dart';
 import '../../../utils/helpers/zoom_in_out_anim.dart';
+import '../../addDoctor/controllers/DoctroController.dart';
 import '../controllers/visitListController.dart';
 
 class VisitDoctorScreen extends StatefulWidget {
@@ -22,13 +23,20 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = "";
 
+  DoctorListController _doctorListController = Get.put(DoctorListController());
+
+  String? selectedDoctorId; // This will store the selected doctor's ID
+  String? selectedDoctorName; // This will store the selected doctor's name
+
   late VisitListController _visitListController;
 
   @override
   void initState() {
     super.initState();
+    _doctorListController.fetchDoctorList();
     _visitListController = VisitListController();
-    _visitListController.fetchSalesList(); // Fetch the visit data when screen loads
+    _visitListController
+        .fetchSalesList(); // Fetch the visit data when screen loads
   }
 
   void _showAddDoctorDialog() {
@@ -74,16 +82,41 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
       builder: (BuildContext context) {
         return ZoomInOutDialog(
           child: AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16)),
             title: const Text(TTexts.scheduleVisitTitle),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                TextField(
-                  controller: nameController,
-                  decoration: const InputDecoration(
-                    labelText: TTexts.doctorName,
-                    border: OutlineInputBorder(),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: DropdownButtonFormField<String>(
+                    decoration: const InputDecoration(
+                      labelText: "Select Doctor",
+                      border: OutlineInputBorder(),
+                    ),
+                    value: selectedDoctorName,
+                    items: _doctorListController.doctorList.map((doctor) {
+                      return DropdownMenuItem<String>(
+                        value: doctor.name,
+                        child: Text(doctor.name),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        selectedDoctorName = value;
+                        selectedDoctorId = _doctorListController.doctorList
+                            .firstWhere((doctor) => doctor.name == value)
+                            .id;
+                      });
+                    },
+                    hint: const Text("Please select a doctor"),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please select a doctor';
+                      }
+                      return null;
+                    },
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -119,11 +152,11 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
                   if (nameController.text.isNotEmpty &&
                       dateController.text.isNotEmpty &&
                       callNotesController.text.isNotEmpty) {
-
-                    String formattedTime = DateFormat('hh:mm a').format(DateTime.now());
+                    String formattedTime = DateFormat('hh:mm a').format(
+                        DateTime.now());
 
                     setState(() {
-                     /* _visitListController.salesList.add({
+                      /* _visitListController.salesList.add({
                         "name": nameController.text,
                         "time": formattedTime,
                         "callnotes": callNotesController.text,
@@ -151,13 +184,15 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16)),
           title: const Text(TTexts.confirmDeletion),
           content: const Text(TTexts.areYouSureYouWantToDeleteThisLog),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text(TTexts.no, style: TextStyle(color: Colors.grey)),
+              child: const Text(
+                  TTexts.no, style: TextStyle(color: Colors.grey)),
             ),
             ElevatedButton(
               onPressed: () {
@@ -176,11 +211,6 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
 
   @override
   Widget build(BuildContext context) {
-    List<VisitSalesLogModel> filteredDoctors = _visitListController.salesList
-        .where((doctor) =>
-        doctor.doctor?.name?.toLowerCase().contains(_searchQuery.toLowerCase())??false)
-        .toList();
-
     return Scaffold(
       body: Column(
         children: [
@@ -191,7 +221,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
               decoration: InputDecoration(
                 labelText: TTexts.searchDoctor,
                 border: OutlineInputBorder(),
-                prefixIcon: const Icon(Icons.search,color: TColors.primary),
+                prefixIcon: const Icon(Icons.search, color: TColors.primary),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(
                   icon: const Icon(Icons.clear),
@@ -211,133 +241,98 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
               },
             ),
           ),
-
           Expanded(
-            child: _visitListController.salesList.isEmpty
-                ? const Center(child: Text(TTexts.noRecentCallAvailable))
-                : ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: _visitListController.salesList.length,
-              itemBuilder: (context, index) {
-                final doctorVisit = _visitListController.salesList[index];
+            child: FutureBuilder(
+              future: _visitListController.fetchSalesList(),
+              // Fetch sales list here
+              builder: (context, AsyncSnapshot<void> snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                      child: CircularProgressIndicator()); // Show loading indicator
+                } else if (snapshot.hasError) {
+                  return Center(child: Text(
+                      'Error: ${snapshot.error}')); // Show error message if any
+                } else if (_visitListController.salesList.isEmpty) {
+                  return const Center(child: Text(
+                      TTexts.noRecentCallAvailable)); // No data available
+                } else {
+                  // Filter the doctors based on the search query
+                  List<
+                      VisitSalesLogModel> filteredDoctors = _visitListController
+                      .salesList
+                      .where((doctor) =>
+                  doctor.doctor?.name?.toLowerCase().contains(
+                      _searchQuery.toLowerCase()) ?? false)
+                      .toList();
 
-                return Card(
-                  elevation: 2,
-                  margin: const EdgeInsets.symmetric(vertical: 8),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                  child: ListTile(
-                    title: Text(
-                      doctorVisit.doctor?.name ?? "Unknown Doctor",
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text("Sales Rep: ${doctorVisit.user.name ?? ""}"),
-                        Text("Time: ${DateFormat('hh:mm a').format(doctorVisit.date)}"),
-                        Text("Call Notes: ${doctorVisit.notes ?? "No Notes"}"),
-                        const SizedBox(height: TSizes.spaceBtwText),
-                        Center(
-                          child: ElevatedButton(
-                            onPressed: doctorVisit.confirmed
-                                ? null
-                                : () {
-                              setState(() {
-                                doctorVisit.confirmed = true; // Mark as confirmed
-                              });
-                              QuickAlert.show(
-                                context: context,
-                                type: QuickAlertType.success,
-                                text: TTexts.confirmVisitSuccessfullyMarked,
-                                backgroundColor: TColors.primary,
-                                confirmBtnColor: TColors.primary,
-                              );
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: doctorVisit.confirmed
-                                  ? TColors.dark
-                                  : TColors.primary,
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16.0), // Horizontal padding
-                              child: Text(
-                                doctorVisit.confirmed
-                                    ? TTexts.visitConfirmed
-                                    : TTexts.confirmVisit,
+                  return ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: filteredDoctors.length,
+                    itemBuilder: (context, index) {
+                      final doctorVisit = filteredDoctors[index];
+                      return Card(
+                        elevation: 2,
+                        margin: const EdgeInsets.symmetric(vertical: 8),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                        child: ListTile(
+                          title: Text(
+                            doctorVisit.doctor?.name ?? "Unknown Doctor",
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text("Sales Rep: ${doctorVisit.user.name ?? ""}"),
+                              Text("Time: ${DateFormat('hh:mm a').format(
+                                  doctorVisit.date)}"),
+                              Text("Call Notes: ${doctorVisit.notes ??
+                                  "No Notes"}"),
+                              const SizedBox(height: TSizes.spaceBtwText),
+                              Center(
+                                child: ElevatedButton(
+                                  onPressed: doctorVisit.confirmed
+                                      ? null
+                                      : () {
+                                    setState(() {
+                                      doctorVisit.confirmed =
+                                      true; // Mark as confirmed
+                                    });
+                                    QuickAlert.show(
+                                      context: context,
+                                      type: QuickAlertType.success,
+                                      text: TTexts
+                                          .confirmVisitSuccessfullyMarked,
+                                      backgroundColor: TColors.primary,
+                                      confirmBtnColor: TColors.primary,
+                                    );
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: doctorVisit.confirmed
+                                        ? TColors.dark
+                                        : TColors.primary,
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16.0), // Horizontal padding
+                                    child: Text(
+                                      doctorVisit.confirmed
+                                          ? TTexts.visitConfirmed
+                                          : TTexts.confirmVisit,
+                                    ),
+                                  ),
+                                ),
                               ),
-                            ),
+                            ],
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                );
+                      );
+                    },
+                  );
+                }
               },
             ),
           ),
-
-          /* Expanded(
-            child: filteredDoctors.isEmpty
-                ? const Center(child: Text(TTexts.noRecentCallAvailable))
-                : ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: filteredDoctors.length,
-              itemBuilder: (context, index) {
-                final doctor = filteredDoctors[index];
-
-                return Card(
-                  elevation: 2,
-                  margin: const EdgeInsets.symmetric(vertical: 8),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                  child: ListTile(
-                    title: Text(
-                      doctor["name"] ?? "",
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text("Sales Rep: ${doctor["salesRep"] ?? ""}"),
-                        Text("Time: ${doctor["time"] ?? ""}"),
-                        Text("Call Notes: ${doctor["callnotes"] ?? ""}"),
-                        const SizedBox( height: TSizes.spaceBtwText),
-                        Center(
-                          child: ElevatedButton(
-                            onPressed: doctor["confirmed"] == "true"
-                                ? null
-                                : () {
-                              setState(() {
-                                doctor["confirmed"] = "true"; // Mark as confirmed
-                              });
-                              QuickAlert.show(
-                                context: context,
-                                type: QuickAlertType.success,
-                                text: TTexts.confirmVisitSuccessfullyMarked,
-                                backgroundColor: Colors.blue.shade50,
-                                confirmBtnColor: Colors.blue,
-                              );
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: doctor["confirmed"] == "true"
-                                  ? Colors.green
-                                  : Colors.orange,
-                            ),
-                            child: Text(
-                              doctor["confirmed"] == "true"
-                                  ? TTexts.visitConfirmed
-                                  : TTexts.confirmVisit,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),*/
         ],
       ),
       floatingActionButton: FloatingActionButton(

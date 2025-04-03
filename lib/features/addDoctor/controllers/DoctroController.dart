@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:medicle_sales_rbsh/utils/local_storage/auth_manager.dart';
 import 'dart:convert';
 import '../../../utils/http/http_client.dart';
+import '../../authentication/controllers/AuthController.dart';
 import '../models/DoctorModelList.dart';
 
 class DoctorListController extends GetxController {
@@ -10,6 +12,8 @@ class DoctorListController extends GetxController {
   var doctorList = <Doctor>[].obs; // Updated model reference
 
   static const String _baseUrl = THttpHelper.baseUrl;
+  AuthManager authManager = AuthManager();
+  late String headOffice="";
 
   Future<void> fetchDoctorList() async {
     print("Doctors Data: Fetching doctor list...");
@@ -53,8 +57,10 @@ class DoctorListController extends GetxController {
         );
       }*/
 
+      headOffice = (await authManager.getHeadOffice())!;
+
       final response = await http.get(
-        Uri.parse("$_baseUrl/doctors"),
+        Uri.parse("$_baseUrl/doctors/by-head-office/$headOffice"),
         headers: {"Content-Type": "application/json"},
       );
 

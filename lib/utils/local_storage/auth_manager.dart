@@ -5,6 +5,7 @@ import '../../features/authentication/models/UserModel.dart';
 class AuthManager {
   static const String userKey = "user_data";
   static const String userIdKey = "user_id";
+  static const String headOfficeKey = "head_office";
 
   ///  Save User Data in SharedPreferences
   Future<void> saveUserData(UserModel user) async {
@@ -16,6 +17,19 @@ class AuthManager {
   Future<void> saveUserId(String userId) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString(userIdKey, userId);
+  }
+
+
+  /// Save head office
+  Future<void> saveHeadOffice(String headOffice) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString(headOfficeKey, headOffice);
+  }
+
+  /// Get Head Office
+  Future<String?> getHeadOffice() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString(headOfficeKey);
   }
 
   ///  Get User ID
