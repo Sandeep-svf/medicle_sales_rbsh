@@ -1,4 +1,3 @@
-
 class VisitSalesLogModel {
   final String id;
   final Doctor? doctor;
@@ -22,14 +21,14 @@ class VisitSalesLogModel {
 
   factory VisitSalesLogModel.fromJson(Map<String, dynamic> json) {
     return VisitSalesLogModel(
-      id: json["_id"] ?? "",
+      id: json["_id"] ?? "", // Default to empty string if null
       doctor: json["doctor"] != null ? Doctor.fromJson(json["doctor"]) : null,
-      user: User.fromJson(json["user"]),
-      date: DateTime.parse(json["date"]),
-      notes: json["notes"] ?? "No Notes",
-      confirmed: json["confirmed"] ?? false,
-      createdAt: DateTime.parse(json["createdAt"]),
-      updatedAt: DateTime.parse(json["updatedAt"]),
+      user: User.fromJson(json["user"] ?? {}), // Handle null user case
+      date: json["date"] != null ? DateTime.parse(json["date"]) : DateTime.now(), // Default to current date if null
+      notes: json["notes"] ?? "No Notes", // Default note if null
+      confirmed: json["confirmed"] ?? false, // Default to false if null
+      createdAt: json["createdAt"] != null ? DateTime.parse(json["createdAt"]) : DateTime.now(),
+      updatedAt: json["updatedAt"] != null ? DateTime.parse(json["updatedAt"]) : DateTime.now(),
     );
   }
 
@@ -60,9 +59,9 @@ class Doctor {
 
   factory Doctor.fromJson(Map<String, dynamic> json) {
     return Doctor(
-      id: json["_id"],
-      name: json["name"],
-      specialization: json["specialization"],
+      id: json["_id"] ?? "", // Default to empty string if null
+      name: json["name"] ?? "", // Default to empty string if null
+      specialization: json["specialization"] ?? "", // Default to empty string if null
     );
   }
 
@@ -86,8 +85,8 @@ class User {
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      id: json["_id"],
-      name: json["name"],
+      id: json["_id"] ?? "", // Default to empty string if null
+      name: json["name"] ?? "Unknown", // Default to "Unknown" if name is null
     );
   }
 

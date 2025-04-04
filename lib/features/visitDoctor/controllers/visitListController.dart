@@ -32,7 +32,8 @@ class VisitListController with ChangeNotifier {
         return;
       }
 
-      final String apiUrl = "$fetchApiUrl/doctors/by-head-office/$userId";
+      final String apiUrl = "$fetchApiUrl/doctor-visits/user/$userId";
+      //final String apiUrl = "$fetchApiUrl/doctors";
       if (kDebugMode) {
         debugPrint("Visit Sales Controller: Fetching data from API: $apiUrl");
       }

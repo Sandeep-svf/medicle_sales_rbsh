@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:date_picker_plus/date_picker_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:medicle_sales_rbsh/features/visitDoctor/models/visitSalesData.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
@@ -9,7 +12,9 @@ import 'package:quickalert/widgets/quickalert_dialog.dart';
 import '../../../utils/constants/colors.dart';
 import '../../../utils/constants/text_strings.dart';
 import '../../../utils/helpers/zoom_in_out_anim.dart';
+import '../../../utils/local_storage/auth_manager.dart';
 import '../../addDoctor/controllers/DoctroController.dart';
+import '../controllers/ScheduleVisitcontroller.dart';
 import '../controllers/visitListController.dart';
 
 class VisitDoctorScreen extends StatefulWidget {
@@ -29,6 +34,8 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
   String? selectedDoctorName; // This will store the selected doctor's name
 
   late VisitListController _visitListController;
+  final AuthManager authManager = AuthManager(); // Initialize AuthManager
+
 
   @override
   void initState() {
@@ -110,10 +117,10 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
                             .id;
                       });
                     },
-                    hint: const Text("Please select a doctor"),
+                    hint: const Text("Please select"),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please select a doctor';
+                        return 'Please select';
                       }
                       return null;
                     },
@@ -149,19 +156,29 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
               ),
               ElevatedButton(
                 onPressed: () {
-                  if (nameController.text.isNotEmpty &&
+                  if (selectedDoctorId!.isNotEmpty &&
                       dateController.text.isNotEmpty &&
                       callNotesController.text.isNotEmpty) {
-                    String formattedTime = DateFormat('hh:mm a').format(
-                        DateTime.now());
+                    String formattedTime = DateFormat('hh:mm a').format(DateTime.now());
 
                     setState(() {
-                      /* _visitListController.salesList.add({
-                        "name": nameController.text,
-                        "time": formattedTime,
-                        "callnotes": callNotesController.text,
-                      });*/
+                      // Call the controller to create a doctor visit
+                      DoctorVisitController.createDoctorVisit(
+                        doctorId: selectedDoctorId,
+                        date: dateController.text,
+                        notes: callNotesController.text,
+                        context: context,
+                        authManager: authManager,  // Pass AuthManager instance here
+                      ).then((_) {
+                        // After adding, fetch the updated sales list
+                        _visitListController.fetchSalesList().then((_) {
+                          setState(() {
+                            // This ensures the UI is updated after fetching the data
+                          });
+                        });
+                      });
                     });
+
                     Navigator.pop(context);
                   } else {
                     Get.snackbar("Error", "Field cannot be empty.");
@@ -171,7 +188,8 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
                   padding: EdgeInsets.symmetric(horizontal: 16.0),
                   child: Text(TTexts.submit),
                 ),
-              ),
+              )
+
             ],
           ),
         );
@@ -292,36 +310,88 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
                               Center(
                                 child: ElevatedButton(
                                   onPressed: doctorVisit.confirmed
-                                      ? null
+                                      ? () {
+                                    // Show a snackbar if the visit is already confirmed
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('You have already marked this visit confirmed.'),
+                                        backgroundColor: Colors.orange,
+                                      ),
+                                    );
+                                  }
                                       : () {
-                                    setState(() {
-                                      doctorVisit.confirmed =
-                                      true; // Mark as confirmed
-                                    });
+                                    // Show confirmation dialog
                                     QuickAlert.show(
                                       context: context,
-                                      type: QuickAlertType.success,
-                                      text: TTexts
-                                          .confirmVisitSuccessfullyMarked,
-                                      backgroundColor: TColors.primary,
+                                      type: QuickAlertType.confirm,
+                                      title: "Confirm Visit",
+                                      text: "Are you sure you want to mark this visit as confirmed?",
+                                      confirmBtnText: "Yes",
+                                      cancelBtnText: "Cancel",
                                       confirmBtnColor: TColors.primary,
+                                      onConfirmBtnTap: () async {
+                                        // Close the confirmation QuickAlert dialog first
+                                        Navigator.of(context).pop();
+
+                                        // Get the doctor visit ID
+                                        final visitId = doctorVisit.id;
+
+                                        // Make a PUT request to update the confirmation status
+                                        final response = await http.put(
+                                          Uri.parse('https://medi-glucks-erp.onrender.com/api/doctor-visits/$visitId/confirm'),
+                                          headers: {
+                                            'Content-Type': 'application/json',
+                                          },
+
+                                        );
+
+                                        if (response.statusCode == 200) {
+
+                                          // Show a success message using QuickAlert
+                                          QuickAlert.show(
+                                            context: context,
+                                            type: QuickAlertType.success,
+                                            text: TTexts.confirmVisitSuccessfullyMarked,
+                                            confirmBtnColor: TColors.primary,
+                                          );
+
+                                          // Refresh the visit list to reflect the changes
+                                          await _visitListController.fetchSalesList();
+
+                                          // Ensure the UI gets updated
+                                          setState(() {
+                                            // This will force a UI refresh after fetching the new data
+                                          });
+                                        } else {
+                                          // Handle the case when the PUT request fails
+                                          QuickAlert.show(
+                                            context: context,
+                                            type: QuickAlertType.error,
+                                            text: "Failed to confirm the visit",
+                                            backgroundColor: TColors.primary,
+                                            confirmBtnColor: TColors.primary,
+                                          );
+                                        }
+                                      },
+                                      onCancelBtnTap: () {
+                                        // If user clicks "Cancel", dismiss the QuickAlert dialog
+                                        Navigator.of(context).pop();
+                                      },
                                     );
                                   },
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: doctorVisit.confirmed
-                                        ? TColors.dark
-                                        : TColors.primary,
+                                    backgroundColor: doctorVisit.confirmed ? TColors.dark : TColors.primary,
                                   ),
                                   child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 16.0), // Horizontal padding
+                                    padding: const EdgeInsets.symmetric(horizontal: 16.0), // Horizontal padding
                                     child: Text(
-                                      doctorVisit.confirmed
-                                          ? TTexts.visitConfirmed
-                                          : TTexts.confirmVisit,
+                                      doctorVisit.confirmed ? TTexts.visitConfirmed : TTexts.confirmVisit,
                                     ),
                                   ),
-                                ),
+                                )
+
+                                ,
+
                               ),
                             ],
                           ),
