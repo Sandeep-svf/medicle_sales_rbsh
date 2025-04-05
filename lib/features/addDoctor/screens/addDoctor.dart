@@ -9,6 +9,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../controllers/DoctroController.dart';
 import '../controllers/addDoctorController.dart';
+import 'doctorDetails.dart';
 import 'map.dart';
 
 class AddDoctorScreen extends StatefulWidget {
@@ -19,10 +20,11 @@ class AddDoctorScreen extends StatefulWidget {
 }
 
 class _AddDoctorScreenState extends State<AddDoctorScreen> {
-  final DoctorListController _doctorListController = Get.put(DoctorListController());
+  final DoctorListController _doctorListController = Get.put(
+      DoctorListController());
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = "";
-  String? selectedCityId;  // Store the selected city ID
+  String? selectedCityId; // Store the selected city ID
   String? selectedCityName; // Store the selected city name
   List<Map<String, String>> cities = [];
 
@@ -34,19 +36,23 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
   }
 
   Future<void> fetchCities() async {
-    final response = await http.get(Uri.parse('https://medi-glucks-erp.onrender.com/api/headoffices'));
+    final response = await http.get(
+        Uri.parse('https://medi-glucks-erp.onrender.com/api/headoffices'));
     if (response.statusCode == 200) {
       List<dynamic> cityList = json.decode(response.body);
       setState(() {
         cities = cityList
-            .map((city) => {'id': city['_id'].toString(), 'name': city['name'].toString()})
+            .map((city) =>
+        {
+          'id': city['_id'].toString(),
+          'name': city['name'].toString()
+        })
             .toList();
 
         print("city lsit: $cities");
       });
     }
   }
-
 
 
   void _showAddDoctorDialog() {
@@ -94,7 +100,8 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
         return SingleChildScrollView(
           child: ZoomInOutDialog(
             child: AlertDialog(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
               title: const Text(TTexts.addDoctorTitle),
               content: Form(
                 key: _formKey,
@@ -108,7 +115,9 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                         border: OutlineInputBorder(),
                       ),
                       validator: (value) =>
-                      value == null || value.isEmpty ? 'This field is required' : null,
+                      value == null || value.isEmpty
+                          ? 'This field is required'
+                          : null,
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
@@ -118,7 +127,9 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                         border: OutlineInputBorder(),
                       ),
                       validator: (value) =>
-                      value == null || value.isEmpty ? 'This field is required' : null,
+                      value == null || value.isEmpty
+                          ? 'This field is required'
+                          : null,
                     ),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
@@ -137,11 +148,14 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                         setState(() {
                           selectedCityId = value;
                           selectedCityName =
-                          cities.firstWhere((city) => city['id'] == value)['name'];
+                          cities.firstWhere((city) =>
+                          city['id'] == value)['name'];
                         });
                       },
                       validator: (value) =>
-                      value == null || value.isEmpty ? 'Please select a head office' : null,
+                      value == null || value.isEmpty
+                          ? 'Please select a head office'
+                          : null,
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
@@ -152,9 +166,11 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                         border: OutlineInputBorder(),
                       ),
                       validator: (value) {
-                        if (value == null || value.isEmpty) return 'This field is required';
+                        if (value == null || value.isEmpty)
+                          return 'This field is required';
                         final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
-                        if (!emailRegex.hasMatch(value)) return 'Enter a valid email';
+                        if (!emailRegex.hasMatch(value))
+                          return 'Enter a valid email';
                         return null;
                       },
                     ),
@@ -167,6 +183,10 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                         labelText: 'Phone Number',
                         border: OutlineInputBorder(),
                       ),
+                      validator: (value) =>
+                      value == null || value.isEmpty
+                          ? 'This field is required'
+                          : null,
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
@@ -175,18 +195,28 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                         labelText: 'Registration Number',
                         border: OutlineInputBorder(),
                       ),
+                      validator: (value) =>
+                      value == null || value.isEmpty
+                          ? 'This field is required'
+                          : null,
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: experienceController,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true),
                       inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
+                        FilteringTextInputFormatter.allow(
+                            RegExp(r'^\d*\.?\d{0,2}')),
                       ],
                       decoration: const InputDecoration(
                         labelText: 'Years of Experience',
                         border: OutlineInputBorder(),
                       ),
+                      validator: (value) =>
+                      value == null || value.isEmpty
+                          ? 'This field is required'
+                          : null,
                     ),
 
                     const SizedBox(height: 12),
@@ -222,6 +252,8 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                         labelText: "Gender",
                         border: OutlineInputBorder(),
                       ),
+
+
                       items: ['Male', 'Female', 'Other'].map((gender) {
                         return DropdownMenuItem(
                           value: gender,
@@ -233,20 +265,19 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                           selectedGender = value;
                         });
                       },
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please select a gender'; // Validation message
+                        }
+                        return null;
+                      },
+
                     ),
                     const SizedBox(height: 12),
                     TextButton(
                       onPressed: () async {
-                        final selectedLocation = await Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => MapScreen()),
-                        );
-                        if (selectedLocation != null) {
-                          setState(() {
-                            selectedLatitude = selectedLocation['lat'];
-                            selectedLongitude = selectedLocation['long'];
-                          });
-                        }
+                        Get.snackbar("Notice",
+                            "This feature is optional and currently under development. Kindly disregard it for now.");
                       },
                       child: const Text('Select Location'),
                     ),
@@ -279,10 +310,10 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                         selectedLatitude: selectedLatitude.toString(),
                         selectedLongitude: selectedLongitude.toString(),
                       );
-
                     } else {
                       HapticFeedback.vibrate();
-                      Get.snackbar("Error", "Please fill all required fields correctly.");
+                      Get.snackbar("Error",
+                          "Please fill all required fields correctly.");
                     }
                   },
                   child: const Padding(
@@ -427,7 +458,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                   ),
                   const SizedBox(height: 12),
                   // Date of Birth (DOB) Picker
-                  *//*GestureDetector(
+                  */ /*GestureDetector(
                     onTap: () => _selectDate(context, false),
                     child: AbsorbPointer(
                       child: TextField(
@@ -440,7 +471,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                         ),
                       ),
                     ),
-                  ),*//*
+                  ),*/ /*
 
                   GestureDetector(
                     onTap: () => _selectDate(context, false),
@@ -530,23 +561,103 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
               ],
             ),
           ),
+
         );
       },
     );
   }*/
 
 
+ /* @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                labelText: "Search Doctors",
+                border: OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.search, color: TColors.primary,),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? IconButton(
+                  icon: const Icon(Icons.clear),
+                  onPressed: () {
+                    setState(() {
+                      _searchController.clear();
+                      _searchQuery = "";
+                    });
+                  },
+                )
+                    : null,
+              ),
+              onChanged: (value) {
+                setState(() {
+                  _searchQuery = value;
+                });
+              },
+            ),
+          ),
+          Expanded(
+            child: Obx(() {
+              if (_doctorListController.isLoading.value) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              // Filtering the doctor list
+              var filteredDoctors = _doctorListController.doctorList.where(
+                      (doctor) => doctor.name.toLowerCase().contains(
+                      _searchQuery.toLowerCase())
+              ).toList();
+
+              return filteredDoctors.isEmpty
+                  ? const Center(child: Text("No doctors available"))
+                  : ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: filteredDoctors.length,
+                itemBuilder: (context, index) {
+                  final doctor = filteredDoctors[index];
+                  return Card(
+                    elevation: 2,
+                    margin: const EdgeInsets.symmetric(vertical: 8),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                    child: ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: Colors.blue.shade100,
+                        child: const Icon(Icons.person, color: TColors.primary),
+                      ),
+                      title: Text(
+                        doctor.name,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      subtitle: Text(doctor.specialization),
+                      onTap: () {
+                        // Navigate to the doctor details screen and pass doctor data
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                DoctorDetailsScreen(doctor: doctor),
+                          ),
+                        );
+                      },
+                    ),
+                  );
+                },
+              );
+            }),
+          ),
+        ],
+      ),
+
+    );
+  }*/
 
 
-
-
-
-
-
-
-
-
-  @override
+@override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Column(
@@ -612,6 +723,17 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       subtitle: Text(doctor.specialization),
+                      onTap: () {
+                        // Navigate to the doctor details screen and pass doctor data
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                DoctorDetailsScreen(doctor: doctor),
+                          ),
+                        );
+                      },
+
                     ),
                   );
                 },
@@ -630,6 +752,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
     );
   }
 }
+
 /*
 class MapScreen extends StatelessWidget {
   @override

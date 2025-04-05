@@ -1,0 +1,1 @@
+C:\Users\admin\AndroidStudioProjects\medicle_sales_rbsh\build\app\intermediates\cxx\RelWithDebInfo\1e105ef6\obj\arm64-v8a

@@ -174,7 +174,13 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
           description: descriptionController.text,
           bill: billController.text.isEmpty ? null : billController.text,
           context: context,
-        );
+        ).then((_) {
+          // After adding, fetch the updated expenses list
+          _expenseController.fetchExpenses().then((_) {
+            // Trigger a UI update by calling setState to refresh the list
+            setState(() {});
+          });
+        });
                   Navigator.pop(context);
                 } else {
                   /*ScaffoldMessenger.of(context).showSnackBar(
@@ -391,12 +397,12 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                           ? "Approved"
                           : expense.status == "pending"
                               ? "Pending"
-                              : "Unknown";
+                              : "Rejected";
                       Color statusColor = expense.status == "approved"
                           ? Colors.green
                           : expense.status == "pending"
                               ? Colors.orange
-                              : Colors.grey;
+                              : TColors.primary;
 
                       return Card(
                         elevation: 4,

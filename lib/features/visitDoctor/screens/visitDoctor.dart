@@ -51,6 +51,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
     TextEditingController dateController = TextEditingController();
     TextEditingController callNotesController = TextEditingController();
     String selectedDate = "";
+    final _formKey = GlobalKey<FormState>();
 
     Future<void> _pickDate() async {
       final pickedDate = await showDatePickerDialog(
@@ -90,64 +91,81 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
         return ZoomInOutDialog(
           child: AlertDialog(
             shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16)),
+              borderRadius: BorderRadius.circular(16),
+            ),
             title: const Text(TTexts.scheduleVisitTitle),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: DropdownButtonFormField<String>(
-                    decoration: const InputDecoration(
-                      labelText: "Select Doctor",
-                      border: OutlineInputBorder(),
+            content: Form(
+              key: _formKey, // Add Form Key for validation
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: DropdownButtonFormField<String>(
+                      decoration: const InputDecoration(
+                        labelText: "Select Doctor",
+                        border: OutlineInputBorder(),
+                      ),
+                      value: selectedDoctorName,
+                      items: _doctorListController.doctorList.map((doctor) {
+                        return DropdownMenuItem<String>(
+                          value: doctor.name,
+                          child: Text(doctor.name),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          selectedDoctorName = value;
+                          selectedDoctorId = _doctorListController.doctorList
+                              .firstWhere((doctor) => doctor.name == value)
+                              .id;
+                        });
+                      },
+                      hint: const Text("Please select"),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please select a doctor';
+                        }
+                        return null;
+                      },
+                      isExpanded: true,
                     ),
-                    value: selectedDoctorName,
-                    items: _doctorListController.doctorList.map((doctor) {
-                      return DropdownMenuItem<String>(
-                        value: doctor.name,
-                        child: Text(doctor.name),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        selectedDoctorName = value;
-                        selectedDoctorId = _doctorListController.doctorList
-                            .firstWhere((doctor) => doctor.name == value)
-                            .id;
-                      });
-                    },
-                    hint: const Text("Please select"),
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: dateController,
+                    readOnly: true,
+                    decoration: const InputDecoration(
+                      labelText: TTexts.date,
+                      hintText: "Date (DD-MM-YYYY)",
+                      border: OutlineInputBorder(),
+                      suffixIcon: Icon(Icons.calendar_today),
+                    ),
+                    onTap: _pickDate,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please select';
+                        return 'Please select a date';
                       }
                       return null;
                     },
                   ),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: dateController,
-                  readOnly: true,
-                  decoration: const InputDecoration(
-                    labelText: TTexts.date,
-                    hintText: "Date (DD-MM-YYYY)",
-                    border: OutlineInputBorder(),
-                    suffixIcon: Icon(Icons.calendar_today),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: callNotesController,
+                    maxLines: 3,
+                    decoration: const InputDecoration(
+                      labelText: TTexts.notes,
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter notes';
+                      }
+                      return null;
+                    },
                   ),
-                  onTap: _pickDate,
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: callNotesController,
-                  maxLines: 3,
-                  decoration: const InputDecoration(
-                    labelText: TTexts.notes,
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
             actions: [
               TextButton(
@@ -156,9 +174,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
               ),
               ElevatedButton(
                 onPressed: () {
-                  if (selectedDoctorId!.isNotEmpty &&
-                      dateController.text.isNotEmpty &&
-                      callNotesController.text.isNotEmpty) {
+                  if (_formKey.currentState!.validate()) {
                     String formattedTime = DateFormat('hh:mm a').format(DateTime.now());
 
                     setState(() {
@@ -181,20 +197,20 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
 
                     Navigator.pop(context);
                   } else {
-                    Get.snackbar("Error", "Field cannot be empty.");
+                    Get.snackbar("Error", "Please fill all required fields.");
                   }
                 },
                 child: const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16.0),
                   child: Text(TTexts.submit),
                 ),
-              )
-
+              ),
             ],
           ),
         );
       },
     );
+
   }
 
   void _showDeleteConfirmationDialog(int index) {
@@ -380,7 +396,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
                                     );
                                   },
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: doctorVisit.confirmed ? TColors.dark : TColors.primary,
+                                    backgroundColor: doctorVisit.confirmed ? TColors.success : TColors.primary,
                                   ),
                                   child: Padding(
                                     padding: const EdgeInsets.symmetric(horizontal: 16.0), // Horizontal padding
