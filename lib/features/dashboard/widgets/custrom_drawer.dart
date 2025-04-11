@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:medicle_sales_rbsh/features/MarketingMaterials/Screens/MarketingMaterials.dart';
 import 'package:medicle_sales_rbsh/features/SalesChartAnalysis/Screen/salesChartHome.dart';
+import 'package:medicle_sales_rbsh/features/addClinic/model/Clinic.dart';
+import 'package:medicle_sales_rbsh/features/addClinic/screen/ClinicList.dart';
 import 'package:medicle_sales_rbsh/features/addDoctor/screens/addDoctor.dart';
 import 'package:medicle_sales_rbsh/features/addProduct/screens/addProduct.dart';
 import 'package:medicle_sales_rbsh/features/expenses/screens/expenses.dart';
@@ -15,6 +17,8 @@ import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import '../../../utils/local_storage/auth_manager.dart';
 import '../../Blog/screen/blog.dart';
+import '../../Inbox/Screen/InboxScreen.dart';
+import '../../addClinic/screen/ClinicDetailsScreen.dart';
 import '../../authentication/models/UserModel.dart';
 import '../../authentication/screens/login/login.dart';
 import '../../marketing/screen/marketing.dart';
@@ -24,11 +28,13 @@ class CustomDrawer extends StatelessWidget {
   final Function(Widget, String) onMenuSelected;
   final String currentScreen; //  Added this parameter to track selected item
 
+
   const CustomDrawer({required this.onMenuSelected, required this.currentScreen, Key? key})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final Clinic clinic;
     return Drawer(
       child: Column(
         children: [
@@ -56,6 +62,22 @@ class CustomDrawer extends StatelessWidget {
                   onTap: () =>
                       onMenuSelected(MarketingScreen(), TTexts.filesAndPdfs),
                   isSelected: currentScreen == TTexts.filesAndPdfs,
+                ),
+
+                _buildDrawerItem(
+                  icon: Icons.mail,
+                  text: TTexts.inbox,
+                  onTap: () =>
+                      onMenuSelected(InboxScreen(), TTexts.inbox),
+                  isSelected: currentScreen == TTexts.inbox,
+                ),
+
+                _buildDrawerItem(
+                  icon: Icons.local_hospital,
+                  text: TTexts.clinic,
+                  onTap: () =>
+                      onMenuSelected(ClinicListScreen(), TTexts.clinic),
+                  isSelected: currentScreen == TTexts.clinic,
                 ),
                 _buildDrawerItem(
                   icon: Icons.person,

@@ -1,108 +1,190 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
-/*
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:http/http.dart' as http;
 
-class MapScreen extends StatefulWidget {
+class LocationPickerScreen extends StatefulWidget {
   @override
-  _MapScreenState createState() => _MapScreenState();
+  State<LocationPickerScreen> createState() => _LocationPickerScreenState();
 }
 
-class _MapScreenState extends State<MapScreen> {
-  late GoogleMapController mapController;
-  final Set<Marker> _markers = {};
-  LatLng _currentLatLng = LatLng(28.6139, 77.2090); // Default location (New Delhi)
-  late Position _currentPosition;
+class _LocationPickerScreenState extends State<LocationPickerScreen> {
+  GoogleMapController? _mapController;
+  LatLng? _centerLatLng;
+  String _selectedAddress = "Fetching address...";
+  bool _loading = true;
+  bool _mapMoving = false;
 
   @override
   void initState() {
     super.initState();
-    _getCurrentLocation();
+    _initLocationServices();
   }
 
-  // Get the user's current location
-  Future<void> _getCurrentLocation() async {
-    bool serviceEnabled;
-    LocationPermission permission;
+  Future<void> _initLocationServices() async {
+    try {
+      final hasPermission = await _handlePermission();
+      if (!hasPermission) {
+        _showError("Location permission denied.");
+        setState(() => _loading = false);
+        return;
+      }
 
-    // Check if location services are enabled
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      final position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.bestForNavigation,
+      );
+
+      _centerLatLng = LatLng(position.latitude, position.longitude);
+      await _updateAddress(_centerLatLng!);
+      setState(() => _loading = false);
+    } catch (e) {
+      _showError("Failed to fetch location: $e");
+      setState(() => _loading = false);
+    }
+  }
+
+  Future<bool> _handlePermission() async {
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      // Location services are not enabled, so we cannot continue
-      return;
+      _showError("Location services are disabled.");
+      await Geolocator.openLocationSettings();
+      return false;
     }
 
-    // Check for location permission
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.deniedForever) {
-      // Handle permission denial permanently
-      return;
-    }
+    LocationPermission permission = await Geolocator.checkPermission();
 
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
     }
 
-    // Get the current position
-    _currentPosition = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.high,
-    );
-    _currentLatLng = LatLng(_currentPosition.latitude, _currentPosition.longitude);
+    if (permission == LocationPermission.deniedForever) {
+      _showError("Permission permanently denied. Please enable it in settings.");
+      return false;
+    }
 
+    return permission == LocationPermission.whileInUse ||
+        permission == LocationPermission.always;
+  }
+
+
+
+  Future<void> _updateAddress(LatLng latLng) async {
+    try {
+      final apiKey = 'AIzaSyBbiU_NzDhQsrPJiH8dzchmVdkXnS2f_Pg';
+      final url = Uri.parse(
+          'https://maps.googleapis.com/maps/api/geocode/json?latlng=${latLng.latitude},${latLng.longitude}&key=$apiKey');
+
+      final response = await http.get(url);
+      final data = json.decode(response.body);
+
+      if (response.statusCode == 200 && data['status'] == 'OK') {
+        _selectedAddress = data['results'][0]['formatted_address'];
+      } else {
+        _selectedAddress = "Unable to get address.";
+      }
+    } catch (e) {
+      _selectedAddress = "Error getting address.";
+    }
+
+    setState(() {});
+  }
+
+
+  void _onCameraMove(CameraPosition position) {
     setState(() {
-      _markers.add(
-        Marker(
-          markerId: const MarkerId('current_location'),
-          position: _currentLatLng,
-          draggable: true,
-          onDragEnd: (newPosition) {
-            setState(() {
-              _currentLatLng = newPosition;
-            });
-          },
-        ),
-      );
+      _mapMoving = true;
+      _centerLatLng = position.target;
+      _selectedAddress = "Moving...";
     });
   }
 
-  // This will be called when the map is created
-  void _onMapCreated(GoogleMapController controller) {
-    mapController = controller;
+  void _onCameraIdle() async {
+    setState(() => _mapMoving = false);
+    if (_centerLatLng != null) {
+      await _updateAddress(_centerLatLng!);
+    }
+  }
+
+  void _onSelectLocation() {
+    if (_centerLatLng != null) {
+      Navigator.pop(context, {
+        'latitude': _centerLatLng!.latitude,
+        'longitude': _centerLatLng!.longitude,
+        'address': _selectedAddress,
+      });
+    } else {
+      _showError("No location selected.");
+    }
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Select Location"),
-      ),
-      body: GoogleMap(
-        initialCameraPosition: CameraPosition(
-          target: _currentLatLng,
-          zoom: 15,
-        ),
-        markers: _markers,
-        onMapCreated: _onMapCreated,
-        myLocationEnabled: true, // To enable the user's current location
-        myLocationButtonEnabled: true, // Enable the location button
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Send the updated location (latitude and longitude) back
-          Navigator.pop(context, {
-            'lat': _currentLatLng.latitude,
-            'long': _currentLatLng.longitude,
-          });
-        },
-        child: const Icon(Icons.check),
+      appBar: AppBar(title: const Text("Select Location")),
+      body: _loading || _centerLatLng == null
+          ? const Center(child: CircularProgressIndicator())
+          : Stack(
+        children: [
+          GoogleMap(
+            initialCameraPosition: CameraPosition(
+              target: _centerLatLng!,
+              zoom: 16,
+            ),
+            onMapCreated: (controller) => _mapController = controller,
+            onCameraMove: _onCameraMove,
+            onCameraIdle: _onCameraIdle,
+            myLocationEnabled: true,
+            myLocationButtonEnabled: true,
+          ),
+          // Center marker
+          const Center(
+            child: Icon(Icons.location_pin, size: 40, color: Colors.red),
+          ),
+          // Bottom UI
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              color: Colors.white,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    _selectedAddress,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontWeight: FontWeight.w500),
+                  ),
+                  const SizedBox(height: 8),
+                  ElevatedButton.icon(
+                    onPressed: _onSelectLocation,
+                    icon: const Icon(Icons.check),
+                    label: const Text("Select Location"),
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: const Size(double.infinity, 50),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 }
-*/
 
 
+/*
 class MapScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -145,148 +227,4 @@ class MapScreen extends StatelessWidget {
 }
 
 
-
-
-/*
-*
-*
-* import 'dart:convert';
-import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:http/http.dart' as http;
-
-class MapScreen extends StatefulWidget {
-  @override
-  _MapScreenState createState() => _MapScreenState();
-}
-
-class _MapScreenState extends State<MapScreen> {
-  late GoogleMapController mapController;
-  late Position _currentPosition;
-  LatLng _currentLatLng = LatLng(28.6139, 77.2090); // Default to New Delhi
-  Set<Marker> _markers = {};
-
-  @override
-  void initState() {
-    super.initState();
-    _getCurrentLocation();
-  }
-
-  // Get the user's current location
-  Future<void> _getCurrentLocation() async {
-    bool serviceEnabled;
-    LocationPermission permission;
-
-    // Check if location services are enabled
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      // Location services are not enabled, so we cannot continue
-      return;
-    }
-
-    // Check for location permission
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.deniedForever) {
-      // Handle permission denial permanently
-      return;
-    }
-
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-    }
-
-    // Get the current position
-    _currentPosition = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.high,
-    );
-    _currentLatLng = LatLng(_currentPosition.latitude, _currentPosition.longitude);
-
-    setState(() {
-      _markers.add(
-        Marker(
-          markerId: MarkerId('current_location'),
-          position: _currentLatLng,
-          draggable: true,
-          onDragEnd: (newPosition) {
-            _getAddressFromLatLng(newPosition.latitude, newPosition.longitude);
-          },
-        ),
-      );
-    });
-  }
-
-  // Fetch address from latitude and longitude
-  Future<void> _getAddressFromLatLng(double latitude, double longitude) async {
-    final apiUrl =
-        'https://maps.googleapis.com/maps/api/geocode/json?latlng=$latitude,$longitude&key=AIzaSyCLRC2KUtUshQ7B1YX_gFaKYadrpThcM3g';
-
-    final response = await http.get(Uri.parse(apiUrl));
-    if (response.statusCode == 200) {
-      final responseData = json.decode(response.body);
-      if (responseData['results'].isNotEmpty) {
-        String address = responseData['results'][0]['formatted_address'];
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Selected Address: $address')),
-        );
-        // You can pass the selected location back
-        Navigator.pop(context, {
-          'lat': latitude,
-          'long': longitude,
-          'address': address,
-        });
-      }
-    } else {
-      print("Error fetching address");
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Select Location"),
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: GoogleMap(
-              initialCameraPosition: CameraPosition(
-                target: _currentLatLng,
-                zoom: 15,
-              ),
-              onMapCreated: (GoogleMapController controller) {
-                mapController = controller;
-              },
-              markers: _markers,
-              onCameraMove: (position) {
-                setState(() {
-                  _currentLatLng = position.target;
-                });
-              },
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  // Send back the selected lat, long, and address
-                  Navigator.pop(context, {
-                    'lat': _currentLatLng.latitude,
-                    'long': _currentLatLng.longitude,
-                  });
-                },
-                child: const Text("Select This Location"),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-*
-* */
+*/

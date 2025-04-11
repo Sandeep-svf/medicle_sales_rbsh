@@ -5,6 +5,7 @@ import 'package:medicle_sales_rbsh/features/SalesChartAnalysis/Screen/salesChart
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import '../../Blog/screen/blog.dart';
+import '../../Inbox/Screen/InboxScreen.dart';
 import '../../MarketingMaterials/Screens/MarketingMaterials.dart';
 import '../../marketing/screen/marketing.dart';
 import '../widgets/custrom_drawer.dart';
@@ -39,6 +40,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     MarketingScreen(),
     MarketingmaterialsScreen(),
     Blogscreen(),
+    InboxScreen()
   ];
 
 
@@ -70,6 +72,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
       selectedColor: TColors.primary,
       unSelectedColor: Colors.grey,
       title: const Text('Social'),
+    ),
+
+    BottomBarItem(
+      icon: const Icon(Icons.business),
+      selectedIcon: const Icon(Icons.business_center),
+      selectedColor: TColors.primary,
+      unSelectedColor: Colors.grey,
+      title: const Text('Inbox'),
     ),
   ];
 
@@ -123,6 +133,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               TTexts.filesAndPdfs,
               TTexts.marketingMaterial,
               TTexts.blog,
+              TTexts.inbox,
             ][index];
             _currentScreen = _buildScreens()[index];
           });

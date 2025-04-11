@@ -274,10 +274,50 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
 
                     ),
                     const SizedBox(height: 12),
-                    TextButton(
+                   /* TextButton(
                       onPressed: () async {
                         Get.snackbar("Notice",
                             "This feature is optional and currently under development. Kindly disregard it for now.");
+                      },
+                      child: const Text('Select Location'),
+                    ),*/
+
+
+                    TextButton(
+                      onPressed: () async {
+                        final result = await Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => LocationPickerScreen()),
+                        );
+
+                        if (result != null &&
+                            result['latitude'] != null &&
+                            result['longitude'] != null &&
+                            result['address'] != null) {
+                          final lat = result['latitude'];
+                          final lng = result['longitude'];
+                          final address = result['address'];
+
+                          Get.snackbar(
+                            "📍 Location Selected",
+                            "$address\nLat: $lat, Lng: $lng",
+                            backgroundColor: Colors.green,
+                            duration: Duration(seconds: 4),
+                          );
+
+                          // Optional: save to local variables or form
+                          // setState(() {
+                          //   _selectedLat = lat;
+                          //   _selectedLng = lng;
+                          //   _selectedAddress = address;
+                          // });
+                        } else {
+                          Get.snackbar(
+                            "Location Not Selected",
+                            "Please try again or cancel",
+                            backgroundColor: Colors.orange,
+                          );
+                        }
                       },
                       child: const Text('Select Location'),
                     ),

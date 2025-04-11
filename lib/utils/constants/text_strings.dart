@@ -133,6 +133,8 @@ class TTexts {
  static const String pdfViewer = "PDF Viewer";
  static const String marketingMaterial = "Digital Material";
  static const String blog = "Social";
+ static const String inbox = "Inbox";
+ static const String clinic = "Clinic";
 
 
 

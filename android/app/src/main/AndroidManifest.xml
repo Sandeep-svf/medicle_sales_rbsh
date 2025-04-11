@@ -4,13 +4,13 @@
     <uses-permission android:name="android.permission.INTERNET"/>
 
 
-    <!--<uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
     <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />-->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature android:name="android.hardware.camera" android:required="true" />
@@ -76,9 +76,9 @@
             android:foregroundServiceType="location" />-->
 
         <service
-            android:name="id.flutter.flutter_background_service.BackgroundService"
-            android:permission="android.permission.BIND_JOB_SERVICE"
-            android:foregroundServiceType="location" />
+            android:name="com.ekasetiawans.flutter_background_service.BackgroundService"
+            android:foregroundServiceType="location"
+            android:exported="false"/>
 
 
         <meta-data
@@ -86,7 +86,7 @@
             android:value="@integer/google_play_services_version" />
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyCLRC2KUtUshQ7B1YX_gFaKYadrpThcM3g"/>
+            android:value="AIzaSyBbiU_NzDhQsrPJiH8dzchmVdkXnS2f_Pg"/>
 
 
     </application>
