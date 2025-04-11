@@ -165,14 +165,14 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                         labelText: 'Email',
                         border: OutlineInputBorder(),
                       ),
-                      validator: (value) {
+                      /*validator: (value) {
                         if (value == null || value.isEmpty)
                           return 'This field is required';
                         final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
                         if (!emailRegex.hasMatch(value))
                           return 'Enter a valid email';
                         return null;
-                      },
+                      },*/
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
