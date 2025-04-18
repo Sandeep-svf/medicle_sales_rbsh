@@ -1,0 +1,1 @@
+// Fixed msal_flutter plugin entry point

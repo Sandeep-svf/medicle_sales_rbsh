@@ -1,0 +1,13 @@
+name: msal_flutter
+description: A fixed local version of the msal_flutter plugin compatible with Kotlin 1.9.21
+version: 2.0.1
+
+environment:
+  sdk: ">=2.17.0 <4.0.0"
+
+flutter:
+  plugin:
+    platforms:
+      android:
+        package: com.rbsh.msal_flutter
+        pluginClass: MsalFlutterPlugin

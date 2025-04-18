@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.rbsh.medicle_sales_rbsh"
+    namespace  "com.rbsh.medicle_sales_rbsh"
     //compileSdk = flutter.compileSdkVersion
     //ndkVersion = flutter.ndkVersion
     compileSdkVersion 35

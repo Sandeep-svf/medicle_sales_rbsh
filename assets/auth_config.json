@@ -1,0 +1,13 @@
+{
+  "client_id" : "c183fe08-328a-4ca4-b7e9-79215949e831",
+  "authorization_user_agent" : "DEFAULT",
+  "redirect_uri" : "msalc183fe08-328a-4ca4-b7e9-79215949e831://auth",
+  "account_mode" : "SINGLE",
+  "authority" : "https://login.microsoftonline.com/afa6d619-1ff5-4eb5-b37d-6177c2313faa",
+  "scopes" : [
+    "User.Read",
+    "Mail.Read",
+    "Mail.Send",
+    "Mail.ReadWrite"
+  ]
+}

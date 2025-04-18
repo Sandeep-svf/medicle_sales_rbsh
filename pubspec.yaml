@@ -13,6 +13,13 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  #msal_flutter:
+    #path: local_plugins/msal_flutter
+
+
+  # Outlook inbox
+  msal_flutter: ^2.0.1
+
   # Utility Package
   http: ^0.13.1
   intl: ^0.18.1
@@ -67,6 +74,10 @@ dependencies:
 
   google_maps_flutter: ^2.12.1
   geocoding: ^3.0.0
+
+
+
+
 
 
 
