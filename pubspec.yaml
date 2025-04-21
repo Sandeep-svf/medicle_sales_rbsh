@@ -18,7 +18,7 @@ dependencies:
 
 
   # Outlook inbox
-  msal_flutter: ^2.0.1
+  #msal_flutter: ^2.0.1
 
   # Utility Package
   http: ^0.13.1

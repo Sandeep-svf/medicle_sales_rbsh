@@ -135,6 +135,7 @@ class TTexts {
  static const String blog = "Social";
  static const String inbox = "Inbox";
  static const String clinic = "Clinic";
+ static const String stokist = "Stokist";
 
 
 

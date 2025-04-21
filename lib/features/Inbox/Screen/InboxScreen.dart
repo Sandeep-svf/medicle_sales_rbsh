@@ -21,12 +21,12 @@ class _InboxScreenState extends State<InboxScreen> {
   }
 
   Future<void> _init() async {
-    await AuthService.initMSAL();
+   /* await AuthService.initMSAL();
     token = await AuthService.signIn();
     if (token != null) {
       final fetched = await MailService.getEmails(token!);
       setState(() => mails = fetched);
-    }
+    }*/
   }
 
   void _sendTestEmail() async {
@@ -47,16 +47,7 @@ class _InboxScreenState extends State<InboxScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Inbox"),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.send),
-            onPressed: _sendTestEmail,
-            tooltip: 'Send Email',
-          )
-        ],
-      ),
+
       body: mails.isEmpty
           ? const Center(child: CircularProgressIndicator())
           : ListView.builder(

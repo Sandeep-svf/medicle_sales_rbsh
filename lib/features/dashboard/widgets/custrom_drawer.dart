@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:medicle_sales_rbsh/features/MarketingMaterials/Screens/MarketingMaterials.dart';
 import 'package:medicle_sales_rbsh/features/SalesChartAnalysis/Screen/salesChartHome.dart';
-import 'package:medicle_sales_rbsh/features/addClinic/model/Clinic.dart';
 import 'package:medicle_sales_rbsh/features/addClinic/screen/ClinicList.dart';
+
 import 'package:medicle_sales_rbsh/features/addDoctor/screens/addDoctor.dart';
 import 'package:medicle_sales_rbsh/features/addProduct/screens/addProduct.dart';
 import 'package:medicle_sales_rbsh/features/expenses/screens/expenses.dart';
@@ -18,7 +18,8 @@ import 'package:quickalert/widgets/quickalert_dialog.dart';
 import '../../../utils/local_storage/auth_manager.dart';
 import '../../Blog/screen/blog.dart';
 import '../../Inbox/Screen/InboxScreen.dart';
-import '../../addClinic/screen/ClinicDetailsScreen.dart';
+
+import '../../addStokist/screen/StokistList.dart';
 import '../../authentication/models/UserModel.dart';
 import '../../authentication/screens/login/login.dart';
 import '../../marketing/screen/marketing.dart';
@@ -34,7 +35,7 @@ class CustomDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Clinic clinic;
+    //final Clinic clinic;
     return Drawer(
       child: Column(
         children: [
@@ -78,6 +79,13 @@ class CustomDrawer extends StatelessWidget {
                   onTap: () =>
                       onMenuSelected(ClinicListScreen(), TTexts.clinic),
                   isSelected: currentScreen == TTexts.clinic,
+                ),
+                _buildDrawerItem(
+                  icon: Icons.local_hospital,
+                  text: TTexts.stokist,
+                  onTap: () =>
+                      onMenuSelected(StokistListScreen(), TTexts.stokist),
+                  isSelected: currentScreen == TTexts.stokist,
                 ),
                 _buildDrawerItem(
                   icon: Icons.person,
