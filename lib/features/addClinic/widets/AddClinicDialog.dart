@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-
 import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
+import '../../addDoctor/screens/map.dart';
 import '../controllers/ClinicListController.dart';
-import '../model/Clinic.dart';
 
 class AddClinicDialog extends StatefulWidget {
   final ClinicListController controller;
@@ -15,31 +16,108 @@ class AddClinicDialog extends StatefulWidget {
 
 class _AddClinicDialogState extends State<AddClinicDialog> {
   final _formKey = GlobalKey<FormState>();
-  final nameController = TextEditingController();
-  final addressController = TextEditingController();
-  final cityController = TextEditingController();
-  final phoneController = TextEditingController();
-  final emailController = TextEditingController();
-  final latController = TextEditingController();
-  final lngController = TextEditingController();
+  final TextEditingController firmNameController = TextEditingController();
+  final TextEditingController contactPersonController = TextEditingController();
+  final TextEditingController phoneController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController gstController = TextEditingController();
+  final TextEditingController addressController = TextEditingController();
+  final TextEditingController yearsInBusinessController = TextEditingController();
+  final TextEditingController turnoverController = TextEditingController();
+
+  bool isLoading = false;
+
+  Future<void> _submitForm() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => isLoading = true);
+
+    final body = {
+      "firmName": firmNameController.text,
+      "contactPersonName": contactPersonController.text,
+      "mobileNo": phoneController.text,
+      "emailId": emailController.text,
+      "gstNo": gstController.text,
+      "address": addressController.text,
+      "yearsInBusiness": int.tryParse(yearsInBusinessController.text) ?? 0,
+      "annualTurnover": int.tryParse(turnoverController.text) ?? 0,
+    };
+
+    try {
+      final response = await http.post(
+        Uri.parse("https://medi-glucks-erp.onrender.com/api/chemists"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(body),
+      );
+
+      if (response.statusCode == 201) {
+        await widget.controller.fetchClinicList(); // Refresh list
+        if (mounted) {
+          Navigator.pop(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Clinic added successfully")),
+          );
+        }
+      } else {
+        throw Exception("Failed with status: ${response.statusCode}");
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed to submit: $e")),
+      );
+    } finally {
+      setState(() => isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text("Add Clinic"),
-      content: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
+      title: const Text("Add New Chemist"),
+      content: SingleChildScrollView(
+        child: Form(
+          key: _formKey,
           child: Column(
-            mainAxisSize: MainAxisSize.min,
             children: [
-              TextFormField(controller: nameController, decoration: InputDecoration(labelText: 'Clinic Name')),
-              TextFormField(controller: addressController, decoration: InputDecoration(labelText: 'Address')),
-              TextFormField(controller: cityController, decoration: InputDecoration(labelText: 'City')),
-              TextFormField(controller: phoneController, decoration: InputDecoration(labelText: 'Phone')),
-              TextFormField(controller: emailController, decoration: InputDecoration(labelText: 'Email')),
-              TextFormField(controller: latController, decoration: InputDecoration(labelText: 'Latitude')),
-              TextFormField(controller: lngController, decoration: InputDecoration(labelText: 'Longitude')),
+              _buildTextField(firmNameController, "Firm Name"),
+              _buildTextField(contactPersonController, "Contact Person"),
+              _buildTextField(phoneController, "Phone Number", keyboardType: TextInputType.phone),
+              _buildTextField(emailController, "Email", keyboardType: TextInputType.emailAddress),
+              _buildTextField(gstController, "GST No"),
+              _buildTextField(addressController, "Address", maxLines: 2),
+              _buildTextField(yearsInBusinessController, "Years in Business", keyboardType: TextInputType.number),
+              _buildTextField(turnoverController, "Annual Turnover", keyboardType: TextInputType.number),
+              TextButton(
+                onPressed: () async {
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => LocationPickerScreen()),
+                  );
+
+                  if (result != null &&
+                      result['latitude'] != null &&
+                      result['longitude'] != null &&
+                      result['address'] != null) {
+                    final lat = result['latitude'];
+                    final lng = result['longitude'];
+                    final address = result['address'];
+
+                    Get.snackbar(
+                      "📍 Location Selected",
+                      "$address\nLat: $lat, Lng: $lng",
+                      backgroundColor: Colors.green,
+                      duration: Duration(seconds: 4),
+                    );
+                  } else {
+                    Get.snackbar(
+                      "Location Not Selected",
+                      "Please try again or cancel",
+                      backgroundColor: Colors.orange,
+                    );
+                  }
+                },
+                child: const Text('Select Location'),
+              ),
             ],
           ),
         ),
@@ -47,26 +125,29 @@ class _AddClinicDialogState extends State<AddClinicDialog> {
       actions: [
         TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
         ElevatedButton(
-          onPressed: () {
-            if (_formKey.currentState!.validate()) {
-              final newClinic = Clinic(
-                name: nameController.text,
-                address: addressController.text,
-                city: cityController.text,
-                phone: phoneController.text,
-                email: emailController.text,
-                latitude: double.tryParse(latController.text) ?? 0.0,
-                longitude: double.tryParse(lngController.text) ?? 0.0,
-                createdAt: DateTime.now(),
-                updatedAt: DateTime.now(),
-              );
-              widget.controller.addClinic(newClinic);
-              Navigator.pop(context);
-            }
-          },
-          child: const Text("Submit"),
+          onPressed: isLoading ? null : _submitForm,
+          child: isLoading
+              ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2))
+              : const Text("Submit"),
         ),
       ],
+    );
+  }
+
+  Widget _buildTextField(TextEditingController controller, String label,
+      {TextInputType keyboardType = TextInputType.text, int maxLines = 1}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: TextFormField(
+        controller: controller,
+        keyboardType: keyboardType,
+        maxLines: maxLines,
+        decoration: InputDecoration(
+          labelText: label,
+          border: const OutlineInputBorder(),
+        ),
+        validator: (value) => (value == null || value.isEmpty) ? 'Required' : null,
+      ),
     );
   }
 }

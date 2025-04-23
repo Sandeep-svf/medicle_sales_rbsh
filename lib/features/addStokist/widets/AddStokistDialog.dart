@@ -28,7 +28,7 @@ class _AddClinicDialogState extends State<AddStokistDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text("Add Clinic"),
+      title: const Text("Add Stokist"),
       content: Form(
         key: _formKey,
         child: SingleChildScrollView(

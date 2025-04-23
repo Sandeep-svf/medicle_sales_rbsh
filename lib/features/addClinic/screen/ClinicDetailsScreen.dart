@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-
 import 'package:intl/intl.dart';
-
-import '../model/Clinic.dart';
+import '../model/clinic.dart';
 
 class ClinicDetailScreen extends StatelessWidget {
   final Clinic clinic;
@@ -12,67 +10,71 @@ class ClinicDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(clinic.name)),
+      appBar: AppBar(
+        title: Text(clinic.name),
+        backgroundColor: const Color(0xFFC71D52),
+        elevation: 4,
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Card(
-            child: ListTile(
-              title: const Text("Address"),
-              subtitle: Text(clinic.address),
-            ),
-          ),
-          Card(
-            child: ListTile(
-              title: const Text("City"),
-              subtitle: Text(clinic.city),
-            ),
-          ),
-          Card(
-            child: ListTile(
-              title: const Text("Email"),
-              subtitle: Text(clinic.email),
-            ),
-          ),
-          Card(
-            child: ListTile(
-              title: const Text("Phone"),
-              subtitle: Text(clinic.phone),
-            ),
-          ),
-          Card(
-            child: ListTile(
-              title: const Text("Created At"),
-              subtitle: Text(DateFormat('dd MMM yyyy').format(clinic.createdAt)),
-            ),
-          ),
-          Card(
-            child: ListTile(
-              title: const Text("Updated At"),
-              subtitle: Text(DateFormat('dd MMM yyyy').format(clinic.updatedAt)),
-            ),
-          ),
-          const SizedBox(height: 12),
-          const Text("Location on Map", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          _buildSectionHeader("Chemist Details"),
+          _buildInfoTile(Icons.location_on, "Address", clinic.address),
+          _buildInfoTile(Icons.email, "Email", clinic.email),
+          _buildInfoTile(Icons.phone, "Phone", clinic.phone),
+          _buildInfoTile(Icons.update, "Updated At", "No info available yet"),
+
+          const SizedBox(height: 24),
+          _buildSectionHeader("Location on Map"),
           const SizedBox(height: 8),
-          SizedBox(
-            height: 200,
-            child: GoogleMap(
-              initialCameraPosition: CameraPosition(
-                target: LatLng(clinic.latitude, clinic.longitude),
-                zoom: 15,
-              ),
-              markers: {
-                Marker(
-                  markerId: const MarkerId("clinic_location"),
-                  position: LatLng(clinic.latitude, clinic.longitude),
-                  infoWindow: InfoWindow(title: clinic.name),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: SizedBox(
+              height: 220,
+              child: GoogleMap(
+                initialCameraPosition: CameraPosition(
+                  target: LatLng(28.500719, 77.532639), // fallback
+                  zoom: 15,
                 ),
-              },
+                markers: {
+                  Marker(
+                    markerId: const MarkerId("clinic_location"),
+                    position: LatLng(28.500719, 77.532639),
+                    infoWindow: InfoWindow(title: clinic.name),
+                  ),
+                },
+              ),
             ),
-           // Text("Location"),
-          )
+          ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+          color: Color(0xFFC71D52),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoTile(IconData icon, String title, String subtitle) {
+    return Card(
+      elevation: 2,
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: ListTile(
+        leading: Icon(icon, color: Colors.blueGrey),
+        title: Text(title,
+            style: const TextStyle(fontWeight: FontWeight.w600)),
+        subtitle: Text(subtitle),
       ),
     );
   }

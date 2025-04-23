@@ -6,6 +6,7 @@ import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 
 import '../controllers/StokistListController.dart';
 import '../widets/AddStokistDialog.dart';
+import 'AddStokist.dart';
 import 'StokistDetailsScreen.dart';
 
 class StokistListScreen extends StatelessWidget {
@@ -14,7 +15,7 @@ class StokistListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Clinics")),
+
       body: Obx(() {
         if (_stokistController.isLoading.value) {
           return const Center(child: CircularProgressIndicator());
@@ -40,9 +41,12 @@ class StokistListScreen extends StatelessWidget {
         );
       }),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => showDialog(
-            context: context,
-            builder: (_) => AddStokistDialog(controller: _stokistController)),
+        onPressed: () =>  Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const PharmaDistributorFormScreen(),
+          ),
+        ),
         child: Icon(Icons.add, color: Colors.white),
         backgroundColor: TColors.primary,
       ),

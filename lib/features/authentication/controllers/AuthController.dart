@@ -93,7 +93,7 @@ class AuthController extends GetxController {
           await authManager.saveHeadOffice(userModel.headOffice.id); // Save head office
 
           user.value = userModel; // Update state
-          Get.snackbar("Success", "Login Successful");
+         // Get.snackbar("Success", "Login Successful");
 
           // Navigate to Dashboard
           Get.offAll(() => DashboardScreen());

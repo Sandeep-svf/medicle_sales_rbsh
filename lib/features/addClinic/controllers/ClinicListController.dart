@@ -1,38 +1,73 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_state_manager/src/simple/get_controllers.dart';
-
-import '../model/Clinic.dart';
+import 'package:http/http.dart' as http;
+import '../../../utils/http/http_client.dart';
+import '../../../utils/local_storage/auth_manager.dart';
+import '../model/clinic.dart';
 
 class ClinicListController extends GetxController {
   var isLoading = false.obs;
   var clinicList = <Clinic>[].obs;
 
+  static const String _baseUrl = THttpHelper.baseUrl;
+
+
   @override
   void onInit() {
-    fetchClinics();
+    // fetchClinics();
     super.onInit();
   }
 
-  void fetchClinics() {
-    isLoading.value = true;
-    clinicList.value = [
-      Clinic(
-        name: "Sunrise Clinic",
-        address: "123 Main St",
-        city: "New Delhi",
-        phone: "9876543210",
-        email: "info@sunriseclinic.com",
-        latitude: 28.6139,
-        longitude: 77.2090,
-        createdAt: DateTime.now().subtract(const Duration(days: 30)),
-        updatedAt: DateTime.now(),
-      ),
-    ];
-    isLoading.value = false;
+  Future<void> fetchClinicList() async {
+    print("Doctors Data: Fetching doctor list...");
+    try {
+      isLoading.value = true;
+
+      final response = await http.get(
+        Uri.parse("$_baseUrl/chemists"),
+        headers: {"Content-Type": "application/json"},
+      );
+
+      print("Response: ${response.body}");
+
+      if (Get.isDialogOpen!) Get.back(); // Close the loading dialog
+
+      if (response.statusCode == 200) {
+        List<dynamic> jsonData = jsonDecode(response.body);
+
+        // Debugging log to check the API response
+        print("Doctors Data: $jsonData");
+
+        // Update doctor list if data is fetched
+        clinicList
+            .assignAll(jsonData.map((json) => Clinic.fromJson(json)).toList());
+
+        isLoading.value = false;
+        print("Doctors Data: list length:  ${clinicList.length}");
+      } else {
+        Get.snackbar(
+          "Error",
+          "Failed to load Chemist: ${response.statusCode}",
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.redAccent,
+          colorText: Colors.white,
+        );
+      }
+    } catch (e) {
+      print("Doctors Data: falling in catch block $e");
+      if (Get.isDialogOpen!) Get.back(); // Ensure dialog is closed
+      Get.snackbar(
+        "Error",
+        "Something went wrong: $e",
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.redAccent,
+        colorText: Colors.white,
+      );
+    } finally {
+      print("Doctors Data: Falling in finally block");
+      isLoading.value = false;
+    }
   }
 
-  void addClinic(Clinic clinic) {
-    clinicList.add(clinic);
-  }
 }

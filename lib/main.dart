@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:medicle_sales_rbsh/utils/LocationHelper/on_start.dart';
 import 'package:provider/provider.dart';
+import 'features/addClinic/controllers/ClinicListController.dart';
 import 'features/salesActivity/controllers/SalesController.dart';
 import 'app.dart'; // Import your App widget
 
@@ -51,11 +54,13 @@ Future<void> initializeBackgroundService() async {
 
 
 void main() async{
+
   /*debugPrint('LocationTag: A.');
   WidgetsFlutterBinding.ensureInitialized();// Required for async operations before runApp
   debugPrint('LocationTag: Initializing background service...');
   await BackgroundLocationService.requestPermissions(); // Request permissions and start service
 */
+
   debugPrint('LocationTag: B');
   runApp(
     MultiProvider(
