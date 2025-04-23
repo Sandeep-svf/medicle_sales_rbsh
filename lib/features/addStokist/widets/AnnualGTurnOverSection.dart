@@ -22,12 +22,13 @@ class _AnnualTurnoverSectionState extends State<AnnualTurnoverSection> {
   @override
   void initState() {
     super.initState();
+    final currentYear = DateTime.now().year;
     _localTurnovers = List<Map<String, dynamic>>.from(widget.turnovers);
     if (_localTurnovers.isEmpty) {
       _localTurnovers.addAll([
-        {"year": 2022, "amount": 0},
-        {"year": 2023, "amount": 0},
-        {"year": 2024, "amount": 0},
+        {"year": currentYear, "amount": 0},
+        {"year": currentYear - 1, "amount": 0},
+        {"year": currentYear - 2, "amount": 0},
       ]);
     }
   }
@@ -40,8 +41,9 @@ class _AnnualTurnoverSectionState extends State<AnnualTurnoverSection> {
   }
 
   void _addNewEntry() {
+    final currentYear = DateTime.now().year;
     setState(() {
-      _localTurnovers.add({"year": DateTime.now().year, "amount": 0});
+      _localTurnovers.add({"year": currentYear, "amount": 0});
       widget.onChanged(_localTurnovers);
     });
   }
@@ -74,7 +76,7 @@ class _AnnualTurnoverSectionState extends State<AnnualTurnoverSection> {
                 Expanded(
                   flex: 2,
                   child: DropdownButtonFormField<int>(
-                    value: item["year"],
+                    value: yearOptions.contains(item["year"]) ? item["year"] : null,
                     decoration: const InputDecoration(labelText: "Year", border: OutlineInputBorder()),
                     items: yearOptions
                         .map((year) => DropdownMenuItem(
@@ -99,10 +101,11 @@ class _AnnualTurnoverSectionState extends State<AnnualTurnoverSection> {
                     },
                   ),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.delete, color: Colors.red),
-                  onPressed: () => _removeEntry(index),
-                )
+                if (index >= 3)
+                  IconButton(
+                    icon: const Icon(Icons.delete, color: Colors.red),
+                    onPressed: () => _removeEntry(index),
+                  )
               ],
             ),
           );
