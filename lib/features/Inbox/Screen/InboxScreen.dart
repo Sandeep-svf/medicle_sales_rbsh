@@ -40,7 +40,7 @@ class _InboxScreenState extends State<InboxScreen> {
     );
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(success ? "✅ Email sent!" : "❌ Failed to send email")),
+      SnackBar(content: Text(success ? " Email sent!" : " Failed to send email")),
     );
   }
 

@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
-
 import '../controllers/StokistListController.dart';
 import '../widets/AddStokistDialog.dart';
 import 'AddStokist.dart';
@@ -32,8 +31,8 @@ class StokistListScreen extends StatelessWidget {
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               child: ListTile(
                 leading: const Icon(Icons.local_hospital, color: TColors.primary),
-                title: Text(clinic.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: Text(clinic.city),
+                title: Text(clinic.firmName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                subtitle: Text(clinic.emailAddress?? ""),
                 onTap: () => Get.to(() => StokistDetailScreen(stokist: clinic)),
               ),
             );
@@ -53,3 +52,5 @@ class StokistListScreen extends StatelessWidget {
     );
   }
 }
+
+

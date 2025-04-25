@@ -1,6 +1,9 @@
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
+import 'package:medicle_sales_rbsh/services/PushNotificationService.dart';
 import 'package:medicle_sales_rbsh/utils/LocationHelper/on_start.dart';
 import 'package:provider/provider.dart';
 import 'features/addClinic/controllers/ClinicListController.dart';
@@ -51,7 +54,10 @@ Future<void> initializeBackgroundService() async {
 
   await service.startService();
 }*/
-
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp();
+  print('🔄 BG Message: ${message.messageId}');
+}
 
 void main() async{
 
@@ -60,6 +66,13 @@ void main() async{
   debugPrint('LocationTag: Initializing background service...');
   await BackgroundLocationService.requestPermissions(); // Request permissions and start service
 */
+
+  /*WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);*/
+
+  //  Initialize push notifications BEFORE runApp
+  /*await PushNotificationService().initialize();*/
 
   debugPrint('LocationTag: B');
   runApp(

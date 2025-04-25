@@ -1,6 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
-
+import 'package:http/http.dart' as http;
+import '../../../utils/constants/colors.dart';
 import '../widets/AnnualGTurnOverSection.dart';
 
 class PharmaDistributorFormScreen extends StatefulWidget {
@@ -15,7 +16,13 @@ class _PharmaDistributorFormScreenState extends State<PharmaDistributorFormScree
 
   final TextEditingController firmName = TextEditingController();
   final TextEditingController businessName = TextEditingController();
-  final TextEditingController natureOfBusiness = TextEditingController();
+  String? selectedBusinessType;
+  final List<String> businessTypes = [
+    'Proprietorship',
+    'Partnership',
+    'Private Ltd.',
+    'Public Ltd.'
+  ];
   final TextEditingController gstNumber = TextEditingController();
   final TextEditingController drugLicenseNumber = TextEditingController();
   final TextEditingController panNumber = TextEditingController();
@@ -46,6 +53,71 @@ class _PharmaDistributorFormScreenState extends State<PharmaDistributorFormScree
     },
   );
 
+  Future<void> _submitDistributorForm() async {
+    final Uri apiUrl = Uri.parse("https://medi-glucks-erp.onrender.com/api/stockists");
+
+    Map<String, dynamic> requestBody = {
+      "firmName": firmName.text,
+      "registeredBusinessName": businessName.text,
+      "natureOfBusiness": selectedBusinessType ?? "",
+      "gstNumber": gstNumber.text.trim().isEmpty ? "" : gstNumber.text,
+      "drugLicenseNumber": drugLicenseNumber.text.trim().isEmpty ? "" : drugLicenseNumber.text,
+      "panNumber": panNumber.text.trim().isEmpty ? "" : panNumber.text,
+      "registeredOﬁceAddress": officeAddress.text,
+      "contactPerson": contactPerson.text,
+      "designation": designation.text.trim().isEmpty ? "" : designation.text,
+      "mobileNumber": mobileNumber.text.trim().isEmpty ? "" : mobileNumber.text,
+      "emailAddress": emailAddress.text.trim().isEmpty ? "" : emailAddress.text,
+      "website": website.text.trim().isEmpty ? "" : website.text,
+      "yearsInBusiness": int.tryParse(yearsInBusiness.text) ?? 0,
+      "areasOfOperation": areasOfOperation.text.trim().isNotEmpty
+          ? areasOfOperation.text.split(',').map((e) => e.trim()).toList()
+          : [],
+      "currentPharmaDistributorships": distributorships.text.trim().isNotEmpty
+          ? distributorships.text.split(',').map((e) => e.trim()).toList()
+          : [],
+      "annualTurnover": _annualTurnovers.map((e) => {
+        "year": e["year"],
+        "amount": e["amount"]
+      }).toList(),
+      "warehouseFacility": warehouseFacility,
+      "storageFacilitySize": int.tryParse(storageSize.text) ?? 0,
+      "coldStorageAvailable": coldStorageAvailable,
+      "numberOfSalesRepresentatives": int.tryParse(salesReps.text) ?? 0,
+      "bankDetails": {
+        "bankName": bankName.text.trim().isEmpty ? "" : bankName.text,
+        "branch": branch.text.trim().isEmpty ? "" : branch.text,
+        "accountNumber": accountNumber.text.trim().isEmpty ? "" : accountNumber.text,
+        "ifscCode": ifscCode.text.trim().isEmpty ? "" : ifscCode.text,
+      }
+    };
+
+    try {
+      final response = await http.post(
+        apiUrl,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(requestBody),
+      );
+
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Distributor registered successfully")),
+        );
+        Navigator.pop(context);
+      } else {
+        print("Server responded with: ${response.body}");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Failed: ${response.statusCode}")),
+        );
+      }
+    } catch (e) {
+      print("Error submitting form: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: $e")),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -61,17 +133,41 @@ class _PharmaDistributorFormScreenState extends State<PharmaDistributorFormScree
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _sectionTitle("Basic Details"),
-              _textField(firmName, "Firm Name"),
-              _textField(businessName, "Registered Business Name"),
-              _textField(natureOfBusiness, "Nature of Business"),
+              _requiredField(firmName, "Firm Name"),
+              _requiredField(businessName, "Registered Business Name"),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                child: DropdownButtonFormField<String>(
+                  decoration: const InputDecoration(
+                    labelText: "Nature of Business *",
+                    border: OutlineInputBorder(),
+                  ),
+                  value: selectedBusinessType,
+                  items: businessTypes.map((type) {
+                    return DropdownMenuItem(
+                      value: type,
+                      child: Text(type),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      selectedBusinessType = value;
+                    });
+                  },
+                  validator: (value) => value == null || value.isEmpty
+                      ? "Please select a business type"
+                      : null,
+                ),
+              ),
+
               _textField(gstNumber, "GST Number"),
               _textField(drugLicenseNumber, "Drug License Number"),
               _textField(panNumber, "PAN Number"),
-              _textField(officeAddress, "Registered Office Address", maxLines: 2),
+              _requiredField(officeAddress, "Registered Office Address", maxLines: 2),
 
               const SizedBox(height: 10),
               _sectionTitle("Contact Details"),
-              _textField(contactPerson, "Contact Person"),
+              _requiredField(contactPerson, "Contact Person"),
               _textField(designation, "Designation"),
               _textField(mobileNumber, "Mobile Number", inputType: TextInputType.phone),
               _textField(emailAddress, "Email Address", inputType: TextInputType.emailAddress),
@@ -79,13 +175,12 @@ class _PharmaDistributorFormScreenState extends State<PharmaDistributorFormScree
 
               const SizedBox(height: 10),
               _sectionTitle("Business Profile"),
-              _textField(yearsInBusiness, "Years in Business", inputType: TextInputType.number),
+              _requiredField(yearsInBusiness, "Years in Business", inputType: TextInputType.number),
               _textField(areasOfOperation, "Areas of Operation (comma separated)"),
               _textField(distributorships, "Current Pharma Distributorships (comma separated)"),
 
               const SizedBox(height: 10),
               _sectionTitle("Annual Turnover"),
-
               AnnualTurnoverSection(
                 turnovers: _annualTurnovers,
                 onChanged: (updatedList) {
@@ -94,37 +189,6 @@ class _PharmaDistributorFormScreenState extends State<PharmaDistributorFormScree
                   });
                 },
               ),
-
-
-              /*..._annualTurnovers.map((entry) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 6),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: TextFormField(
-                        initialValue: entry["year"].toString(),
-                        enabled: false,
-                        decoration: const InputDecoration(
-                          labelText: "Year",
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: TextFormField(
-                        initialValue: entry["amount"].toString(),
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                          labelText: "Amount",
-                          border: OutlineInputBorder(),
-                        ),
-                        onChanged: (val) => entry["amount"] = int.tryParse(val) ?? 0,
-                      ),
-                    ),
-                  ],
-                ),
-              )),*/
 
               const SizedBox(height: 10),
               _sectionTitle("Facilities"),
@@ -146,9 +210,7 @@ class _PharmaDistributorFormScreenState extends State<PharmaDistributorFormScree
                   style: ElevatedButton.styleFrom(backgroundColor: TColors.primary),
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Submitted successfully!")),
-                      );
+                      _submitDistributorForm();
                     }
                   },
                   child: const Padding(
@@ -164,12 +226,27 @@ class _PharmaDistributorFormScreenState extends State<PharmaDistributorFormScree
     );
   }
 
-  Widget _sectionTitle(String title) {
+  Widget _sectionTitle(String title) => Padding(
+    padding: const EdgeInsets.only(bottom: 8.0),
+    child: Text(
+      title,
+      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: TColors.primary),
+    ),
+  );
+
+  Widget _requiredField(TextEditingController controller, String label,
+      {TextInputType inputType = TextInputType.text, int maxLines = 1}) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
-      child: Text(
-        title,
-        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: TColors.primary),
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: TextFormField(
+        controller: controller,
+        keyboardType: inputType,
+        maxLines: maxLines,
+        decoration: InputDecoration(
+          labelText: "$label *",
+          border: const OutlineInputBorder(),
+        ),
+        validator: (value) => (value == null || value.isEmpty) ? 'Required' : null,
       ),
     );
   }
@@ -186,7 +263,6 @@ class _PharmaDistributorFormScreenState extends State<PharmaDistributorFormScree
           labelText: label,
           border: const OutlineInputBorder(),
         ),
-        validator: (value) => (value == null || value.isEmpty) ? 'Required' : null,
       ),
     );
   }

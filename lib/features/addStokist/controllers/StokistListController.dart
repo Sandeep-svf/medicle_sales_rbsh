@@ -1,6 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_state_manager/src/simple/get_controllers.dart';
+import 'package:http/http.dart' as http;
 import '../model/Stokist.dart';
 
 class StokistListController extends GetxController {
@@ -9,27 +10,72 @@ class StokistListController extends GetxController {
 
   @override
   void onInit() {
-    fetchClinics();
+    fetchStokist();
     super.onInit();
   }
 
-  void fetchClinics() {
+
+  void fetchStokist() async {
+    print("[StokistListController] Fetching stockist list...");
     isLoading.value = true;
-    StokistList.value = [
-      Stokist(
-        name: "Sunrise Stokist",
-        address: "123 Main St",
-        city: "New Delhi",
-        phone: "9876543210",
-        email: "info@sunriseclinic.com",
-        latitude: 28.6139,
-        longitude: 77.2090,
-        createdAt: DateTime.now().subtract(const Duration(days: 30)),
-        updatedAt: DateTime.now(),
-      ),
-    ];
-    isLoading.value = false;
+    final url = Uri.parse("https://medi-glucks-erp.onrender.com/api/stockists");
+
+    try {
+      final response = await http.get(url);
+      print("[HTTP] Response Status: ${response.statusCode}");
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        print("[HTTP] JSON Data Length: ${data.length}");
+
+        StokistList.value = data.map((item) {
+          final stokist = Stokist.fromJson(item);
+          print("[Parsed] Stokist: ${stokist.firmName}");
+          return stokist;
+        }).toList();
+
+        print("[StokistListController] Successfully fetched and parsed ${StokistList.length} stockists.");
+      } else {
+        print("[Error] Failed to fetch stockists: ${response.statusCode}");
+        Get.snackbar(
+          "Error",
+          "Failed to fetch stockists: ${response.statusCode}",
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      }
+    } catch (e) {
+      print("[Exception] Error during fetch: $e");
+      Get.snackbar(
+        "Error",
+        "An error occurred: $e",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } finally {
+      isLoading.value = false;
+      print("[StokistListController] Fetch process complete. isLoading = false");
+    }
   }
+
+
+  /*void fetchStokist() async {
+    isLoading.value = true;
+    final url = Uri.parse("https://medi-glucks-erp.onrender.com/api/stockists");
+
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        StokistList.value = data.map((item) => Stokist.fromJson(item)).toList();
+      } else {
+        Get.snackbar("Error", "Failed to fetch stockists: ${response.statusCode}", snackPosition: SnackPosition.BOTTOM);
+      }
+    } catch (e) {
+      Get.snackbar("Error", "An error occurred: $e", snackPosition: SnackPosition.BOTTOM);
+    } finally {
+      isLoading.value = false;
+    }
+  }*/
 
   void addClinic(Stokist clinic) {
     StokistList.add(clinic);
