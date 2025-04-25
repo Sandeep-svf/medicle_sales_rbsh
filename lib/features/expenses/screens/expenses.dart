@@ -369,7 +369,126 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
               },
             ),
           ),
+
           Expanded(
+            child: FutureBuilder<List<Expense>>(
+              future: _expenseController.fetchExpenses(),
+              builder: (BuildContext context, AsyncSnapshot<List<Expense>> snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return const Center(child: Text("No recent expenses available"));
+                } else {
+                  List<Expense> filteredExpenses = snapshot.data!
+                      .where((expense) => expense.description
+                      .toLowerCase()
+                      .contains(_searchQuery.toLowerCase()))
+                      .toList();
+
+                  return ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: filteredExpenses.length,
+                    itemBuilder: (context, index) {
+                      final expense = filteredExpenses[index];
+
+                      Color statusColor;
+                      switch (expense.status) {
+                        case "approved":
+                          statusColor = Colors.green;
+                          break;
+                        case "pending":
+                          statusColor = Colors.orange;
+                          break;
+                        case "rejected":
+                          statusColor = Colors.redAccent;
+                          break;
+                        default:
+                          statusColor = Colors.grey;
+                      }
+
+                      return Card(
+                        elevation: 4,
+                        margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Top Row: Amount and Status Badge
+                              Row(
+                                children: [
+                                  Text(
+                                    "₹${expense.amount}",
+                                    style: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: statusColor.withOpacity(0.15),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Text(
+                                      expense.status.capitalizeFirst ?? "",
+                                      style: TextStyle(
+                                        color: statusColor,
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+
+                              // Description
+                              Text(
+                                expense.description,
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  color: Colors.black87,
+                                ),
+                              ),
+
+                              const SizedBox(height: 12),
+
+                              // Bottom Row: Date with Icon
+                              Row(
+                                children: [
+                                  const Icon(Icons.calendar_today, size: 16, color: TColors.primary),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    DateFormat('dd MMM yyyy').format(expense.date),
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      color: Colors.black54,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+
+
+                    },
+                  );
+                }
+              },
+            ),
+          ),
+
+          /*Expanded(
             child: FutureBuilder<List<Expense>>(
               future: _expenseController.fetchExpenses(), // Fetch data here
               builder: (BuildContext context,
@@ -463,7 +582,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                 }
               },
             ),
-          ),
+          ),*/
         ],
       ),
       floatingActionButton: FloatingActionButton(

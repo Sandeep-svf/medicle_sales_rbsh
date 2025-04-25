@@ -16,7 +16,7 @@ class MailService {
       final Map<String, dynamic> data = json.decode(response.body);
       return data['value'] ?? [];
     } else {
-      print("📭 Error fetching emails: ${response.body}");
+      print("Error fetching emails: ${response.body}");
       return [];
     }
   }

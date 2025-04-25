@@ -23,6 +23,7 @@ import '../../addStokist/screen/StokistList.dart';
 import '../../authentication/models/UserModel.dart';
 import '../../authentication/screens/login/login.dart';
 import '../../marketing/screen/marketing.dart';
+import '../../visitDoctor/screens/ScheduleVisit.dart';
 import '../../visitDoctor/screens/visitDoctor.dart';
 
 class CustomDrawer extends StatelessWidget {
@@ -84,13 +85,7 @@ class CustomDrawer extends StatelessWidget {
                 ),
 
 
-                _buildDrawerItem(
-                  icon: Icons.place,
-                  text: TTexts.doctorVisit,
-                  onTap: () =>
-                      onMenuSelected(VisitDoctorScreen(), TTexts.doctorVisit),
-                  isSelected: currentScreen == TTexts.doctorVisit,
-                ),
+
 
                 _buildDrawerItem(
                   icon: Icons.local_hospital,
@@ -105,6 +100,14 @@ class CustomDrawer extends StatelessWidget {
                   onTap: () =>
                       onMenuSelected(StokistListScreen(), TTexts.stokist),
                   isSelected: currentScreen == TTexts.stokist,
+                ),
+
+                _buildDrawerItem(
+                  icon: Icons.place,
+                  text: TTexts.doctorVisit,
+                  onTap: () =>
+                      onMenuSelected(ScheduleVisit(), TTexts.doctorVisit),
+                  isSelected: currentScreen == TTexts.doctorVisit,
                 ),
 
                 _buildDrawerItem(

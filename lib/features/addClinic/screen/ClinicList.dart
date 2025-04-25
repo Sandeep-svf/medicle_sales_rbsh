@@ -108,9 +108,9 @@ class _ClinicListScreenState extends State<ClinicListScreen> {
                               child: Row(
                                 children: [
                                   const CircleAvatar(
-                                    radius: 28,
+                                    radius: 24,
                                     backgroundColor: TColors.primary_shade100,
-                                    child: Icon(Icons.local_hospital, color: TColors.primary, size: 28),
+                                    child: Icon(Icons.local_hospital, color: TColors.primary, size: 24),
                                   ),
                                   const SizedBox(width: 16),
                                   Expanded(
