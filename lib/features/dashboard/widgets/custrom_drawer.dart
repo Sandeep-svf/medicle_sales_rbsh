@@ -50,6 +50,14 @@ class CustomDrawer extends StatelessWidget {
                       onMenuSelected(SalesChartHomeScreen(), TTexts.dashboard),
                   isSelected: currentScreen == TTexts.dashboard,
                 ),
+
+                _buildDrawerItem(
+                  icon: Icons.mail,
+                  text: TTexts.inbox,
+                  onTap: () =>
+                      onMenuSelected(InboxScreen(), TTexts.inbox),
+                  isSelected: currentScreen == TTexts.inbox,
+                ),
                 _buildDrawerItem(
                   icon: Icons.money,
                   text: TTexts.marketingMaterial,
@@ -65,12 +73,23 @@ class CustomDrawer extends StatelessWidget {
                   isSelected: currentScreen == TTexts.filesAndPdfs,
                 ),
 
+
+
                 _buildDrawerItem(
-                  icon: Icons.mail,
-                  text: TTexts.inbox,
+                  icon: Icons.person,
+                  text: TTexts.addDoctor,
                   onTap: () =>
-                      onMenuSelected(InboxScreen(), TTexts.inbox),
-                  isSelected: currentScreen == TTexts.inbox,
+                      onMenuSelected(AddDoctorScreen(), TTexts.addDoctor),
+                  isSelected: currentScreen == TTexts.addDoctor,
+                ),
+
+
+                _buildDrawerItem(
+                  icon: Icons.place,
+                  text: TTexts.doctorVisit,
+                  onTap: () =>
+                      onMenuSelected(VisitDoctorScreen(), TTexts.doctorVisit),
+                  isSelected: currentScreen == TTexts.doctorVisit,
                 ),
 
                 _buildDrawerItem(
@@ -87,13 +106,7 @@ class CustomDrawer extends StatelessWidget {
                       onMenuSelected(StokistListScreen(), TTexts.stokist),
                   isSelected: currentScreen == TTexts.stokist,
                 ),
-                _buildDrawerItem(
-                  icon: Icons.person,
-                  text: TTexts.addDoctor,
-                  onTap: () =>
-                      onMenuSelected(AddDoctorScreen(), TTexts.addDoctor),
-                  isSelected: currentScreen == TTexts.addDoctor,
-                ),
+
                 _buildDrawerItem(
                   icon: Icons.money,
                   text: TTexts.salesActivity,
@@ -101,13 +114,7 @@ class CustomDrawer extends StatelessWidget {
                       onMenuSelected(SalesactivityScreen(), TTexts.salesActivity),
                   isSelected: currentScreen == TTexts.salesActivity,
                 ),
-                _buildDrawerItem(
-                  icon: Icons.place,
-                  text: TTexts.doctorVisit,
-                  onTap: () =>
-                      onMenuSelected(VisitDoctorScreen(), TTexts.doctorVisit),
-                  isSelected: currentScreen == TTexts.doctorVisit,
-                ),
+
                 _buildDrawerItem(
                   icon: Icons.add,
                   text: TTexts.addProduct,
