@@ -14,7 +14,6 @@ class StokistListController extends GetxController {
     super.onInit();
   }
 
-
   void fetchStokist() async {
     print("[StokistListController] Fetching stockist list...");
     isLoading.value = true;
