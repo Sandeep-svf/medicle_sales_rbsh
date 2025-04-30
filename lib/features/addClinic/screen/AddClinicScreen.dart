@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:medicle_sales_rbsh/utils/http/http_client.dart';
 import 'dart:convert';
-
 import '../../../utils/constants/colors.dart';
 import '../../addStokist/widets/AnnualGTurnOverSection.dart';
 import '../controllers/ClinicListController.dart';
@@ -30,12 +29,13 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
 
   String? selectedHeadOffice;
   String? selectedLocation;
+  String? selectedlatitude;
+  String? selectedlongitude;
   bool isLoading = false; // For form submission loading
   bool isLoadingHeadOffices = false; // For head office loading
   List<dynamic> headOffices = [];
   String baseurl = THttpHelper.baseUrl;
-  List<Map<String, dynamic>> _annualTurnovers = List.generate(
-    3,
+  List<Map<String, dynamic>> _annualTurnovers = List.generate(1,
         (index) => {
       "year": DateTime.now().year - index,
       "amount": 0,
@@ -87,6 +87,8 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
       "address": addressController.text,
       "headOffice": selectedHeadOffice,
       "location": selectedLocation,
+      "latitude": selectedlatitude,
+      "longitude": selectedlongitude,
       "designation": designationController.text,
       "drugLicenseNumber": drugLicenseNumberController.text,
       "gstNo": gstController.text,
@@ -95,7 +97,7 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
 
     try {
       final response = await http.post(
-        Uri.parse("https://medi-glucks-erp.onrender.com/api/chemists"),
+        Uri.parse("$baseurl/chemists"),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode(body),
       );
@@ -147,10 +149,10 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
                   child: isLoadingHeadOffices
-                      ? CircularProgressIndicator() // Show loader while fetching head offices
+                      ? const CircularProgressIndicator() // Show loader while fetching head offices
                       : DropdownButtonFormField<String>(
                     value: selectedHeadOffice,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: "Select Head Office",
                       border: OutlineInputBorder(),
                     ),
@@ -203,17 +205,18 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
                         result['latitude'] != null &&
                         result['longitude'] != null &&
                         result['address'] != null) {
-                      setState(() {
-                        selectedLocation = result['address'];
-                        addressController.text = result['address'];
-                      });
+                      selectedlatitude = result['latitude'];
+                      selectedlongitude = result['longitude'];
+                      selectedLocation = result['address'];
 
                       Get.snackbar(
                         "📍 Location Selected",
-                        "${result['address']}",
+                        "$selectedLocation\nLat: $selectedlatitude, Lng: $selectedlongitude",
                         backgroundColor: Colors.green,
-                        duration: Duration(seconds: 4),
+                        duration: const Duration(seconds: 4),
                       );
+
+
                     } else {
                       Get.snackbar(
                         "Location Not Selected",
@@ -223,14 +226,14 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
                     }
                   },
                   style: TextButton.styleFrom(
-                    padding: EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
                     backgroundColor: TColors.primary, // Background color for the button
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                     elevation: 5, // Shadow for the button
                   ),
-                  child: Row(
+                  child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(

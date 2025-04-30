@@ -8,6 +8,7 @@ import '../../Blog/screen/blog.dart';
 import '../../Inbox/Screen/InboxScreen.dart';
 import '../../MarketingMaterials/Screens/MarketingMaterials.dart';
 import '../../marketing/screen/marketing.dart';
+import '../../notification/NotificatinScreen.dart';
 import '../widgets/custrom_drawer.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -85,6 +86,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    var _notificationCount = 10;
     return Scaffold(
       appBar: AppBar(
         title: Center(
@@ -108,6 +110,51 @@ class _DashboardScreenState extends State<DashboardScreen> {
             );
           },
         ),
+        actions: [
+          // Notification Icon with Badge
+          Stack(
+            children: [
+              IconButton(
+                icon: const Icon(
+                  Icons.notifications,
+                  color: TColors.primary,
+                ),
+                onPressed: () {
+                  // Handle notification icon press
+
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => NotificationScreen()),
+                  );
+                },
+              ),
+              if (_notificationCount > 0)
+                Positioned(
+                  right: 5,
+                  top: 5,
+                  child: Container(
+                    padding: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      shape: BoxShape.circle,
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 16,
+                      minHeight: 16,
+                    ),
+                    child: Text(
+                      '$_notificationCount',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ],
       ),
       drawer: CustomDrawer(
         onMenuSelected: _onMenuSelected,
