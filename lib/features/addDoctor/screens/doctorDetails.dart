@@ -1,6 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
-
 import '../../../utils/constants/colors.dart';
 import '../models/DoctorModelList.dart';
 
@@ -9,8 +10,15 @@ class DoctorDetailsScreen extends StatelessWidget {
 
   DoctorDetailsScreen({required this.doctor});
 
+
+
   @override
   Widget build(BuildContext context) {
+    // Create the initial position for the map based on doctor's coordinates
+
+
+
+
     return Scaffold(
       appBar: AppBar(
         title: Text(doctor.name),
@@ -191,9 +199,47 @@ class DoctorDetailsScreen extends StatelessWidget {
                 ),
               ),
             ),
+
+            // Google Map Section at the Bottom
+            const SizedBox(height: 16),
+            _buildSectionHeader("Location on Map"),
+            const SizedBox(height: 8),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: SizedBox(
+                height: 220,
+                child: GoogleMap(
+                  initialCameraPosition: CameraPosition(
+                    target: LatLng(doctor.latitude, doctor.longitude), // fallback
+                    zoom: 15,
+                  ),
+                  markers: {
+                    Marker(
+                      markerId: const MarkerId("doctor_location"),
+                      position: LatLng(doctor.latitude, doctor.longitude),
+                      infoWindow: InfoWindow(title: doctor.name),
+                    ),
+                  },
+                ),
+              ),
+            ),
           ],
         ),
       ),
     );
   }
+}
+
+Widget _buildSectionHeader(String title) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 12),
+    child: Text(
+      title,
+      style: const TextStyle(
+        fontSize: 20,
+        fontWeight: FontWeight.bold,
+        color: Color(0xFFC71D52),
+      ),
+    ),
+  );
 }

@@ -20,43 +20,6 @@ class DoctorListController extends GetxController {
     try {
       isLoading.value = true;
 
-      // Show loading dialog
-      /*if (!Get.isDialogOpen!) {
-        Get.dialog(
-          WillPopScope(
-            onWillPop: () async => false,
-            child: Center(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                decoration: BoxDecoration(
-                  color: Colors.black87,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    CircularProgressIndicator(
-                      color: Colors.white,
-                      strokeWidth: 2.5,
-                    ),
-                    SizedBox(width: 10),
-                    Text(
-                      "Loading...",
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          barrierDismissible: false,
-        );
-      }*/
-
       headOffice = (await authManager.getHeadOffice())!;
 
       final response = await http.get(

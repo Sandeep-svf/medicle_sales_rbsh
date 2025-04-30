@@ -36,7 +36,8 @@ class _PharmaDistributorFormScreenState extends State<PharmaDistributorFormScree
   final TextEditingController areasOfOperation = TextEditingController();
   final TextEditingController distributorships = TextEditingController();
   final TextEditingController storageSize = TextEditingController();
-  final TextEditingController salesReps = TextEditingController();
+  final TextEditingController
+  salesReps = TextEditingController();
   final TextEditingController bankName = TextEditingController();
   final TextEditingController branch = TextEditingController();
   final TextEditingController accountNumber = TextEditingController();

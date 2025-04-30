@@ -7,6 +7,7 @@ import '../../../utils/constants/colors.dart';
 import '../controllers/ClinicListController.dart';
 import '../model/clinic.dart';
 import '../widets/AddClinicDialog.dart';
+import 'AddClinicScreen.dart';
 
 class ClinicListScreen extends StatefulWidget {
   const ClinicListScreen({super.key});
@@ -158,10 +159,16 @@ class _ClinicListScreenState extends State<ClinicListScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          showDialog(
+
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => AddClinicScreen(controller: _clinicListController)),
+          );
+
+         /* showDialog(
             context: context,
             builder: (_) => AddClinicDialog(controller: _clinicListController,),
-          );
+          );*/
         },
         child: const Icon(Icons.add, color: Colors.white),
         backgroundColor: TColors.primary,

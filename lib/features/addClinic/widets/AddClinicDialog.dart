@@ -18,10 +18,14 @@ class _AddClinicDialogState extends State<AddClinicDialog> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController firmNameController = TextEditingController();
   final TextEditingController contactPersonController = TextEditingController();
+  final TextEditingController designationController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController gstController = TextEditingController();
+  final TextEditingController drugLicenseNumberController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
+  final TextEditingController latitudeController = TextEditingController();
+  final TextEditingController longitudeController = TextEditingController();
   final TextEditingController yearsInBusinessController = TextEditingController();
   final TextEditingController turnoverController = TextEditingController();
 
@@ -35,10 +39,15 @@ class _AddClinicDialogState extends State<AddClinicDialog> {
     final body = {
       "firmName": firmNameController.text,
       "contactPersonName": contactPersonController.text,
+      "designation": designationController.text,
       "mobileNo": phoneController.text,
       "emailId": emailController.text,
       "gstNo": gstController.text,
+      "drugLicenseNumber": drugLicenseNumberController.text,
       "address": addressController.text,
+      "latitude": latitudeController.text,
+      "longitude": longitudeController.text,
+      "headOffice": "",
       "yearsInBusiness": int.tryParse(yearsInBusinessController.text) ?? 0,
       "annualTurnover": int.tryParse(turnoverController.text) ?? 0,
     };
@@ -81,8 +90,10 @@ class _AddClinicDialogState extends State<AddClinicDialog> {
             children: [
               _buildTextField(firmNameController, "Firm Name"),
               _buildTextField(contactPersonController, "Contact Person"),
+              _buildTextField(designationController, "Designation"),
               _buildTextField(phoneController, "Phone Number", keyboardType: TextInputType.phone),
               _buildTextField(emailController, "Email", keyboardType: TextInputType.emailAddress),
+              _buildTextField(drugLicenseNumberController, "DrugLicenseNumber"),
               _buildTextField(gstController, "GST No"),
               _buildTextField(addressController, "Address", maxLines: 2),
               _buildTextField(yearsInBusinessController, "Years in Business", keyboardType: TextInputType.number),

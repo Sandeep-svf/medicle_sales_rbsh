@@ -9,7 +9,6 @@ import '../models/SalesModel.dart';
 
 class SalesController with ChangeNotifier {
 
-
   AuthManager authManager = AuthManager();
 
   List<SalesLogModel> _salesList = [];

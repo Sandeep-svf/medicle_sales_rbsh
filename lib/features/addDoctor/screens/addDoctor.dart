@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -7,6 +8,7 @@ import '../../../utils/helpers/zoom_in_out_anim.dart';
 import '../../../utils/constants/colors.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../../../utils/loder/CircularLoaderController.dart';
 import '../controllers/DoctroController.dart';
 import '../controllers/addDoctorController.dart';
 import 'doctorDetails.dart';
@@ -27,18 +29,35 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
   String? selectedCityId; // Store the selected city ID
   String? selectedCityName; // Store the selected city name
   List<Map<String, String>> cities = [];
+  double? selectedLatitude;
+  double? selectedLongitude;
+  String? selectedAddress;
 
   @override
-  void initState() {
+  void initState()  {
     super.initState();
-    _doctorListController.fetchDoctorList();
-    fetchCities();
+    _initializeData();
+
   }
 
+  Future<void> _initializeData() async {
+    try {
+      // await to wait for the async operations
+      await _doctorListController.fetchDoctorList();
+      await fetchCities();
+    } catch (e) {
+      // Handle any errors here
+      if (kDebugMode) {
+        print("Error during initialization: $e");
+      }
+    }
+  }
   Future<void> fetchCities() async {
+    CircularLoaderController.showLoader(context);
     final response = await http.get(
         Uri.parse('https://medi-glucks-erp.onrender.com/api/headoffices'));
     if (response.statusCode == 200) {
+      CircularLoaderController.hideLoader();
       List<dynamic> cityList = json.decode(response.body);
       setState(() {
         cities = cityList
@@ -51,6 +70,10 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
 
         print("city lsit: $cities");
       });
+    }else{
+      CircularLoaderController.hideLoader();
+      Get.snackbar("Error", "Failed to load Head Office.",
+          backgroundColor: Colors.red, duration: const Duration(seconds: 3));
     }
   }
 
@@ -71,8 +94,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
     String? selectedCityId;
     String? selectedCityName = 'Head Office';
 
-    double selectedLatitude = 40.748817;
-    double selectedLongitude = -73.985428;
+
 
     final _formKey = GlobalKey<FormState>();
 
@@ -97,6 +119,11 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
+
+        // Get the screen width to decide the dialog width
+        double screenWidth = MediaQuery.of(context).size.width;
+        bool isTablet = screenWidth > 600;
+
         return SingleChildScrollView(
           child: ZoomInOutDialog(
             child: AlertDialog(
@@ -294,15 +321,15 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                             result['latitude'] != null &&
                             result['longitude'] != null &&
                             result['address'] != null) {
-                          final lat = result['latitude'];
-                          final lng = result['longitude'];
-                          final address = result['address'];
+                          selectedLatitude = result['latitude'];
+                          selectedLongitude = result['longitude'];
+                          selectedAddress = result['address'];
 
                           Get.snackbar(
                             "📍 Location Selected",
-                            "$address\nLat: $lat, Lng: $lng",
+                            "$selectedAddress\nLat: $selectedLatitude, Lng: $selectedLongitude",
                             backgroundColor: Colors.green,
-                            duration: Duration(seconds: 4),
+                            duration: const Duration(seconds: 4),
                           );
 
                           // Optional: save to local variables or form
@@ -334,6 +361,14 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                 ElevatedButton(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
+
+        if (selectedLatitude == null || selectedLongitude == null || selectedAddress == null) {
+        // Show error message if location is not selected
+        Get.snackbar("Error", "Please select a location",
+        backgroundColor: Colors.red, duration: const Duration(seconds: 3));
+        } else {
+
+
                       // Call the addDoctor API
                       AddDoctorController.addDoctor(
                         context: context,
@@ -349,11 +384,13 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                         selectedGender: selectedGender!,
                         selectedLatitude: selectedLatitude.toString(),
                         selectedLongitude: selectedLongitude.toString(),
+                          selectedAddress: selectedAddress.toString(),
                       );
+                      }
                     } else {
                       HapticFeedback.vibrate();
-                      Get.snackbar("Error",
-                          "Please fill all required fields correctly.");
+                      // Get.snackbar("Error",
+                      //     "Please fill all required fields correctly.");
                     }
                   },
                   child: const Padding(

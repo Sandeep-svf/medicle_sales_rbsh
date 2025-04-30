@@ -3,6 +3,8 @@ class Doctor {
   final String name;
   final String specialization;
   final String location;
+  final double latitude;
+  final double longitude;
   final String email;
   final String phone;
   final String registrationNumber;
@@ -20,6 +22,8 @@ class Doctor {
     required this.name,
     required this.specialization,
     required this.location,
+    required this.latitude,
+    required this.longitude,
     required this.email,
     required this.phone,
     required this.registrationNumber,
@@ -39,6 +43,8 @@ class Doctor {
       name: json['name'] ?? '',  // Default empty string if null
       specialization: json['specialization'] ?? '',  // Default empty string if null
       location: json['location'] ?? '',  // Default empty string if null
+      latitude: json['latitude'] ?? 28.704060,  // Default empty string if null
+      longitude: json['longitude'] ?? 77.102493,  // Default empty string if null
       email: json['email'] ?? '',  // Default empty string if null
       phone: json['phone'] ?? '',  // Default empty string if null
       registrationNumber: json['registration_number'] ?? '',  // Default empty string if null
