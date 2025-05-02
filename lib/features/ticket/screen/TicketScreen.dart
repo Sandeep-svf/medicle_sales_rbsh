@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:ffi';
 import 'package:flutter/material.dart';
+import 'package:medicle_sales_rbsh/utils/local_storage/auth_manager.dart';
 import '../controller/TicketController.dart';
 import '../model/TicketsModel.dart';
 import 'TicketDetailsScreen.dart';
@@ -42,17 +44,23 @@ class _TicketScreenState extends State<TicketScreen> {
   List<TicketModel> tickets = [];
   List<TicketModel> filteredTickets = [];
   bool isLoading = false;
-  final String userId = "67d56a35a2227082ae9282b2";
-  final String token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDU2YTM1YTIyMjcwODJhZTkyODJiMiIsInJvbGUiOiJVc2VyIiwiaWF0IjoxNzQ2MTY2ODM1LCJleHAiOjE3NDY3NzE2MzV9.RHujLS1ivUOQQskwQuWzqkyIuT5lti8gRBZeaNsnZCc ";  // Replace with actual token
-
+  late String userId = "";
+  late String token = "";
+  AuthManager authManager = AuthManager();
   // TextEditingController for search
   TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
+    fetchAuth();
     _ticketController = TicketController(userId: userId, token: token);
     fetchTickets();
+  }
+
+  Future<void> fetchAuth() async{
+    userId = authManager.getUserId() as String;
+    token = authManager.getAuthToken() as String;
   }
 
   // Fetch tickets

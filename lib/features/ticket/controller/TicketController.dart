@@ -1,9 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
-import 'dart:io';
-import 'dart:convert';
-
+import 'package:medicle_sales_rbsh/utils/http/http_client.dart';
 import '../model/TicketsModel.dart';
 
 
@@ -11,11 +9,13 @@ class TicketController {
   final String userId;
   final String token;
 
+  final String baseUrl = THttpHelper.baseUrl;
+
   TicketController({required this.userId, required this.token});
 
   // Fetch tickets from the API
   Future<List<TicketModel>> fetchTickets() async {
-    final url = Uri.parse('https://medi-glucks-erp.onrender.com/api/tickets/user?userId=$userId');
+    final url = Uri.parse('$baseUrl/tickets/user?userId=$userId');
     final response = await http.get(url, headers: {
       'Authorization': 'Bearer $token',
     });
@@ -39,7 +39,7 @@ class TicketController {
         body: json.encode({
           'title': title,
           'description': description,
-          'userName': 'fsdfs',
+          'userName': 'Refer in DB',
           'userId': userId,
           'image': imageBase64 ?? '',
         }));

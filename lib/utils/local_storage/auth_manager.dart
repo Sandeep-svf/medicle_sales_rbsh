@@ -6,6 +6,7 @@ class AuthManager {
   static const String userKey = "user_data";
   static const String userIdKey = "user_id";
   static const String headOfficeKey = "head_office";
+  static const String tokenKey = "token";
 
   ///  Save User Data in SharedPreferences
   Future<void> saveUserData(UserModel user) async {
@@ -17,6 +18,18 @@ class AuthManager {
   Future<void> saveUserId(String userId) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString(userIdKey, userId);
+  }
+
+  /// Save auth token
+  Future<void> saveAuthToken(String token) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString(tokenKey, token);
+  }
+
+  /// Get auth token
+  Future<String?> getAuthToken() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString(tokenKey);
   }
 
 

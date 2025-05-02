@@ -91,6 +91,7 @@ class AuthController extends GetxController {
           await authManager.saveUserData(userModel); // Save full user model
           await authManager.saveUserId(userModel.id); // Save only user ID
           await authManager.saveHeadOffice(userModel.headOffice.id); // Save head office
+          await authManager.saveAuthToken(userModel.token); // Save auth token
 
           user.value = userModel; // Update state
          // Get.snackbar("Success", "Login Successful");

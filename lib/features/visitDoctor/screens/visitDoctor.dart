@@ -1,14 +1,17 @@
 import 'dart:convert';
 
 import 'package:date_picker_plus/date_picker_plus.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:medicle_sales_rbsh/common/Model/SMResponseModel.dart';
 import 'package:medicle_sales_rbsh/features/visitDoctor/models/visitSalesData.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
+import '../../../utils/LocationHelper/LocationHelper.dart';
 import '../../../utils/constants/colors.dart';
 import '../../../utils/constants/text_strings.dart';
 import '../../../utils/helpers/zoom_in_out_anim.dart';
@@ -35,6 +38,11 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
 
   late VisitListController _visitListController;
   final AuthManager authManager = AuthManager(); // Initialize AuthManager
+
+  //location helper
+  String _location = 'Fetching location...';
+  // Instance of LocationHelper
+  LocationHelper locationHelper = LocationHelper();
 
 
   @override
@@ -345,31 +353,73 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
                                       confirmBtnText: "Yes",
                                       cancelBtnText: "Cancel",
                                       confirmBtnColor: TColors.primary,
+                                      width: 300,
                                       onConfirmBtnTap: () async {
                                         // Close the confirmation QuickAlert dialog first
                                         Navigator.of(context).pop();
 
                                         // Get the doctor visit ID
                                         final visitId = doctorVisit.id;
+                                        String _message = '';
+
+
+                                        // fetch current lat and long
+                                        _fetchLocation();
+                                        if (kDebugMode) {
+                                          print ('LOCATION IS: $_location');
+                                        }
 
                                         // Make a PUT request to update the confirmation status
                                         final response = await http.put(
                                           Uri.parse('https://medi-glucks-erp.onrender.com/api/doctor-visits/$visitId/confirm'),
                                           headers: {
                                             'Content-Type': 'application/json',
-                                          },
+                                          }, body: json.encode({
+                                        'userLatitude': "28.6139",
+                                        'userLongitude': "77.2090",
+                                        })
 
                                         );
 
                                         if (response.statusCode == 200) {
 
-                                          // Show a success message using QuickAlert
-                                          QuickAlert.show(
-                                            context: context,
-                                            type: QuickAlertType.success,
-                                            text: TTexts.confirmVisitSuccessfullyMarked,
-                                            confirmBtnColor: TColors.primary,
-                                          );
+                                          final responseBody = json.decode(response.body);
+
+                                          // Parse the response using the VisitResponse model
+                                          SMResponse visitResponse = SMResponse.fromJson(responseBody);
+
+                                          if (visitResponse.status) {
+                                            // If status is true, handle success
+                                            setState(() {
+                                              _message = 'Visit confirmed successfully!'; // You can update the UI accordingly
+                                            });
+
+                                            // Show a success message using QuickAlert
+                                            QuickAlert.show(
+                                              context: context,
+                                              type: QuickAlertType.success,
+                                              text: _message,
+                                              confirmBtnColor: TColors.primary,
+                                              width: 300,
+                                            );
+
+                                          } else {
+                                            // If status is false, handle failure (e.g., too far from the doctor)
+                                            setState(() {
+                                              _message = visitResponse.message; // Show the message received from API
+                                            });
+
+                                            // Show a success message using QuickAlert
+                                            QuickAlert.show(
+                                              context: context,
+                                              type: QuickAlertType.error,
+                                              text: _message,
+                                              backgroundColor: Colors.blue.shade50,
+                                              confirmBtnColor: TColors.primary,
+                                              width: 300,
+                                            );
+                                          }
+
 
                                           // Refresh the visit list to reflect the changes
                                           await _visitListController.fetchSalesList();
@@ -386,6 +436,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
                                             text: "Failed to confirm the visit",
                                             backgroundColor: TColors.primary,
                                             confirmBtnColor: TColors.primary,
+                                            width: 300,
                                           );
                                         }
                                       },
@@ -427,5 +478,19 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );
+  }
+
+  // Function to get location and update UI
+  Future<void> _fetchLocation() async {
+    try {
+      String? location = await locationHelper.getCurrentLocation();
+      setState(() {
+        _location = location ?? 'Location not found';
+      });
+    } catch (e) {
+      setState(() {
+        _location = 'Error: $e';
+      });
+    }
   }
 }
