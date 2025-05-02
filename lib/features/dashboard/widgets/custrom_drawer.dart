@@ -10,6 +10,7 @@ import 'package:medicle_sales_rbsh/features/expenses/screens/expenses.dart';
 import 'package:medicle_sales_rbsh/features/order/screens/order.dart';
 import 'package:medicle_sales_rbsh/features/report/screens/report.dart';
 import 'package:medicle_sales_rbsh/features/salesActivity/screens/salesActivity.dart';
+import 'package:medicle_sales_rbsh/features/ticket/screen/TicketScreen.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 import 'package:medicle_sales_rbsh/utils/helpers/helper_functions.dart';
@@ -143,6 +144,14 @@ class CustomDrawer extends StatelessWidget {
                   onTap: () => onMenuSelected(Blogscreen(), TTexts.blog),
                   isSelected: currentScreen == TTexts.blog,
                 ),
+
+                _buildDrawerItem(
+                  icon: Icons.support,
+                  text: TTexts.support,
+                  onTap: () => onMenuSelected(TicketScreen(), TTexts.support),
+                  isSelected: currentScreen == TTexts.support,
+                ),
+
                 _buildDrawerItem(
                   icon: Icons.report,
                   text: TTexts.report,

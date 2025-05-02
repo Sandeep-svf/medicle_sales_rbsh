@@ -8,7 +8,7 @@ import '../../Blog/screen/blog.dart';
 import '../../Inbox/Screen/InboxScreen.dart';
 import '../../MarketingMaterials/Screens/MarketingMaterials.dart';
 import '../../marketing/screen/marketing.dart';
-import '../../notification/NotificatinScreen.dart';
+import '../../notification/screen/NotificatinScreen.dart';
 import '../widgets/custrom_drawer.dart';
 
 class DashboardScreen extends StatefulWidget {

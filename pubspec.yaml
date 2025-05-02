@@ -32,6 +32,8 @@ dependencies:
   provider: ^6.1.2
   flutter_secure_storage: ^9.0.0
   in_app_update: ^4.2.3
+  #flutter_statusbar_manager: ^1.0.1
+  timeago: ^3.0.0
 
 
   #Fireabse
