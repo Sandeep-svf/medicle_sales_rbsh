@@ -114,12 +114,12 @@ class _TicketScreenState extends State<TicketScreen> {
             return TicketCard(
               ticket: ticket,
               onTap: () {
-                Navigator.push(
+                /*Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => TicketDetailsScreen(ticket: ticket),
                   ),
-                );
+                );*/
               },
             );
           },
@@ -344,12 +344,12 @@ class TicketSearchDelegate extends SearchDelegate {
         return TicketCard(
           ticket: ticket,
           onTap: () {
-            Navigator.push(
+            /*Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => TicketDetailsScreen(ticket: ticket),
               ),
-            );
+            );*/
           },
         );
       },
@@ -369,12 +369,12 @@ class TicketSearchDelegate extends SearchDelegate {
         return TicketCard(
           ticket: ticket,
           onTap: () {
-            Navigator.push(
+            /*Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => TicketDetailsScreen(ticket: ticket),
               ),
-            );
+            );*/
           },
         );
       },
