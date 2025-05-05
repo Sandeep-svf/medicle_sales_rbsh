@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../../../utils/constants/colors.dart';
+import '../../../utils/local_storage/auth_manager.dart';
 import '../widets/AnnualGTurnOverSection.dart';
 
 class PharmaDistributorFormScreen extends StatefulWidget {
@@ -17,6 +19,7 @@ class _PharmaDistributorFormScreenState extends State<PharmaDistributorFormScree
   final TextEditingController firmName = TextEditingController();
   final TextEditingController businessName = TextEditingController();
   String? selectedBusinessType;
+  String headOffice = "";
   final List<String> businessTypes = [
     'Proprietorship',
     'Partnership',
@@ -36,8 +39,7 @@ class _PharmaDistributorFormScreenState extends State<PharmaDistributorFormScree
   final TextEditingController areasOfOperation = TextEditingController();
   final TextEditingController distributorships = TextEditingController();
   final TextEditingController storageSize = TextEditingController();
-  final TextEditingController
-  salesReps = TextEditingController();
+  final TextEditingController salesReps = TextEditingController();
   final TextEditingController bankName = TextEditingController();
   final TextEditingController branch = TextEditingController();
   final TextEditingController accountNumber = TextEditingController();
@@ -48,13 +50,62 @@ class _PharmaDistributorFormScreenState extends State<PharmaDistributorFormScree
 
   List<Map<String, dynamic>> _annualTurnovers = List.generate(
     3,
+
         (index) => {
       "year": DateTime.now().year - index,
       "amount": 0,
     },
   );
 
+  @override
+  void initState() {
+    super.initState();
+    _loadHeadOffice(); // Load head office from SharedPreferences
+  }
+
+  // Method to load head office from SharedPreferences
+  Future<void> _loadHeadOffice() async {
+    AuthManager authManager = AuthManager();
+    final String? headOfficeValue = await authManager.getHeadOffice(); // Fetch the value using your method
+    setState(() {
+      headOffice = headOfficeValue ?? ""; // Default to empty string if no value is found
+    });
+  }
+
+  // Validate that no turnover amount is zero, and that the first three items are required
+  bool _validateTurnovers() {
+    // Ensure that the first three turnover amounts are greater than zero
+    for (int i = 0; i < 3; i++) {
+      if (_annualTurnovers[i]['amount'] == 0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Amount for the year ${_annualTurnovers[i]['year']} cannot be zero.")),
+        );
+        return false; // Invalid if the amount for any of the first 3 years is zero
+      }
+    }
+
+    // Ensure that no turnover amount is zero
+    for (int i = 0; i < _annualTurnovers.length; i++) {
+      if (_annualTurnovers[i]['amount'] == 0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Amount for year ${_annualTurnovers[i]['year']} cannot be zero.")),
+        );
+        return false; // Invalid if any amount is zero
+      }
+    }
+
+    return true; // Valid if all turnovers are valid
+  }
+
   Future<void> _submitDistributorForm() async {
+    if (!_validateTurnovers()) {
+      return; // Prevent submission if the turnover data is invalid
+    }
+
+    if (kDebugMode) {
+      print("[DEBUG] headOffice: $headOffice");
+    }
+
     final Uri apiUrl = Uri.parse("https://medi-glucks-erp.onrender.com/api/stockists");
 
     Map<String, dynamic> requestBody = {
@@ -64,7 +115,7 @@ class _PharmaDistributorFormScreenState extends State<PharmaDistributorFormScree
       "gstNumber": gstNumber.text.trim().isEmpty ? "" : gstNumber.text,
       "drugLicenseNumber": drugLicenseNumber.text.trim().isEmpty ? "" : drugLicenseNumber.text,
       "panNumber": panNumber.text.trim().isEmpty ? "" : panNumber.text,
-      "registeredOﬁceAddress": officeAddress.text,
+      "registeredOfficeAddress": officeAddress.text,
       "contactPerson": contactPerson.text,
       "designation": designation.text.trim().isEmpty ? "" : designation.text,
       "mobileNumber": mobileNumber.text.trim().isEmpty ? "" : mobileNumber.text,
@@ -90,7 +141,8 @@ class _PharmaDistributorFormScreenState extends State<PharmaDistributorFormScree
         "branch": branch.text.trim().isEmpty ? "" : branch.text,
         "accountNumber": accountNumber.text.trim().isEmpty ? "" : accountNumber.text,
         "ifscCode": ifscCode.text.trim().isEmpty ? "" : ifscCode.text,
-      }
+      },
+      "headOffice": headOffice, // Use the fetched head office value here
     };
 
     try {
@@ -106,13 +158,11 @@ class _PharmaDistributorFormScreenState extends State<PharmaDistributorFormScree
         );
         Navigator.pop(context);
       } else {
-        print("Server responded with: ${response.body}");
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Failed: ${response.statusCode}")),
         );
       }
     } catch (e) {
-      print("Error submitting form: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Error: $e")),
       );

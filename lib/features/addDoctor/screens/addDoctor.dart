@@ -130,7 +130,10 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16)),
               title: const Text(TTexts.addDoctorTitle),
-              content: Form(
+              content: Container(
+                width: isTablet ? screenWidth * 0.8 : double.maxFinite, // Set 80% width on tablets
+
+              child: Form(
                 key: _formKey,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -352,6 +355,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                     const SizedBox(height: 12),
                   ],
                 ),
+              ),
               ),
               actions: [
                 TextButton(

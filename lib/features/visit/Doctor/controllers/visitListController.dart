@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
-import '../../../utils/http/http_client.dart';
-import '../../../utils/local_storage/auth_manager.dart';
+
+import '../../../../utils/http/http_client.dart';
+import '../../../../utils/local_storage/auth_manager.dart';
 import '../models/visitSalesData.dart';
 
 class VisitListController with ChangeNotifier {

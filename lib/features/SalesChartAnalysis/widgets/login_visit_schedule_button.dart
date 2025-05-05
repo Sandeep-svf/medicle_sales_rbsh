@@ -3,8 +3,9 @@ import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_state_manager/src/simple/get_controllers.dart';
 import 'package:medicle_sales_rbsh/features/salesActivity/screens/salesActivity.dart';
-import 'package:medicle_sales_rbsh/features/visitDoctor/screens/visitDoctor.dart';
+
 import '../../../utils/constants/text_strings.dart';
+import '../../visit/Doctor/screens/visitDoctor.dart';
 
 class LoginViistScheduleButton extends StatelessWidget {
   const LoginViistScheduleButton({

@@ -7,18 +7,19 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:medicle_sales_rbsh/common/Model/SMResponseModel.dart';
-import 'package:medicle_sales_rbsh/features/visitDoctor/models/visitSalesData.dart';
+
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
-import '../../../utils/LocationHelper/LocationHelper.dart';
-import '../../../utils/constants/colors.dart';
-import '../../../utils/constants/text_strings.dart';
-import '../../../utils/helpers/zoom_in_out_anim.dart';
-import '../../../utils/local_storage/auth_manager.dart';
-import '../../addDoctor/controllers/DoctroController.dart';
+import '../../../../../../utils/LocationHelper/LocationHelper.dart';
+import '../../../../../../utils/constants/colors.dart';
+import '../../../../../../utils/constants/text_strings.dart';
+import '../../../../../../utils/helpers/zoom_in_out_anim.dart';
+import '../../../../../../utils/local_storage/auth_manager.dart';
+import '../../../addDoctor/controllers/DoctroController.dart';
 import '../controllers/ScheduleVisitcontroller.dart';
 import '../controllers/visitListController.dart';
+import '../models/visitSalesData.dart';
 
 class VisitDoctorScreen extends StatefulWidget {
   const VisitDoctorScreen({super.key});

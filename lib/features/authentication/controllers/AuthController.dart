@@ -93,6 +93,12 @@ class AuthController extends GetxController {
           await authManager.saveHeadOffice(userModel.headOffice.id); // Save head office
           await authManager.saveAuthToken(userModel.token); // Save auth token
 
+
+
+          final String? headOfficeValue = await authManager.getHeadOffice();
+
+          print("Head Office Value: $headOfficeValue");
+
           user.value = userModel; // Update state
          // Get.snackbar("Success", "Login Successful");
 

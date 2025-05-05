@@ -24,8 +24,8 @@ import '../../addStokist/screen/StokistList.dart';
 import '../../authentication/models/UserModel.dart';
 import '../../authentication/screens/login/login.dart';
 import '../../marketing/screen/marketing.dart';
-import '../../visitDoctor/screens/ScheduleVisit.dart';
-import '../../visitDoctor/screens/visitDoctor.dart';
+import '../../visit/Doctor/screens/ScheduleVisit.dart';
+
 
 class CustomDrawer extends StatelessWidget {
   final Function(Widget, String) onMenuSelected;

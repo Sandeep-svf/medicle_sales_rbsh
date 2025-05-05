@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:medicle_sales_rbsh/features/visitDoctor/screens/visitDoctor.dart';
+import 'package:medicle_sales_rbsh/features/visit/Doctor/screens/visitDoctor.dart';
 
-import '../../../utils/constants/colors.dart';
+import '../../../../utils/constants/colors.dart';
+
 
 
 class ScheduleVisit extends StatefulWidget {
