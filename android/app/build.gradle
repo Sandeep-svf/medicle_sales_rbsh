@@ -51,7 +51,7 @@ android {
 
     signingConfigs {
         create("release") {
-            storeFile = file("C:\\Users\\admin\\AndroidStudioProjects\\medicle_sales_rbsh\\android\\app\\upload-keystore.jks")
+            storeFile = file("/Users/sandeepmaurya/AndroidStudioProjects/medicle_sales_rbsh/android/upload-keystore.jks")
             storePassword = "GlucksCare@12345" // Use actual keystore password
             keyAlias = "upload" // Your alias name
             keyPassword = "GlucksCare@12345" // Use actual key password

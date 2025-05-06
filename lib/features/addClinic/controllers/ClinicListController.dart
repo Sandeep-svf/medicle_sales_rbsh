@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
@@ -11,52 +12,94 @@ class ClinicListController extends GetxController {
   var clinicList = <Clinic>[].obs;
 
   static const String _baseUrl = THttpHelper.baseUrl;
-
+  AuthManager authManager = AuthManager();
+  late String headOffice = "";
 
   @override
   void onInit() {
-    // fetchClinics();
     super.onInit();
   }
 
+
   Future<void> fetchClinicList() async {
-    print("Doctors Data: Fetching doctor list...");
+    print("httpChemist: Fetching chemist list...");
+
     try {
       isLoading.value = true;
+      headOffice = (await authManager.getHeadOffice())!;
+
+      print("httpChemist: Head Office: $headOffice");
 
       final response = await http.get(
-        Uri.parse("$_baseUrl/chemists"),
+        Uri.parse("$_baseUrl/chemists/by-head-office/$headOffice"),
         headers: {"Content-Type": "application/json"},
       );
 
-      print("Response: ${response.body}");
+      print("httpChemist: Response: ${response.body}");
 
-      if (Get.isDialogOpen!) Get.back(); // Close the loading dialog
+      // Close loading dialog if open
+      if (Get.isDialogOpen!) Get.back();
 
       if (response.statusCode == 200) {
-        List<dynamic> jsonData = jsonDecode(response.body);
+        Map<String, dynamic> jsonData = jsonDecode(response.body);
 
-        // Debugging log to check the API response
-        print("Doctors Data: $jsonData");
+        // Check if 'success' flag is true
+        if (jsonData['success'] == true) {
+          // Check if 'Data' key exists and is not null
+          var data = jsonData['data'] ?? [];
 
-        // Update doctor list if data is fetched
-        clinicList
-            .assignAll(jsonData.map((json) => Clinic.fromJson(json)).toList());
-
-        isLoading.value = false;
-        print("Doctors Data: list length:  ${clinicList.length}");
+          if (data is List) {
+            // Only assign the data if it's a valid list
+            clinicList.assignAll(
+              data.map<Clinic>((json) => Clinic.fromJson(json)).toList(),
+            );
+            Get.snackbar(
+              "Success",
+              jsonData['message'], // Display the success message from the response
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: Colors.green,
+              colorText: Colors.white,
+            );
+            print("httpChemist: Successfully fetched clinic list.");
+          } else {
+            // Handle case where 'Data' is not a list
+            Get.snackbar(
+              "Error",
+              "Invalid data format received.",
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: Colors.redAccent,
+              colorText: Colors.white,
+            );
+            print("httpChemist: Error: 'Data' is not a valid list.");
+          }
+        } else {
+          // If success is false, show message from the response
+          Get.snackbar(
+            "Error",
+            jsonData['message'],
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.redAccent,
+            colorText: Colors.white,
+          );
+          print("httpChemist: Error fetching data: ${jsonData['message']}");
+        }
       } else {
+        // Handle status codes other than 200 (e.g., 500, 404)
         Get.snackbar(
           "Error",
-          "Failed to load Chemist: ${response.statusCode}",
+          "Failed to load chemists. Status code: ${response.statusCode}",
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.redAccent,
           colorText: Colors.white,
         );
+        print("httpChemist: Error: Failed to load chemists. Status code: ${response.statusCode}");
       }
     } catch (e) {
-      print("Doctors Data: falling in catch block $e");
-      if (Get.isDialogOpen!) Get.back(); // Ensure dialog is closed
+      if (kDebugMode) {
+        print("httpChemist: Exception caught: $e");
+      }
+      // Ensure dialog is closed if any error occurs
+      if (Get.isDialogOpen!) Get.back();
       Get.snackbar(
         "Error",
         "Something went wrong: $e",
@@ -65,9 +108,86 @@ class ClinicListController extends GetxController {
         colorText: Colors.white,
       );
     } finally {
-      print("Doctors Data: Falling in finally block");
+      print("httpChemist: Fetching completed.");
       isLoading.value = false;
     }
   }
 
+
+/*Future<void> fetchClinicList() async {
+    print("httpChemist: Fetching chemist list...");
+
+    try {
+      isLoading.value = true;
+      headOffice = (await authManager.getHeadOffice())!;
+
+      print("httpChemist: Head Office: $headOffice");
+
+      final response = await http.get(
+        Uri.parse("$_baseUrl/chemists/by-head-office/$headOffice"),
+        headers: {"Content-Type": "application/json"},
+      );
+
+      print("httpChemist: Response: ${response.body}");
+
+      // Close loading dialog if open
+      if (Get.isDialogOpen!) Get.back();
+
+      if (response.statusCode == 200) {
+        Map<String, dynamic> jsonData = jsonDecode(response.body);
+
+        // Check if 'success' flag is true
+        if (jsonData['success'] == true) {
+          // Only assign the data if success is true
+          clinicList.assignAll(
+            jsonData['Data'].map<Clinic>((json) => Clinic.fromJson(json)).toList(),
+          );
+          Get.snackbar(
+            "Success",
+            jsonData['message'], // Display the success message from the response
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.green,
+            colorText: Colors.white,
+          );
+          print("httpChemist: Successfully fetched clinic list.");
+        } else {
+          // If success is false, show message from the response
+          Get.snackbar(
+            "Error",
+            jsonData['message'],
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.redAccent,
+            colorText: Colors.white,
+          );
+          print("httpChemist: Error fetching data: ${jsonData['message']}");
+        }
+      } else {
+        // Handle status codes other than 200 (e.g., 500, 404)
+        Get.snackbar(
+          "Error",
+          "Failed to load chemists. Status code: ${response.statusCode}",
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.redAccent,
+          colorText: Colors.white,
+        );
+        print("httpChemist: Error: Failed to load chemists. Status code: ${response.statusCode}");
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("httpChemist: Exception caught: $e");
+      }
+      // Ensure dialog is closed if any error occurs
+      if (Get.isDialogOpen!) Get.back();
+      Get.snackbar(
+        "Error",
+        "Something went wrong: $e",
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.redAccent,
+        colorText: Colors.white,
+      );
+    } finally {
+      print("httpChemist: Fetching completed.");
+      isLoading.value = false;
+    }
+  }*/
 }

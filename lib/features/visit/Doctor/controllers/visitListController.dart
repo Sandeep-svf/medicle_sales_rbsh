@@ -19,7 +19,6 @@ class VisitListController with ChangeNotifier {
   // Fetch sales list from the server
   Future<void> fetchSalesList() async {
     try {
-      // Fetch userId from SharedPreferences
       userId = await authManager.getUserId();
 
       // Debugging: Log the userId

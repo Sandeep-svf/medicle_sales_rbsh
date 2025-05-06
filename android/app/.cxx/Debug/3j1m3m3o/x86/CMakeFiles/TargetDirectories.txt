@@ -1,0 +1,2 @@
+/Users/sandeepmaurya/AndroidStudioProjects/medicle_sales_rbsh/android/app/.cxx/Debug/3j1m3m3o/x86/CMakeFiles/edit_cache.dir
+/Users/sandeepmaurya/AndroidStudioProjects/medicle_sales_rbsh/android/app/.cxx/Debug/3j1m3m3o/x86/CMakeFiles/rebuild_cache.dir

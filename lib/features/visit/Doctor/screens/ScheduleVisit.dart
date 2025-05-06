@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:medicle_sales_rbsh/features/visit/Chemist/screens/visitChemist.dart';
 import 'package:medicle_sales_rbsh/features/visit/Doctor/screens/visitDoctor.dart';
+import 'package:medicle_sales_rbsh/features/visit/Stockist/screens/visitDoctor.dart';
 
 import '../../../../utils/constants/colors.dart';
 
@@ -46,8 +48,8 @@ class _MainScreenState extends State<ScheduleVisit> with SingleTickerProviderSta
         controller: _tabController,
         children: const [
           VisitDoctorScreen(),
-          VisitDoctorScreen(),
-          VisitDoctorScreen(),
+          VisitChemistScreen(),
+          VisitStockistScreen(),
         ],
       ),
     );

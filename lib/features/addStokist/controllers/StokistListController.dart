@@ -2,11 +2,14 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import '../../../utils/local_storage/auth_manager.dart';
 import '../model/Stokist.dart';
 
 class StokistListController extends GetxController {
   var isLoading = false.obs;
   var StokistList = <Stokist>[].obs;
+  AuthManager authManager = AuthManager();
+  late String headOffice = "";
 
   @override
   void onInit() {
@@ -17,14 +20,20 @@ class StokistListController extends GetxController {
   void fetchStokist() async {
     print("[StokistListController] Fetching stockist list...");
     isLoading.value = true;
-    final url = Uri.parse("https://medi-glucks-erp.onrender.com/api/stockists");
+    headOffice = (await authManager.getHeadOffice())!;
+
+    final url = Uri.parse("https://medi-glucks-erp.onrender.com/api/stockists/by-head-office/$headOffice");
 
     try {
       final response = await http.get(url);
       print("[HTTP] Response Status: ${response.statusCode}");
-
+      Map<String, dynamic> jsonData = jsonDecode(response.body);
       if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body);
+
+        final List<dynamic> data = jsonData['data'] ?? [];
+
+
+
         print("[HTTP] JSON Data Length: ${data.length}");
 
         StokistList.value = data.map((item) {
