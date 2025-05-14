@@ -2,11 +2,12 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+import '../../../utils/http/http_client.dart';
 import '../../../utils/local_storage/auth_manager.dart';
 
 class AddExpenseController with ChangeNotifier {
   // API URL for adding expense
-  final String apiUrl = "https://medi-glucks-erp.onrender.com/api/expenses";
+  final String apiUrl = "${THttpHelper.baseUrl}/expenses";
   AuthManager authManager = AuthManager();
 
   // Method to add expense

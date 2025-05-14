@@ -2,90 +2,74 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import '../../../utils/http/http_client.dart';
 import '../../../utils/local_storage/auth_manager.dart';
 import '../model/Stokist.dart';
 
+
 class StokistListController extends GetxController {
   var isLoading = false.obs;
-  var StokistList = <Stokist>[].obs;
-  AuthManager authManager = AuthManager();
-  late String headOffice = "";
+  var stokistList = <Data>[].obs;
+
+  static const String _baseUrl = THttpHelper.baseUrl;
+  final AuthManager authManager = AuthManager();
+  late String headOffice;
 
   @override
   void onInit() {
-    fetchStokist();
     super.onInit();
+    fetchStokist();
   }
 
-  void fetchStokist() async {
-    print("[StokistListController] Fetching stockist list...");
+  Future<void> fetchStokist() async {
+    debugPrint("httpStockist: Fetching stockist list...");
     isLoading.value = true;
-    headOffice = (await authManager.getHeadOffice())!;
-
-    final url = Uri.parse("https://medi-glucks-erp.onrender.com/api/stockists/by-head-office/$headOffice");
 
     try {
-      final response = await http.get(url);
-      print("[HTTP] Response Status: ${response.statusCode}");
-      Map<String, dynamic> jsonData = jsonDecode(response.body);
-      if (response.statusCode == 200) {
+      headOffice = (await authManager.getHeadOffice())!;
+      debugPrint("httpStockist: Retrieved Head Office: $headOffice");
 
-        final List<dynamic> data = jsonData['data'] ?? [];
+      final url = Uri.parse("$_baseUrl/stockists/by-head-office/$headOffice");
+      debugPrint("httpStockist: Request URL: $url");
 
-
-
-        print("[HTTP] JSON Data Length: ${data.length}");
-
-        StokistList.value = data.map((item) {
-          final stokist = Stokist.fromJson(item);
-          print("[Parsed] Stokist: ${stokist.firmName}");
-          return stokist;
-        }).toList();
-
-        print("[StokistListController] Successfully fetched and parsed ${StokistList.length} stockists.");
-      } else {
-        print("[Error] Failed to fetch stockists: ${response.statusCode}");
-        Get.snackbar(
-          "Error",
-          "Failed to fetch stockists: ${response.statusCode}",
-          snackPosition: SnackPosition.BOTTOM,
-        );
-      }
-    } catch (e) {
-      print("[Exception] Error during fetch: $e");
-      Get.snackbar(
-        "Error",
-        "An error occurred: $e",
-        snackPosition: SnackPosition.BOTTOM,
+      final response = await http.get(
+        url,
+        headers: {"Content-Type": "application/json"},
       );
-    } finally {
-      isLoading.value = false;
-      print("[StokistListController] Fetch process complete. isLoading = false");
-    }
-  }
 
-
-  /*void fetchStokist() async {
-    isLoading.value = true;
-    final url = Uri.parse("https://medi-glucks-erp.onrender.com/api/stockists");
-
-    try {
-      final response = await http.get(url);
+      debugPrint("httpStockist: HTTP Status Code: ${response.statusCode}");
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body);
-        StokistList.value = data.map((item) => Stokist.fromJson(item)).toList();
+        final Map<String, dynamic> jsonData = jsonDecode(response.body);
+        debugPrint("httpStockist: Parsed JSON: $jsonData");
+
+        if (jsonData['success'] == true && jsonData['data'] is List) {
+          final List<dynamic> dataJson = jsonData['data'];
+
+          final List<Data> parsedList = dataJson.map((item) {
+            try {
+              final stockist = Data.fromJson(item);
+              debugPrint("httpStockist: Parsed Stockist firmName: ${stockist.firmName}");
+              return stockist;
+            } catch (e) {
+              debugPrint("httpStockist: Skipping item due to parse error: $e");
+              return null;
+            }
+          }).whereType<Data>().toList();
+
+          stokistList.assignAll(parsedList);
+          debugPrint("httpStockist: Successfully assigned ${stokistList.length} stockists.");
+        } else {
+          debugPrint("httpStockist: Invalid or empty 'data' list.");
+        }
       } else {
-        Get.snackbar("Error", "Failed to fetch stockists: ${response.statusCode}", snackPosition: SnackPosition.BOTTOM);
+        debugPrint("httpStockist: Server responded with status code ${response.statusCode}");
       }
     } catch (e) {
-      Get.snackbar("Error", "An error occurred: $e", snackPosition: SnackPosition.BOTTOM);
+      debugPrint("httpStockist: Exception occurred: $e");
     } finally {
       isLoading.value = false;
+      debugPrint("httpStockist: Fetching completed.");
     }
-  }*/
-
-  void addClinic(Stokist clinic) {
-    StokistList.add(clinic);
   }
 }

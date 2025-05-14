@@ -8,6 +8,7 @@ import '../../../utils/helpers/zoom_in_out_anim.dart';
 import '../../../utils/constants/colors.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../../../utils/http/http_client.dart';
 import '../../../utils/loder/CircularLoaderController.dart';
 import '../controllers/DoctroController.dart';
 import '../controllers/addDoctorController.dart';
@@ -55,7 +56,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
   Future<void> fetchCities() async {
     CircularLoaderController.showLoader(context);
     final response = await http.get(
-        Uri.parse('https://medi-glucks-erp.onrender.com/api/headoffices'));
+        Uri.parse('${THttpHelper.baseUrl}/headoffices'));
     if (response.statusCode == 200) {
       CircularLoaderController.hideLoader();
       List<dynamic> cityList = json.decode(response.body);
@@ -349,7 +350,33 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                           );
                         }
                       },
-                      child: const Text('Select Location'),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                        backgroundColor: TColors.primary, // Background color for the button
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 5, // Shadow for the button
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.location_on,
+                            color: Colors.white,
+                            size: 22,
+                          ),
+                          SizedBox(width: 8),
+                          Text(
+                            'Select Location',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
 
                     const SizedBox(height: 12),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:medicle_sales_rbsh/features/visit/Chemist/screens/visitChemist.dart';
 import 'package:medicle_sales_rbsh/features/visit/Doctor/screens/visitDoctor.dart';
-import 'package:medicle_sales_rbsh/features/visit/Stockist/screens/visitDoctor.dart';
+import 'package:medicle_sales_rbsh/features/visit/Stockist/screens/visitStockist.dart';
 
 import '../../../../utils/constants/colors.dart';
 

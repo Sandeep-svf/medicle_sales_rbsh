@@ -8,7 +8,12 @@ import '../widets/AddStokistDialog.dart';
 import 'AddStokist.dart';
 import 'StokistDetailsScreen.dart';
 
-class StokistListScreen extends StatelessWidget {
+class StokistListScreen extends StatefulWidget {
+  @override
+  State<StokistListScreen> createState() => _StokistListScreenState();
+}
+
+class _StokistListScreenState extends State<StokistListScreen> {
   final StokistListController _stokistController = Get.put(StokistListController());
 
   @override
@@ -21,34 +26,58 @@ class StokistListScreen extends StatelessWidget {
         }
 
         return ListView.builder(
-          itemCount: _stokistController.StokistList.length,
+          itemCount: _stokistController.stokistList.length,
           padding: const EdgeInsets.all(16),
           itemBuilder: (context, index) {
-            final clinic = _stokistController.StokistList[index];
+            final stockist = _stokistController.stokistList[index];
             return Card(
               elevation: 2,
               margin: const EdgeInsets.symmetric(vertical: 8),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               child: ListTile(
                 leading: const Icon(Icons.local_hospital, color: TColors.primary),
-                title: Text(clinic.firmName, style: const TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: Text(clinic.emailAddress?? ""),
-                onTap: () => Get.to(() => StokistDetailScreen(stokist: clinic)),
+                title: Text(stockist.firmName??'', style: const TextStyle(fontWeight: FontWeight.bold)),
+                subtitle: Text(stockist.emailAddress?? ""),
+                onTap: () => Get.to(() => StokistDetailScreen(stokist: stockist)),
+
               ),
             );
           },
         );
       }),
+
       floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const PharmaDistributorFormScreen(),
+            ),
+          );
+
+          if (result == true) {
+            print("StokistListScreen: Refreshing list after form submission");
+            _stokistController.fetchStokist(); // or whatever your refresh method is
+          }
+        },
+        child: const Icon(Icons.add, color: Colors.white),
+        backgroundColor: TColors.primary,
+      ),
+
+
+      /*floatingActionButton: FloatingActionButton(
         onPressed: () =>  Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => const PharmaDistributorFormScreen(),
           ),
+
         ),
+
+
         child: Icon(Icons.add, color: Colors.white),
         backgroundColor: TColors.primary,
-      ),
+      ),*/
     );
   }
 }

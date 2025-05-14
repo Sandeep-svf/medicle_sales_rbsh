@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import '../../../utils/http/http_client.dart';
 import '../../addDoctor/screens/map.dart';
 import '../controllers/ClinicListController.dart';
 
@@ -54,7 +55,7 @@ class _AddClinicDialogState extends State<AddClinicDialog> {
 
     try {
       final response = await http.post(
-        Uri.parse("https://medi-glucks-erp.onrender.com/api/chemists"),
+        Uri.parse("${THttpHelper.baseUrl}/chemists"),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode(body),
       );

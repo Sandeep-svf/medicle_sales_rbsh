@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:medicle_sales_rbsh/features/authentication/controllers/AuthController.dart';
 import 'package:medicle_sales_rbsh/utils/http/http_client.dart';
+import 'package:medicle_sales_rbsh/utils/local_storage/auth_manager.dart';
 import 'dart:convert';
 import '../../../utils/constants/colors.dart';
 import '../../addStokist/widets/AnnualGTurnOverSection.dart';
@@ -21,6 +23,7 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
   final TextEditingController firmNameController = TextEditingController();
   final TextEditingController contactPersonController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
   final TextEditingController designationController = TextEditingController();
   final TextEditingController drugLicenseNumberController = TextEditingController();
@@ -28,6 +31,7 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
   final TextEditingController yearsInBusinessController = TextEditingController();
 
   String? selectedHeadOffice;
+  String baseUrl = THttpHelper.baseUrl;
   String? selectedLocation;
   String? selectedlatitude;
   String? selectedlongitude;
@@ -35,6 +39,7 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
   bool isLoadingHeadOffices = false; // For head office loading
   List<dynamic> headOffices = [];
   String baseurl = THttpHelper.baseUrl;
+  String headOfficeId="";
   List<Map<String, dynamic>> _annualTurnovers = List.generate(1,
         (index) => {
       "year": DateTime.now().year - index,
@@ -42,11 +47,18 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
     },
   );
 
+  AuthManager authController = AuthManager();
+
 
   @override
   void initState() {
     super.initState();
     _fetchHeadOffices();
+    _fetchheadOfficeId();
+  }
+
+  Future<void> _fetchheadOfficeId()async {
+     headOfficeId = authController.getHeadOffice() as String;
   }
 
   Future<void> _fetchHeadOffices() async {
@@ -78,9 +90,91 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
 
+    setState(() => isLoading = true);
+
+    final body = {
+      "firmName": firmNameController.text,
+      "contactPersonName": contactPersonController.text,
+      "designation": designationController.text,
+      "mobileNo": phoneController.text,
+      "emailId": emailController.text, // use dynamic input
+      "drugLicenseNumber": drugLicenseNumberController.text,
+      "gstNo": gstController.text,
+      "address": addressController.text,
+      "latitude": selectedlatitude ?? 0.0,
+      "longitude": selectedlongitude ?? 0.0,
+      "yearsInBusiness": int.tryParse(yearsInBusinessController.text) ?? 0,
+      "annualTurnover": _annualTurnovers
+          .map((e) => {
+        "year": e["year"],
+        "amount": e["amount"],
+      })
+          .toList(),
+      "headOffice": selectedHeadOffice,
+    };
+
+    debugPrint("ChemistController: Submitting body => ${jsonEncode(body)}");
+
+    try {
+      final response = await http.post(
+        Uri.parse("$baseUrl/chemists"),
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+        },
+        body: jsonEncode(body),
+      );
+
+      debugPrint("ChemistController: Response code => ${response.statusCode}");
+      debugPrint("ChemistController: Response body => ${response.body}");
+
+      if (response.statusCode == 201) {
+        await widget.controller.fetchClinicList();
+        if (mounted) {
+          Navigator.pop(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Clinic added successfully")),
+          );
+        }
+      } else {
+        throw Exception("Failed with status: ${response.statusCode}");
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed to submit: $e")),
+      );
+    } finally {
+      setState(() => isLoading = false);
+    }
+  }
+
+
+  /*Future<void> _submitForm() async {
+    if (!_formKey.currentState!.validate()) return;
+
     setState(() => isLoading = true); // Show loading while submitting the form
 
     final body = {
+      "firmName": firmNameController.text,
+      "contactPersonName": contactPersonController.text,
+      "designation": designationController.text,
+      "mobileNo": phoneController.text,
+      "emailId": "test@gmail.com",
+      "drugLicenseNumber": drugLicenseNumberController.text,
+      "gstNo": gstController.text,
+      "address": addressController.text,
+      "latitude": selectedlatitude,
+      "longitude": selectedlongitude,
+      "yearsInBusiness": int.tryParse(yearsInBusinessController.text) ?? 0,
+      "annualTurnover": _annualTurnovers.map((e) => {
+        "year": e["year"],
+        "amount": e["amount"]
+      }).toList(),
+      "headOffice": selectedHeadOffice,
+    };
+
+
+    *//*final body = {
       "firmName": firmNameController.text,
       "contactPersonName": contactPersonController.text,
       "mobileNo": phoneController.text,
@@ -93,7 +187,11 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
       "drugLicenseNumber": drugLicenseNumberController.text,
       "gstNo": gstController.text,
       "yearsInBusiness": int.tryParse(yearsInBusinessController.text) ?? 0,
-    };
+      "annualTurnover":_annualTurnovers.map((e) => {
+        "year": e["year"],
+        "amount": e["amount"]
+      }).toList(),
+    };*//*
 
     try {
       final response = await http.post(
@@ -120,7 +218,7 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
     } finally {
       setState(() => isLoading = false); // Hide loader after form submission
     }
-  }
+  }*/
 
   @override
   Widget build(BuildContext context) {
@@ -144,7 +242,9 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
 
                 // Mobile Number (Required)
                 _buildTextField(phoneController, "Mobile Number", keyboardType: TextInputType.phone, required: true),
+                _buildTextField(emailController, "Email", keyboardType: TextInputType.emailAddress),
 
+                _buildTextField(addressController, "Address"),
                 // Head Office Dropdown (Required)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -194,7 +294,78 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
                   },
                 ),
                 // Select Location (Required)
+
                 TextButton(
+                  onPressed: () async {
+                    try {
+                      final result = await Navigator.push(
+                                            context,
+                                            MaterialPageRoute(builder: (_) => LocationPickerScreen()),
+                                          );
+
+                      print("🔄 Returned from Location Picker");
+                      print("Result: $result");
+
+                      if (result != null ) {
+                                            setState(() {
+                                              selectedlatitude = result['latitude'].toString();
+                                              selectedlongitude = result['longitude'].toString();
+                                              selectedLocation = result['address'].toString();
+                                            });
+
+                                            print("Location selected:");
+                                            print("Address: Lat: $selectedlatitude");
+                                            print("Address: Lng: $selectedlongitude");
+                                            print("Address: $selectedLocation");
+
+                                            Get.snackbar(
+                                              "📍 Location Selected",
+                                              "$selectedLocation\nLat: $selectedlatitude, Lng: $selectedlongitude",
+                                              backgroundColor: Colors.green,
+                                              duration: const Duration(seconds: 4),
+                                            );
+                                          } else {
+                                            print("❌ Location selection failed or cancelled.");
+                                            Get.snackbar(
+                                              "Location Not Selected",
+                                              "Please try again or cancel",
+                                              backgroundColor: Colors.orange,
+                                            );
+                                          }
+                    } catch (e) {
+                      print("Address: $e");
+                    }
+
+                  },
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                    backgroundColor: TColors.primary, // Background color for the button
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 5, // Shadow for the button
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.location_on,
+                        color: Colors.white,
+                        size: 22,
+                      ),
+                      SizedBox(width: 8),
+                      Text(
+                        'Select Location',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                /*TextButton(
                   onPressed: () async {
                     final result = await Navigator.push(
                       context,
@@ -208,6 +379,10 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
                       selectedlatitude = result['latitude'];
                       selectedlongitude = result['longitude'];
                       selectedLocation = result['address'];
+
+                      print("location lat long chemist: lat $selectedlatitude");
+                      print("location lat long chemist: long $selectedlongitude");
+                      print("location lat long chemist: address $selectedLocation");
 
                       Get.snackbar(
                         "📍 Location Selected",
@@ -252,7 +427,7 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
                       ),
                     ],
                   ),
-                ),
+                ),*/
 
                 // Centered "Add Chemist" Button
                 Padding(

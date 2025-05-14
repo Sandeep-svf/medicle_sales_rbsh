@@ -21,16 +21,16 @@ class StockistVisit {
 
   factory StockistVisit.fromJson(Map<String, dynamic> json) {
     return StockistVisit(
-      id: json['_id'] as String?,
+      id: json['_id'],
       stockist: json['stockist'] != null
-          ? Stockist.fromJson(json['stockist'] as Map<String, dynamic>)
+          ? Stockist.fromJson(json['stockist'])
           : null,
-      user: json['user'] as String?,
+      user: json['user'],
       date: json['date'] != null ? DateTime.parse(json['date']) : null,
-      notes: json['notes'] as String?,
-      confirmed: json['confirmed'] as bool?,
+      notes: json['notes'],
+      confirmed: json['confirmed'],
       createdAt: json['createdAt'] != null
-          ? DateTime.parse(json['createdAt'] as String)
+          ? DateTime.parse(json['createdAt'])
           : null,
     );
   }
@@ -105,22 +105,22 @@ class Stockist {
 
   factory Stockist.fromJson(Map<String, dynamic> json) {
     return Stockist(
-      id: json['_id'] as String?,
-      firmName: json['firmName'] as String?,
-      registeredBusinessName: json['registeredBusinessName'] as String?,
-      natureOfBusiness: json['natureOfBusiness'] as String?,
-      gstNumber: json['gstNumber'] as String?,
-      drugLicenseNumber: json['drugLicenseNumber'] as String?,
-      panNumber: json['panNumber'] as String?,
-      registeredOfficeAddress: json['registeredOfficeAddress'] as String?,
+      id: json['_id'],
+      firmName: json['firmName'],
+      registeredBusinessName: json['registeredBusinessName'],
+      natureOfBusiness: json['natureOfBusiness'],
+      gstNumber: json['gstNumber'],
+      drugLicenseNumber: json['drugLicenseNumber'],
+      panNumber: json['panNumber'],
+      registeredOfficeAddress: json['registeredOfficeAddress'],
       latitude: (json['latitude'] as num?)?.toDouble(),
       longitude: (json['longitude'] as num?)?.toDouble(),
-      contactPerson: json['contactPerson'] as String?,
-      designation: json['designation'] as String?,
-      mobileNumber: json['mobileNumber'] as String?,
-      emailAddress: json['emailAddress'] as String?,
-      website: json['website'] as String?,
-      yearsInBusiness: json['yearsInBusiness'] as int?,
+      contactPerson: json['contactPerson'],
+      designation: json['designation'],
+      mobileNumber: json['mobileNumber'],
+      emailAddress: json['emailAddress'],
+      website: json['website'],
+      yearsInBusiness: json['yearsInBusiness'],
       areasOfOperation: (json['areasOfOperation'] as List<dynamic>?)
           ?.map((e) => e as String)
           .toList(),
@@ -129,17 +129,15 @@ class Stockist {
           ?.map((e) => e as String)
           .toList(),
       annualTurnover: (json['annualTurnover'] as List<dynamic>?)
-          ?.map((e) => AnnualTurnover.fromJson(e as Map<String, dynamic>))
+          ?.map((e) => AnnualTurnover.fromJson(e))
           .toList(),
-      warehouseFacility: json['warehouseFacility'] as bool?,
-      storageFacilitySize: json['storageFacilitySize'] as int?,
-      coldStorageAvailable: json['coldStorageAvailable'] as bool?,
-      numberOfSalesRepresentatives:
-      json['numberOfSalesRepresentatives'] as int?,
-      headOffice: json['headOffice'] as String?,
-      createdAt: json['createdAt'] != null
-          ? DateTime.parse(json['createdAt'] as String)
-          : null,
+      warehouseFacility: json['warehouseFacility'],
+      storageFacilitySize: json['storageFacilitySize'],
+      coldStorageAvailable: json['coldStorageAvailable'],
+      numberOfSalesRepresentatives: json['numberOfSalesRepresentatives'],
+      headOffice: json['headOffice'],
+      createdAt:
+      json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
     );
   }
 
@@ -185,8 +183,8 @@ class AnnualTurnover {
 
   factory AnnualTurnover.fromJson(Map<String, dynamic> json) {
     return AnnualTurnover(
-      year: json['year'] as int?,
-      amount: json['amount'] as int?,
+      year: json['year'],
+      amount: json['amount'],
     );
   }
 

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../../../utils/http/http_client.dart';
 import '../model/NotificationModel.dart';
 
 
@@ -14,7 +15,7 @@ class NotificationController {
 
   // Fetch notifications from API
   Future<List<NotificationModel>> fetchNotifications() async {
-    final url = Uri.parse('https://medi-glucks-erp.onrender.com/api/notifications?userId=$userId');
+    final url = Uri.parse('${THttpHelper.baseUrl}/notifications?userId=$userId');
     final response = await http.get(url, headers: {
       'Authorization': 'Bearer $token',
     });
@@ -29,7 +30,7 @@ class NotificationController {
 
   // Delete a notification by ID
   Future<void> deleteNotification(String notificationId) async {
-    final url = Uri.parse('https://medi-glucks-erp.onrender.com/api/notifications/$notificationId');
+    final url = Uri.parse('${THttpHelper.baseUrl}/notifications/$notificationId');
     final response = await http.delete(url, headers: {
       'Authorization': 'Bearer $token',
       'Content-Type': 'application/json',

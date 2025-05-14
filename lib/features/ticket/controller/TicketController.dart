@@ -30,7 +30,7 @@ class TicketController {
 
   // Create a new ticket
   Future<void> createTicket(String title, String description, String? imageBase64) async {
-    final url = Uri.parse('https://medi-glucks-erp.onrender.com/api/tickets');
+    final url = Uri.parse('${THttpHelper.baseUrl}/tickets');
     final response = await http.post(url,
         headers: {
           'Authorization': 'Bearer $token',

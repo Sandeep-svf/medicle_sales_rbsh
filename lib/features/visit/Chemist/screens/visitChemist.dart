@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:date_picker_plus/date_picker_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
@@ -9,6 +10,7 @@ import 'package:medicle_sales_rbsh/common/Model/SMResponseModel.dart';
 import 'package:medicle_sales_rbsh/features/addClinic/controllers/ClinicListController.dart';
 import 'package:medicle_sales_rbsh/features/addClinic/screen/ClinicList.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import '../../../../../../utils/LocationHelper/LocationHelper.dart';
@@ -16,6 +18,7 @@ import '../../../../../../utils/constants/colors.dart';
 import '../../../../../../utils/constants/text_strings.dart';
 import '../../../../../../utils/helpers/zoom_in_out_anim.dart';
 import '../../../../../../utils/local_storage/auth_manager.dart';
+import '../../../../utils/http/http_client.dart';
 import '../../../addDoctor/controllers/DoctroController.dart';
 import '../controllers/ScheduleVisitcontroller.dart';
 import '../controllers/visitListController.dart';
@@ -32,8 +35,9 @@ class _VisitChemistScreenState extends State<VisitChemistScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = "";
 
-  DoctorListController _doctorListController = Get.put(DoctorListController());
-  //ClinicListController _clinicListController = Get.put(ClinicListController);
+ // DoctorListController _doctorListController = Get.put(DoctorListController());
+  ClinicListController _clinicListController = Get.put(ClinicListController());
+
 
 
   String? selectedDoctorId; // This will store the selected doctor's ID
@@ -50,7 +54,8 @@ class _VisitChemistScreenState extends State<VisitChemistScreen> {
   @override
   void initState() {
     super.initState();
-    _doctorListController.fetchDoctorList();
+   // _doctorListController.fetchDoctorList();
+    _clinicListController.fetchClinicList();
     _visitListController = VisitListController();
     _visitListController
         .fetchVisitList(); // Fetch the visit data when screen loads
@@ -117,7 +122,8 @@ class _VisitChemistScreenState extends State<VisitChemistScreen> {
                         border: OutlineInputBorder(),
                       ),
                       value: selectedDoctorName,
-                      items: _doctorListController.doctorList.map((doctor) {
+                     // items: _doctorListController.doctorList.map((doctor) {
+                      items: _clinicListController.clinicList.map((doctor) {
                         return DropdownMenuItem<String>(
                           value: doctor.name,
                           child: Text(doctor.name),
@@ -126,7 +132,8 @@ class _VisitChemistScreenState extends State<VisitChemistScreen> {
                       onChanged: (value) {
                         setState(() {
                           selectedDoctorName = value;
-                           selectedDoctorId = _doctorListController.doctorList
+                          // selectedDoctorId = _doctorListController.doctorList
+                           selectedDoctorId = _clinicListController.clinicList
                               .firstWhere((doctor) => doctor.name == value)
                               .id;
                         });
@@ -337,7 +344,129 @@ class _VisitChemistScreenState extends State<VisitChemistScreen> {
                                     );
                                   }
                                       : () {
+
                                     QuickAlert.show(
+                                      context: context,
+                                      type: QuickAlertType.confirm,
+                                      title: "Confirm Visit",
+                                      text:
+                                      "Are you sure you want to mark this visit as confirmed?",
+                                      confirmBtnText: "Yes",
+                                      cancelBtnText: "Cancel",
+                                      confirmBtnColor: TColors.primary,
+                                      width: 300,
+                                      onConfirmBtnTap: () async {
+                                        Navigator.of(context).pop();
+
+                                        String _message = '';
+                                        double? userLatitude;
+                                        double? userLongitude;
+
+                                        // Request location permission
+                                        var permission = await Permission
+                                            .location
+                                            .request();
+
+                                        if (!permission.isGranted) {
+                                          QuickAlert.show(
+                                            context: context,
+                                            type: QuickAlertType.error,
+                                            text:
+                                            "Location permission is required to confirm the visit.",
+                                            confirmBtnColor:
+                                            TColors.primary,
+                                            width: 300,
+                                          );
+                                          return;
+                                        }
+
+                                        // Fetch current location
+                                        try {
+                                          Position position =
+                                          await Geolocator
+                                              .getCurrentPosition(
+                                            desiredAccuracy:
+                                            LocationAccuracy.high,
+                                          );
+                                          userLatitude =
+                                              position.latitude;
+                                          userLongitude =
+                                              position.longitude;
+                                          print(
+                                              'LOCATION IS: $userLatitude, $userLongitude');
+                                        } catch (e) {
+                                          QuickAlert.show(
+                                            context: context,
+                                            type: QuickAlertType.error,
+                                            text:
+                                            "Unable to fetch location. Try again.",
+                                            confirmBtnColor:
+                                            TColors.primary,
+                                            width: 300,
+                                          );
+                                          return;
+                                        }
+
+                                        // Send confirm request
+                                        final visitId = doctorVisit.id;
+
+                                        final response = await http.put(
+                                          Uri.parse(
+                                              '${THttpHelper.baseUrl}/chemists/visits/$visitId/confirm'),
+                                          headers: {
+                                            'Content-Type':
+                                            'application/json'
+                                          },
+                                          body: json.encode({
+                                            'userLatitude': userLatitude,
+                                            'userLongitude':
+                                            userLongitude,
+                                          }),
+                                        );
+
+                                        if (response.statusCode == 200) {
+                                          final responseBody =
+                                          json.decode(response.body);
+                                          SMResponse visitResponse =
+                                          SMResponse.fromJson(
+                                              responseBody);
+
+                                          _message =
+                                              visitResponse.message;
+
+                                          QuickAlert.show(
+                                            context: context,
+                                            type: visitResponse.status
+                                                ? QuickAlertType.success
+                                                : QuickAlertType.error,
+                                            text: _message,
+                                            confirmBtnColor:
+                                            TColors.primary,
+                                            width: 300,
+                                          );
+
+                                          if (visitResponse.status) {
+                                            await _visitListController
+                                                .fetchVisitList();
+                                            setState(() {});
+                                          }
+                                        } else {
+                                          QuickAlert.show(
+                                            context: context,
+                                            type: QuickAlertType.error,
+                                            text:
+                                            "Failed to confirm the visit",
+                                            confirmBtnColor:
+                                            TColors.primary,
+                                            width: 300,
+                                          );
+                                        }
+                                      },
+                                      onCancelBtnTap: () =>
+                                          Navigator.of(context).pop(),
+                                    );
+
+                                    /*QuickAlert.show(
                                       context: context,
                                       type: QuickAlertType.confirm,
                                       title: "Confirm Visit",
@@ -356,7 +485,7 @@ class _VisitChemistScreenState extends State<VisitChemistScreen> {
                                         }
                                         final response = await http.put(
                                           Uri.parse(
-                                              'https://medi-glucks-erp.onrender.com/api/stockists/visits/$visitId/confirm'),
+                                              '${THttpHelper.baseUrl}/stockists/visits/$visitId/confirm'),
                                           headers: {
                                             'Content-Type': 'application/json',
                                           },
@@ -412,7 +541,7 @@ class _VisitChemistScreenState extends State<VisitChemistScreen> {
                                       onCancelBtnTap: () {
                                         Navigator.of(context).pop();
                                       },
-                                    );
+                                    );*/
                                   },
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: doctorVisit.confirmed == true

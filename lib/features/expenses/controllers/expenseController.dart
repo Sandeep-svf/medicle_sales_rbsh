@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+import '../../../utils/http/http_client.dart';
 import '../../../utils/local_storage/auth_manager.dart';
 import '../models/expanseModel.dart'; // Ensure this path is correct
 
@@ -14,7 +15,7 @@ class ExpenseController with ChangeNotifier {
 
     try {
       final response = await http.get(
-        Uri.parse("https://medi-glucks-erp.onrender.com/api/expenses?userId=$userId"),
+        Uri.parse("${THttpHelper.baseUrl}/expenses?userId=$userId"),
       );
 
       if (response.statusCode == 200) {

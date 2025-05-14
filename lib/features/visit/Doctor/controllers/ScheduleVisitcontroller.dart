@@ -2,12 +2,13 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:medicle_sales_rbsh/utils/http/http_client.dart';
 
 import '../../../../utils/local_storage/auth_manager.dart';
 
 
 class DoctorVisitController {
-  static const String url = 'https://medi-glucks-erp.onrender.com/api/doctor-visits';
+  static const String url = '${THttpHelper.baseUrl}/doctor-visits';
 
   // Function to create a doctor visit (static method)
   static Future<void> createDoctorVisit({

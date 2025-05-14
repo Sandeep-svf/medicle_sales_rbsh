@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import '../model/Stokist.dart';
+import 'package:medicle_sales_rbsh/features/addStokist/model/Stokist.dart';
+import '../../visit/Stockist/models/visitSalesData.dart';
 import '../../../utils/constants/colors.dart';
 
 class StokistDetailScreen extends StatelessWidget {
-  final Stokist stokist;
-  const StokistDetailScreen({super.key, required this.stokist});
+  final Data stokist;
+
+
+  const StokistDetailScreen({Key? key, required this.stokist}) : super(key: key);
 
   Widget _sectionTitle(String title) => Padding(
     padding: const EdgeInsets.only(top: 24, bottom: 8),
@@ -73,7 +76,7 @@ class StokistDetailScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(stokist.firmName ?? 'Stokist Details'),
+        title: Text(stokist.firmName ?? 'Stockist Details'),
         backgroundColor: TColors.primary,
       ),
       body: SingleChildScrollView(
@@ -144,7 +147,7 @@ class StokistDetailScreen extends StatelessWidget {
                       markerId: const MarkerId("stokist_location"),
                       position: LatLng(latitude, longitude),
                       infoWindow: InfoWindow(
-                          title: stokist.firmName ?? "Stokist Location"),
+                          title: stokist.firmName ?? "Stockist Location"),
                     )
                   },
                   zoomControlsEnabled: false,

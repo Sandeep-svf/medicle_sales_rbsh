@@ -1,9 +1,13 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:http/http.dart' as http;
 import '../../../utils/constants/colors.dart';
+import '../../../utils/http/http_client.dart';
 import '../../../utils/local_storage/auth_manager.dart';
+import '../../addDoctor/screens/map.dart';
 import '../widets/AnnualGTurnOverSection.dart';
 
 class PharmaDistributorFormScreen extends StatefulWidget {
@@ -19,6 +23,9 @@ class _PharmaDistributorFormScreenState extends State<PharmaDistributorFormScree
   final TextEditingController firmName = TextEditingController();
   final TextEditingController businessName = TextEditingController();
   String? selectedBusinessType;
+  String? selectedLocation;
+  String? selectedlatitude;
+  String? selectedlongitude;
   String headOffice = "";
   final List<String> businessTypes = [
     'Proprietorship',
@@ -106,7 +113,7 @@ class _PharmaDistributorFormScreenState extends State<PharmaDistributorFormScree
       print("[DEBUG] headOffice: $headOffice");
     }
 
-    final Uri apiUrl = Uri.parse("https://medi-glucks-erp.onrender.com/api/stockists");
+    final Uri apiUrl = Uri.parse("${THttpHelper.baseUrl}/stockists");
 
     Map<String, dynamic> requestBody = {
       "firmName": firmName.text,
@@ -116,6 +123,8 @@ class _PharmaDistributorFormScreenState extends State<PharmaDistributorFormScree
       "drugLicenseNumber": drugLicenseNumber.text.trim().isEmpty ? "" : drugLicenseNumber.text,
       "panNumber": panNumber.text.trim().isEmpty ? "" : panNumber.text,
       "registeredOfficeAddress": officeAddress.text,
+      "latitude": selectedlatitude,
+      "longitude": selectedlongitude,
       "contactPerson": contactPerson.text,
       "designation": designation.text.trim().isEmpty ? "" : designation.text,
       "mobileNumber": mobileNumber.text.trim().isEmpty ? "" : mobileNumber.text,
@@ -146,27 +155,40 @@ class _PharmaDistributorFormScreenState extends State<PharmaDistributorFormScree
     };
 
     try {
+      print("AddStockController Sending POST request to: $apiUrl");
+      print("AddStockController Request Body: ${jsonEncode(requestBody)}");
+
       final response = await http.post(
         apiUrl,
         headers: {"Content-Type": "application/json"},
         body: jsonEncode(requestBody),
       );
 
+      print("AddStockController Response received");
+      print("AddStockController Status Code: ${response.statusCode}");
+      print("AddStockController Response Body: ${response.body}");
+
       if (response.statusCode == 201 || response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Distributor registered successfully")),
         );
-        Navigator.pop(context);
+        Navigator.pop(context,true);
       } else {
+        print("AddStockController Server returned error");
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Failed: ${response.statusCode}")),
+          SnackBar(content: Text("Failed: ${response.statusCode} - ${response.body}")),
         );
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      print("AddStockController Exception occurred during POST request");
+      print("AddStockController Error: $e");
+      print("AddStockController StackTrace: $stackTrace");
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Error: $e")),
       );
     }
+
   }
 
   @override
@@ -211,9 +233,9 @@ class _PharmaDistributorFormScreenState extends State<PharmaDistributorFormScree
                 ),
               ),
 
-              _textField(gstNumber, "GST Number"),
-              _textField(drugLicenseNumber, "Drug License Number"),
-              _textField(panNumber, "PAN Number"),
+              _requiredField(gstNumber, "GST Number"),
+              _requiredField(drugLicenseNumber, "Drug License Number"),
+              _requiredField(panNumber, "PAN Number"),
               _requiredField(officeAddress, "Registered Office Address", maxLines: 2),
 
               const SizedBox(height: 10),
@@ -221,7 +243,7 @@ class _PharmaDistributorFormScreenState extends State<PharmaDistributorFormScree
               _requiredField(contactPerson, "Contact Person"),
               _textField(designation, "Designation"),
               _textField(mobileNumber, "Mobile Number", inputType: TextInputType.phone),
-              _textField(emailAddress, "Email Address", inputType: TextInputType.emailAddress),
+              _requiredField(emailAddress, "Email Address", inputType: TextInputType.emailAddress),
               _textField(website, "Website"),
 
               const SizedBox(height: 10),
@@ -254,6 +276,79 @@ class _PharmaDistributorFormScreenState extends State<PharmaDistributorFormScree
               _textField(branch, "Branch"),
               _textField(accountNumber, "Account Number", inputType: TextInputType.number),
               _textField(ifscCode, "IFSC Code"),
+
+              const SizedBox(height: 20),
+
+              TextButton(
+                onPressed: () async {
+                  try {
+                    final result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => LocationPickerScreen()),
+                    );
+
+                    print("🔄 Returned from Location Picker");
+                    print("Result: $result");
+
+                    if (result != null ) {
+                      setState(() {
+                        selectedlatitude = result['latitude'].toString();
+                        selectedlongitude = result['longitude'].toString();
+                        selectedLocation = result['address'].toString();
+                      });
+
+                      print("Location selected:");
+                      print("Address: Lat: $selectedlatitude");
+                      print("Address: Lng: $selectedlongitude");
+                      print("Address: $selectedLocation");
+
+                      Get.snackbar(
+                        "📍 Location Selected",
+                        "$selectedLocation\nLat: $selectedlatitude, Lng: $selectedlongitude",
+                        backgroundColor: Colors.green,
+                        duration: const Duration(seconds: 4),
+                      );
+                    } else {
+                      print("❌ Location selection failed or cancelled.");
+                      Get.snackbar(
+                        "Location Not Selected",
+                        "Please try again or cancel",
+                        backgroundColor: Colors.orange,
+                      );
+                    }
+                  } catch (e) {
+                    print("Address: $e");
+                  }
+
+                },
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                  backgroundColor: TColors.primary, // Background color for the button
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 5, // Shadow for the button
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.location_on,
+                      color: Colors.white,
+                      size: 22,
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      'Select Location',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
 
               const SizedBox(height: 20),
               Center(

@@ -30,6 +30,14 @@ class Clinic {
   });
 
   factory Clinic.fromJson(Map<String, dynamic> json) {
+
+    double parseToDouble(dynamic value) {
+      if (value is int) return value.toDouble();
+      if (value is double) return value;
+      if (value is String) return double.tryParse(value) ?? 0.0;
+      return 0.0;
+    }
+
     return Clinic(
       id: json['_id'] ?? '',
       name: json['firmName'] ?? '',
@@ -40,8 +48,8 @@ class Clinic {
       drugLicenseNumber: json['drugLicenseNumber'] ?? '',
       gstNo: json['gstNo'] ?? '',
       yearsInBusiness: json['yearsInBusiness'] ?? 0,
-      latitude: json['latitude'] ?? 0.0,
-      longitude: json['longitude'] ?? 0.0,
+      latitude: parseToDouble(json['latitude'])??0.0,
+      longitude: parseToDouble(json['longitude']??0.0),
       headOffice: HeadOffice.fromJson(json['headOffice']),
       annualTurnover: (json['annualTurnover'] as List)
           .map((item) => AnnualTurnover.fromJson(item))

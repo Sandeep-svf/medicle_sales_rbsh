@@ -3,11 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 
+import '../../../../utils/http/http_client.dart';
 import '../../../../utils/local_storage/auth_manager.dart';
 
 
 class StockistVisitController {
-  static const String url = 'https://medi-glucks-erp.onrender.com/api/chemists/visits';
+  static const String url = '${THttpHelper.baseUrl}/chemists/visits';
 
   // Function to create a doctor visit (static method)
   static Future<void> createDoctorVisit({

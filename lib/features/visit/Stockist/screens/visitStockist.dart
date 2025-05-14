@@ -3,12 +3,14 @@ import 'dart:convert';
 import 'package:date_picker_plus/date_picker_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:medicle_sales_rbsh/common/Model/SMResponseModel.dart';
 
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import '../../../../../../utils/LocationHelper/LocationHelper.dart';
@@ -16,7 +18,9 @@ import '../../../../../../utils/constants/colors.dart';
 import '../../../../../../utils/constants/text_strings.dart';
 import '../../../../../../utils/helpers/zoom_in_out_anim.dart';
 import '../../../../../../utils/local_storage/auth_manager.dart';
+import '../../../../utils/http/http_client.dart';
 import '../../../addDoctor/controllers/DoctroController.dart';
+import '../../../addStokist/controllers/StokistListController.dart';
 import '../controllers/ScheduleVisitcontroller.dart';
 import '../controllers/visitListController.dart';
 import '../models/visitSalesData.dart';
@@ -32,7 +36,8 @@ class _VisitStockistScreenState extends State<VisitStockistScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = "";
 
-  DoctorListController _doctorListController = Get.put(DoctorListController());
+ // DoctorListController _doctorListController = Get.put(DoctorListController());
+  StokistListController _stokistListController = Get.put(StokistListController());
 
   String? selectedDoctorId; // This will store the selected doctor's ID
   String? selectedDoctorName; // This will store the selected doctor's name
@@ -49,7 +54,7 @@ class _VisitStockistScreenState extends State<VisitStockistScreen> {
   @override
   void initState() {
     super.initState();
-    _doctorListController.fetchDoctorList();
+    _stokistListController.fetchStokist();
     _visitListController = VisitListController();
     _visitListController
         .fetchSalesList(); // Fetch the visit data when screen loads
@@ -116,18 +121,18 @@ class _VisitStockistScreenState extends State<VisitStockistScreen> {
                         border: OutlineInputBorder(),
                       ),
                       value: selectedDoctorName,
-                      items: _doctorListController.doctorList.map((doctor) {
+                      items: _stokistListController.stokistList.map((doctor) {
                         return DropdownMenuItem<String>(
-                          value: doctor.name,
-                          child: Text(doctor.name),
+                          value: doctor.firmName,
+                          child: Text(doctor.firmName??''),
                         );
                       }).toList(),
                       onChanged: (value) {
                         setState(() {
                           selectedDoctorName = value;
-                          selectedDoctorId = _doctorListController.doctorList
-                              .firstWhere((doctor) => doctor.name == value)
-                              .id;
+                          selectedDoctorId = _stokistListController.stokistList
+                              .firstWhere((doctor) => doctor.firmName == value)
+                              .sId;
                         });
                       },
                       hint: const Text("Please select"),
@@ -299,13 +304,12 @@ class _VisitStockistScreenState extends State<VisitStockistScreen> {
                   return const Center(child: Text(
                       TTexts.noRecentCallAvailable)); // No data available
                 } else {
-                  // Filter the doctors based on the search query
-                  List<
-                      StockistVisit> filteredDoctors = _visitListController
+                  // Filter the stockist based on the search query
+                  List<StockistVisit> filteredDoctors = _visitListController
                       .salesList
                       .where((doctor) =>
                   doctor.stockist?.firmName?.toLowerCase().contains(
-                      _searchQuery.toLowerCase()) ?? false)
+                      _searchQuery.toLowerCase()) ?? false).cast<StockistVisit>()
                       .toList();
 
                   return ListView.builder(
@@ -364,9 +368,55 @@ class _VisitStockistScreenState extends State<VisitStockistScreen> {
                                         // Get the doctor visit ID
                                         final visitId = doctorVisit.id;
                                         String _message = '';
+                                        double? userLatitude;
+                                        double? userLongitude;
 
                                         // Fetch current latitude and longitude
-                                        _fetchLocation();
+                                        // Request location permission
+                                        var permission = await Permission
+                                            .location
+                                            .request();
+
+                                        if (!permission.isGranted) {
+                                          QuickAlert.show(
+                                            context: context,
+                                            type: QuickAlertType.error,
+                                            text:
+                                            "Location permission is required to confirm the visit.",
+                                            confirmBtnColor:
+                                            TColors.primary,
+                                            width: 300,
+                                          );
+                                          return;
+                                        }
+
+                                        // Fetch current location
+                                        try {
+                                          Position position =
+                                          await Geolocator
+                                              .getCurrentPosition(
+                                            desiredAccuracy:
+                                            LocationAccuracy.high,
+                                          );
+                                          userLatitude =
+                                              position.latitude;
+                                          userLongitude =
+                                              position.longitude;
+                                          print(
+                                              'LOCATION IS: $userLatitude, $userLongitude');
+                                        } catch (e) {
+                                          QuickAlert.show(
+                                            context: context,
+                                            type: QuickAlertType.error,
+                                            text:
+                                            "Unable to fetch location. Try again.",
+                                            confirmBtnColor:
+                                            TColors.primary,
+                                            width: 300,
+                                          );
+                                          return;
+                                        }
+
                                         if (kDebugMode) {
                                           print('LOCATION IS: $_location');
                                         }
@@ -374,22 +424,92 @@ class _VisitStockistScreenState extends State<VisitStockistScreen> {
                                         // Make a PUT request to update the confirmation status
                                         final response = await http.put(
                                           Uri.parse(
-                                              'https://medi-glucks-erp.onrender.com/api/stockists/visits/$visitId/confirm'),
+                                              '${THttpHelper.baseUrl}/stockists/visits/$visitId/confirm'),
                                           headers: {
                                             'Content-Type': 'application/json',
                                           },
                                           body: json.encode({
-                                            'userLatitude': "28.6139",
-                                            'userLongitude': "77.2090",
+                                            'userLatitude': userLatitude,
+                                            'userLongitude': userLongitude,
                                           }),
                                         );
+
+                                        print("reponseStatusCodeStockist: ${response.statusCode}");
+                                        print("reponseStatusCodeStockist: ${response.body}");
+                                        print("reponseStatusCodeStockist: ${THttpHelper.baseUrl}/stockists/visits/$visitId/confirm");
 
                                         if (response.statusCode == 200) {
                                           final responseBody = json.decode(response.body);
 
+                                          print("Stockist Visit Confirm response data: $responseBody");
+
+                                          // Parse the response using the VisitResponse model
+                                          SMResponse visitResponse = SMResponse.fromJson(responseBody);
+
+                                          if (visitResponse.status) {
+                                            // If status is true, handle success
+                                            setState(() {
+                                              _message = visitResponse.message; // Set the correct message
+                                            });
+
+                                            print("Success message: $_message");
+
+                                            // Show a success message using QuickAlert
+                                            QuickAlert.show(
+                                              context: context,
+                                              type: QuickAlertType.success,
+                                              text: _message,
+                                              confirmBtnColor: TColors.primary,
+                                              width: 300,
+                                            );
+                                          } else {
+                                            // If status is false, handle failure
+                                            setState(() {
+                                              _message = visitResponse.message;
+                                            });
+
+                                            print("Failure message: $_message");
+
+                                            // Show an error message using QuickAlert
+                                            QuickAlert.show(
+                                              context: context,
+                                              type: QuickAlertType.error,
+                                              text: _message,
+                                              backgroundColor: Colors.blue.shade50,
+                                              confirmBtnColor: TColors.primary,
+                                              width: 300,
+                                            );
+                                          }
+
+                                          // Refresh the visit list to reflect the changes
+                                          await _visitListController.fetchSalesList();
+
+                                          // Ensure the UI gets updated
+                                          setState(() {});
+                                        } else {
+                                          // Handle the case when the PUT request fails
+                                          QuickAlert.show(
+                                            context: context,
+                                            type: QuickAlertType.error,
+                                            text: "Failed to confirm the visit",
+                                            backgroundColor: TColors.primary,
+                                            confirmBtnColor: TColors.primary,
+                                            width: 300,
+                                          );
+                                        }
+
+
+                                        /*if (response.statusCode == 200) {
+                                          final responseBody = json.decode(response.body);
+
+                                          print("Stockist Visit Confirm response data: $responseBody");
+
+
                                           // Parse the response using the VisitResponse model
                                           SMResponse visitResponse =
                                           SMResponse.fromJson(responseBody);
+
+                                          print("Stockist Visit Confirm response data: ${visitResponse.status}");
 
                                           if (visitResponse.status) {
                                             // If status is true, handle success
@@ -437,7 +557,7 @@ class _VisitStockistScreenState extends State<VisitStockistScreen> {
                                             confirmBtnColor: TColors.primary,
                                             width: 300,
                                           );
-                                        }
+                                        }*/
                                       },
                                       onCancelBtnTap: () {
                                         // If user clicks "Cancel", dismiss the QuickAlert dialog
@@ -459,11 +579,6 @@ class _VisitStockistScreenState extends State<VisitStockistScreen> {
                                     ),
                                   ),
                                 )
-
-
-
-
-
                               ),
                             ],
                           ),

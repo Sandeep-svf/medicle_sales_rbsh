@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:path_provider/path_provider.dart';
 
+import '../../../utils/http/http_client.dart';
+
 class MarketingScreen extends StatefulWidget {
   const MarketingScreen({super.key});
 
@@ -28,7 +30,7 @@ class _MarketingScreenState extends State<MarketingScreen> {
     try {
       Dio dio = Dio();
       Response response =
-      await dio.get("https://medi-glucks-erp.onrender.com/api/pdfs");
+      await dio.get("${THttpHelper.baseUrl}/pdfs");
 
       if (response.statusCode == 200 && response.data is List) {
         setState(() {
@@ -52,7 +54,7 @@ class _MarketingScreenState extends State<MarketingScreen> {
   // Fetch signed URL from backend
   Future<String?> fetchSignedUrl(String fileKey) async {
     try {
-      String url = "https://medi-glucks-erp.onrender.com/api/pdfs/signed-url/$fileKey";
+      String url = "${THttpHelper.baseUrl}/pdfs/signed-url/$fileKey";
       Dio dio = Dio();
       Response response = await dio.get(url);
 
