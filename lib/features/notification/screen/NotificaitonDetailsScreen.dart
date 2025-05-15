@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 
 import '../model/NotificationModel.dart';
 
@@ -20,7 +21,7 @@ class NotificationDetailsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(notification.title),
-        backgroundColor: Colors.blue, // Choose any color that suits your app
+        backgroundColor: TColors.primary, // Choose any color that suits your app
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
