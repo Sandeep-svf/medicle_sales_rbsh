@@ -6,12 +6,20 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <!-- Removed: ACCESS_BACKGROUND_LOCATION -->
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
-    <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+    <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+
+   <!-- <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />-->
+
+
+
 
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature android:name="android.hardware.camera" android:required="true" />
@@ -22,6 +30,10 @@
     <!-- For Android 13 (API level 33) and above -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+
+
+
+
 
 
 
@@ -83,10 +95,16 @@
             android:name="id.flutter.flutter_background_service.BackgroundService"
             android:foregroundServiceType="location" />-->
 
-        <service
+        <!--<service
             android:name="com.ekasetiawans.flutter_background_service.BackgroundService"
             android:foregroundServiceType="location"
-            android:exported="false"/>
+            android:exported="false"/>-->
+
+
+
+
+
+
 
 
         <meta-data
@@ -111,12 +129,26 @@
         </service>
 
 
+        <!--<service
+            android:name="id.flutter.flutter_background_service.BackgroundService"
+            android:foregroundServiceType="location"
+            android:exported="true"/>-->
+
+
+        <service android:name="me.carda.awesome_notifications.services.BackgroundService"
+            android:permission="android.permission.BIND_JOB_SERVICE"
+            android:exported="true"/>
+
+
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and
          https://developer.android.com/reference/android/content/Intent
 
          In particular, this is used by the Flutter engine in io.flutter.plugin.text.ProcessTextPlugin. -->
+
+
+
     <queries>
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>

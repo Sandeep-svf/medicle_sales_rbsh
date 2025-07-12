@@ -20,6 +20,7 @@ import '../../../../../../utils/helpers/zoom_in_out_anim.dart';
 import '../../../../../../utils/local_storage/auth_manager.dart';
 import '../../../../utils/http/http_client.dart';
 import '../../../addDoctor/controllers/DoctroController.dart';
+import '../../../product/controller/ProductController.dart';
 import '../controllers/ScheduleVisitcontroller.dart';
 import '../controllers/visitListController.dart';
 import '../models/visitSalesData.dart';
@@ -43,6 +44,8 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
   late VisitListController _visitListController;
   final AuthManager authManager = AuthManager(); // Initialize AuthManager
 
+  late ProductController productController;
+
   //location helper
   String _location = 'Fetching location...';
 
@@ -54,8 +57,10 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
     super.initState();
     _doctorListController.fetchDoctorList();
     _visitListController = VisitListController();
-    _visitListController
-        .fetchSalesList(); // Fetch the visit data when screen loads
+    _visitListController.fetchSalesList(); // Fetch the visit data when screen loads
+
+    productController = Get.put(ProductController());
+    productController.fetchProducts();
   }
 
   void _showAddDoctorDialog() {
@@ -344,146 +349,24 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
                                 child: ElevatedButton(
                                   onPressed: doctorVisit.confirmed
                                       ? () {
-                                          // Show a snackbar if the visit is already confirmed
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
-                                            const SnackBar(
-                                              content: Text(
-                                                  'You have already marked this visit confirmed.'),
-                                              backgroundColor: Colors.orange,
-                                            ),
-                                          );
-                                        }
-                                      : () {
-                                          QuickAlert.show(
-                                            context: context,
-                                            type: QuickAlertType.confirm,
-                                            title: "Confirm Visit",
-                                            text:
-                                                "Are you sure you want to mark this visit as confirmed?",
-                                            confirmBtnText: "Yes",
-                                            cancelBtnText: "Cancel",
-                                            confirmBtnColor: TColors.primary,
-                                            width: 300,
-                                            onConfirmBtnTap: () async {
-                                              Navigator.of(context).pop();
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('You have already marked this visit confirmed.'),
+                                        backgroundColor: Colors.orange,
+                                      ),
+                                    );
+                                  }
+                                      : () async {
+                                    List<String> selectedProducts = await _showProductSelectionDialog(context);
+                                    _confirmVisit(context, doctorVisit.id, selectedProducts);
+                                  },
 
-                                              String _message = '';
-                                              double? userLatitude;
-                                              double? userLongitude;
-
-                                              // Request location permission
-                                              var permission = await Permission
-                                                  .location
-                                                  .request();
-
-                                              if (!permission.isGranted) {
-                                                QuickAlert.show(
-                                                  context: context,
-                                                  type: QuickAlertType.error,
-                                                  text:
-                                                      "Location permission is required to confirm the visit.",
-                                                  confirmBtnColor:
-                                                      TColors.primary,
-                                                  width: 300,
-                                                );
-                                                return;
-                                              }
-
-                                              // Fetch current location
-                                              try {
-                                                Position position =
-                                                    await Geolocator
-                                                        .getCurrentPosition(
-                                                  desiredAccuracy:
-                                                      LocationAccuracy.high,
-                                                );
-                                                userLatitude =
-                                                    position.latitude;
-                                                userLongitude =
-                                                    position.longitude;
-                                                print(
-                                                    'LOCATION IS: $userLatitude, $userLongitude');
-                                              } catch (e) {
-                                                QuickAlert.show(
-                                                  context: context,
-                                                  type: QuickAlertType.error,
-                                                  text:
-                                                      "Unable to fetch location. Try again.",
-                                                  confirmBtnColor:
-                                                      TColors.primary,
-                                                  width: 300,
-                                                );
-                                                return;
-                                              }
-
-                                              // Send confirm request
-                                              final visitId = doctorVisit.id;
-
-                                              final response = await http.put(
-                                                Uri.parse(
-                                                    '${THttpHelper.baseUrl}/doctor-visits/$visitId/confirm'),
-                                                headers: {
-                                                  'Content-Type':
-                                                      'application/json'
-                                                },
-                                                body: json.encode({
-                                                  'userLatitude': userLatitude,
-                                                  'userLongitude':
-                                                      userLongitude,
-                                                }),
-                                              );
-
-                                              if (response.statusCode == 200) {
-                                                final responseBody =
-                                                    json.decode(response.body);
-                                                SMResponse visitResponse =
-                                                    SMResponse.fromJson(
-                                                        responseBody);
-
-                                                _message =
-                                                    visitResponse.message;
-
-                                                QuickAlert.show(
-                                                  context: context,
-                                                  type: visitResponse.status
-                                                      ? QuickAlertType.success
-                                                      : QuickAlertType.error,
-                                                  text: _message,
-                                                  confirmBtnColor:
-                                                      TColors.primary,
-                                                  width: 300,
-                                                );
-
-                                                if (visitResponse.status) {
-                                                  await _visitListController
-                                                      .fetchSalesList();
-                                                  setState(() {});
-                                                }
-                                              } else {
-                                                QuickAlert.show(
-                                                  context: context,
-                                                  type: QuickAlertType.error,
-                                                  text:
-                                                      "Failed to confirm the visit",
-                                                  confirmBtnColor:
-                                                      TColors.primary,
-                                                  width: 300,
-                                                );
-                                              }
-                                            },
-                                            onCancelBtnTap: () =>
-                                                Navigator.of(context).pop(),
-                                          );
-                                        },
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: doctorVisit.confirmed
-                                        ? TColors.success
-                                        : TColors.primary,
+                                    backgroundColor:
+                                    doctorVisit.confirmed ? TColors.success : TColors.primary,
                                   ),
                                   child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 16.0), // Horizontal padding
+                                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
                                     child: Text(
                                       doctorVisit.confirmed
                                           ? TTexts.visitConfirmed
@@ -491,6 +374,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
                                     ),
                                   ),
                                 ),
+
                               ),
                             ],
                           ),
@@ -525,4 +409,369 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
       });
     }
   }
+
+  void _showProductSelectionBeforeConfirm(BuildContext context, String visitId) async {
+    final ProductController productController = Get.put(ProductController());
+    await productController.fetchProducts();
+    final RxList<String> selectedProductIds = <String>[].obs;
+
+    await showDialog(
+      context: context,
+      builder: (_) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Dialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              child: Obx(() {
+                if (productController.isLoading.value) {
+                  return const Padding(
+                    padding: EdgeInsets.all(32),
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                }
+
+                return Container(
+                  padding: const EdgeInsets.all(20),
+                  constraints: const BoxConstraints(maxHeight: 500),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        "Select Products (Optional)",
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 16),
+                      Expanded(
+                        child: ListView.separated(
+                          itemCount: productController.productList.length,
+                          separatorBuilder: (_, __) => const Divider(height: 16),
+                          itemBuilder: (_, i) {
+                            final product = productController.productList[i];
+                            final isSelected = selectedProductIds.contains(product.id);
+
+                            return InkWell(
+                              onTap: () {
+                                setState(() {
+                                  if (isSelected) {
+                                    selectedProductIds.remove(product.id);
+                                  } else {
+                                    selectedProductIds.add(product.id);
+                                  }
+                                });
+                              },
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: Image.network(
+                                      product.image ?? '',
+                                      width: 48,
+                                      height: 48,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (_, __, ___) => const Icon(Icons.broken_image),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          product.name,
+                                          style: const TextStyle(fontWeight: FontWeight.w600),
+                                        ),
+                                        if ((product.description ?? '').isNotEmpty)
+                                          Padding(
+                                            padding: const EdgeInsets.only(top: 4),
+                                            child: Text(
+                                              product.description ?? '',
+                                              style: const TextStyle(fontSize: 13, color: Colors.black54),
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                  ),
+                                  Checkbox(
+                                    value: isSelected,
+                                    onChanged: (val) {
+                                      setState(() {
+                                        if (val == true) {
+                                          selectedProductIds.add(product.id);
+                                        } else {
+                                          selectedProductIds.remove(product.id);
+                                        }
+                                      });
+                                    },
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: const Text("Cancel"),
+                          ),
+                          const SizedBox(width: 8),
+                          ElevatedButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                              _confirmVisit(context, visitId, selectedProductIds.toList());
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: TColors.primary,
+                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                            ),
+                            child: const Text("Next"),
+                          ),
+                        ],
+                      )
+                    ],
+                  ),
+                );
+              }),
+            );
+          },
+        );
+      },
+    );
+
+
+  }
+  void _confirmVisit(BuildContext context, String visitId, List<String> selectedProducts) async {
+    bool confirmed = false;
+
+    await QuickAlert.show(
+      context: context,
+      type: QuickAlertType.confirm,
+      title: "Confirm Visit",
+      text: "Are you sure you want to mark this visit as confirmed?",
+      confirmBtnText: "Yes",
+      cancelBtnText: "Cancel",
+      confirmBtnColor: TColors.primary,
+      width: 300,
+      onConfirmBtnTap: () {
+        confirmed = true;
+        Navigator.of(context, rootNavigator: true).pop(); // ensure dialog closes
+      },
+      onCancelBtnTap: () {
+        confirmed = false;
+        Navigator.of(context, rootNavigator: true).pop(); // ensure dialog closes
+      },
+    );
+
+    if (!confirmed) return;
+
+    try {
+      var permission = await Permission.location.request();
+      if (!permission.isGranted) {
+        QuickAlert.show(
+          context: context,
+          type: QuickAlertType.error,
+          text: "Location permission is required.",
+          confirmBtnColor: TColors.primary,
+          width: 300,
+        );
+        return;
+      }
+
+      final position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+
+      final response = await http.put(
+        Uri.parse('${THttpHelper.baseUrl}/doctor-visits/$visitId/confirm'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'userLatitude': position.latitude,
+          'userLongitude': position.longitude,
+          'products': selectedProducts,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final responseBody = json.decode(response.body);
+        final visitResponse = SMResponse.fromJson(responseBody);
+
+        QuickAlert.show(
+          context: context,
+          type: visitResponse.status ? QuickAlertType.success : QuickAlertType.error,
+          text: visitResponse.message,
+          confirmBtnColor: TColors.primary,
+          width: 300,
+        );
+
+        if (visitResponse.status) {
+          await _visitListController.fetchSalesList();
+          if (context.mounted) setState(() {});
+        }
+      } else {
+        QuickAlert.show(
+          context: context,
+          type: QuickAlertType.error,
+          text: "Failed to confirm the visit",
+          confirmBtnColor: TColors.primary,
+          width: 300,
+        );
+      }
+    } catch (e) {
+      QuickAlert.show(
+        context: context,
+        type: QuickAlertType.error,
+        text: "Unexpected error: $e",
+        confirmBtnColor: TColors.primary,
+        width: 300,
+      );
+    }
+  }
+
+  Future<List<String>> _showProductSelectionDialog(BuildContext context) async {
+    final RxList<String> selectedProductIds = <String>[].obs;
+    final RxString searchQuery = "".obs;
+    final productController = Get.put(ProductController());
+
+    await productController.fetchProducts();
+
+    return await showDialog<List<String>>(
+      context: context,
+      builder: (_) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text("Select Products (Optional)"),
+              content: SizedBox(
+                height: 500,
+                width: double.maxFinite,
+                child: Obx(() {
+                  if (productController.isLoading.value) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (productController.productList.isEmpty) {
+                    return const Center(child: Text("No products available."));
+                  }
+
+                  final filteredList = productController.productList.where((product) {
+                    return product.name.toLowerCase().contains(searchQuery.value);
+                  }).toList();
+
+                  return Column(
+                    children: [
+                      // Search Field
+                      TextField(
+                        decoration: InputDecoration(
+                          prefixIcon: const Icon(Icons.search),
+                          hintText: "Search products...",
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        onChanged: (value) {
+                          searchQuery.value = value.toLowerCase();
+                        },
+                      ),
+                      const SizedBox(height: 10),
+
+                      // Filtered List
+                      Expanded(
+                        child: filteredList.isEmpty
+                            ? const Center(child: Text("No matching products found."))
+                            : ListView.builder(
+                          itemCount: filteredList.length,
+                          itemBuilder: (_, i) {
+                            final product = filteredList[i];
+                            final isSelected = selectedProductIds.contains(product.id);
+
+                            return CheckboxListTile(
+                              value: isSelected,
+                              title: Text(product.name),
+                              subtitle: Text(product.description ?? ""),
+                              secondary: GestureDetector(
+                                onTap: () {
+                                  showDialog(
+                                    context: context,
+                                    builder: (_) => Dialog(
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+                                      child: Stack(
+                                        alignment: Alignment.topRight,
+                                        children: [
+                                          Padding(
+                                            padding: const EdgeInsets.all(16.0),
+                                            child: Image.network(
+                                              product.image ?? '',
+                                              fit: BoxFit.contain,
+                                              errorBuilder: (_, __, ___) =>
+                                              const Icon(Icons.broken_image, size: 80),
+                                            ),
+                                          ),
+                                          IconButton(
+                                            icon: const Icon(Icons.close),
+                                            onPressed: () => Navigator.of(context).pop(),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Image.network(
+                                    product.image ?? '',
+                                    width: 40,
+                                    height: 40,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) =>
+                                    const Icon(Icons.image_not_supported),
+                                  ),
+                                ),
+                              ),
+                              onChanged: (val) {
+                                setState(() {
+                                  if (val == true) {
+                                    selectedProductIds.add(product.id);
+                                  } else {
+                                    selectedProductIds.remove(product.id);
+                                  }
+                                });
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  );
+                }),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, <String>[]),
+                  child: const Text("Skip"),
+                ),
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(context, selectedProductIds.toList()),
+                  style: ElevatedButton.styleFrom(backgroundColor: TColors.primary),
+                  child: const Text("Next"),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    ) ?? <String>[]; // fallback if dialog dismissed
+  }
+
+
+
+
+
+
 }

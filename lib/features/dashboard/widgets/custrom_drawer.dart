@@ -20,6 +20,7 @@ import '../../../utils/local_storage/auth_manager.dart';
 import '../../Blog/screen/blog.dart';
 import '../../Inbox/Screen/InboxScreen.dart';
 
+import '../../SalesChartAnalysis/Screen/salesChartHome2.dart';
 import '../../addStokist/screen/StokistList.dart';
 import '../../authentication/models/UserModel.dart';
 import '../../authentication/screens/login/login.dart';

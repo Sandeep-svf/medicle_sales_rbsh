@@ -21,8 +21,12 @@ class DoctorListController extends GetxController {
       isLoading.value = true;
 
       headOffice = (await authManager.getHeadOffice())!;
+     // final headOffice = (await authManager.getHeadOffice()) ?? '';
 
+      print("Doctors Data: headOffice $headOffice");
+      print("Doctors Data: $_baseUrl/doctors/by-head-office/$headOffice");
       final response = await http.get(
+
         Uri.parse("$_baseUrl/doctors/by-head-office/$headOffice"),
         headers: {"Content-Type": "application/json"},
       );

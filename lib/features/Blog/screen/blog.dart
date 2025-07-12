@@ -19,55 +19,65 @@ class Blogscreen extends StatelessWidget {
     ];
 
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: GridView.builder(
-          itemCount: blogPosts.length,
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3, // 3 columns
-            crossAxisSpacing: 8, // Space between columns
-            mainAxisSpacing: 8, // Space between rows
-            childAspectRatio: 0.75, // Adjust height
-          ),
-          itemBuilder: (context, index) {
-            final post = blogPosts[index];
-            return Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+      appBar: AppBar(
+        title: const Text("Blog Posts"),
+        centerTitle: true,
+      ),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: GridView.builder(
+              itemCount: blogPosts.length,
+              gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                maxCrossAxisExtent: 200, // Each item max 250px wide
+                mainAxisSpacing: 16,
+                crossAxisSpacing: 16,
+                childAspectRatio: 0.75, // Controls height vs width
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Blog Image
-                  ClipRRect(
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                    child: Image.asset(
-                      post["image"]!,
-                      width: double.infinity,
-                      height: 100,
-                      fit: BoxFit.cover,
-                    ),
+              itemBuilder: (context, index) {
+                final post = blogPosts[index];
+                return Card(
+                  elevation: 6,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
                   ),
-
-                  // Blog Title
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      post["title"]!,
-                      style: const TextStyle(
-                        fontSize: 14,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Blog Image
+                      // Blog Image
+                      ClipRRect(
+                        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                        child: SizedBox(
+                          height: 180,
+                          child: const FlutterLogo(size: double.infinity, style: FlutterLogoStyle.markOnly),
+                        ),
                       ),
-                      textAlign: TextAlign.center,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+
+
+                      // Blog Title
+                      Padding(
+                        padding: const EdgeInsets.all(10.0),
+                        child: Text(
+                          post["title"]!,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          textAlign: TextAlign.center,
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1, // Only reserve height for one line
+                        ),
+
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            );
-          },
-        ),
+                );
+              },
+            ),
+          );
+        },
       ),
     );
   }

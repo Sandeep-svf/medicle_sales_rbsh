@@ -2,12 +2,12 @@ import 'dart:async';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
-class SalesChartHomeScreen extends StatefulWidget {
+class SalesChartHomeScreen2 extends StatefulWidget {
   @override
   _DashboardScreenState createState() => _DashboardScreenState();
 }
 
-class _DashboardScreenState extends State<SalesChartHomeScreen> with TickerProviderStateMixin {
+class _DashboardScreenState extends State<SalesChartHomeScreen2> with TickerProviderStateMixin {
   final Color primaryColor = Color(0xFFC71D52);
 
   late AnimationController callController;

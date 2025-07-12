@@ -7,6 +7,7 @@ import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import '../../Blog/screen/blog.dart';
 import '../../Inbox/Screen/InboxScreen.dart';
 import '../../MarketingMaterials/Screens/MarketingMaterials.dart';
+import '../../SalesChartAnalysis/Screen/salesChartHome2.dart';
 import '../../marketing/screen/marketing.dart';
 import '../../notification/screen/NotificatinScreen.dart';
 import '../widgets/custrom_drawer.dart';

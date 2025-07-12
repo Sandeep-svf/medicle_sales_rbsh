@@ -90,7 +90,7 @@ class AuthController extends GetxController {
           AuthManager authManager = AuthManager();
           await authManager.saveUserData(userModel); // Save full user model
           await authManager.saveUserId(userModel.id); // Save only user ID
-          await authManager.saveHeadOffice(userModel.headOffice.id); // Save head office
+          await authManager.saveHeadOffice(userModel.headOfficeId); // Save head office
           await authManager.saveAuthToken(userModel.token); // Save auth token
 
 

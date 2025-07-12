@@ -242,7 +242,7 @@ class _PharmaDistributorFormScreenState extends State<PharmaDistributorFormScree
               _sectionTitle("Contact Details"),
               _requiredField(contactPerson, "Contact Person"),
               _textField(designation, "Designation"),
-              _textField(mobileNumber, "Mobile Number", inputType: TextInputType.phone),
+              _requiredField(mobileNumber, "Mobile Number", inputType: TextInputType.phone),
               _requiredField(emailAddress, "Email Address", inputType: TextInputType.emailAddress),
               _textField(website, "Website"),
 
@@ -272,22 +272,25 @@ class _PharmaDistributorFormScreenState extends State<PharmaDistributorFormScree
 
               const SizedBox(height: 10),
               _sectionTitle("Bank Details"),
-              _textField(bankName, "Bank Name"),
-              _textField(branch, "Branch"),
-              _textField(accountNumber, "Account Number", inputType: TextInputType.number),
-              _textField(ifscCode, "IFSC Code"),
+              _requiredField(bankName, "Bank Name"),
+              _requiredField(branch, "Branch"),
+              _requiredField(accountNumber, "Account Number", inputType: TextInputType.number),
+              _requiredField(ifscCode, "IFSC Code"),
 
               const SizedBox(height: 20),
 
               TextButton(
                 onPressed: () async {
+
+
+
                   try {
                     final result = await Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => LocationPickerScreen()),
                     );
 
-                    print("🔄 Returned from Location Picker");
+                    print(" Returned from Location Picker");
                     print("Result: $result");
 
                     if (result != null ) {
@@ -355,7 +358,21 @@ class _PharmaDistributorFormScreenState extends State<PharmaDistributorFormScree
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(backgroundColor: TColors.primary),
                   onPressed: () {
+
                     if (_formKey.currentState!.validate()) {
+
+
+                      if (selectedlatitude == null || selectedlongitude == null || selectedLocation == null) {
+                        Get.snackbar(
+                          "⚠️ Location Required",
+                          "Please select a location before submitting.",
+                          backgroundColor: Colors.redAccent,
+                          colorText: Colors.white,
+                          duration: const Duration(seconds: 3),
+                        );
+                        return; // Stop submission
+                      }
+
                       _submitDistributorForm();
                     }
                   },

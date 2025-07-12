@@ -23,6 +23,7 @@ import '../../../addDoctor/controllers/DoctroController.dart';
 import '../../../addStokist/controllers/StokistListController.dart';
 import '../controllers/ScheduleVisitcontroller.dart';
 import '../controllers/visitListController.dart';
+import '../models/stockistvisitConfirm.dart';
 import '../models/visitSalesData.dart';
 
 class VisitStockistScreen extends StatefulWidget {
@@ -434,22 +435,29 @@ class _VisitStockistScreenState extends State<VisitStockistScreen> {
                                           }),
                                         );
 
-                                        print("reponseStatusCodeStockist: ${response.statusCode}");
-                                        print("reponseStatusCodeStockist: ${response.body}");
-                                        print("reponseStatusCodeStockist: ${THttpHelper.baseUrl}/stockists/visits/$visitId/confirm");
+
+
+                                        print("Stockist Visit : reponseStatusCodeStockist: ${response.statusCode}");
+                                        print("Stockist Visit reponseStatusCodeStockist: ${response.body}");
+                                        print("Stockist Visit reponseStatusCodeStockist: ${THttpHelper.baseUrl}/stockists/visits/$visitId/confirm");
 
                                         if (response.statusCode == 200) {
                                           final responseBody = json.decode(response.body);
 
                                           print("Stockist Visit Confirm response data: $responseBody");
 
-                                          // Parse the response using the VisitResponse model
-                                          SMResponse visitResponse = SMResponse.fromJson(responseBody);
 
-                                          if (visitResponse.status) {
+
+                                          // Parse the response using the VisitResponse model
+                                          VisitConfirmationResponse visitResponse = VisitConfirmationResponse.fromJson(responseBody);
+
+                                          print("Stockist Visit status ${visitResponse.status}");
+                                          print("Stockist Visit message ${visitResponse.message}");
+
+                                          if (visitResponse.status==true) {
                                             // If status is true, handle success
                                             setState(() {
-                                              _message = visitResponse.message; // Set the correct message
+                                              _message = visitResponse.message!; // Set the correct message
                                             });
 
                                             print("Success message: $_message");
@@ -465,7 +473,7 @@ class _VisitStockistScreenState extends State<VisitStockistScreen> {
                                           } else {
                                             // If status is false, handle failure
                                             setState(() {
-                                              _message = visitResponse.message;
+                                              _message = visitResponse.message!;
                                             });
 
                                             print("Failure message: $_message");

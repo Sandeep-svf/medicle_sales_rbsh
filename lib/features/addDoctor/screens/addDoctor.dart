@@ -134,255 +134,204 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
               content: Container(
                 width: isTablet ? screenWidth * 0.8 : double.maxFinite, // Set 80% width on tablets
 
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TextFormField(
-                      controller: nameController,
-                      decoration: const InputDecoration(
-                        labelText: TTexts.doctorName,
-                        border: OutlineInputBorder(),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextFormField(
+                        controller: nameController,
+                        decoration: const InputDecoration(
+                          labelText: TTexts.doctorName,
+                          border: OutlineInputBorder(),
+                        ),
+                        validator: (value) =>
+                        value == null || value.isEmpty ? 'This field is required' : null,
                       ),
-                      validator: (value) =>
-                      value == null || value.isEmpty
-                          ? 'This field is required'
-                          : null,
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: specializationController,
-                      decoration: const InputDecoration(
-                        labelText: TTexts.specialization,
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (value) =>
-                      value == null || value.isEmpty
-                          ? 'This field is required'
-                          : null,
-                    ),
-                    const SizedBox(height: 12),
-                    DropdownButtonFormField<String>(
-                      value: selectedCityId,
-                      decoration: const InputDecoration(
-                        labelText: "Select Head Office",
-                        border: OutlineInputBorder(),
-                      ),
-                      items: cities.map((city) {
-                        return DropdownMenuItem(
-                          value: city['id'],
-                          child: Text(city['name']!),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          selectedCityId = value;
-                          selectedCityName =
-                          cities.firstWhere((city) =>
-                          city['id'] == value)['name'];
-                        });
-                      },
-                      validator: (value) =>
-                      value == null || value.isEmpty
-                          ? 'Please select a head office'
-                          : null,
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: emailController,
-                      keyboardType: TextInputType.emailAddress,
-                      decoration: const InputDecoration(
-                        labelText: 'Email',
-                        border: OutlineInputBorder(),
-                      ),
-                      /*validator: (value) {
-                        if (value == null || value.isEmpty)
-                          return 'This field is required';
-                        final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
-                        if (!emailRegex.hasMatch(value))
-                          return 'Enter a valid email';
-                        return null;
-                      },*/
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: phoneController,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      decoration: const InputDecoration(
-                        labelText: 'Phone Number',
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (value) =>
-                      value == null || value.isEmpty
-                          ? 'This field is required'
-                          : null,
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: registrationController,
-                      decoration: const InputDecoration(
-                        labelText: 'Registration Number',
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (value) =>
-                      value == null || value.isEmpty
-                          ? 'This field is required'
-                          : null,
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: experienceController,
-                      keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true),
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(
-                            RegExp(r'^\d*\.?\d{0,2}')),
-                      ],
-                      decoration: const InputDecoration(
-                        labelText: 'Years of Experience',
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (value) =>
-                      value == null || value.isEmpty
-                          ? 'This field is required'
-                          : null,
-                    ),
-
-                    const SizedBox(height: 12),
-                    GestureDetector(
-                      onTap: () => _selectDate(context, false),
-                      child: AbsorbPointer(
-                        child: TextFormField(
-                          controller: dobController,
-                          decoration: const InputDecoration(
-                            labelText: 'Date of Birth',
-                            border: OutlineInputBorder(),
-                          ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: specializationController,
+                        decoration: const InputDecoration(
+                          labelText: TTexts.specialization,
+                          border: OutlineInputBorder(),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    GestureDetector(
-                      onTap: () => _selectDate(context, true),
-                      child: AbsorbPointer(
-                        child: TextFormField(
-                          controller: anniversaryController,
-                          decoration: const InputDecoration(
-                            labelText: 'Anniversary',
-                            border: OutlineInputBorder(),
-                          ),
+                      const SizedBox(height: 12),
+                      DropdownButtonFormField<String>(
+                        value: selectedCityId,
+                        decoration: const InputDecoration(
+                          labelText: "Select Head Office",
+                          border: OutlineInputBorder(),
                         ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    DropdownButtonFormField<String>(
-                      value: selectedGender,
-                      decoration: const InputDecoration(
-                        labelText: "Gender",
-                        border: OutlineInputBorder(),
-                      ),
-
-
-                      items: ['Male', 'Female', 'Other'].map((gender) {
-                        return DropdownMenuItem(
-                          value: gender,
-                          child: Text(gender),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          selectedGender = value;
-                        });
-                      },
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please select a gender'; // Validation message
-                        }
-                        return null;
-                      },
-
-                    ),
-                    const SizedBox(height: 12),
-                   /* TextButton(
-                      onPressed: () async {
-                        Get.snackbar("Notice",
-                            "This feature is optional and currently under development. Kindly disregard it for now.");
-                      },
-                      child: const Text('Select Location'),
-                    ),*/
-
-
-                    TextButton(
-                      onPressed: () async {
-                        final result = await Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => LocationPickerScreen()),
-                        );
-
-                        if (result != null &&
-                            result['latitude'] != null &&
-                            result['longitude'] != null &&
-                            result['address'] != null) {
-                          selectedLatitude = result['latitude'];
-                          selectedLongitude = result['longitude'];
-                          selectedAddress = result['address'];
-
-                          Get.snackbar(
-                            "📍 Location Selected",
-                            "$selectedAddress\nLat: $selectedLatitude, Lng: $selectedLongitude",
-                            backgroundColor: Colors.green,
-                            duration: const Duration(seconds: 4),
+                        items: cities.map((city) {
+                          return DropdownMenuItem(
+                            value: city['id'],
+                            child: Text(city['name']!),
                           );
-
-                          // Optional: save to local variables or form
-                          // setState(() {
-                          //   _selectedLat = lat;
-                          //   _selectedLng = lng;
-                          //   _selectedAddress = address;
-                          // });
-                        } else {
-                          Get.snackbar(
-                            "Location Not Selected",
-                            "Please try again or cancel",
-                            backgroundColor: Colors.orange,
-                          );
-                        }
-                      },
-                      style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-                        backgroundColor: TColors.primary, // Background color for the button
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        elevation: 5, // Shadow for the button
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            selectedCityId = value;
+                            selectedCityName =
+                            cities.firstWhere((city) => city['id'] == value)['name'];
+                          });
+                        },
+                        validator: (value) =>
+                        value == null || value.isEmpty ? 'Please select a head office' : null,
                       ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.location_on,
-                            color: Colors.white,
-                            size: 22,
-                          ),
-                          SizedBox(width: 8),
-                          Text(
-                            'Select Location',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        decoration: const InputDecoration(
+                          labelText: 'Email',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: phoneController,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                        decoration: const InputDecoration(
+                          labelText: 'Phone Number',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: registrationController,
+                        decoration: const InputDecoration(
+                          labelText: 'Registration Number',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: experienceController,
+                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
+                        ],
+                        decoration: const InputDecoration(
+                          labelText: 'Years of Experience',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      GestureDetector(
+                        onTap: () => _selectDate(context, false),
+                        child: AbsorbPointer(
+                          child: TextFormField(
+                            controller: dobController,
+                            decoration: const InputDecoration(
+                              labelText: 'Date of Birth',
+                              border: OutlineInputBorder(),
                             ),
                           ),
-                        ],
+                        ),
                       ),
-                    ),
+                      const SizedBox(height: 12),
+                      GestureDetector(
+                        onTap: () => _selectDate(context, true),
+                        child: AbsorbPointer(
+                          child: TextFormField(
+                            controller: anniversaryController,
+                            decoration: const InputDecoration(
+                              labelText: 'Anniversary',
+                              border: OutlineInputBorder(),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      DropdownButtonFormField<String>(
+                        value: selectedGender,
+                        decoration: const InputDecoration(
+                          labelText: "Gender",
+                          border: OutlineInputBorder(),
+                        ),
+                        items: ['Male', 'Female', 'Other'].map((gender) {
+                          return DropdownMenuItem(
+                            value: gender,
+                            child: Text(gender),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            selectedGender = value;
+                          });
+                        },
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please select a gender';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      TextButton(
+                        onPressed: () async {
+                          final result = await Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => LocationPickerScreen()),
+                          );
 
-                    const SizedBox(height: 12),
-                  ],
+                          if (result != null &&
+                              result['latitude'] != null &&
+                              result['longitude'] != null &&
+                              result['address'] != null) {
+                            selectedLatitude = result['latitude'];
+                            selectedLongitude = result['longitude'];
+                            selectedAddress = result['address'];
+
+                            Get.snackbar(
+                              "📍 Location Selected",
+                              "$selectedAddress\nLat: $selectedLatitude, Lng: $selectedLongitude",
+                              backgroundColor: Colors.green,
+                              duration: const Duration(seconds: 4),
+                            );
+                          } else {
+                            Get.snackbar(
+                              "Location Not Selected",
+                              "Please try again or cancel",
+                              backgroundColor: Colors.orange,
+                            );
+                          }
+                        },
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                          backgroundColor: TColors.primary,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 5,
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.location_on,
+                              color: Colors.white,
+                              size: 22,
+                            ),
+                            SizedBox(width: 8),
+                            Text(
+                              'Select Location',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                    ],
+                  ),
                 ),
-              ),
+
               ),
               actions: [
                 TextButton(

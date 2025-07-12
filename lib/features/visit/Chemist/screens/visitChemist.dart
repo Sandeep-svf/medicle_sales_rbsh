@@ -23,6 +23,7 @@ import '../../../addDoctor/controllers/DoctroController.dart';
 import '../controllers/ScheduleVisitcontroller.dart';
 import '../controllers/visitListController.dart';
 import '../models/ChemisVisitModel.dart';
+import '../models/VisitResponseModel.dart';
 
 class VisitChemistScreen extends StatefulWidget {
   const VisitChemistScreen({super.key});
@@ -419,22 +420,21 @@ class _VisitChemistScreenState extends State<VisitChemistScreen> {
                                           },
                                           body: json.encode({
                                             'userLatitude': userLatitude,
-                                            'userLongitude':
-                                            userLongitude,
+                                            'userLongitude': userLongitude,
                                           }),
                                         );
 
                                         if (response.statusCode == 200) {
                                           final responseBody =
                                           json.decode(response.body);
-                                          SMResponse visitResponse =
-                                          SMResponse.fromJson(
+                                          VisitScheduleResponse visitResponse =
+                                          VisitScheduleResponse.fromJson(
                                               responseBody);
 
                                           _message =
                                               visitResponse.message;
 
-                                          QuickAlert.show(
+                                          /*QuickAlert.show(
                                             context: context,
                                             type: visitResponse.status
                                                 ? QuickAlertType.success
@@ -443,9 +443,35 @@ class _VisitChemistScreenState extends State<VisitChemistScreen> {
                                             confirmBtnColor:
                                             TColors.primary,
                                             width: 300,
-                                          );
+                                          );*/
 
-                                          if (visitResponse.status) {
+                                          print(
+                                              'VisitChemistScreen : ${visitResponse.message} status: ${visitResponse.success}');
+
+                                          if (visitResponse.success) {
+                                            QuickAlert.show(
+                                              context: context,
+                                              type: QuickAlertType.success,
+                                              title: "Success",
+                                              text: "${visitResponse.message}",
+                                              confirmBtnColor: TColors.primary,
+                                              width: 300,
+                                            );
+                                            await _visitListController.fetchVisitList();
+                                            setState(() {});
+                                          } else {
+                                            QuickAlert.show(
+                                              context: context,
+                                              type: QuickAlertType.error,
+                                              title: "Failed",
+                                              text: "${visitResponse.message}",
+                                              confirmBtnColor: TColors.primary,
+                                              width: 300,
+                                            );
+                                          }
+
+
+                                          if (visitResponse.success) {
                                             await _visitListController
                                                 .fetchVisitList();
                                             setState(() {});

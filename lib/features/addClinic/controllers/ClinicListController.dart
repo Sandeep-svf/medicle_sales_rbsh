@@ -49,6 +49,8 @@ class ClinicListController extends GetxController {
           var data = jsonData['data'] ?? [];
 
           if (data is List) {
+            print("httpChemist: Response: data.length: ${data.length}");
+
             // Only assign the data if it's a valid list
             clinicList.assignAll(
               data.map<Clinic>((json) => Clinic.fromJson(json)).toList(),
@@ -86,8 +88,8 @@ class ClinicListController extends GetxController {
       } else {
         // Handle status codes other than 200 (e.g., 500, 404)
         Get.snackbar(
-          "Error",
-          "Failed to load chemists. Status code: ${response.statusCode}",
+          "Note",
+          "No Chemist added yet.: ${response.statusCode}",
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.redAccent,
           colorText: Colors.white,

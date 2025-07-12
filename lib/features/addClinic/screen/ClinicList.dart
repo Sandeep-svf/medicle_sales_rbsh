@@ -158,18 +158,19 @@ class _ClinicListScreenState extends State<ClinicListScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-
-          Navigator.push(
+        onPressed: () async {
+          final shouldRefresh = await Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => AddClinicScreen(controller: _clinicListController)),
+            MaterialPageRoute(
+              builder: (_) => AddClinicScreen(controller: _clinicListController),
+            ),
           );
 
-         /* showDialog(
-            context: context,
-            builder: (_) => AddClinicDialog(controller: _clinicListController,),
-          );*/
+          if (shouldRefresh == true) {
+            _clinicListController.fetchClinicList(); // Refresh clinic list
+          }
         },
+
         child: const Icon(Icons.add, color: Colors.white),
         backgroundColor: TColors.primary,
       ),

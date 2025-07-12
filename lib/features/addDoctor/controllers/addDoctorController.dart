@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:medicle_sales_rbsh/utils/loder/CircularLoaderController.dart';
 
 import '../../../utils/http/http_client.dart';
+import '../../../utils/local_storage/auth_manager.dart';
 import 'DoctroController.dart';
 
 class AddDoctorController {
@@ -69,9 +70,13 @@ class AddDoctorController {
 
     try {
       CircularLoaderController.showLoader(context);
+      // Get token from AuthManager
+      String? token = await AuthManager().getAuthToken();
       final response = await http.post(
         Uri.parse(apiUrl),
-        headers: {"Content-Type": "application/json"},
+        headers: {"Content-Type": "application/json",
+          "Authorization": "Bearer $token",},
+
         body: json.encode(doctorData),
       );
 

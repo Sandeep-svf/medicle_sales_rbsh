@@ -90,6 +90,14 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
 
+    // 🔒 Validate location
+    if (selectedlatitude == null || selectedlongitude == null || selectedLocation == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("📍 Please select location before submitting.")),
+      );
+      return;
+    }
+
     setState(() => isLoading = true);
 
     final body = {
@@ -131,7 +139,7 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
       if (response.statusCode == 201) {
         await widget.controller.fetchClinicList();
         if (mounted) {
-          Navigator.pop(context);
+          Navigator.pop(context,true);
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text("Clinic added successfully")),
           );
@@ -242,9 +250,9 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
 
                 // Mobile Number (Required)
                 _buildTextField(phoneController, "Mobile Number", keyboardType: TextInputType.phone, required: true),
-                _buildTextField(emailController, "Email", keyboardType: TextInputType.emailAddress),
+                _buildTextField(emailController, "Email", keyboardType: TextInputType.emailAddress,required: true),
 
-                _buildTextField(addressController, "Address"),
+                _buildTextField(addressController, "Address",required: true),
                 // Head Office Dropdown (Required)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -256,26 +264,32 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
                       labelText: "Select Head Office",
                       border: OutlineInputBorder(),
                     ),
-                    items: headOffices.map((headOffice) {
+                    items: headOffices.map((office) {
+                      final id = office['_id']?.toString() ?? '';
+                      final name = office['name']?.toString() ?? '';
                       return DropdownMenuItem<String>(
-                        value: headOffice['_id'],
-                        child: Text(headOffice['name']),
+                        value: id,
+                        child: Text(name),
                       );
                     }).toList(),
                     onChanged: (value) {
                       setState(() {
-                        selectedHeadOffice = value;
+                        selectedHeadOffice = value; // Make sure it's the actual id
+                        print("Selected Head Office ID: $selectedHeadOffice");
                       });
                     },
-                    validator: (value) => value == null ? 'Head Office is required' : null,
+                    validator: (value) => value == null || value.isEmpty
+                        ? 'Head Office is required'
+                        : null,
                   ),
+
                 ),
 
                 // Designation (Optional)
                 _buildTextField(designationController, "Designation", required: false),
 
                 // Drug License Number (Optional)
-                _buildTextField(drugLicenseNumberController, "Drug License Number", required: false),
+                _buildTextField(drugLicenseNumberController, "Drug License Number", required: true),
 
                 // GST No (Optional)
                 _buildTextField(gstController, "GST No", required: false),

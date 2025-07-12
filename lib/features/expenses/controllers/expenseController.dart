@@ -1,17 +1,18 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:medicle_sales_rbsh/features/expenses/models/ExpenseDefaultValueModel.dart';
+import 'package:medicle_sales_rbsh/features/expenses/models/expanseModel.dart'; // ✅ Ensure correct model path
 
 import '../../../utils/http/http_client.dart';
 import '../../../utils/local_storage/auth_manager.dart';
-import '../models/expanseModel.dart'; // Ensure this path is correct
+import '../models/NewExpenseModel.dart';
 
 class ExpenseController with ChangeNotifier {
-  AuthManager authManager = AuthManager();
+  final AuthManager authManager = AuthManager();
 
-  // This method returns a Future, which will be handled by FutureBuilder
-  Future<List<Expense>> fetchExpenses() async {
-    String? userId = await authManager.getUserId(); // Get user ID
+  Future<List<ExpenseModel>> fetchExpenses() async {
+    String? userId = await authManager.getUserId();
 
     try {
       final response = await http.get(
@@ -20,7 +21,7 @@ class ExpenseController with ChangeNotifier {
 
       if (response.statusCode == 200) {
         List<dynamic> data = jsonDecode(response.body);
-        return data.map((item) => Expense.fromJson(item)).toList();
+        return data.map((item) => ExpenseModel.fromJson(item)).toList(); // ✅ fixed here
       } else {
         throw Exception('Failed to load expenses');
       }
@@ -28,6 +29,5 @@ class ExpenseController with ChangeNotifier {
       throw Exception('Error fetching expenses: $e');
     }
   }
+
 }
-
-
