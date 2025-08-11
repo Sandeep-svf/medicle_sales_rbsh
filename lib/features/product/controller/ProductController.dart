@@ -2,13 +2,15 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:medicle_sales_rbsh/utils/http/http_client.dart';
 import '../model/ProductModel.dart';
 
 class ProductController extends GetxController {
   var isLoading = false.obs;
   var productList = <ProductModel>[].obs;
+   String baseUrl = THttpHelper.baseUrl;
 
-  final String apiUrl = "https://medi-glucks-erp.onrender.com/api/products";
+  final String apiUrl = "${THttpHelper.baseUrl}/products";
   final String logPrefix = "[ProductController]";
 
   Future<void> fetchProducts() async {

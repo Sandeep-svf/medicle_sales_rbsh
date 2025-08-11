@@ -226,7 +226,6 @@ class _VisitStockistScreenState extends State<VisitStockistScreen> {
         );
       },
     );
-
   }
 
   void _showDeleteConfirmationDialog(int index) {

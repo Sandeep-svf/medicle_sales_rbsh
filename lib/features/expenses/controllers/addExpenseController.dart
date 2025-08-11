@@ -18,15 +18,20 @@ class AddExpenseController with ChangeNotifier {
     String? bill,
     required BuildContext context,
   }) async {
+    debugPrint("AddExpenseController: Starting addExpense");
+
     String? userId = await authManager.getUserId();
-    // Data to be sent in the request body
+    debugPrint("AddExpenseController: Retrieved userId = $userId");
+
     final Map<String, dynamic> expenseData = {
       "userId": userId,
       "category": category,
       "amount": amount,
       "description": description,
-      "bill": bill ?? "", // If bill is not provided, use an empty string
+      "bill": bill ?? "",
     };
+
+    debugPrint("AddExpenseController: Sending POST to $apiUrl with body = $expenseData");
 
     try {
       final response = await http.post(
@@ -35,19 +40,22 @@ class AddExpenseController with ChangeNotifier {
         body: json.encode(expenseData),
       );
 
+      debugPrint("AddExpenseController: Response status = ${response.statusCode}");
+      debugPrint("AddExpenseController: Response body = ${response.body}");
+
       if (response.statusCode == 201) {
-        // If the response is successful, show success snackbar
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Expense added successfully!')),
         );
+        debugPrint("AddExpenseController: Expense added successfully.");
       } else {
-        // If there's an error, show error snackbar
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Failed to add expense.')),
         );
+        debugPrint("AddExpenseController: Failed to add expense.");
       }
     } catch (e) {
-      // Catch any error and show error snackbar
+      debugPrint("AddExpenseController: Exception occurred - $e");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('An error occurred: $e')),
       );

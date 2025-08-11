@@ -80,6 +80,11 @@ class AddDoctorController {
         body: json.encode(doctorData),
       );
 
+      if (kDebugMode) {
+        print('[AddDoctorController]Response Status: ${response.statusCode}');
+        print('[AddDoctorController]Response Body: ${response.body}');
+      }
+
       if (response.statusCode == 201) {
         CircularLoaderController.hideLoader();
 
@@ -89,6 +94,7 @@ class AddDoctorController {
         // If the response is successful, show success snackbar
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Doctor added successfully!')),
+
         );
         // Close the dialog
         Navigator.pop(context);

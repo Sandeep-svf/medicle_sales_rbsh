@@ -437,7 +437,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        "Select Products (Optional)",
+                        "Select Products",
                         style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 16),

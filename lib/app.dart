@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:medicle_sales_rbsh/features/authentication/screens/onboarding/splash.dart';
-import 'package:medicle_sales_rbsh/services/PushNotificationService.dart';
+
 import 'package:medicle_sales_rbsh/utils/anim/CustomPageTransition.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:medicle_sales_rbsh/utils/theam/theme.dart';
