@@ -34,6 +34,16 @@ class AddDoctorController {
   }) async {
     const apiUrl = '$_baseUrl/doctors';
 
+
+    final annDate;
+    final dobDate;
+    final yearOfExp;
+    annDate       = anniversaryController.text.isEmpty ? null : anniversaryController.text;
+    dobDate       = dobController.text.isEmpty ? null : dobController.text;
+    yearOfExp     = experienceController.text.isEmpty ? null : experienceController.text;
+
+
+
     final Map<String, dynamic> doctorData = {
       "name": nameController.text,
       "specialization": specializationController.text,
@@ -43,11 +53,11 @@ class AddDoctorController {
       "email": emailController.text,
       "phone": phoneController.text,
       "registration_number": registrationController.text,
-      "years_of_experience": experienceController.text,
-      "date_of_birth": dobController.text,
+      "years_of_experience": yearOfExp,
+      "date_of_birth": dobDate,
       "gender": selectedGender,
-      "anniversary": anniversaryController.text,
-      "head_office": selectedCityId, // Using the same head office ID here
+      "anniversary": annDate,
+      "headOfficeId": selectedCityId, // Using the same head office ID here
     };
 
 
@@ -60,16 +70,17 @@ class AddDoctorController {
       print('Doctor Data - Email: ${emailController.text}');
       print('Doctor Data - Phone: ${phoneController.text}');
       print('Doctor Data - Registration Number: ${registrationController.text}');
-      print('Doctor Data - Years of Experience: ${experienceController.text}');
-      print('Doctor Data - Date of Birth: ${dobController.text}');
+      print('Doctor Data - Years of Experience: ${yearOfExp}');
+      print('Doctor Data - Date of Birth: ${dobDate}');
       print('Doctor Data - Gender: $selectedGender');
-      print('Doctor Data - Anniversary: ${anniversaryController.text}');
+      print('Doctor Data - Anniversary: ${annDate}');
       print('Doctor Data - Head Office ID: $selectedCityId');
     }
 
 
     try {
       CircularLoaderController.showLoader(context);
+
       // Get token from AuthManager
       String? token = await AuthManager().getAuthToken();
       final response = await http.post(

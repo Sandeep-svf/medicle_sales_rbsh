@@ -1,241 +1,238 @@
+class StockistResponse {
+  final bool success;
+  final int count;
+  final List<Stockist> data;
+
+  StockistResponse({
+    required this.success,
+    required this.count,
+    required this.data,
+  });
+
+  factory StockistResponse.fromJson(Map<String, dynamic> json) {
+    return StockistResponse(
+      success: json['success'] ?? false,
+      count: json['count'] ?? 0,
+      data: (json['data'] as List<dynamic>?)
+          ?.map((e) => Stockist.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+          [],
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'success': success,
+    'count': count,
+    'data': data.map((e) => e.toJson()).toList(),
+  };
+}
+
 class Stockist {
-  bool? success;
-  String? message;
-  List<Data>? data;
+  final String id;
+  final String firmName;
+  final String registeredBusinessName;
+  final String natureOfBusiness;
+  final String gstNumber;
+  final String drugLicenseNumber;
+  final String panNumber;
+  final String registeredOfficeAddress;
+  final String latitude;
+  final String longitude;
+  final String contactPerson;
+  final String designation;
+  final String mobileNumber;
+  final String emailAddress;
+  final String website;
+  final int yearsInBusiness;
+  final List<String> areasOfOperation;
+  final List<String> currentPharmaDistributorships;
+  final bool warehouseFacility;
+  final int storageFacilitySize;
+  final bool coldStorageAvailable;
+  final int numberOfSalesRepresentatives;
+  final BankDetails? bankDetails;
+  final String headOfficeId;
+  final String createdAt;
+  final String updatedAt;
+  final List<AnnualTurnover> annualTurnover;
+  final HeadOffice? headOffice;
 
-  Stockist({this.success, this.message, this.data});
+  Stockist({
+    required this.id,
+    required this.firmName,
+    required this.registeredBusinessName,
+    required this.natureOfBusiness,
+    required this.gstNumber,
+    required this.drugLicenseNumber,
+    required this.panNumber,
+    required this.registeredOfficeAddress,
+    required this.latitude,
+    required this.longitude,
+    required this.contactPerson,
+    required this.designation,
+    required this.mobileNumber,
+    required this.emailAddress,
+    required this.website,
+    required this.yearsInBusiness,
+    required this.areasOfOperation,
+    required this.currentPharmaDistributorships,
+    required this.warehouseFacility,
+    required this.storageFacilitySize,
+    required this.coldStorageAvailable,
+    required this.numberOfSalesRepresentatives,
+    this.bankDetails,
+    required this.headOfficeId,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.annualTurnover,
+    this.headOffice,
+  });
 
-  Stockist.fromJson(Map<String, dynamic> json) {
-    success = json['success'];
-    message = json['message'];
-    if (json['data'] != null) {
-      data = <Data>[];
-      json['data'].forEach((v) {
-        data!.add(new Data.fromJson(v));
-      });
-    }
+  factory Stockist.fromJson(Map<String, dynamic> json) {
+    return Stockist(
+      id: json['id'] ?? '',
+      firmName: json['firm_name'] ?? '',
+      registeredBusinessName: json['registered_business_name'] ?? '',
+      natureOfBusiness: json['nature_of_business'] ?? '',
+      gstNumber: json['gst_number'] ?? '',
+      drugLicenseNumber: json['drug_license_number'] ?? '',
+      panNumber: json['pan_number'] ?? '',
+      registeredOfficeAddress: json['registered_office_address'] ?? '',
+      latitude: json['latitude'] ?? '',
+      longitude: json['longitude'] ?? '',
+      contactPerson: json['contact_person'] ?? '',
+      designation: json['designation'] ?? '',
+      mobileNumber: json['mobile_number'] ?? '',
+      emailAddress: json['email_address'] ?? '',
+      website: json['website'] ?? '',
+      yearsInBusiness: json['years_in_business'] ?? 0,
+      areasOfOperation: (json['areas_of_operation'] as List<dynamic>?)
+          ?.map((e) => e.toString())
+          .toList() ??
+          [],
+      currentPharmaDistributorships:
+      (json['current_pharma_distributorships'] as List<dynamic>?)
+          ?.map((e) => e.toString())
+          .toList() ??
+          [],
+      warehouseFacility: json['warehouse_facility'] ?? false,
+      storageFacilitySize: json['storage_facility_size'] ?? 0,
+      coldStorageAvailable: json['cold_storage_available'] ?? false,
+      numberOfSalesRepresentatives:
+      json['number_of_sales_representatives'] ?? 0,
+      bankDetails: json['bank_details'] != null &&
+          (json['bank_details'] as Map<String, dynamic>).isNotEmpty
+          ? BankDetails.fromJson(json['bank_details'])
+          : null,
+      headOfficeId: json['head_office_id'] ?? '',
+      createdAt: json['created_at'] ?? '',
+      updatedAt: json['updated_at'] ?? '',
+      annualTurnover: (json['annual_turnover'] as List<dynamic>?)
+          ?.map((e) => AnnualTurnover.fromJson(e))
+          .toList() ??
+          [],
+      headOffice: json['headOffice'] != null
+          ? HeadOffice.fromJson(json['headOffice'])
+          : null,
+    );
   }
 
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['success'] = this.success;
-    data['message'] = this.message;
-    if (this.data != null) {
-      data['data'] = this.data!.map((v) => v.toJson()).toList();
-    }
-    return data;
-  }
-}
-
-class Data {
-  BankDetails? bankDetails;
-  String? sId;
-  String? firmName;
-  String? registeredBusinessName;
-  String? natureOfBusiness;
-  String? gstNumber;
-  String? drugLicenseNumber;
-  String? panNumber;
-  String? registeredOfficeAddress;
-  double? latitude;
-  double? longitude;
-  String? contactPerson;
-  String? designation;
-  String? mobileNumber;
-  String? emailAddress;
-  String? website;
-  int? yearsInBusiness;
-  List<String>? areasOfOperation;
-  List<String>? currentPharmaDistributorships;
-  List<AnnualTurnover>? annualTurnover;
-  bool? warehouseFacility;
-  int? storageFacilitySize;
-  bool? coldStorageAvailable;
-  int? numberOfSalesRepresentatives;
-  HeadOffice? headOffice;
-  String? createdAt;
-  int? iV;
-
-  Data(
-      {this.bankDetails,
-        this.sId,
-        this.firmName,
-        this.registeredBusinessName,
-        this.natureOfBusiness,
-        this.gstNumber,
-        this.drugLicenseNumber,
-        this.panNumber,
-        this.registeredOfficeAddress,
-        this.latitude,
-        this.longitude,
-        this.contactPerson,
-        this.designation,
-        this.mobileNumber,
-        this.emailAddress,
-        this.website,
-        this.yearsInBusiness,
-        this.areasOfOperation,
-        this.currentPharmaDistributorships,
-        this.annualTurnover,
-        this.warehouseFacility,
-        this.storageFacilitySize,
-        this.coldStorageAvailable,
-        this.numberOfSalesRepresentatives,
-        this.headOffice,
-        this.createdAt,
-        this.iV});
-
-  Data.fromJson(Map<String, dynamic> json) {
-    bankDetails = json['bankDetails'] != null
-        ? new BankDetails.fromJson(json['bankDetails'])
-        : null;
-    sId = json['_id'];
-    firmName = json['firmName'];
-    registeredBusinessName = json['registeredBusinessName'];
-    natureOfBusiness = json['natureOfBusiness'];
-    gstNumber = json['gstNumber'];
-    drugLicenseNumber = json['drugLicenseNumber'];
-    panNumber = json['panNumber'];
-    registeredOfficeAddress = json['registeredOfficeAddress'];
-    latitude = json['latitude'];
-    longitude = json['longitude'];
-    contactPerson = json['contactPerson'];
-    designation = json['designation'];
-    mobileNumber = json['mobileNumber'];
-    emailAddress = json['emailAddress'];
-    website = json['website'];
-    yearsInBusiness = json['yearsInBusiness'];
-    areasOfOperation = json['areasOfOperation'].cast<String>();
-    currentPharmaDistributorships =
-        json['currentPharmaDistributorships'].cast<String>();
-    if (json['annualTurnover'] != null) {
-      annualTurnover = <AnnualTurnover>[];
-      json['annualTurnover'].forEach((v) {
-        annualTurnover!.add(new AnnualTurnover.fromJson(v));
-      });
-    }
-    warehouseFacility = json['warehouseFacility'];
-    storageFacilitySize = json['storageFacilitySize'];
-    coldStorageAvailable = json['coldStorageAvailable'];
-    numberOfSalesRepresentatives = json['numberOfSalesRepresentatives'];
-    headOffice = json['headOffice'] != null
-        ? new HeadOffice.fromJson(json['headOffice'])
-        : null;
-    createdAt = json['createdAt'];
-    iV = json['__v'];
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    if (this.bankDetails != null) {
-      data['bankDetails'] = this.bankDetails!.toJson();
-    }
-    data['_id'] = this.sId;
-    data['firmName'] = this.firmName;
-    data['registeredBusinessName'] = this.registeredBusinessName;
-    data['natureOfBusiness'] = this.natureOfBusiness;
-    data['gstNumber'] = this.gstNumber;
-    data['drugLicenseNumber'] = this.drugLicenseNumber;
-    data['panNumber'] = this.panNumber;
-    data['registeredOfficeAddress'] = this.registeredOfficeAddress;
-    data['latitude'] = this.latitude;
-    data['longitude'] = this.longitude;
-    data['contactPerson'] = this.contactPerson;
-    data['designation'] = this.designation;
-    data['mobileNumber'] = this.mobileNumber;
-    data['emailAddress'] = this.emailAddress;
-    data['website'] = this.website;
-    data['yearsInBusiness'] = this.yearsInBusiness;
-    data['areasOfOperation'] = this.areasOfOperation;
-    data['currentPharmaDistributorships'] = this.currentPharmaDistributorships;
-    if (this.annualTurnover != null) {
-      data['annualTurnover'] =
-          this.annualTurnover!.map((v) => v.toJson()).toList();
-    }
-    data['warehouseFacility'] = this.warehouseFacility;
-    data['storageFacilitySize'] = this.storageFacilitySize;
-    data['coldStorageAvailable'] = this.coldStorageAvailable;
-    data['numberOfSalesRepresentatives'] = this.numberOfSalesRepresentatives;
-    if (this.headOffice != null) {
-      data['headOffice'] = this.headOffice!.toJson();
-    }
-    data['createdAt'] = this.createdAt;
-    data['__v'] = this.iV;
-    return data;
-  }
-}
-
-class BankDetails {
-  String? bankName;
-  String? branch;
-  String? accountNumber;
-  String? ifscCode;
-
-  BankDetails({this.bankName, this.branch, this.accountNumber, this.ifscCode});
-
-  BankDetails.fromJson(Map<String, dynamic> json) {
-    bankName = json['bankName'];
-    branch = json['branch'];
-    accountNumber = json['accountNumber'];
-    ifscCode = json['ifscCode'];
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['bankName'] = this.bankName;
-    data['branch'] = this.branch;
-    data['accountNumber'] = this.accountNumber;
-    data['ifscCode'] = this.ifscCode;
-    return data;
-  }
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'firm_name': firmName,
+    'registered_business_name': registeredBusinessName,
+    'nature_of_business': natureOfBusiness,
+    'gst_number': gstNumber,
+    'drug_license_number': drugLicenseNumber,
+    'pan_number': panNumber,
+    'registered_office_address': registeredOfficeAddress,
+    'latitude': latitude,
+    'longitude': longitude,
+    'contact_person': contactPerson,
+    'designation': designation,
+    'mobile_number': mobileNumber,
+    'email_address': emailAddress,
+    'website': website,
+    'years_in_business': yearsInBusiness,
+    'areas_of_operation': areasOfOperation,
+    'current_pharma_distributorships': currentPharmaDistributorships,
+    'warehouse_facility': warehouseFacility,
+    'storage_facility_size': storageFacilitySize,
+    'cold_storage_available': coldStorageAvailable,
+    'number_of_sales_representatives': numberOfSalesRepresentatives,
+    'bank_details': bankDetails?.toJson(),
+    'head_office_id': headOfficeId,
+    'created_at': createdAt,
+    'updated_at': updatedAt,
+    'annual_turnover': annualTurnover.map((e) => e.toJson()).toList(),
+    'headOffice': headOffice?.toJson(),
+  };
 }
 
 class AnnualTurnover {
-  int? year;
-  int? amount;
-  String? sId;
+  final int year;
+  final int amount;
 
-  AnnualTurnover({this.year, this.amount, this.sId});
+  AnnualTurnover({required this.year, required this.amount});
 
-  AnnualTurnover.fromJson(Map<String, dynamic> json) {
-    year = json['year'];
-    amount = json['amount'];
-    sId = json['_id'];
+  factory AnnualTurnover.fromJson(Map<String, dynamic> json) {
+    return AnnualTurnover(
+      year: json['year'] ?? 0,
+      amount: json['amount'] ?? 0,
+    );
   }
 
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['year'] = this.year;
-    data['amount'] = this.amount;
-    data['_id'] = this.sId;
-    return data;
-  }
+  Map<String, dynamic> toJson() => {
+    'year': year,
+    'amount': amount,
+  };
 }
 
 class HeadOffice {
-  String? sId;
-  String? name;
-  String? createdAt;
-  String? updatedAt;
-  int? iV;
+  final String id;
+  final String name;
 
-  HeadOffice({this.sId, this.name, this.createdAt, this.updatedAt, this.iV});
+  HeadOffice({required this.id, required this.name});
 
-  HeadOffice.fromJson(Map<String, dynamic> json) {
-    sId = json['_id'];
-    name = json['name'];
-    createdAt = json['createdAt'];
-    updatedAt = json['updatedAt'];
-    iV = json['__v'];
+  factory HeadOffice.fromJson(Map<String, dynamic> json) {
+    return HeadOffice(
+      id: json['id'] ?? '',
+      name: json['name'] ?? '',
+    );
   }
 
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['_id'] = this.sId;
-    data['name'] = this.name;
-    data['createdAt'] = this.createdAt;
-    data['updatedAt'] = this.updatedAt;
-    data['__v'] = this.iV;
-    return data;
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+  };
+}
+
+class BankDetails {
+  final String bankName;
+  final String branch;
+  final String ifscCode;
+  final String accountNumber;
+
+  BankDetails({
+    required this.bankName,
+    required this.branch,
+    required this.ifscCode,
+    required this.accountNumber,
+  });
+
+  factory BankDetails.fromJson(Map<String, dynamic> json) {
+    return BankDetails(
+      bankName: json['bankName'] ?? json['bank_name'] ?? '',
+      branch: json['branch'] ?? '',
+      ifscCode: json['ifscCode'] ?? json['ifsc'] ?? '',
+      accountNumber: json['accountNumber'] ?? json['account_number'] ?? '',
+    );
   }
+
+  Map<String, dynamic> toJson() => {
+    'bank_name': bankName,
+    'branch': branch,
+    'ifsc': ifscCode,
+    'account_number': accountNumber,
+  };
 }

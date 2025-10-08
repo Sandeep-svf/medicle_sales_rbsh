@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:medicle_sales_rbsh/features/dashboard/screen/dashboard.dart';
 import '../../../utils/local_storage/auth_manager.dart';
 import '../models/UserModel.dart';
+import '../models/headoffice.dart';
 
 class AuthController extends GetxController {
   var isLoading = false.obs;
@@ -69,6 +70,9 @@ class AuthController extends GetxController {
         barrierDismissible: false, // Prevent user interaction
       );
 
+
+
+
       final response = await http.post(
         Uri.parse("$_baseUrl/auth/login"),
         headers: {"Content-Type": "application/json"},
@@ -85,19 +89,43 @@ class AuthController extends GetxController {
       if (response.statusCode == 200) {
         // Ensure 'user' key exists before parsing
         if (data.containsKey("user")) {
+          // Parse the JSON into UserModel
           UserModel userModel = UserModel.fromJson(data);
 
+          // Extract the token
+          String? token = userModel.token;
+
+          // Initialize AuthManager
           AuthManager authManager = AuthManager();
-          await authManager.saveUserData(userModel); // Save full user model
-          await authManager.saveUserId(userModel.id); // Save only user ID
-          await authManager.saveHeadOffice(userModel.headOfficeId); // Save head office
-          await authManager.saveAuthToken(userModel.token); // Save auth token
 
+          // Save the full UserModel
+          await authManager.saveUserData(userModel);
 
+          // Save only the User ID
+          await authManager.saveUserId(userModel.user!.id);
+          await authManager.saveUserRole(userModel.user!.role);
 
-          final String? headOfficeValue = await authManager.getHeadOffice();
+          print("auth check ${userModel.user!.role}");
 
-          print("Head Office Value: $headOfficeValue");
+          // Save the auth token
+          await authManager.saveAuthToken(token!);
+
+         /* // Save the headOffices list safely from the user field
+          if (userModel.user != null) {
+            // Ensure that headOffices is not null, otherwise use an empty list
+            // Convert the list to List<HeadOfficeCustom> before saving
+            List<HeadOfficeCustom> headOffices = userModel.user!.headOffices!
+                .map((e) => HeadOfficeCustom.fromJson(e as Map<String, dynamic>))
+                .toList();
+            await authManager.saveHeadOffices(headOffices);
+          } else {
+            // If user is null, handle this case (perhaps log or show an error)
+            print("User data is missing");
+          }*/
+
+         // final String? headOfficeValue = await authManager.getHeadOffice();
+
+         // print("Head Office Value: $headOfficeValue");
 
           user.value = userModel; // Update state
          // Get.snackbar("Success", "Login Successful");
@@ -105,22 +133,23 @@ class AuthController extends GetxController {
           // Navigate to Dashboard
           Get.offAll(() => DashboardScreen());
         } else {
-          Get.snackbar("Error", "Invalid response from server");
+          Get.snackbar("AuthController Error", "Invalid response from server");
         }
       } else {
-        Get.snackbar("Error", data["message"] ?? "Login Failed");
+        Get.snackbar("AuthController Error", data["message"] ?? "Login Failed");
       }
     } catch (e) {
       if (Get.isDialogOpen ?? false) {
         Get.back(); // Close loading overlay in case of error
       }
-      Get.snackbar("Error", "Something went wrong: $e");
+      Get.snackbar("AuthController Error", "Something went wrong: $e");
+      print("AuthController Error Something went wrong: $e");
     } finally {
       isLoading.value = false;
     }
   }
 
-  // Load user from SharedPreferences
+ /* // Load user from SharedPreferences
   Future<void> loadUser() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? userData = prefs.getString("userData");
@@ -128,7 +157,7 @@ class AuthController extends GetxController {
     if (userData != null) {
       user.value = UserModel.fromJsonString(userData);
     }
-  }
+  }*/
 
   // Logout function to clear user data
   Future<void> logout() async {

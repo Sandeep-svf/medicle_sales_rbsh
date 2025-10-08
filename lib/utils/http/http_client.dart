@@ -2,8 +2,9 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class THttpHelper {
-   //static const String baseUrl = 'https://medi-glucks-erp.onrender.com/api'; // API base URL
-  static const String baseUrl = 'https://api.gluckscare.com/api'; // API base URL
+    static const String baseUrl = 'https://test.gluckscare.com/api'; // API base URL prod
+    // static const String baseUrl = 'https://apiv2.gluckscare.com/api'; // API base URL prod
+ // static const String baseUrl = 'https://api.gluckscare.com/api'; // API base URL prod test
 
   // Helper method to make a GET request
   static Future<Map<String, dynamic>> get(String endpoint) async {
@@ -30,7 +31,6 @@ class THttpHelper {
     );
     return _handleResponse(response);
   }
-
   // Helper method to make a DELETE request
   static Future<Map<String, dynamic>> delete(String endpoint) async {
     final response = await http.delete(Uri.parse('$baseUrl/$endpoint'));

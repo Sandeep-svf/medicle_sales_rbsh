@@ -7,6 +7,7 @@ import 'package:medicle_sales_rbsh/utils/local_storage/auth_manager.dart';
 import 'dart:convert';
 import '../../../utils/constants/colors.dart';
 import '../../addStokist/widets/AnnualGTurnOverSection.dart';
+import '../../authentication/models/headoffice.dart';
 import '../controllers/ClinicListController.dart';
 import '../../addDoctor/screens/map.dart';
 
@@ -54,19 +55,19 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
   void initState() {
     super.initState();
     _fetchHeadOffices();
-    _fetchheadOfficeId();
+    //_fetchheadOfficeId();
   }
 
   Future<void> _fetchheadOfficeId()async {
-     headOfficeId = authController.getHeadOffice() as String;
+    // headOfficeId = authController.getHeadOffice() as String;
   }
 
-  Future<void> _fetchHeadOffices() async {
+ /* Future<void> _fetchHeadOffices() async {
     setState(() {
       isLoadingHeadOffices = true; // Show loader while fetching head offices
     });
     try {
-      final response = await http.get(Uri.parse("$baseurl/headoffices"));
+      final response = await http.get(Uri.parse("$baseurl/users/my-head-offices"));
       if (response.statusCode == 200) {
         final List data = json.decode(response.body);
         setState(() {
@@ -85,7 +86,74 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
       });
       Get.snackbar("Error", "Failed to fetch head offices: $e", backgroundColor: Colors.red);
     }
+  }*/
+
+
+  Future<void> _fetchHeadOffices() async {
+    setState(() {
+      isLoadingHeadOffices = true; // Show loader while fetching head offices
+    });
+
+    try {
+      AuthManager authManager = AuthManager();
+      final token = await authManager.getAuthToken();
+
+      final response = await http.get(Uri.parse("$baseurl/users/my-head-offices"),
+        headers: {
+          "Authorization": "Bearer $token",  // Include Bearer token in the header
+          "Accept": "application/json",  // Ensure the server expects JSON
+        },);
+
+      if (response.statusCode == 200) {
+        // Decode the response body
+        final Map<String, dynamic> jsonResponse = json.decode(response.body);
+
+        // Check if the response was successful
+        if (jsonResponse['success'] == true) {
+          // Extract the 'data' list from the response
+          final List<dynamic> data = jsonResponse['data'];
+
+          // Map the 'data' list to head offices
+          List<Map<String, dynamic>> headOfficesFromServer = data
+              .map((city) => {
+            'id': city['_id'].toString(),
+            'name': city['name'].toString()
+          })
+              .toList();
+
+          // Update the headOffices list and hide the loader
+          setState(() {
+            headOffices = headOfficesFromServer; // Assign the mapped data to headOffices
+            isLoadingHeadOffices = false; // Hide loader when data is fetched
+          });
+
+          print("Head offices fetched from server: $headOfficesFromServer");
+        } else {
+          setState(() {
+            isLoadingHeadOffices = false; // Hide loader if success is false
+          });
+          Get.snackbar("Error", "Failed to fetch head offices. Response success is false.");
+        }
+      } else {
+        setState(() {
+          isLoadingHeadOffices = false; // Hide loader on error
+        });
+        Get.snackbar("Error", "Failed to fetch head offices. Status Code: ${response.statusCode}");
+      }
+    } catch (e) {
+      setState(() {
+        isLoadingHeadOffices = false; // Hide loader on exception
+      });
+      Get.snackbar("Error", "Failed to fetch head offices: $e", backgroundColor: Colors.red);
+    }
   }
+
+
+
+
+
+
+
 
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
@@ -122,13 +190,15 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
     };
 
     debugPrint("ChemistController: Submitting body => ${jsonEncode(body)}");
-
+    AuthManager authManager = AuthManager();
+    final token  = await authManager.getAuthToken();
     try {
       final response = await http.post(
         Uri.parse("$baseUrl/chemists"),
         headers: {
           "Accept": "application/json",
           "Content-Type": "application/json",
+          "Authorization": "Bearer $token"
         },
         body: jsonEncode(body),
       );
@@ -254,7 +324,7 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
 
                 _buildTextField(addressController, "Address",required: true),
                 // Head Office Dropdown (Required)
-                Padding(
+                /*Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
                   child: isLoadingHeadOffices
                       ? const CircularProgressIndicator() // Show loader while fetching head offices
@@ -283,9 +353,42 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
                         : null,
                   ),
 
-                ),
+                ),*/
 
-                // Designation (Optional)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: isLoadingHeadOffices
+                    ? const Center(child: CircularProgressIndicator())
+                    : DropdownButtonFormField<String>(
+                  // Only set value if it exists in items
+                  value: headOffices.any((o) => o['id'].toString() == (selectedHeadOffice ?? ''))
+                      ? selectedHeadOffice
+                      : null,
+                  decoration: const InputDecoration(
+                    labelText: "Select Head Office",
+                    border: OutlineInputBorder(),
+                  ),
+                  items: headOffices.map((office) {
+                    final id = office['id']?.toString() ?? '';     // ← use 'id'
+                    final name = office['name']?.toString() ?? '';
+                    return DropdownMenuItem<String>(
+                      value: id,
+                      child: Text(name.isNotEmpty ? name : id),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      selectedHeadOffice = value;
+                      // optional: also clear dependent fields here
+                    });
+                    debugPrint("Selected Head Office ID: $selectedHeadOffice");
+                  },
+                  validator: (value) =>
+                  value == null || value.isEmpty ? 'Head Office is required' : null,
+                ),
+              ),
+
+              // Designation (Optional)
                 _buildTextField(designationController, "Designation", required: false),
 
                 // Drug License Number (Optional)

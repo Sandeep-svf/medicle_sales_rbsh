@@ -4,8 +4,8 @@ description: "A new Flutter project."
 
 publish_to: 'none'
 
-#version: 1.0.9+10
-version: 1.0.11+12
+#version: 1.0.15+16
+version: 1.0.22+23
 
 environment:
   sdk: ^3.5.3
@@ -60,6 +60,15 @@ dependencies:
   open_filex: ^4.4.0
   stylish_bottom_bar: ^1.1.0
 
+  sqflite: ^2.2.0+1
+
+  path: ^1.8.3
+
+  connectivity_plus: ^6.1.5
+  flutter_foreground_task: ^9.1.0
+  disable_battery_optimization: ^1.1.2
+
+
    #Location related
   #geolocator: ^13.0.3
   #permission_handler: ^11.4.0
@@ -70,22 +79,37 @@ dependencies:
 
   #flutter_background_service: ^5.1.0
   # For background tasks:
-  flutter_background_service: ^5.1.0
-  flutter_background_service_android: ^6.3.0
+  #flutter_background_service: ^5.1.0
+  #flutter_background_service_android: ^6.3.0
 
-  flutter_local_notifications: ^19.2.1
+  #flutter_local_notifications: ^19.2.1
 
   device_info_plus: ^11.4.0
 
 
- # flutter_local_notifications: ^16.1.0
+
+
+  #flutter_background_geolocation: ^4.17.0
+  background_locator_2: ^2.0.6   # or latest
+  #background_locator_2: ^2.3.0   # or latest
+  #flutter_background: ^1.0.0
+  #workmanager: ^0.5.2
+
+
+# sensor
+  sensors_plus: ^5.0.1
+
+
+
+
+  # flutter_local_notifications: ^16.1.0
   geolocator: ^10.1.0  # For fetching location
  # permission_handler: ^10.2.0
   image_picker: ^0.8.5+3
   permission_handler: ^11.4.0
   fluttertoast: ^8.2.2
 
-
+  package_info_plus: ^8.3.1
 
 
 
@@ -94,6 +118,7 @@ dependencies:
 
   google_maps_flutter: ^2.12.1
   geocoding: ^3.0.0
+
 
 
 
@@ -113,6 +138,7 @@ dev_dependencies:
 
   flutter_lints: ^4.0.0
   flutter_launcher_icons: ^0.14.3
+
 
 flutter_icons:
   android: true

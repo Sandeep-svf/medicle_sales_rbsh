@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import '../../../utils/constants/colors.dart';
 import '../../../utils/http/http_client.dart';
 import '../../../utils/local_storage/auth_manager.dart';
+import '../../../utils/loder/CircularLoaderController.dart';
 import '../../addDoctor/screens/map.dart';
 import '../widets/AnnualGTurnOverSection.dart';
 
@@ -19,13 +20,14 @@ class PharmaDistributorFormScreen extends StatefulWidget {
 
 class _PharmaDistributorFormScreenState extends State<PharmaDistributorFormScreen> {
   final _formKey = GlobalKey<FormState>();
-
+  String? selectedHeadOfficeId;
   final TextEditingController firmName = TextEditingController();
   final TextEditingController businessName = TextEditingController();
   String? selectedBusinessType;
   String? selectedLocation;
   String? selectedlatitude;
   String? selectedlongitude;
+  List<Map<String, String>> cities = [];
   String headOffice = "";
   final List<String> businessTypes = [
     'Proprietorship',
@@ -54,6 +56,9 @@ class _PharmaDistributorFormScreenState extends State<PharmaDistributorFormScree
 
   bool warehouseFacility = false;
   bool coldStorageAvailable = false;
+  List<HeadOffice1> _offices = [];
+  String _selectedId = ''; // This will hold the selected ID
+  String? _selectedName;
 
   List<Map<String, dynamic>> _annualTurnovers = List.generate(
     3,
@@ -67,17 +72,166 @@ class _PharmaDistributorFormScreenState extends State<PharmaDistributorFormScree
   @override
   void initState() {
     super.initState();
-    _loadHeadOffice(); // Load head office from SharedPreferences
+    //_loadHeadOffice();
+   // fetchCities();// Load head office from SharedPreferences
+    fetchHeadOffices();
   }
 
   // Method to load head office from SharedPreferences
-  Future<void> _loadHeadOffice() async {
+ /* Future<void> _loadHeadOffice() async {
     AuthManager authManager = AuthManager();
     final String? headOfficeValue = await authManager.getHeadOffice(); // Fetch the value using your method
     setState(() {
       headOffice = headOfficeValue ?? ""; // Default to empty string if no value is found
     });
+  }*/
+
+/*  Future<void> _fetchCities() async {
+    // Show loading spinner while fetching head offices
+    CircularLoaderController.showLoader(context);
+    AuthManager authManager = AuthManager();
+
+    try {
+      // Retrieve the authorization token
+      final token = await authManager.getAuthToken();
+      print("[DEBUG] Token fetched: $token");
+
+      // Make the GET request to fetch head offices
+      final response = await http.get(
+        Uri.parse('${THttpHelper.baseUrl}/users/my-head-offices'),
+        headers: {
+          "Authorization": "Bearer $token",  // Include Bearer token in the header
+          "Accept": "application/json",  // Ensure the server expects JSON
+        },
+      );
+
+      // Check if the response status code is OK (200)
+      if (response.statusCode == 200) {
+        CircularLoaderController.hideLoader();  // Hide loading spinner after successful response
+
+        // Decode the response body as a Map<String, dynamic>
+        final Map<String, dynamic> jsonResponse = json.decode(response.body);
+
+        // Check if the 'success' key is true
+        if (jsonResponse['success'] == true) {
+          // Extract the 'data' list from the response
+          final List<dynamic> cityList = jsonResponse['data'];
+
+          print("[DEBUG] Response body decoded: $cityList");
+
+          // Ensure the city list is not empty
+          if (cityList.isNotEmpty) {
+            setState(() {
+              cities = cityList
+                  .map((city) => {
+                'id': city['_id']?.toString() ?? 'Unknown ID',  // Safe null check
+                'name': city['name']?.toString() ?? 'Unknown Name',  // Safe null check
+              })
+                  .toList();
+              print("[DEBUG] Cities list updated: $cities");
+            });
+          } else {
+            print("[ERROR] No head offices found in response.");
+            Get.snackbar("Error", "No head offices found in the response.",
+                backgroundColor: Colors.red, duration: const Duration(seconds: 3));
+          }
+        } else {
+          print("[ERROR] Response success is false.");
+          Get.snackbar("Error", "Failed to load Head Office. Response success was false.",
+              backgroundColor: Colors.red, duration: const Duration(seconds: 3));
+        }
+      } else {
+        CircularLoaderController.hideLoader();  // Hide loader on failure
+        print("[ERROR] Failed to load Head Office. Status code: ${response.statusCode}");
+        Get.snackbar("Error", "Failed to load Head Office. Status Code: ${response.statusCode}",
+            backgroundColor: Colors.red, duration: const Duration(seconds: 3));
+      }
+    } catch (e) {
+      CircularLoaderController.hideLoader();  // Hide loader if an exception occurs
+      print("[ERROR] Exception occurred: $e");
+      Get.snackbar("Error", "Failed to load Head Office: $e", backgroundColor: Colors.red);
+    }
+  }*/
+
+  // Function to fetch data from the API
+  Future<void> fetchHeadOffices() async {
+    try {
+      AuthManager authManager = AuthManager();
+      final token = await authManager.getAuthToken();
+      final response = await http.get(
+        Uri.parse('${THttpHelper.baseUrl}/users/my-head-offices'),
+        headers: {
+          "Authorization": "Bearer $token",  // Include Bearer token in the header
+          "Accept": "application/json",  // Ensure the server expects JSON
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body)['data'];
+        setState(() {
+          _offices = data.map((json) => HeadOffice1.fromJson(json)).toList();
+        });
+      } else {
+        // Handle error if response status is not 200
+        print('Failed to load head offices');
+      }
+    } catch (e) {
+      // Handle error for network or parsing
+      print('Error fetching data: $e');
+    }
   }
+
+  // Fetch the head offices and update the cities list
+  Future<void> fetchCities() async {
+
+    print("[DEBUG] API is being called.");
+    // Show loading spinner while fetching head offices
+    CircularLoaderController.showLoader(context);
+    AuthManager authManager = AuthManager();
+
+    try {
+      final token = await authManager.getAuthToken();
+      final response = await http.get(
+        Uri.parse('${THttpHelper.baseUrl}/users/my-head-offices'),
+        headers: {
+          "Authorization": "Bearer $token",  // Include Bearer token in the header
+          "Accept": "application/json",  // Ensure the server expects JSON
+        },
+      );
+
+      if (response.statusCode == 200) {
+        CircularLoaderController.hideLoader();  // Hide loading spinner after successful response
+
+        final Map<String, dynamic> jsonResponse = json.decode(response.body);
+
+        if (jsonResponse['success'] == true) {
+          final List<dynamic> cityList = jsonResponse['data'] ?? [];  // Safe null check for data
+
+          setState(() {
+            cities = cityList.map((city) {
+              return {
+                'id': city['_id']?.toString() ?? 'Unknown ID', // Safe null check for '_id'
+                'name': city['name']?.toString() ?? 'Unknown Name', // Safe null check for 'name'
+              };
+            }).toList();
+
+            // Debugging the list of cities fetched
+            print("[DEBUG] Cities list: $cities");
+          });
+        } else {
+          Get.snackbar("Error", "Failed to load Head Office.", backgroundColor: Colors.red);
+        }
+      } else {
+        CircularLoaderController.hideLoader();  // Hide loader on failure
+        Get.snackbar("Error", "Failed to load Head Office.", backgroundColor: Colors.red);
+      }
+    } catch (e) {
+      CircularLoaderController.hideLoader();  // Hide loader on exception
+      Get.snackbar("Error", "Failed to load Head Office: $e", backgroundColor: Colors.red);
+    }
+  }
+
+
 
   // Validate that no turnover amount is zero, and that the first three items are required
   bool _validateTurnovers() {
@@ -151,16 +305,19 @@ class _PharmaDistributorFormScreenState extends State<PharmaDistributorFormScree
         "accountNumber": accountNumber.text.trim().isEmpty ? "" : accountNumber.text,
         "ifscCode": ifscCode.text.trim().isEmpty ? "" : ifscCode.text,
       },
-      "headOffice": headOffice, // Use the fetched head office value here
+      "headOffice": selectedHeadOfficeId, // Use the fetched head office value here
     };
 
     try {
       print("AddStockController Sending POST request to: $apiUrl");
       print("AddStockController Request Body: ${jsonEncode(requestBody)}");
 
+      AuthManager authManager = AuthManager();
+      final token = await authManager.getAuthToken();
+
       final response = await http.post(
         apiUrl,
-        headers: {"Content-Type": "application/json"},
+        headers: {"Content-Type": "application/json", "Authorization": "Bearer $token", },
         body: jsonEncode(requestBody),
       );
 
@@ -208,6 +365,33 @@ class _PharmaDistributorFormScreenState extends State<PharmaDistributorFormScree
               _sectionTitle("Basic Details"),
               _requiredField(firmName, "Firm Name"),
               _requiredField(businessName, "Registered Business Name"),
+              //_headOfficeDropdown(),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            child: DropdownButtonFormField<String>(
+              value: selectedHeadOfficeId,  // The selected head office ID
+              decoration: const InputDecoration(
+                labelText: "Head Office *", // Label for the field (required)
+                border: OutlineInputBorder(),
+              ),
+              items: _offices.map((office) {
+                return DropdownMenuItem<String>(
+                  value: office.id, // Use the ID as the value
+                  child: Text(office.name), // Display the name of the head office
+                );
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  selectedHeadOfficeId = value; // Store the selected head office ID
+                });
+              },
+              validator: (value) => value == null || value.isEmpty
+                  ? 'Please select a head office' // Make the dropdown required
+                  : null,
+            ),
+          ),
+
+
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 6),
                 child: DropdownButtonFormField<String>(
@@ -397,6 +581,34 @@ class _PharmaDistributorFormScreenState extends State<PharmaDistributorFormScree
     ),
   );
 
+  Widget _headOfficeDropdown() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: DropdownButtonFormField<String>(
+        value: selectedHeadOfficeId,  // The selected head office ID
+        decoration: const InputDecoration(
+          labelText: "Head Office *", // Label for the field (required)
+          border: OutlineInputBorder(),
+        ),
+        items: cities.map((office) {
+          return DropdownMenuItem<String>(
+            value: office['id'], // Use the ID as the value
+            child: Text(office['name']!), // Display the name of the head office
+          );
+        }).toList(),
+        onChanged: (value) {
+          setState(() {
+            selectedHeadOfficeId = value; // Store the selected head office ID
+          });
+        },
+        validator: (value) => value == null || value.isEmpty
+            ? 'Please select a head office' // Make the dropdown required
+            : null,
+      ),
+    );
+  }
+
+
   Widget _requiredField(TextEditingController controller, String label,
       {TextInputType inputType = TextInputType.text, int maxLines = 1}) {
     return Padding(
@@ -436,6 +648,21 @@ class _PharmaDistributorFormScreenState extends State<PharmaDistributorFormScree
       value: value,
       activeColor: TColors.primary,
       onChanged: (val) => onChanged(val ?? false),
+    );
+  }
+}
+// Define a class for the response data
+class HeadOffice1 {
+  final String id;
+  final String name;
+
+  HeadOffice1({required this.id, required this.name});
+
+  // Factory constructor to parse the response JSON
+  factory HeadOffice1.fromJson(Map<String, dynamic> json) {
+    return HeadOffice1(
+      id: json['_id'],
+      name: json['name'],
     );
   }
 }

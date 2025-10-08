@@ -23,7 +23,7 @@ class App extends StatelessWidget {
     ));
 
     return GetMaterialApp(
-      themeMode: ThemeMode.system,
+      themeMode: ThemeMode.light,
       darkTheme: SAppTheme.darkTheme,
       theme: SAppTheme.lightTheme,
       debugShowCheckedModeBanner: false,
@@ -33,3 +33,4 @@ class App extends StatelessWidget {
     );
   }
 }
+

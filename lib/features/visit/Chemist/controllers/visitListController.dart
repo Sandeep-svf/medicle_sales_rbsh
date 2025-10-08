@@ -33,7 +33,7 @@ class VisitListController with ChangeNotifier {
         return;
       }
 
-      final String apiUrl = "$fetchApiUrl/chemists/visits/user/$userId";
+      final String apiUrl = "$fetchApiUrl/chemist-visits/user/$userId";
       if (kDebugMode) {
         debugPrint("Visit Sales Controller: Fetching data from API: $apiUrl");
       }
@@ -48,29 +48,14 @@ class VisitListController with ChangeNotifier {
 
       // Handle successful response
       if (response.statusCode == 200) {
-        final Map<String, dynamic> responseData = jsonDecode(response.body);
-
-        // Check if the response body contains a "Data" key
-        if (responseData['success'] == "true" && responseData.containsKey('Data')) {
-          // Extract the list of visits from the response map
-          List<dynamic> data = responseData['Data'];
-
-          // Map the data to ChemistVisitModel and update the visit list
-          _visitList = data.map((item) => ChemistVisitModel.fromJson(item)).toList();
-
-          // Debugging: Log the fetched and mapped list
-          if (kDebugMode) {
-            debugPrint("Visit Sales Controller: Mapped sales logs: $_visitList");
-          }
-
-          // Notify listeners to refresh the UI
-          notifyListeners();
-        } else {
-          debugPrint("Visit Sales Controller: 'Data' key not found in the response or success flag is false.");
-        }
-      } else {
-        throw Exception("Failed to fetch sales logs. Status Code: ${response.statusCode}");
+        final List<dynamic> listJson = json.decode(response.body) as List<dynamic>;
+        _visitList = listJson
+            .whereType<Map<String, dynamic>>()
+            .map((m) => ChemistVisitModel.fromJson(m))
+            .toList();
+        notifyListeners();
       }
+
     } catch (e) {
       // Log any errors that occur during the fetch process
       if (kDebugMode) {

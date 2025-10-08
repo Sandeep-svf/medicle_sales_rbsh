@@ -26,13 +26,14 @@ class ClinicListController extends GetxController {
 
     try {
       isLoading.value = true;
-      headOffice = (await authManager.getHeadOffice())!;
+      //headOffice = (await authManager.getHeadOffice())!;
+      final token  = await authManager.getAuthToken();
 
       print("httpChemist: Head Office: $headOffice");
 
       final response = await http.get(
-        Uri.parse("$_baseUrl/chemists/by-head-office/$headOffice"),
-        headers: {"Content-Type": "application/json"},
+        Uri.parse("$_baseUrl/chemists/my-chemists"),
+        headers: {"Content-Type": "application/json",'Authorization': 'Bearer $token'},
       );
 
       print("httpChemist: Response: ${response.body}");
@@ -57,7 +58,7 @@ class ClinicListController extends GetxController {
             );
             Get.snackbar(
               "Success",
-              jsonData['message'], // Display the success message from the response
+              'Clinic list fetched successfully.', // Display the success message from the response
               snackPosition: SnackPosition.BOTTOM,
               backgroundColor: Colors.green,
               colorText: Colors.white,
@@ -66,7 +67,7 @@ class ClinicListController extends GetxController {
           } else {
             // Handle case where 'Data' is not a list
             Get.snackbar(
-              "Error",
+              "Warning",
               "Invalid data format received.",
               snackPosition: SnackPosition.BOTTOM,
               backgroundColor: Colors.redAccent,
@@ -77,7 +78,7 @@ class ClinicListController extends GetxController {
         } else {
           // If success is false, show message from the response
           Get.snackbar(
-            "Error",
+            "Warning",
             jsonData['message'],
             snackPosition: SnackPosition.BOTTOM,
             backgroundColor: Colors.redAccent,
@@ -102,13 +103,13 @@ class ClinicListController extends GetxController {
       }
       // Ensure dialog is closed if any error occurs
       if (Get.isDialogOpen!) Get.back();
-      Get.snackbar(
-        "Error",
+     /* Get.snackbar(
+        "Warning",
         "Something went wrong: $e",
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.redAccent,
         colorText: Colors.white,
-      );
+      );*/
     } finally {
       print("httpChemist: Fetching completed.");
       isLoading.value = false;

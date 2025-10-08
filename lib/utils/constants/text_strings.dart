@@ -2,6 +2,11 @@
 /// This class contains all the App Text in String formats.
 class TTexts {
 
+
+  // -- role
+  static const String stateHead = "State head";
+  static const String user = "User";
+
   // -- GLOBAL Texts
   static const String cancel = "Cancel";
   static const String no = "No";
@@ -24,6 +29,7 @@ class TTexts {
 
   // -- Slide Menu Text
   static const String dashboard = "Dashboard";
+  static const String userListScreen = "UserListScreen";
   static const String home = "Home";
   static const String addDoctor = "Doctor";
   static const String salesActivity = "Sales Activity";
@@ -137,6 +143,7 @@ class TTexts {
  static const String inbox = "Inbox";
  static const String clinic = "Chemist";
  static const String stokist = "Stokist";
+ static const String ptsptrcalculator = "PTS PTR Calculator";
 
 }
 

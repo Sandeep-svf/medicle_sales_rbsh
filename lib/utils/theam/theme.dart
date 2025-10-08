@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 
 import 'custom_theme/checkbox_theme.dart';
@@ -26,6 +27,21 @@ class SAppTheme{
     outlinedButtonTheme: SOutlinedButtonTheme.lightOutlinedButtonTheme,
     checkboxTheme: SCheckboxTheme.lightCheckboxTheme,
     inputDecorationTheme: STextFormFieldTheme.lightInputDecorationTheme,
+    appBarTheme: const AppBarTheme(
+      backgroundColor: TColors.primary,
+      elevation: 0,
+      iconTheme: IconThemeData(color: Colors.black),
+      titleTextStyle: TextStyle(
+        color: Colors.black,
+        fontSize: 18,
+        fontWeight: FontWeight.bold,
+      ),
+      systemOverlayStyle: SystemUiOverlayStyle(
+        statusBarColor: Colors.red, //  Light status bar color
+        statusBarIconBrightness: Brightness.light, //  White icons
+        statusBarBrightness: Brightness.dark,
+      ),
+    ),
   );
 
   /// DARK THEME

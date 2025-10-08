@@ -203,6 +203,7 @@ class DoctorDetailsScreen extends StatelessWidget {
             // Google Map Section at the Bottom
             const SizedBox(height: 16),
             _buildSectionHeader("Location on Map"),
+
             const SizedBox(height: 8),
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
@@ -210,13 +211,13 @@ class DoctorDetailsScreen extends StatelessWidget {
                 height: 220,
                 child: GoogleMap(
                   initialCameraPosition: CameraPosition(
-                    target: LatLng(doctor.latitude, doctor.longitude), // fallback
+                    target: LatLng(double.parse(doctor.latitude), double.parse(doctor.longitude)), // fallback
                     zoom: 15,
                   ),
                   markers: {
                     Marker(
                       markerId: const MarkerId("doctor_location"),
-                      position: LatLng(doctor.latitude, doctor.longitude),
+                      position: LatLng(double.parse(doctor.latitude), double.parse(doctor.longitude)),
                       infoWindow: InfoWindow(title: doctor.name),
                     ),
                   },

@@ -5,33 +5,40 @@
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
-    <!-- Removed: ACCESS_BACKGROUND_LOCATION -->
-    <!--<uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION"/>
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
-    <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION" />
-    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />-->
 
-   <!-- <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />-->
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
 
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
 
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature android:name="android.hardware.camera" android:required="true" />
 
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+   <!-- <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />-->
 
-    <!-- For Android 13 (API level 33) and above -->
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+    <!-- permissions -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
+
+
+
+
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" tools:node="remove"/>
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" tools:node="remove"/>
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" tools:node="remove"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" tools:node="remove"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" tools:node="remove"/>
 
 
 
@@ -40,9 +47,13 @@
 
 
     <application
+        android:foregroundServiceType="location"
         android:largeHeap="true"
         android:usesCleartextTraffic="true"
         android:requestLegacyExternalStorage="true"
+        android:enableOnBackInvokedCallback="true"
+        android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|screenLayout|layoutDirection|fontScale|navigation|orientation"
+        android:hardwareAccelerated="true"
         android:label="GlucksCare"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
@@ -77,12 +88,20 @@
             </intent-filter>
 
         </activity>
+
+        <!-- Add this meta-data tag to enable battery optimization -->
+        <meta-data
+            android:name="flutterEmbedding"
+            android:value="2" />
+
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
-
+        <meta-data
+            android:name="com.google.android.gms.location.BackgroundLocationDisclosure"
+            android:value="This app collects location data to track sales activities and reporting, even when the app is closed or not in use." />
         <!--<service
             android:name="com.tekartik.flutter_background_service.FlutterBackgroundService"
             android:permission="android.permission.BIND_JOB_SERVICE"
@@ -114,13 +133,55 @@
             android:value="@integer/google_play_services_version" />
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyBbiU_NzDhQsrPJiH8dzchmVdkXnS2f_Pg"/>
+            android:value="AIzaSyCnOFM-k3VOeG6v81O_zhVc1bdl0lY5jQ0"/>
 
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_channel_id"
             android:value="high_importance_channel"/>
 
+
+
+        <service android:name="com.transistorsoft.locationmanager.locationservices.LocationService"
+            android:enabled="true"
+            android:exported="true"/>
+        <service android:name="com.transistorsoft.locationmanager.locationservices.NotificationService"
+            android:enabled="true"
+            android:exported="true"/>
+
+       <!-- <service
+            android:name="com.transistorsoft.locationmanager.services.LocationService"
+            android:permission="android.permission.BIND_JOB_SERVICE"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.transistorsoft.locationmanager.action.LOCATION" />
+            </intent-filter>
+        </service>-->
+
+        <service android:name="com.transistorsoft.locationmanager.services.LocationUpdateService"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="android.permission.BIND_JOB_SERVICE">
+            <intent-filter>
+                <action android:name="com.transistorsoft.locationmanager.action.LOCATION_UPDATE" />
+            </intent-filter>
+        </service>
+
+       <!-- <service
+            android:name="me.carda.awesome_notifications.notifications.services.ForegroundService"
+            android:permission="android.permission.BIND_JOB_SERVICE"
+            android:enabled="true"
+            android:exported="true" />-->
+
+        <service android:name="com.tekartik.sqflite.SQLitePluginService" android:permission="android.permission.BLUETOOTH" android:exported="true"/>
+
+        <!-- Register WorkManager service -->
+        <service android:name="com.balemaster.flutter_background.GeolocatorService" android:permission="android.permission.BLUETOOTH" android:exported="true"/>
+
+
+
         <!-- Optional: Firebase Messaging Service -->
+
         <service
             android:name="com.google.firebase.messaging.FirebaseMessagingService"
             android:exported="true"
@@ -130,6 +191,10 @@
             </intent-filter>
         </service>
 
+        <service
+            android:name="com.almoullim.background_locator_2.BackgroundLocatorService"
+            android:foregroundServiceType="location"
+            android:exported="false"/>
 
         <!--<service
             android:name="id.flutter.flutter_background_service.BackgroundService"
@@ -137,9 +202,38 @@
             android:exported="true"/>-->
 
 
-        <service android:name="me.carda.awesome_notifications.services.BackgroundService"
+       <!-- <service android:name="me.carda.awesome_notifications.services.BackgroundService"
             android:permission="android.permission.BIND_JOB_SERVICE"
             android:exported="true"/>
+
+
+        <service
+            android:name="com.transistorsoft.locationmanager.service.TrackingService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="location" />-->
+
+        <receiver
+            android:name="yukams.app.background_locator_2.BootBroadcastReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+            </intent-filter>
+        </receiver>
+
+        <service
+            android:name="yukams.app.background_locator_2.IsolateHolderService"
+            android:exported="false"
+            android:foregroundServiceType="location" />
+
+        <receiver
+            android:name="rekab.app.background_locator.IsolateHolderReceiver"
+            android:exported="true" />
+
+        <meta-data
+            android:name="com.google.android.gms.location.activityRecognition"
+            android:value="true" />
 
 
     </application>

@@ -74,10 +74,10 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
 
   Future<void> _updateAddress(LatLng latLng) async {
     try {
-      final apiKey = 'AIzaSyBbiU_NzDhQsrPJiH8dzchmVdkXnS2f_Pg';
+      final apiKey = 'AIzaSyCnOFM-k3VOeG6v81O_zhVc1bdl0lY5jQ0';
       final url = Uri.parse(
           'https://maps.googleapis.com/maps/api/geocode/json?latlng=${latLng.latitude},${latLng.longitude}&key=$apiKey');
-
+    print("googel_map : https://maps.googleapis.com/maps/api/geocode/json?latlng=${latLng.latitude},${latLng.longitude}&key=$apiKey");
       final response = await http.get(url);
       final data = json.decode(response.body);
 

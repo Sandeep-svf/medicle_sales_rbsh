@@ -1,49 +1,89 @@
 import 'dart:convert';
 
-class UserModel {
-  final String id;
-  final String name;
-  final String email;
-  final String role;
-  final String token;
-  final String headOfficeId; //  changed
 
-  UserModel({
-    required this.id,
-    required this.name,
-    required this.email,
-    required this.role,
-    required this.token,
-    required this.headOfficeId,
-  });
+class UserModel {
+  final String? token;
+  final User? user;
+
+  UserModel({this.token, this.user});
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
-      id: json["user"]?["id"] ?? "",
-      name: json["user"]?["name"] ?? "",
-      email: json["user"]?["email"] ?? "",
-      role: json["user"]?["role"] ?? "",
-      token: json["token"] ?? "",
-      headOfficeId: json["user"]?["headOffice"] ?? "", // <-- fix here
+      token: json['token'],
+      user: json['user'] != null ? User.fromJson(json['user']) : null,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      "user": {
-        "id": id,
-        "name": name,
-        "email": email,
-        "role": role,
-        "headOffice": headOfficeId, // optional: include for consistency
-      },
-      "token": token,
+      'token': token,
+      'user': user?.toJson(),
     };
   }
+}
 
-  String toJsonString() => jsonEncode(toJson());
+class User {
+  final String id;
+  final String name;
+  final String email;
+  final String role;
+  final bool emailVerified;
+  final List<HeadOffice>? headOffices;
 
-  static UserModel fromJsonString(String jsonString) {
-    return UserModel.fromJson(jsonDecode(jsonString));
+  User({
+    required this.id,
+    required this.name,
+    required this.email,
+    required this.role,
+    required this.emailVerified,
+    this.headOffices,
+  });
+
+  factory User.fromJson(Map<String, dynamic> json) {
+    return User(
+      id: json['id'],
+      name: json['name'],
+      email: json['email'],
+      role: json['role'],
+      emailVerified: json['emailVerified'] ?? false,
+      headOffices: (json['headOffices'] as List?)
+          ?.map((e) => HeadOffice.fromJson(e))
+          .toList(),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'email': email,
+      'role': role,
+      'emailVerified': emailVerified,
+      'headOffices': headOffices?.map((e) => e.toJson()).toList(),
+    };
   }
 }
+
+class HeadOffice {
+  final String? id;
+  final String? name;
+
+  HeadOffice({this.id, this.name});
+
+  factory HeadOffice.fromJson(Map<String, dynamic> json) {
+    return HeadOffice(
+      id: json['_id'],
+      name: json['name'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      '_id': id,
+      'name': name,
+    };
+  }
+}
+
+
+

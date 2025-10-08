@@ -3,8 +3,8 @@ class Doctor {
   final String name;
   final String specialization;
   final String location;
-  final double latitude;
-  final double longitude;
+  final String latitude;
+  final String longitude;
   final String email;
   final String phone;
   final String registrationNumber;

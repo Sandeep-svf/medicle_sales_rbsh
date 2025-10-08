@@ -55,8 +55,8 @@ class DoctorVisitController {
 
 
     final Map<String, dynamic> requestBody = {
-      'doctorId': doctorId,
-      'userId': userId,
+      'doctor_id': doctorId,
+      'user_id': userId,
       'date': formattedDate,
       'notes': notes,
     };

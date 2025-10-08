@@ -7,7 +7,7 @@ import '../model/ProductModel.dart';
 
 class ProductController extends GetxController {
   var isLoading = false.obs;
-  var productList = <ProductModel>[].obs;
+  var productList = <Product>[].obs;
    String baseUrl = THttpHelper.baseUrl;
 
   final String apiUrl = "${THttpHelper.baseUrl}/products";
@@ -25,7 +25,7 @@ class ProductController extends GetxController {
         final List<dynamic> data = jsonDecode(response.body);
         debugPrint('$logPrefix Products fetched: ${data.length} item(s)');
 
-        productList.value = data.map((e) => ProductModel.fromJson(e)).toList();
+        productList.value = data.map((e) => Product.fromJson(e)).toList();
       } else {
         debugPrint('$logPrefix Failed to load products: ${response.body}');
         Get.snackbar('Error', 'Failed to load products');

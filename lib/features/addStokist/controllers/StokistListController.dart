@@ -9,11 +9,11 @@ import '../model/Stokist.dart';
 
 class StokistListController extends GetxController {
   var isLoading = false.obs;
-  var stokistList = <Data>[].obs;
+  var stokistList = <Stockist>[].obs;
 
   static const String _baseUrl = THttpHelper.baseUrl;
   final AuthManager authManager = AuthManager();
-  late String headOffice;
+ // late String headOffice;
 
   @override
   void onInit() {
@@ -26,15 +26,17 @@ class StokistListController extends GetxController {
     isLoading.value = true;
 
     try {
-      headOffice = (await authManager.getHeadOffice())!;
-      debugPrint("httpStockist: Retrieved Head Office: $headOffice");
+      //headOffice = (await authManager.getHeadOffice())!;
+    //  debugPrint("httpStockist: Retrieved Head Office: $headOffice");
 
-      final url = Uri.parse("$_baseUrl/stockists/by-head-office/$headOffice");
+      final token = await authManager.getAuthToken();
+     // final url = Uri.parse("$_baseUrl/stockists/by-head-office/$headOffice");
+      final url = Uri.parse("$_baseUrl/stockists/my-stockists");
       debugPrint("httpStockist: Request URL: $url");
 
       final response = await http.get(
         url,
-        headers: {"Content-Type": "application/json"},
+        headers: {"Content-Type": "application/json",'Authorization': 'Bearer $token'},
       );
 
       debugPrint("httpStockist: HTTP Status Code: ${response.statusCode}");
@@ -46,16 +48,16 @@ class StokistListController extends GetxController {
         if (jsonData['success'] == true && jsonData['data'] is List) {
           final List<dynamic> dataJson = jsonData['data'];
 
-          final List<Data> parsedList = dataJson.map((item) {
+          final List<Stockist> parsedList = dataJson.map((item) {
             try {
-              final stockist = Data.fromJson(item);
+              final stockist = Stockist.fromJson(item);
               debugPrint("httpStockist: Parsed Stockist firmName: ${stockist.firmName}");
               return stockist;
             } catch (e) {
               debugPrint("httpStockist: Skipping item due to parse error: $e");
               return null;
             }
-          }).whereType<Data>().toList();
+          }).whereType<Stockist>().toList();
 
           stokistList.assignAll(parsedList);
           debugPrint("httpStockist: Successfully assigned ${stokistList.length} stockists.");

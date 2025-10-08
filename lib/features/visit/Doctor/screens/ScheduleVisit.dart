@@ -33,9 +33,9 @@ class _MainScreenState extends State<ScheduleVisit> with SingleTickerProviderSta
       appBar: AppBar(
         title: TabBar(
           controller: _tabController,
-          indicatorColor: TColors.primary,
-          labelColor: TColors.primary,
-          unselectedLabelColor: Colors.grey,
+          indicatorColor: Colors.white,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.grey.shade400,
           tabs: const [
             Tab(text: "Doctor"),
             Tab(text: "Chemist"),

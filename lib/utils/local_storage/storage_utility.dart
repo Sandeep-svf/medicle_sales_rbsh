@@ -7,16 +7,16 @@ class TLocalStorage {
   static final TLocalStorage _instance = TLocalStorage._internal();
 
 
- static Future<String?> getUserIdFromPrefs() async {
+ /*static Future<String?> getUserIdFromPrefs() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? userData = prefs.getString("userData");
 
     if (userData != null) {
       UserModel user = UserModel.fromJsonString(userData);
-      return user.id;  //  Return the ID
+      return user.user!.id;  //  Return the ID
     }
     return null;  // Return null if no user data found
-  }
+  }*/
 
   factory TLocalStorage() {
     return _instance;

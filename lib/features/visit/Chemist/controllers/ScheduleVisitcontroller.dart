@@ -8,7 +8,7 @@ import '../../../../utils/local_storage/auth_manager.dart';
 
 
 class StockistVisitController {
-  static const String url = '${THttpHelper.baseUrl}/chemists/visits';
+  static const String url = '${THttpHelper.baseUrl}/chemist-visits';
 
   // Function to create a doctor visit (static method)
   static Future<void> createDoctorVisit({
@@ -55,8 +55,8 @@ class StockistVisitController {
 
 
     final Map<String, dynamic> requestBody = {
-      'chemistId': doctorId,
-      'userId': userId,
+      'chemist_id': doctorId,
+      'user_id': userId,
       'date': formattedDate,
       'notes': notes,
     };

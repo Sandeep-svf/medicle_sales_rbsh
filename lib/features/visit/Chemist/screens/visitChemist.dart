@@ -126,8 +126,8 @@ class _VisitChemistScreenState extends State<VisitChemistScreen> {
                      // items: _doctorListController.doctorList.map((doctor) {
                       items: _clinicListController.clinicList.map((doctor) {
                         return DropdownMenuItem<String>(
-                          value: doctor.name,
-                          child: Text(doctor.name),
+                          value: doctor.firmName,
+                          child: Text(doctor.firmName),
                         );
                       }).toList(),
                       onChanged: (value) {
@@ -135,7 +135,7 @@ class _VisitChemistScreenState extends State<VisitChemistScreen> {
                           selectedDoctorName = value;
                           // selectedDoctorId = _doctorListController.doctorList
                            selectedDoctorId = _clinicListController.clinicList
-                              .firstWhere((doctor) => doctor.name == value)
+                              .firstWhere((doctor) => doctor.firmName == value)
                               .id;
                         });
                       },
@@ -413,7 +413,7 @@ class _VisitChemistScreenState extends State<VisitChemistScreen> {
 
                                         final response = await http.put(
                                           Uri.parse(
-                                              '${THttpHelper.baseUrl}/chemists/visits/$visitId/confirm'),
+                                              '${THttpHelper.baseUrl}/chemist-visits/$visitId/confirm'),
                                           headers: {
                                             'Content-Type':
                                             'application/json'

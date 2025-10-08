@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:medicle_sales_rbsh/features/addStokist/model/Stokist.dart';
-import '../../visit/Stockist/models/visitSalesData.dart';
+
 import '../../../utils/constants/colors.dart';
 
 class StokistDetailScreen extends StatelessWidget {
-  final Data stokist;
+  final Stockist stokist;
 
 
   const StokistDetailScreen({Key? key, required this.stokist}) : super(key: key);

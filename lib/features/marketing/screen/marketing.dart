@@ -8,14 +8,14 @@ import 'package:photo_view/photo_view.dart'; // For zoomable images
 import 'package:shared_preferences/shared_preferences.dart'; // <-- added
 import '../../../utils/http/http_client.dart';
 
-class MarketingScreen extends StatefulWidget {
-  const MarketingScreen({super.key});
+class MarketingScreenOld extends StatefulWidget {
+  const MarketingScreenOld({super.key});
 
   @override
-  State<MarketingScreen> createState() => _MarketingScreenState();
+  State<MarketingScreenOld> createState() => _MarketingScreenState();
 }
 
-class _MarketingScreenState extends State<MarketingScreen> {
+class _MarketingScreenState extends State<MarketingScreenOld> {
   List<Map<String, String>> pdfFiles = [];
   bool isLoading = true;
 

@@ -18,6 +18,7 @@ import '../../../../../../utils/constants/colors.dart';
 import '../../../../../../utils/constants/text_strings.dart';
 import '../../../../../../utils/helpers/zoom_in_out_anim.dart';
 import '../../../../../../utils/local_storage/auth_manager.dart';
+import '../../../../common/Model/DoctorVisitResponse.dart';
 import '../../../../utils/http/http_client.dart';
 import '../../../addDoctor/controllers/DoctroController.dart';
 import '../../../product/controller/ProductController.dart';
@@ -136,6 +137,9 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
                           selectedDoctorId = _doctorListController.doctorList
                               .firstWhere((doctor) => doctor.name == value)
                               .id;
+
+                          print("spinner selectedDoctorName: $selectedDoctorName");
+                          print("spinner selectedDoctorId: $selectedDoctorId");
                         });
                       },
                       hint: const Text("Please select"),
@@ -339,9 +343,9 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
                           subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text("Sales Rep: ${doctorVisit.user.name ?? ""}"),
+                              Text("Sales Rep: ${doctorVisit.user?.name ?? ""}"),
                               Text(
-                                  "Time: ${DateFormat('hh:mm a').format(doctorVisit.date)}"),
+                                  "Time: ${doctorVisit.date}"),
                               Text(
                                   "Call Notes: ${doctorVisit.notes ?? "No Notes"}"),
                               const SizedBox(height: TSizes.spaceBtwText),
@@ -593,6 +597,75 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
         body: json.encode({
           'userLatitude': position.latitude,
           'userLongitude': position.longitude,
+          'notes':"",
+          'productIds': selectedProducts,
+        }),
+      );
+
+// Debug: log request details
+      print("Request URL: ${THttpHelper.baseUrl}/doctor-visits/$visitId/confirm");
+      print("Request body: ${json.encode({
+        'userLatitude': position.latitude,
+        'userLongitude': position.longitude,
+        'notes':"",
+        'productIds': selectedProducts,
+      })}");
+
+      if (response.statusCode == 200) {
+        try {
+          final responseBody = json.decode(response.body);
+          print("Response body: $responseBody");
+
+          final visitResponse = VisitConfirmResponse.fromJson(responseBody);
+
+          // Debug: log status and message from server response
+          print("Visit status: ${visitResponse.status}");
+          print("Visit message: ${visitResponse.message}");
+
+          QuickAlert.show(
+            context: context,
+            type: visitResponse.status ? QuickAlertType.success : QuickAlertType.error,
+            text: visitResponse.message,
+            confirmBtnColor: TColors.primary,
+            width: 300,
+          );
+
+          if (visitResponse.status) {
+            await _visitListController.fetchSalesList();
+            if (context.mounted) setState(() {});
+          }
+        } catch (e) {
+          // Debug: catch JSON parsing or other exceptions
+          print("Error parsing response body: $e");
+          QuickAlert.show(
+            context: context,
+            type: QuickAlertType.error,
+            text: "Error processing the response",
+            confirmBtnColor: TColors.primary,
+            width: 300,
+          );
+        }
+      } else {
+        // Debug: log response status and error
+        print("Error: ${response.statusCode}");
+        print("Response body: ${response.body}");
+
+        QuickAlert.show(
+          context: context,
+          type: QuickAlertType.error,
+          text: "Failed to confirm the visit",
+          confirmBtnColor: TColors.primary,
+          width: 300,
+        );
+      }
+
+
+      /* final response = await http.put(
+        Uri.parse('${THttpHelper.baseUrl}/doctor-visits/$visitId/confirm'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'userLatitude': position.latitude,
+          'userLongitude': position.longitude,
           'products': selectedProducts,
         }),
       );
@@ -621,7 +694,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
           confirmBtnColor: TColors.primary,
           width: 300,
         );
-      }
+      }*/
     } catch (e) {
       QuickAlert.show(
         context: context,
@@ -633,6 +706,15 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
     }
   }
 
+
+
+
+
+
+
+
+
+// old code
   Future<List<String>> _showProductSelectionDialog(BuildContext context) async {
     final RxList<String> selectedProductIds = <String>[].obs;
     final RxString searchQuery = "".obs;
@@ -768,6 +850,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
       },
     ) ?? <String>[]; // fallback if dialog dismissed
   }
+
 
 
 

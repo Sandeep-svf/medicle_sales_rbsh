@@ -26,6 +26,7 @@ class VisitListController with ChangeNotifier {
         debugPrint("Visit Sales Controller: Fetching sales data for user id: $userId");
       }
 
+
       if (userId == null) {
         // Log error if userId is null
         debugPrint("Visit Sales Controller: User ID is null. Cannot fetch sales data.");

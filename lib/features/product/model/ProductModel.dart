@@ -1,69 +1,61 @@
-class ProductModel {
+import 'dart:convert';
+
+class Product {
   final String id;
   final String name;
-  final String salt;
-  final String description;
-  final String dosage;
-  final String image;
-  final DateTime createdAt;
-  final DateTime updatedAt;
+  final String? salt;
+  final String? description;
+  final String? dosage;
+  final String? image;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
 
-  ProductModel({
+  Product({
     required this.id,
     required this.name,
-    required this.salt,
-    required this.description,
-    required this.dosage,
-    required this.image,
-    required this.createdAt,
-    required this.updatedAt,
+    this.salt,
+    this.description,
+    this.dosage,
+    this.image,
+    this.createdAt,
+    this.updatedAt,
   });
 
-  factory ProductModel.fromJson(Map<String, dynamic>? json) {
-    if (json == null) {
-      return ProductModel(
-        id: '',
-        name: '',
-        salt: '',
-        description: '',
-        dosage: '',
-        image: '',
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-      );
-    }
-
-    return ProductModel(
-      id: json['_id']?.toString() ?? '',
-      name: json['name']?.toString() ?? '',
-      salt: json['salt']?.toString() ?? '',
-      description: json['description']?.toString() ?? '',
-      dosage: json['dosage']?.toString() ?? '',
-      image: json['image']?.toString() ?? '',
-      createdAt: _parseDate(json['createdAt']),
-      updatedAt: _parseDate(json['updatedAt']),
+  /// Factory: JSON -> Product
+  factory Product.fromJson(Map<String, dynamic> json) {
+    return Product(
+      id: json['id'] ?? "",                        // fallback empty string
+      name: json['name'] ?? "Unnamed Product",     // fallback default name
+      salt: json['salt'] == "" ? null : json['salt'],
+      description: json['description'] == "" ? null : json['description'],
+      dosage: json['dosage'] == "" ? null : json['dosage'],
+      image: json['image'],                        // already nullable
+      createdAt: json['created_at'] != null
+          ? DateTime.tryParse(json['created_at'])
+          : null,
+      updatedAt: json['updated_at'] != null
+          ? DateTime.tryParse(json['updated_at'])
+          : null,
     );
   }
 
+  /// Method: Product -> JSON
   Map<String, dynamic> toJson() {
     return {
-      '_id': id,
-      'name': name,
-      'salt': salt,
-      'description': description,
-      'dosage': dosage,
-      'image': image,
-      'createdAt': createdAt.toIso8601String(),
-      'updatedAt': updatedAt.toIso8601String(),
+      "id": id,
+      "name": name,
+      "salt": salt,
+      "description": description,
+      "dosage": dosage,
+      "image": image,
+      "created_at": createdAt?.toIso8601String(),
+      "updated_at": updatedAt?.toIso8601String(),
     };
   }
 
-  static DateTime _parseDate(dynamic value) {
-    try {
-      if (value == null) return DateTime.now();
-      return DateTime.parse(value.toString());
-    } catch (_) {
-      return DateTime.now();
-    }
+  /// Helper: Convert list of JSON objects -> List<Product>
+  static List<Product> listFromJson(String str) {
+    final data = json.decode(str);
+    return List<Product>.from(data.map((x) => Product.fromJson(x)));
   }
 }

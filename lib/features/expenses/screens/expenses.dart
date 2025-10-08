@@ -92,7 +92,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
 
       if (fromDate == null || toDate == null) return matchesSearch;
 
-      final entryDate = _normalize(e.date);
+      final entryDate = _normalize(DateTime.parse(e.date));
       final from = _normalize(fromDate!);
       final to = _normalize(toDate!);
 
@@ -108,7 +108,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
     final pdf = pw.Document();
 
     // 💰 Calculate total fare
-    double totalAmount = expenses.fold(0.0, (sum, item) => sum + item.amount);
+    double totalAmount = expenses.fold(0.0, (sum, item) => sum + double.parse(item.amount));
     String userId = expenses.isNotEmpty ? expenses.first.user : 'Unknown';
 
     pdf.addPage(
@@ -154,9 +154,9 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
               }
 
               return [
-                DateFormat('dd MMM').format(e.date),
+                DateFormat('dd MMM').format(DateTime.parse(e.date)),
                 e.category,
-                e.amount.toStringAsFixed(2),
+                e.amount,
                 e.description.length > 30 ? '${e.description.substring(0, 28)}…' : e.description,
                 route.length > 40 ? '${route.substring(0, 38)}…' : route,
                 distance,
@@ -650,7 +650,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                             const Icon(Icons.calendar_today, size: 16, color: Colors.grey),
                             const SizedBox(width: 6),
                             Text(
-                              DateFormat('dd MMM yyyy').format(e.date),
+                              DateFormat('dd MMM yyyy').format(DateTime.parse(e.date)),
                               style: const TextStyle(fontSize: 13, color: Colors.grey),
                             ),
                           ],

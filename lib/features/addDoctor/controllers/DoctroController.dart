@@ -20,15 +20,18 @@ class DoctorListController extends GetxController {
     try {
       isLoading.value = true;
 
-      headOffice = (await authManager.getHeadOffice())!;
+     // headOffice = (await authManager.getHeadOffice())!;
      // final headOffice = (await authManager.getHeadOffice()) ?? '';
 
+      final token = await authManager.getAuthToken();
+
       print("Doctors Data: headOffice $headOffice");
-      print("Doctors Data: $_baseUrl/doctors/by-head-office/$headOffice");
+      print("Doctors Data: $_baseUrl/api/doctors/my-doctors");
       final response = await http.get(
 
-        Uri.parse("$_baseUrl/doctors/by-head-office/$headOffice"),
-        headers: {"Content-Type": "application/json"},
+        Uri.parse("$_baseUrl/doctors/my-doctors"),
+        headers: {"Content-Type": "application/json",
+          'Authorization': 'Bearer $token'},
       );
 
       print("Response: ${response.body}");

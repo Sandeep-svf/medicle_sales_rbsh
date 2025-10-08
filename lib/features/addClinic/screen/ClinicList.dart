@@ -34,7 +34,7 @@ class _ClinicListScreenState extends State<ClinicListScreen> {
   @override
   Widget build(BuildContext context) {
     final filteredClinics = _clinics.where((clinic) {
-      return clinic.name.toLowerCase().contains(_searchQuery.toLowerCase());
+      return clinic.firmName.toLowerCase().contains(_searchQuery.toLowerCase());
     }).toList();
 
     return Scaffold(
@@ -77,7 +77,7 @@ class _ClinicListScreenState extends State<ClinicListScreen> {
 
               final filteredClinics =
               _clinicListController.clinicList.where((clinic) {
-                return clinic.name
+                return clinic.firmName
                     .toLowerCase()
                     .contains(_searchQuery.toLowerCase());
               }).toList();
@@ -119,7 +119,7 @@ class _ClinicListScreenState extends State<ClinicListScreen> {
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          clinic.name,
+                                          clinic.firmName,
                                           style: const TextStyle(
                                             fontSize: 16,
                                             fontWeight: FontWeight.bold,

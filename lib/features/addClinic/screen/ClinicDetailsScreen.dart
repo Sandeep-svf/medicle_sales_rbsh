@@ -11,7 +11,7 @@ class ClinicDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(clinic.name),
+        title: Text(clinic.firmName),
         backgroundColor: const Color(0xFFC71D52),
         elevation: 4,
       ),
@@ -20,8 +20,8 @@ class ClinicDetailScreen extends StatelessWidget {
         children: [
           _buildSectionHeader("Chemist Details"),
           _buildInfoTile(Icons.location_on, "Address", clinic.address),
-          _buildInfoTile(Icons.email, "Email", clinic.email),
-          _buildInfoTile(Icons.phone, "Phone", clinic.phone),
+          _buildInfoTile(Icons.email, "Email", clinic.emailId),
+          _buildInfoTile(Icons.phone, "Phone", clinic.mobileNo),
           _buildInfoTile(Icons.update, "Updated At", "No info available yet"),
 
           const SizedBox(height: 24),
@@ -40,7 +40,7 @@ class ClinicDetailScreen extends StatelessWidget {
                   Marker(
                     markerId: const MarkerId("clinic_location"),
                     position: LatLng(28.500719, 77.532639),
-                    infoWindow: InfoWindow(title: clinic.name),
+                    infoWindow: InfoWindow(title: clinic.firmName),
                   ),
                 },
               ),

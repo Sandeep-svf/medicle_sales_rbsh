@@ -134,7 +134,7 @@ class _VisitStockistScreenState extends State<VisitStockistScreen> {
                           selectedDoctorName = value;
                           selectedDoctorId = _stokistListController.stokistList
                               .firstWhere((doctor) => doctor.firmName == value)
-                              .sId;
+                              .id;
                         });
                       },
                       hint: const Text("Please select"),
@@ -425,7 +425,7 @@ class _VisitStockistScreenState extends State<VisitStockistScreen> {
                                         // Make a PUT request to update the confirmation status
                                         final response = await http.put(
                                           Uri.parse(
-                                              '${THttpHelper.baseUrl}/stockists/visits/$visitId/confirm'),
+                                              '${THttpHelper.baseUrl}/stockist-visits/$visitId/confirm'),
                                           headers: {
                                             'Content-Type': 'application/json',
                                           },

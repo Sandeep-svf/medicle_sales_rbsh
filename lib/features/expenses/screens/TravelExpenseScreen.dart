@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 import 'package:medicle_sales_rbsh/utils/local_storage/auth_manager.dart';
 
@@ -300,7 +301,20 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Add Allowance")),
+      appBar: AppBar(
+        title: const Text("Add Allowance"),
+        backgroundColor: TColors.primary, // Set background color as needed
+        titleTextStyle: TextStyle(
+          color: Colors.white, // Set title text color to white
+          fontSize: 20, // Adjust font size if needed
+          fontWeight: FontWeight.bold, // Adjust font weight if needed
+        ),
+        iconTheme: IconThemeData(
+          color: Colors.white, // Set back arrow (leading icon) color to white
+        ),
+      ),
+
+
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(

@@ -3,13 +3,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:medicle_sales_rbsh/features/addDoctor/models/HeadofficeModel.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../utils/constants/text_strings.dart';
 import '../../../utils/helpers/zoom_in_out_anim.dart';
 import '../../../utils/constants/colors.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../../../utils/http/http_client.dart';
+import '../../../utils/local_storage/auth_manager.dart';
 import '../../../utils/loder/CircularLoaderController.dart';
+import '../../addClinic/model/clinic.dart';
+import '../../authentication/models/headoffice.dart';
 import '../controllers/DoctroController.dart';
 import '../controllers/addDoctorController.dart';
 import 'doctorDetails.dart';
@@ -30,6 +35,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
   String? selectedCityId; // Store the selected city ID
   String? selectedCityName; // Store the selected city name
   List<Map<String, String>> cities = [];
+
   double? selectedLatitude;
   double? selectedLongitude;
   String? selectedAddress;
@@ -46,6 +52,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
       // await to wait for the async operations
       await _doctorListController.fetchDoctorList();
       await fetchCities();
+     // cities = (await getHeadOffices()).cast<Map<String, String>>();
     } catch (e) {
       // Handle any errors here
       if (kDebugMode) {
@@ -53,10 +60,16 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
       }
     }
   }
-  Future<void> fetchCities() async {
+ /* Future<void> fetchCities() async {
     CircularLoaderController.showLoader(context);
+    AuthManager authManager = AuthManager();
+    final token = await authManager.getAuthToken();
     final response = await http.get(
-        Uri.parse('${THttpHelper.baseUrl}/headoffices'));
+        Uri.parse('${THttpHelper.baseUrl}/users/my-head-offices'),
+        headers: {
+          "Authorization": "Bearer $token",  // Include Bearer token in the header
+          "Accept": "application/json",  // Ensure the server expects JSON
+        },);
     if (response.statusCode == 200) {
       CircularLoaderController.hideLoader();
       List<dynamic> cityList = json.decode(response.body);
@@ -76,7 +89,84 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
       Get.snackbar("Error", "Failed to load Head Office.",
           backgroundColor: Colors.red, duration: const Duration(seconds: 3));
     }
+  }*/
+
+
+  Future<void> fetchCities() async {
+    // Show loading spinner while fetching head offices
+    CircularLoaderController.showLoader(context);
+    AuthManager authManager = AuthManager();
+
+    try {
+      // Retrieve the authorization token
+      final token = await authManager.getAuthToken();
+      print("[DEBUG] Token fetched: $token");
+
+      // Make the GET request to fetch head offices
+      final response = await http.get(
+        Uri.parse('${THttpHelper.baseUrl}/users/my-head-offices'),
+        headers: {
+          "Authorization": "Bearer $token",  // Include Bearer token in the header
+          "Accept": "application/json",  // Ensure the server expects JSON
+        },
+      );
+
+      // Check if the response status code is OK (200)
+      if (response.statusCode == 200) {
+        CircularLoaderController.hideLoader();  // Hide loading spinner after successful response
+
+        // Decode the response body as a Map<String, dynamic>
+        final Map<String, dynamic> jsonResponse = json.decode(response.body);
+
+        // Check if the 'success' key is true
+        if (jsonResponse['success'] == true) {
+          // Extract the 'data' list from the response
+          final List<dynamic> cityList = jsonResponse['data'];
+
+          print("[DEBUG] Response body decoded: $cityList");
+
+          // Map the data and set the state
+          setState(() {
+            cities = cityList
+                .map((city) => {
+              'id': city['_id'].toString(),
+              'name': city['name'].toString(),
+            })
+                .toList();
+
+            // Debug log showing the list of cities after mapping
+            print("[DEBUG] Cities list updated: $cities");
+          });
+        } else {
+          // If 'success' is false, show an error message
+          print("[ERROR] Response success is false.");
+          Get.snackbar("Error", "Failed to load Head Office. Response success was false.",
+              backgroundColor: Colors.red, duration: const Duration(seconds: 3));
+        }
+      } else {
+        CircularLoaderController.hideLoader();  // Hide loader on failure
+
+        // Log and show an error message if the response status code is not 200
+        print("[ERROR] Failed to load Head Office. Status code: ${response.statusCode}");
+        Get.snackbar("Error", "Failed to load Head Office. Status Code: ${response.statusCode}",
+            backgroundColor: Colors.red, duration: const Duration(seconds: 3));
+      }
+    } catch (e) {
+      // Hide loader if an exception occurs
+      CircularLoaderController.hideLoader();
+
+      // Log the error and show the error message
+      print("[ERROR] Exception occurred: $e");
+      Get.snackbar("Error", "Failed to load Head Office: $e", backgroundColor: Colors.red);
+    }
   }
+
+
+
+
+
+
+
 
 
   void _showAddDoctorDialog() {
