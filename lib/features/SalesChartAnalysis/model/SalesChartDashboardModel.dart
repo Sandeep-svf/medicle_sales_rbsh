@@ -1,32 +1,24 @@
-
-
-import 'dart:convert';
-
-class SalesChartDashboardModel {
+class DashboardResponse {
   final bool success;
-  final Data? data;
+  final DashboardData? data;
   final String? message;
 
-  SalesChartDashboardModel({required this.success, this.data, this.message});
+  DashboardResponse({
+    required this.success,
+    this.data,
+    this.message,
+  });
 
-  factory SalesChartDashboardModel.fromJson(Map<String, dynamic> json) {
-    return SalesChartDashboardModel(
+  factory DashboardResponse.fromJson(Map<String, dynamic> json) {
+    return DashboardResponse(
       success: json['success'] ?? false,
-      data: json['data'] != null ? Data.fromJson(json['data']) : null,
+      data: json['data'] != null ? DashboardData.fromJson(json['data']) : null,
       message: json['message'],
     );
   }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'success': success,
-      'data': data?.toJson(),
-      'message': message,
-    };
-  }
 }
 
-class Data {
+class DashboardData {
   final User? user;
   final Period? period;
   final Visits? visits;
@@ -34,10 +26,17 @@ class Data {
   final Targets? targets;
   final Summary? summary;
 
-  Data({this.user, this.period, this.visits, this.expenses, this.targets, this.summary});
+  DashboardData({
+    this.user,
+    this.period,
+    this.visits,
+    this.expenses,
+    this.targets,
+    this.summary,
+  });
 
-  factory Data.fromJson(Map<String, dynamic> json) {
-    return Data(
+  factory DashboardData.fromJson(Map<String, dynamic> json) {
+    return DashboardData(
       user: json['user'] != null ? User.fromJson(json['user']) : null,
       period: json['period'] != null ? Period.fromJson(json['period']) : null,
       visits: json['visits'] != null ? Visits.fromJson(json['visits']) : null,
@@ -45,17 +44,6 @@ class Data {
       targets: json['targets'] != null ? Targets.fromJson(json['targets']) : null,
       summary: json['summary'] != null ? Summary.fromJson(json['summary']) : null,
     );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'user': user?.toJson(),
-      'period': period?.toJson(),
-      'visits': visits?.toJson(),
-      'expenses': expenses?.toJson(),
-      'targets': targets?.toJson(),
-      'summary': summary?.toJson(),
-    };
   }
 }
 
@@ -75,15 +63,6 @@ class User {
       department: json['department'],
     );
   }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'role': role,
-      'department': department,
-    };
-  }
 }
 
 class Period {
@@ -100,237 +79,160 @@ class Period {
       monthName: json['monthName'],
     );
   }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'month': month,
-      'year': year,
-      'monthName': monthName,
-    };
-  }
 }
 
 class Visits {
-  final VisitDetail? doctor;
-  final VisitDetail? chemist;
-  final VisitDetail? stockist;
-  final int? total;
-  final int? scheduled;
-  final int? confirmed;
-  final int? submitted;
-  final int? approved;
-  final int? rejected;
-  final int? draft;
+  final VisitDetails? doctor;
+  final VisitDetails? chemist;
+  final VisitDetails? stockist;
+  final int total;
+  final int scheduled;
+  final int confirmed;
+  final int submitted;
+  final int approved;
+  final int rejected;
+  final int draft;
 
   Visits({
     this.doctor,
     this.chemist,
     this.stockist,
-    this.total,
-    this.scheduled,
-    this.confirmed,
-    this.submitted,
-    this.approved,
-    this.rejected,
-    this.draft,
+    this.total = 0,
+    this.scheduled = 0,
+    this.confirmed = 0,
+    this.submitted = 0,
+    this.approved = 0,
+    this.rejected = 0,
+    this.draft = 0,
   });
 
   factory Visits.fromJson(Map<String, dynamic> json) {
     return Visits(
-      doctor: json['doctor'] != null ? VisitDetail.fromJson(json['doctor']) : null,
-      chemist: json['chemist'] != null ? VisitDetail.fromJson(json['chemist']) : null,
-      stockist: json['stockist'] != null ? VisitDetail.fromJson(json['stockist']) : null,
-      total: json['total'],
-      scheduled: json['scheduled'],
-      confirmed: json['confirmed'],
-      submitted: json['submitted'],
-      approved: json['approved'],
-      rejected: json['rejected'],
-      draft: json['draft'],
+      doctor: json['doctor'] != null ? VisitDetails.fromJson(json['doctor']) : null,
+      chemist: json['chemist'] != null ? VisitDetails.fromJson(json['chemist']) : null,
+      stockist: json['stockist'] != null ? VisitDetails.fromJson(json['stockist']) : null,
+      total: json['total'] ?? 0,
+      scheduled: json['scheduled'] ?? 0,
+      confirmed: json['confirmed'] ?? 0,
+      submitted: json['submitted'] ?? 0,
+      approved: json['approved'] ?? 0,
+      rejected: json['rejected'] ?? 0,
+      draft: json['draft'] ?? 0,
     );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'doctor': doctor?.toJson(),
-      'chemist': chemist?.toJson(),
-      'stockist': stockist?.toJson(),
-      'total': total,
-      'scheduled': scheduled,
-      'confirmed': confirmed,
-      'submitted': submitted,
-      'approved': approved,
-      'rejected': rejected,
-      'draft': draft,
-    };
   }
 }
 
-class VisitDetail {
-  final int? scheduled;
-  final int? confirmed;
-  final int? total;
+class VisitDetails {
+  final int scheduled;
+  final int confirmed;
+  final int total;
 
-  VisitDetail({this.scheduled, this.confirmed, this.total});
+  VisitDetails({this.scheduled = 0, this.confirmed = 0, this.total = 0});
 
-  factory VisitDetail.fromJson(Map<String, dynamic> json) {
-    return VisitDetail(
-      scheduled: json['scheduled'],
-      confirmed: json['confirmed'],
-      total: json['total'],
+  factory VisitDetails.fromJson(Map<String, dynamic> json) {
+    return VisitDetails(
+      scheduled: json['scheduled'] ?? 0,
+      confirmed: json['confirmed'] ?? 0,
+      total: json['total'] ?? 0,
     );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'scheduled': scheduled,
-      'confirmed': confirmed,
-      'total': total,
-    };
   }
 }
 
 class Expenses {
-  final int? total;
-  final int? approved;
-  final int? pending;
-  final int? rejected;
-  final double? totalAmount;
-  final double? approvedAmount;
-  final double? pendingAmount;
-  final double? rejectedAmount;
+  final int total;
+  final int approved;
+  final int pending;
+  final int rejected;
+  final int totalAmount;
+  final int approvedAmount;
+  final int pendingAmount;
+  final int rejectedAmount;
 
   Expenses({
-    this.total,
-    this.approved,
-    this.pending,
-    this.rejected,
-    this.totalAmount,
-    this.approvedAmount,
-    this.pendingAmount,
-    this.rejectedAmount,
+    this.total = 0,
+    this.approved = 0,
+    this.pending = 0,
+    this.rejected = 0,
+    this.totalAmount = 0,
+    this.approvedAmount = 0,
+    this.pendingAmount = 0,
+    this.rejectedAmount = 0,
   });
 
   factory Expenses.fromJson(Map<String, dynamic> json) {
     return Expenses(
-      total: json['total'],
-      approved: json['approved'],
-      pending: json['pending'],
-      rejected: json['rejected'],
-      totalAmount: json['totalAmount']?.toDouble(),
-      approvedAmount: json['approvedAmount']?.toDouble(),
-      pendingAmount: json['pendingAmount']?.toDouble(),
-      rejectedAmount: json['rejectedAmount']?.toDouble(),
+      total: json['total'] ?? 0,
+      approved: json['approved'] ?? 0,
+      pending: json['pending'] ?? 0,
+      rejected: json['rejected'] ?? 0,
+      totalAmount: json['totalAmount'] ?? 0,
+      approvedAmount: json['approvedAmount'] ?? 0,
+      pendingAmount: json['pendingAmount'] ?? 0,
+      rejectedAmount: json['rejectedAmount'] ?? 0,
     );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'total': total,
-      'approved': approved,
-      'pending': pending,
-      'rejected': rejected,
-      'totalAmount': totalAmount,
-      'approvedAmount': approvedAmount,
-      'pendingAmount': pendingAmount,
-      'rejectedAmount': rejectedAmount,
-    };
   }
 }
 
 class Targets {
-  final int? monthlyTarget;
-  final int? achieved;
-  final int? remaining;
-  final int? achievementPercentage;
+  final int monthlyTarget;
+  final int achieved;
+  final int remaining;
+  final int achievementPercentage;
   final String? status;
-  final String? deadline;
-  final String? targetMonth;
-  final String? targetYear;
-  final bool? isCurrentMonth;
-  final String? targetPeriod;
+  final int targetMonth;
+  final int targetYear;
+  final bool isCurrentMonth;
   final String? displayMessage;
 
   Targets({
-    this.monthlyTarget,
-    this.achieved,
-    this.remaining,
-    this.achievementPercentage,
+    this.monthlyTarget = 0,
+    this.achieved = 0,
+    this.remaining = 0,
+    this.achievementPercentage = 0,
     this.status,
-    this.deadline,
-    this.targetMonth,
-    this.targetYear,
-    this.isCurrentMonth,
-    this.targetPeriod,
+    this.targetMonth = 0,
+    this.targetYear = 0,
+    this.isCurrentMonth = false,
     this.displayMessage,
   });
 
   factory Targets.fromJson(Map<String, dynamic> json) {
     return Targets(
-      monthlyTarget: json['monthlyTarget'],
-      achieved: json['achieved'],
-      remaining: json['remaining'],
-      achievementPercentage: json['achievementPercentage'],
+      monthlyTarget: json['monthlyTarget'] ?? 0,
+      achieved: json['achieved'] ?? 0,
+      remaining: json['remaining'] ?? 0,
+      achievementPercentage: json['achievementPercentage'] ?? 0,
       status: json['status'],
-      deadline: json['deadline'],
-      targetMonth: json['targetMonth'],
-      targetYear: json['targetYear'],
-      isCurrentMonth: json['isCurrentMonth'],
-      targetPeriod: json['targetPeriod'],
+      targetMonth: json['targetMonth'] ?? 0,
+      targetYear: json['targetYear'] ?? 0,
+      isCurrentMonth: json['isCurrentMonth'] ?? false,
       displayMessage: json['displayMessage'],
     );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'monthlyTarget': monthlyTarget,
-      'achieved': achieved,
-      'remaining': remaining,
-      'achievementPercentage': achievementPercentage,
-      'status': status,
-      'deadline': deadline,
-      'targetMonth': targetMonth,
-      'targetYear': targetYear,
-      'isCurrentMonth': isCurrentMonth,
-      'targetPeriod': targetPeriod,
-      'displayMessage': displayMessage,
-    };
   }
 }
 
 class Summary {
-  final String? totalActivities;
-  final String? visitCompletionRate;
-  final String? targetAchievement;
-  final String? pendingExpenses;
-  final String? totalExpenseAmount;
+  final String totalActivities;
+  final String visitCompletionRate;
+  final String targetAchievement;
+  final String pendingExpenses;
+  final String totalExpenseAmount;
 
   Summary({
-    this.totalActivities,
-    this.visitCompletionRate,
-    this.targetAchievement,
-    this.pendingExpenses,
-    this.totalExpenseAmount,
+    this.totalActivities = "0",
+    this.visitCompletionRate = "0",
+    this.targetAchievement = "0",
+    this.pendingExpenses = "0",
+    this.totalExpenseAmount = "0",
   });
 
   factory Summary.fromJson(Map<String, dynamic> json) {
     return Summary(
-      totalActivities: json['totalActivities'],
-      visitCompletionRate: json['visitCompletionRate'],
-      targetAchievement: json['targetAchievement'],
-      pendingExpenses: json['pendingExpenses'],
-      totalExpenseAmount: json['totalExpenseAmount'],
+      totalActivities: json['totalActivities'] ?? "0",
+      visitCompletionRate: json['visitCompletionRate'] ?? "0",
+      targetAchievement: json['targetAchievement'] ?? "0",
+      pendingExpenses: json['pendingExpenses'] ?? "0",
+      totalExpenseAmount: json['totalExpenseAmount'] ?? "0",
     );
   }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'totalActivities': totalActivities,
-      'visitCompletionRate': visitCompletionRate,
-      'targetAchievement': targetAchievement,
-      'pendingExpenses': pendingExpenses,
-      'totalExpenseAmount': totalExpenseAmount,
-    };
-  }
 }
-

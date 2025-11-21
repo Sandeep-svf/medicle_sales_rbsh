@@ -38,6 +38,7 @@ class TTexts {
   static const String productInfo = "Product Info";
   static const String order = "Order";
   static const String expenses = "Expenses";
+  static const String invoiceScreen = "InvoiceScreen";
   static const String report = "Report";
   static const String support = "Support";
   static const String settings = "Settings";

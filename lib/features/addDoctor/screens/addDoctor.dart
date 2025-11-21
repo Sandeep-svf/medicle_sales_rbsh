@@ -13,10 +13,12 @@ import 'dart:convert';
 import '../../../utils/http/http_client.dart';
 import '../../../utils/local_storage/auth_manager.dart';
 import '../../../utils/loder/CircularLoaderController.dart';
+import '../../../utils/sqlite_helper/GenericDatabaseHelper.dart';
 import '../../addClinic/model/clinic.dart';
 import '../../authentication/models/headoffice.dart';
 import '../controllers/DoctroController.dart';
 import '../controllers/addDoctorController.dart';
+import '../models/CityOfflineModel.dart';
 import 'doctorDetails.dart';
 import 'map.dart';
 
@@ -91,8 +93,8 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
     }
   }*/
 
-
-  Future<void> fetchCities() async {
+ // without saving in db...
+  /*Future<void> fetchCities() async {
     // Show loading spinner while fetching head offices
     CircularLoaderController.showLoader(context);
     AuthManager authManager = AuthManager();
@@ -159,11 +161,100 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
       print("[ERROR] Exception occurred: $e");
       Get.snackbar("Error", "Failed to load Head Office: $e", backgroundColor: Colors.red);
     }
+  }*/
+
+
+
+  Future<void> fetchCities() async {
+    CircularLoaderController.showLoader(context);
+    AuthManager authManager = AuthManager();
+    final dbHelper = GenericDatabaseHelper<CityOfflineModel>();
+
+    try {
+      //  Get Auth token
+      final token = await authManager.getAuthToken();
+      print("[DEBUG] Token fetched: $token");
+
+      //  Fetch from API
+      final response = await http.get(
+        Uri.parse('${THttpHelper.baseUrl}/users/my-head-offices'),
+        headers: {
+          "Authorization": "Bearer $token",
+          "Accept": "application/json",
+        },
+      );
+
+      CircularLoaderController.hideLoader();
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonResponse = json.decode(response.body);
+
+        if (jsonResponse['success'] == true) {
+          final List<dynamic> cityList = jsonResponse['data'];
+
+          //  Convert to CityOfflineModel
+          final citiesData = cityList
+              .map((e) => CityOfflineModel(
+            id: e['id'].toString(),
+            name: e['name'].toString(),
+          ))
+              .toList();
+
+          print("[DEBUG] API returned ${citiesData.length} cities.");
+
+          //  Refresh DB (delete all + insert new)
+          await dbHelper.deleteAll('cities');
+          for (var city in citiesData) {
+            await dbHelper.insert(city);
+          }
+          print("[DEBUG] Cities saved to local DB.");
+
+          //  Update UI from local DB (for display)
+          final localCities = await dbHelper.getAll(
+            'cities',
+                (json) => CityOfflineModel.fromJson(json),
+          );
+
+          setState(() {
+            cities = localCities
+                .map((city) => {'id': city.id, 'name': city.name})
+                .toList();
+          });
+
+          print("[DEBUG] Loaded ${cities.length} cities from local DB.");
+        } else {
+          Get.snackbar("Error", "Failed to load cities (success=false)",
+              backgroundColor: Colors.red, duration: const Duration(seconds: 3));
+        }
+      } else {
+        print("[ERROR] Failed to load Head Office. Status: ${response.statusCode}");
+        Get.snackbar("Error",
+            "Failed to load cities. Status Code: ${response.statusCode}",
+            backgroundColor: Colors.red);
+      }
+    } catch (e) {
+      CircularLoaderController.hideLoader();
+      print("[ERROR] Exception: $e");
+
+      //  Fallback to local DB
+      final localCities = await dbHelper.getAll(
+        'cities',
+            (json) => CityOfflineModel.fromJson(json),
+      );
+
+      if (localCities.isNotEmpty) {
+        setState(() {
+          cities = localCities
+              .map((city) => {'id': city.id, 'name': city.name})
+              .toList();
+        });
+        print("[DEBUG] Loaded cached cities (offline mode).");
+      } else {
+        Get.snackbar("Error", "No cached data available. Please connect to the internet.",
+            backgroundColor: Colors.red);
+      }
+    }
   }
-
-
-
-
 
 
 

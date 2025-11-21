@@ -131,6 +131,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     var _notificationCount = 10;
+
     return Scaffold(
       appBar: AppBar(
         title: Center(
@@ -274,12 +275,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
      // await fetchPlayStoreVersion();
       // Fetch the current app version using `package_info_plus`
       PackageInfo packageInfo = await PackageInfo.fromPlatform();
-      AppUpdateInfo updateInfo = await InAppUpdate.checkForUpdate();
-      int playStoreVersionCode = updateInfo.availableVersionCode!;
+     // AppUpdateInfo updateInfo = await InAppUpdate.checkForUpdate();
+     // int playStoreVersionCode = updateInfo.availableVersionCode!;
       setState(() {
         currentVersion = packageInfo.version;  // Current app version (e.g., 1.2.3)
 
-        playStoreVersion = playStoreVersionCode.toString();  // This could be fetched dynamically or hardcoded
+       // playStoreVersion = playStoreVersionCode.toString();  // This could be fetched dynamically or hardcoded
       });
 
       // Fetch device info using `device_info_plus`
@@ -304,7 +305,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
 
       final response = await http.post(
-        Uri.parse('${THttpHelper.baseUrl}/version/check'), // Replace with the actual URL
+        Uri.parse('${THttpHelper.baseUrl}/version/check'),
         headers: {
           "Authorization": "Bearer $token",  // Add Bearer token
           "Accept": "application/json",  // Ensure server expects JSON
@@ -312,8 +313,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         },
         body: jsonEncode({
           "currentVersion": currentVersion,
-          "playStoreVersion": playStoreVersion,
           "deviceInfo": deviceInfo,
+          "buildNumber": "1024"
         }),
       );
 

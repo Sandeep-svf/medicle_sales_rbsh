@@ -1,5 +1,4 @@
-/*
-import 'package:flutter/material.dart';
+/*import 'package:flutter/material.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 import 'package:medicle_sales_rbsh/utils/local_storage/auth_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -77,9 +76,8 @@ class _SplashScreenState extends State<SplashScreen> {
   Future<void> _startImmediateUpdate() async {
     try {
       print("[UpdateStart] Starting immediate update...");
-     */
-/* AuthManager authManager = AuthManager();
-      await authManager.logout();*//*
+ AuthManager authManager = AuthManager();
+      await authManager.logout();
 
       await InAppUpdate.performImmediateUpdate();
     } catch (e) {
@@ -126,8 +124,7 @@ class _SplashScreenState extends State<SplashScreen> {
       ),
     );
   }
-}
-*/
+}*/
 
 /*import 'dart:async';
 import 'dart:developer' as dev;
@@ -1071,7 +1068,343 @@ class _SplashScreenState extends State<SplashScreen> {
 */
 
 
-// Fixing location for android 14 and above version
+
+
+/*
+
+import 'dart:io';
+import 'dart:async';
+import 'dart:ui';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:geolocator/geolocator.dart' as geolocator;
+import 'package:in_app_update/in_app_update.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:device_info_plus/device_info_plus.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/local_storage/auth_manager.dart';
+import 'package:medicle_sales_rbsh/features/authentication/screens/login/login.dart';
+import '../../../dashboard/screen/dashboard.dart';
+import '../../../../utils/constants/image_strings.dart';
+
+// Request permission in foreground before starting background service
+Future<bool> requestLocationPermission() async {
+  PermissionStatus permissionStatus = await Permission.locationWhenInUse.request();
+  if (Platform.isAndroid) {
+    PermissionStatus backgroundPermissionStatus = await Permission.locationAlways.request();
+    if (!backgroundPermissionStatus.isGranted) {
+      return false; // Background location permission is not granted
+    }
+  }
+
+  return permissionStatus.isGranted;
+}
+
+// Top-level onStart method for the background service
+@pragma('vm:entry-point')  // Add this annotation for background access
+void onStart(ServiceInstance service) async {
+  DartPluginRegistrant.ensureInitialized();
+
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+  FlutterLocalNotificationsPlugin();
+
+  if (service is AndroidServiceInstance) {
+    service.on('setAsForeground').listen((event) {
+      service.setAsForegroundService();
+    });
+
+    service.on('setAsBackground').listen((event) {
+      service.setAsBackgroundService();
+    });
+  }
+
+  service.on('stopService').listen((event) {
+    service.stopSelf();
+  });
+
+  // Update every second with new location and timestamp
+  Timer.periodic(const Duration(seconds: 1), (timer) async {
+    if (service is AndroidServiceInstance) {
+      if (await service.isForegroundService()) {
+        String location = await getCurrentLocation(); // Static method call
+
+        flutterLocalNotificationsPlugin.show(
+          888,
+          'COOL SERVICE',
+          'Location: $location',
+          const NotificationDetails(
+            android: AndroidNotificationDetails(
+              'my_foreground',
+              'MY FOREGROUND SERVICE',
+              icon: 'ic_bg_service_small',
+              ongoing: true,
+            ),
+          ),
+        );
+
+        service.setForegroundNotificationInfo(
+          title: "My App Service",
+          content: "Location: $location",
+        );
+      }
+    }
+
+    debugPrint("SplashScreen: FLUTTER BACKGROUND SERVICE: ${DateTime.now()}");
+
+    final deviceInfo = DeviceInfoPlugin();
+    String? device;
+    if (Platform.isAndroid) {
+      final androidInfo = await deviceInfo.androidInfo;
+      device = androidInfo.model;
+    } else if (Platform.isIOS) {
+      final iosInfo = await deviceInfo.iosInfo;
+      device = iosInfo.model;
+    }
+
+    // Fetch current location
+    String location = await getCurrentLocation();
+
+    // Debug print to check lat and long
+    debugPrint("SplashScreen: Current Location - $location");
+
+    service.invoke(
+      'update',
+      {
+        "current_date": DateTime.now().toIso8601String(),
+        "device": device,
+        "location": location, // Add location here
+      },
+    );
+  });
+}
+
+// Static method for getting current location
+@pragma('vm:entry-point')  // Add this annotation for background access
+Future<String> getCurrentLocation() async {
+  try {
+// Request location permission if not granted
+    geolocator.LocationPermission permission = await geolocator.Geolocator.requestPermission();
+    if (permission == geolocator.LocationPermission.denied ||
+        permission == geolocator.LocationPermission.deniedForever) {
+      return 'Location permission denied';
+    }
+
+// Fetch the current position
+    geolocator.Position position = await geolocator.Geolocator.getCurrentPosition(
+        desiredAccuracy: geolocator.LocationAccuracy.high);
+    return 'Lat: ${position.latitude}, Long: ${position.longitude}';
+  } catch (e) {
+    return 'Error fetching location: $e';
+  }
+}
+
+class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  @override
+  void initState() {
+    super.initState();
+    print("[SplashScreen] App started. Checking for updates...");
+    _checkForUpdate(); // Start checking for updates first
+    _startLocationFetching(); // Start location fetching in background
+  }
+
+// Initialize Background Location Fetching
+  Future<void> _startLocationFetching() async {
+    print("[SplashScreen] Starting background location service...");
+
+// Check and request location permissions
+    bool isLocationGranted = await requestLocationPermission();
+    if (!isLocationGranted) {
+      print("[SplashScreen] Location permission denied.");
+      return;
+    }
+
+// Start background location fetching
+    await initializeService();
+
+    print("[SplashScreen] Location service initialized and running.");
+  }
+
+  Future<void> initializeService() async {
+    final service = FlutterBackgroundService();
+
+// Create notification channel before starting the service
+    const AndroidNotificationChannel channel = AndroidNotificationChannel(
+      'my_foreground', // id
+      'MY FOREGROUND SERVICE', // title
+      description: 'This channel is used for important notifications.',
+      importance: Importance.low, // importance must be at low or higher level
+    );
+
+    final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
+
+// Initialize flutter_local_notifications for Android and iOS
+    if (Platform.isIOS || Platform.isAndroid) {
+      await flutterLocalNotificationsPlugin.initialize(
+        const InitializationSettings(
+          iOS: DarwinInitializationSettings(),
+          android: AndroidInitializationSettings('ic_bg_service_small'),
+        ),
+      );
+    }
+
+// Create notification channel
+    await flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(channel);
+
+// Configure the background service
+    await service.configure(
+      androidConfiguration: AndroidConfiguration(
+        onStart: onStart,  // Use top-level function
+        autoStart: true,
+        isForegroundMode: true,
+        notificationChannelId: 'my_foreground',
+        initialNotificationTitle: 'AWESOME SERVICE',
+        initialNotificationContent: 'Initializing',
+        foregroundServiceNotificationId: 888,
+        foregroundServiceTypes: [AndroidForegroundType.location],
+      ),
+      iosConfiguration: IosConfiguration(
+        autoStart: true,
+        onForeground: onStart, // Use top-level function
+        onBackground: onIosBackground,
+      ),
+    );
+  }
+
+// Callback for iOS background
+  @pragma('vm:entry-point')
+  Future<bool> onIosBackground(ServiceInstance service) async {
+    WidgetsFlutterBinding.ensureInitialized();
+    DartPluginRegistrant.ensureInitialized();
+
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    await preferences.reload();
+    final log = preferences.getStringList('log') ?? <String>[];
+    log.add(DateTime.now().toIso8601String());
+    await preferences.setStringList('log', log);
+
+    debugPrint("SplashScreen: onIosBackground called");
+
+    return true;
+  }
+
+// Check for app update
+  Future<void> _checkForUpdate() async {
+    try {
+      AppUpdateInfo info = await InAppUpdate.checkForUpdate();
+      print("[UpdateCheck] Update availability: ${info.updateAvailability}");
+      if (info.updateAvailability == UpdateAvailability.updateAvailable) {
+        print("[UpdateCheck] Update available. Showing update dialog...");
+        _showUpdateDialog();
+      } else {
+        print("[UpdateCheck] No update available. Proceeding to login check...");
+        _checkLoginStatus();
+      }
+    } catch (e) {
+      print("[UpdateCheck] Error occurred while checking for updates: $e");
+      _checkLoginStatus(); // If error occurs, continue normal flow
+    }
+  }
+
+// Show Update Dialog
+  void _showUpdateDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text(TTexts.updateAvailable),
+          content: const Text(TTexts.updateAvailableContent),
+          actions: [
+            TextButton(
+              onPressed: () {
+                print("[UpdateDialog] User skipped the update.");
+                Navigator.pop(context);
+                _checkLoginStatus();
+              },
+              child: const Text(TTexts.skip),
+            ),
+            TextButton(
+              onPressed: () async {
+                print("[UpdateDialog] User opted to update now.");
+                Navigator.pop(context);
+                await _startImmediateUpdate();
+              },
+              child: const Text(TTexts.updateNow),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+// Perform Immediate Update
+  Future<void> _startImmediateUpdate() async {
+    try {
+      print("[UpdateStart] Starting immediate update...");
+      AuthManager authManager = AuthManager();
+      await authManager.logout();
+
+      await InAppUpdate.performImmediateUpdate();
+    } catch (e) {
+      print("[UpdateStart] Immediate update failed: $e");
+      _checkLoginStatus(); // Continue app flow even if update fails
+    }
+  }
+
+// Check Login Session
+  Future<void> _checkLoginStatus() async {
+    print("[LoginCheck] Checking saved login session...");
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String? userId = prefs.getString("user_id");
+
+    await Future.delayed(const Duration(seconds: 3)); // Splash delay
+
+    if (userId != null && userId.isNotEmpty) {
+      print("[LoginCheck] User ID found: $userId. Navigating to Dashboard.");
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => DashboardScreen()),
+      );
+    } else {
+      print("[LoginCheck] No user session found. Navigating to Login Screen.");
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Image.asset(
+            TImages.lightAppLogo,
+            height: 150,
+          ),
+        ),
+      ),
+    );
+  }
+}*/
+
+// working with andoird 15 tab
 import 'dart:developer' as dev;
 import 'dart:io';
 import 'dart:async';
@@ -1108,7 +1441,7 @@ void initCallback(dynamic _) {
   late MovementDetector movementDetector;
   bool isMoving = false;
 
-  _tick = Timer.periodic(const Duration(seconds: 1), (_) {
+  _tick = Timer.periodic(const Duration(seconds: 60), (_) {
     final l = _lastFix;
     if (l != null) {
       print('AppDebug: BG Tick lat=${l.latitude}, lng=${l.longitude}, acc=${l.accuracy}');
@@ -1342,7 +1675,7 @@ class _SplashScreenState extends State<SplashScreen> {
     }
   }
 
-  void _showUpdateDialog() {
+  /*void _showUpdateDialog() {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -1369,7 +1702,51 @@ class _SplashScreenState extends State<SplashScreen> {
         ],
       ),
     );
+  }*/
+
+  void _showUpdateDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => AlertDialog(
+        title: const Text(TTexts.updateAvailable),
+        content: const Text(TTexts.updateAvailableContent),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _navigateAfterDelay(); // Continue normal flow if skipped
+            },
+            child: const Text(TTexts.skip),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              try {
+                print("AppDebug: User opted to update now.");
+                await InAppUpdate.performImmediateUpdate();
+
+                //  After successful update, navigate directly to LoginScreen
+                print("AppDebug: Update completed successfully. Navigating to LoginScreen.");
+                if (mounted) {
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (_) => const LoginScreen()),
+                        (route) => false, // Clear all previous routes
+                  );
+                }
+              } catch (e) {
+                print("AppDebug: Immediate update failed: $e");
+                _navigateAfterDelay(); // Continue normal flow if update fails
+              }
+            },
+            child: const Text(TTexts.updateNow),
+          ),
+        ],
+      ),
+    );
   }
+
 
   Future<void> _navigateAfterDelay() async {
     final prefs = await SharedPreferences.getInstance();

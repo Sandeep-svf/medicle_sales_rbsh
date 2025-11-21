@@ -6,6 +6,7 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
 
+    <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
@@ -34,12 +35,27 @@
 
 
 
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" tools:node="remove"/>
+   <!-- <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" tools:node="remove"/>
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" tools:node="remove"/>
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" tools:node="remove"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" tools:node="remove"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" tools:node="remove"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" tools:node="remove"/>-->
 
+
+    <!--  For Android 7 - Android 9 -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+
+    <!--  For Android 10+ -->
+    <uses-permission android:name="android.permission.ACCESS_MEDIA_LOCATION" />
+
+    <!--  For Android 11+ -->
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
+
+    <!--  For Android 13+ (Scoped Storage changes) -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
 
 
 
@@ -139,6 +155,14 @@
             android:name="com.google.firebase.messaging.default_notification_channel_id"
             android:value="high_importance_channel"/>
 
+        <service
+            android:name="com.tekartik.bg_service.BackgroundService"
+            android:permission="android.permission.BLUETOOTH"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.tekartik.bg_service.BackgroundService" />
+            </intent-filter>
+        </service>
 
 
         <service android:name="com.transistorsoft.locationmanager.locationservices.LocationService"
@@ -177,7 +201,15 @@
 
         <!-- Register WorkManager service -->
         <service android:name="com.balemaster.flutter_background.GeolocatorService" android:permission="android.permission.BLUETOOTH" android:exported="true"/>
-
+        <service
+            android:name="id.flutter.flutter_background_service.BackgroundService"
+            android:permission="android.permission.BLUETOOTH_ADMIN"
+            android:exported="true"
+            android:foregroundServiceType="location">
+            <intent-filter>
+                <action android:name="id.flutter.flutter_background_service.START" />
+            </intent-filter>
+        </service>
 
 
         <!-- Optional: Firebase Messaging Service -->

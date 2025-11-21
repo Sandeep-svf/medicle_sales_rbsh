@@ -6,22 +6,20 @@ import 'package:provider/provider.dart';
 
 import '../../../utils/local_storage/auth_manager.dart';
 import '../../authentication/models/UserModel.dart';
+import '../../ticket/controller/TicketController.dart';
 import '../controller/DashboardController.dart';
 import '../model/SalesChartDashboardModel.dart';
-
-
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
-import '../../../utils/local_storage/auth_manager.dart';
-import '../controller/DashboardController.dart';
 
 class SalesChartHomeScreen extends StatelessWidget {
+
+
+
   @override
   Widget build(BuildContext context) {
     // Access the controller via GetX
     final DashboardController dashboardController = Get.find();
-
+    Get.put(TicketController());
     return Obx(() {
       if (dashboardController.isLoading.value) {
         return Scaffold(
@@ -30,23 +28,22 @@ class SalesChartHomeScreen extends StatelessWidget {
         );
       }
 
-
       final dashboardData = dashboardController.dashboardData.value;
 
       if (dashboardData == null) {
-        return Scaffold(
+        return const Scaffold(
           backgroundColor: Colors.white,
           body: Center(child: Text("No data available")),
         );
       }
 
-      final user = dashboardData.data!.user!;
-      final period = dashboardData.data!.period!;
-      final visits = dashboardData.data!.visits!;
-      //final sales = dashboardData.data!.sales!;
-      final expenses = dashboardData.data!.expenses!;
-      final targets = dashboardData.data!.targets!;
-      final summary = dashboardData.data!.summary!;
+      final user = dashboardData?.data?.user;
+      final period = dashboardData?.data?.period;
+      final visits = dashboardData?.data?.visits;
+      final expenses = dashboardData?.data?.expenses;
+      final targets = dashboardData?.data?.targets;
+      final summary = dashboardData?.data?.summary;
+
 
       return Scaffold(
         backgroundColor: Colors.white,
@@ -71,8 +68,7 @@ class SalesChartHomeScreen extends StatelessWidget {
                   return Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-
-                        color: Colors.red.withOpacity(0.05),
+                      color: Colors.red.withOpacity(0.05),
                       border: Border.all(color: Colors.red, width: 1),
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
@@ -101,7 +97,7 @@ class SalesChartHomeScreen extends StatelessWidget {
                             ),
                             const SizedBox(height: 20),
                             Text(
-                              user.name,
+                              user.name ?? "No Name",
                               style: const TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
@@ -110,7 +106,7 @@ class SalesChartHomeScreen extends StatelessWidget {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              user.email,
+                              user.email ?? "No Email",
                               style: TextStyle(
                                 fontSize: 14,
                                 color: Colors.grey[700],
@@ -142,18 +138,30 @@ class SalesChartHomeScreen extends StatelessWidget {
               // Visits Summary
               Row(
                 children: [
-                  _animatedProgressCard("Doctor Visits", visits.doctor!.confirmed ?? 0, visits.doctor!.total ?? 0),
-                  _animatedProgressCard("Chemist Visits", visits.chemist!.confirmed ?? 0, visits.chemist!.total ?? 0),
-                  _animatedProgressCard("Stockist Visits", visits.stockist!.confirmed ?? 0, visits.stockist!.total ?? 0),
+                  _animatedProgressCard(
+                      "Doctor Visits",
+                      visits?.doctor?.confirmed ?? 0,
+                      visits?.doctor?.total ?? 0
+                  ),
+                  _animatedProgressCard(
+                      "Chemist Visits",
+                      visits?.chemist?.confirmed ?? 0,
+                      visits?.chemist?.total ?? 0
+                  ),
+                  _animatedProgressCard(
+                      "Stockist Visits",
+                      visits?.stockist?.confirmed ?? 0,
+                      visits?.stockist?.total ?? 0
+                  ),
                 ],
               ),
               SizedBox(height: 24),
-              _monthlyTargetSummary(targets),
+              _monthlyTargetSummary(targets ?? Targets()), // Add a fallback value
               SizedBox(height: 24),
-              _todayAppointmentsSummary(visits),
+              _todayAppointmentsSummary(visits ?? Visits()), // Add a fallback value
               SizedBox(height: 24),
               _sectionTitle("Expense Summary"),
-              _todaySummary(expenses),
+              _todaySummary(expenses ?? Expenses()), // Add a fallback value
             ],
           ),
         ),
@@ -203,7 +211,6 @@ class SalesChartHomeScreen extends StatelessWidget {
     );
   }
 
-
   Widget _todaySummary(Expenses expenses) {
     return Container(
       padding: EdgeInsets.all(16),
@@ -224,8 +231,6 @@ class SalesChartHomeScreen extends StatelessWidget {
             ],
           ),
           SizedBox(height: 12),
-        //  Divider(thickness: 1),
-       //   _summaryItem("Total Expenses", "₹ ${(expenses.total ?? 0) * 500}"),
         ],
       ),
     );
@@ -264,7 +269,6 @@ class SalesChartHomeScreen extends StatelessWidget {
     );
   }
 
-
   Widget _statusCircle(String label, int count, Color color) {
     // Convert the count to a string
     String countText = count.toString();
@@ -292,24 +296,6 @@ class SalesChartHomeScreen extends StatelessWidget {
       ],
     );
   }
-
-
-  /*Widget _statusCircle(String label, int count, Color color) {
-    return Column(
-      children: [
-        CircleAvatar(
-          radius: 26,
-          backgroundColor: color.withOpacity(0.2),
-          child: Text(
-            count.toString(),
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: color),
-          ),
-        ),
-        SizedBox(height: 4),
-        Text(label, style: TextStyle(fontSize: 12)),
-      ],
-    );
-  }*/
 
   Widget _summaryItem(String title, String value) {
     return Row(

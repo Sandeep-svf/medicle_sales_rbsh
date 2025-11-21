@@ -3,6 +3,7 @@ import 'package:medicle_sales_rbsh/features/visit/Chemist/screens/visitChemist.d
 import 'package:medicle_sales_rbsh/features/visit/Doctor/screens/visitDoctor.dart';
 import 'package:medicle_sales_rbsh/features/visit/Stockist/screens/visitStockist.dart';
 
+import '../../../../utils/check_internet/checkInternetConnection.dart';
 import '../../../../utils/constants/colors.dart';
 
 
@@ -18,8 +19,15 @@ class _MainScreenState extends State<ScheduleVisit> with SingleTickerProviderSta
   @override
   void initState() {
     super.initState();
+    fetchUserData();
     _tabController = TabController(length: 3, vsync: this); // 3 tabs
   }
+
+  void fetchUserData() async {
+    bool online = await checkInternetConnection(context);
+    if (!online) return; // Stop API if no internet
+  }
+
 
   @override
   void dispose() {

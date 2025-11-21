@@ -1,40 +1,68 @@
+// lib/screens/pharma_distributor_form/pharma_distributor_form_screen.dart
 import 'dart:convert';
+import 'dart:io';
+import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:http/http.dart' as http;
+import 'package:easy_stepper/easy_stepper.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:photo_view/photo_view.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:dio/dio.dart' as dio;
+import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:path_provider/path_provider.dart';
+import '../../../utils/GlobalPermissionHelper/PermissionHelper.dart';
 import '../../../utils/constants/colors.dart';
 import '../../../utils/http/http_client.dart';
 import '../../../utils/local_storage/auth_manager.dart';
 import '../../../utils/loder/CircularLoaderController.dart';
 import '../../addDoctor/screens/map.dart';
+import '../model/headoffice.dart';
 import '../widets/AnnualGTurnOverSection.dart';
+import '../widets/BankDetailsSection.dart';
+import '../widets/BasicDetailsSection.dart';
+import '../widets/BusinessProfileSection.dart';
+import '../widets/ContactDetailsSection.dart';
+import '../widets/DocumentUploadSection.dart';
+import '../widets/FacilitiesSection.dart';
+
+// Extracted widgets
+
 
 class PharmaDistributorFormScreen extends StatefulWidget {
   const PharmaDistributorFormScreen({super.key});
 
   @override
-  State<PharmaDistributorFormScreen> createState() => _PharmaDistributorFormScreenState();
+  State<PharmaDistributorFormScreen> createState() =>
+      _PharmaDistributorFormScreenState();
 }
 
-class _PharmaDistributorFormScreenState extends State<PharmaDistributorFormScreen> {
-  final _formKey = GlobalKey<FormState>();
-  String? selectedHeadOfficeId;
+class _PharmaDistributorFormScreenState
+    extends State<PharmaDistributorFormScreen> {
+  // ---------------------------
+  // Form state & controllers
+  // ---------------------------
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  // Stepper
+  int _activeStep = 0;
+  final int _totalSteps = 7; // 0..6
+
+  // Basic fields
   final TextEditingController firmName = TextEditingController();
   final TextEditingController businessName = TextEditingController();
-  String? selectedBusinessType;
-  String? selectedLocation;
-  String? selectedlatitude;
-  String? selectedlongitude;
-  List<Map<String, String>> cities = [];
-  String headOffice = "";
+  String? selectedHeadOfficeId;
+  List<HeadOffice1> _offices = [];
+
+  // Business/Contact fields
   final List<String> businessTypes = [
     'Proprietorship',
     'Partnership',
     'Private Ltd.',
     'Public Ltd.'
   ];
+  String? selectedBusinessType;
   final TextEditingController gstNumber = TextEditingController();
   final TextEditingController drugLicenseNumber = TextEditingController();
   final TextEditingController panNumber = TextEditingController();
@@ -47,307 +75,635 @@ class _PharmaDistributorFormScreenState extends State<PharmaDistributorFormScree
   final TextEditingController yearsInBusiness = TextEditingController();
   final TextEditingController areasOfOperation = TextEditingController();
   final TextEditingController distributorships = TextEditingController();
+
+  // Facilities
+  bool warehouseFacility = false;
+  bool coldStorageAvailable = false;
   final TextEditingController storageSize = TextEditingController();
   final TextEditingController salesReps = TextEditingController();
+
+  // Bank
   final TextEditingController bankName = TextEditingController();
   final TextEditingController branch = TextEditingController();
   final TextEditingController accountNumber = TextEditingController();
   final TextEditingController ifscCode = TextEditingController();
 
-  bool warehouseFacility = false;
-  bool coldStorageAvailable = false;
-  List<HeadOffice1> _offices = [];
-  String _selectedId = ''; // This will hold the selected ID
-  String? _selectedName;
+  // Location
+  String? selectedLocation;
+  String? selectedlatitude;
+  String? selectedlongitude;
 
+  // Turnovers
   List<Map<String, dynamic>> _annualTurnovers = List.generate(
     3,
-
         (index) => {
       "year": DateTime.now().year - index,
       "amount": 0,
     },
   );
 
+  // ---------------------------
+  // Media documents state
+  // ---------------------------
+  final Map<String, File?> _documentImages = {
+    'GST': null,
+    'Drug License': null,
+    'PAN Card': null,
+    'Cancelled Cheque': null,
+    'Business Profile': null,
+  };
+
+  final Map<String, double> _uploadProgress = {
+    'GST': 0.0,
+    'Drug License': 0.0,
+    'PAN Card': 0.0,
+    'Cancelled Cheque': 0.0,
+    'Business Profile': 0.0,
+  };
+
+  final Map<String, String?> _base64Images = {
+    'GST': null,
+    'Drug License': null,
+    'PAN Card': null,
+    'Cancelled Cheque': null,
+    'Business Profile': null,
+  };
+
+  // ---------------------------
+  // Utilities & lifecycle
+  // ---------------------------
+  final ImagePicker _picker = ImagePicker();
+  final dio.Dio _dio = dio.Dio();
+  static const String _kPrefix = 'pharma_form_';
+
   @override
   void initState() {
     super.initState();
-    //_loadHeadOffice();
-   // fetchCities();// Load head office from SharedPreferences
     fetchHeadOffices();
+    _loadFormDraft();
   }
 
-  // Method to load head office from SharedPreferences
- /* Future<void> _loadHeadOffice() async {
-    AuthManager authManager = AuthManager();
-    final String? headOfficeValue = await authManager.getHeadOffice(); // Fetch the value using your method
-    setState(() {
-      headOffice = headOfficeValue ?? ""; // Default to empty string if no value is found
-    });
-  }*/
+  // ---------------------------
+  // Shared Preferences: Save / Load / Clear
+  // (identical to your original implementations)
+  // ---------------------------
+  Future<SharedPreferences> get _prefs async =>
+      await SharedPreferences.getInstance();
 
-/*  Future<void> _fetchCities() async {
-    // Show loading spinner while fetching head offices
-    CircularLoaderController.showLoader(context);
-    AuthManager authManager = AuthManager();
+  Future<void> _saveFormDraft() async {
+    final prefs = await _prefs;
+    // basic fields
+    await prefs.setString('${_kPrefix}firmName', firmName.text);
+    await prefs.setString('${_kPrefix}businessName', businessName.text);
+    await prefs.setString('${_kPrefix}selectedHeadOfficeId', selectedHeadOfficeId ?? '');
+    await prefs.setString('${_kPrefix}selectedBusinessType', selectedBusinessType ?? '');
+    // business/contact
+    await prefs.setString('${_kPrefix}gstNumber', gstNumber.text);
+    await prefs.setString('${_kPrefix}drugLicenseNumber', drugLicenseNumber.text);
+    await prefs.setString('${_kPrefix}panNumber', panNumber.text);
+    await prefs.setString('${_kPrefix}officeAddress', officeAddress.text);
+    await prefs.setString('${_kPrefix}contactPerson', contactPerson.text);
+    await prefs.setString('${_kPrefix}designation', designation.text);
+    await prefs.setString('${_kPrefix}mobileNumber', mobileNumber.text);
+    await prefs.setString('${_kPrefix}emailAddress', emailAddress.text);
+    await prefs.setString('${_kPrefix}website', website.text);
+    await prefs.setString('${_kPrefix}yearsInBusiness', yearsInBusiness.text);
+    await prefs.setString('${_kPrefix}areasOfOperation', areasOfOperation.text);
+    await prefs.setString('${_kPrefix}distributorships', distributorships.text);
+    // facilities
+    await prefs.setBool('${_kPrefix}warehouseFacility', warehouseFacility);
+    await prefs.setBool('${_kPrefix}coldStorageAvailable', coldStorageAvailable);
+    await prefs.setString('${_kPrefix}storageSize', storageSize.text);
+    await prefs.setString('${_kPrefix}salesReps', salesReps.text);
+    // bank
+    await prefs.setString('${_kPrefix}bankName', bankName.text);
+    await prefs.setString('${_kPrefix}branch', branch.text);
+    await prefs.setString('${_kPrefix}accountNumber', accountNumber.text);
+    await prefs.setString('${_kPrefix}ifscCode', ifscCode.text);
+    // location
+    await prefs.setString('${_kPrefix}selectedLocation', selectedLocation ?? '');
+    await prefs.setString('${_kPrefix}selectedlatitude', selectedlatitude ?? '');
+    await prefs.setString('${_kPrefix}selectedlongitude', selectedlongitude ?? '');
+    // turnovers
+    await prefs.setString('${_kPrefix}annualTurnovers', jsonEncode(_annualTurnovers));
+    // active step
+    await prefs.setInt('${_kPrefix}activeStep', _activeStep);
 
-    try {
-      // Retrieve the authorization token
-      final token = await authManager.getAuthToken();
-      print("[DEBUG] Token fetched: $token");
-
-      // Make the GET request to fetch head offices
-      final response = await http.get(
-        Uri.parse('${THttpHelper.baseUrl}/users/my-head-offices'),
-        headers: {
-          "Authorization": "Bearer $token",  // Include Bearer token in the header
-          "Accept": "application/json",  // Ensure the server expects JSON
-        },
-      );
-
-      // Check if the response status code is OK (200)
-      if (response.statusCode == 200) {
-        CircularLoaderController.hideLoader();  // Hide loading spinner after successful response
-
-        // Decode the response body as a Map<String, dynamic>
-        final Map<String, dynamic> jsonResponse = json.decode(response.body);
-
-        // Check if the 'success' key is true
-        if (jsonResponse['success'] == true) {
-          // Extract the 'data' list from the response
-          final List<dynamic> cityList = jsonResponse['data'];
-
-          print("[DEBUG] Response body decoded: $cityList");
-
-          // Ensure the city list is not empty
-          if (cityList.isNotEmpty) {
-            setState(() {
-              cities = cityList
-                  .map((city) => {
-                'id': city['_id']?.toString() ?? 'Unknown ID',  // Safe null check
-                'name': city['name']?.toString() ?? 'Unknown Name',  // Safe null check
-              })
-                  .toList();
-              print("[DEBUG] Cities list updated: $cities");
-            });
-          } else {
-            print("[ERROR] No head offices found in response.");
-            Get.snackbar("Error", "No head offices found in the response.",
-                backgroundColor: Colors.red, duration: const Duration(seconds: 3));
-          }
-        } else {
-          print("[ERROR] Response success is false.");
-          Get.snackbar("Error", "Failed to load Head Office. Response success was false.",
-              backgroundColor: Colors.red, duration: const Duration(seconds: 3));
-        }
+    // Save doc paths
+    for (final key in _documentImages.keys) {
+      final file = _documentImages[key];
+      if (file != null) {
+        await prefs.setString('${_kPrefix}doc_${_safeKey(key)}', file.path);
       } else {
-        CircularLoaderController.hideLoader();  // Hide loader on failure
-        print("[ERROR] Failed to load Head Office. Status code: ${response.statusCode}");
-        Get.snackbar("Error", "Failed to load Head Office. Status Code: ${response.statusCode}",
-            backgroundColor: Colors.red, duration: const Duration(seconds: 3));
+        await prefs.remove('${_kPrefix}doc_${_safeKey(key)}');
       }
-    } catch (e) {
-      CircularLoaderController.hideLoader();  // Hide loader if an exception occurs
-      print("[ERROR] Exception occurred: $e");
-      Get.snackbar("Error", "Failed to load Head Office: $e", backgroundColor: Colors.red);
     }
-  }*/
+    // Save base64 optionally
+    for (final key in _base64Images.keys) {
+      final b = _base64Images[key];
+      if (b != null) {
+        await prefs.setString('${_kPrefix}b64_${_safeKey(key)}', b);
+      } else {
+        await prefs.remove('${_kPrefix}b64_${_safeKey(key)}');
+      }
+    }
+  }
 
-  // Function to fetch data from the API
+  Future<void> _loadFormDraft() async {
+    final prefs = await _prefs;
+    setState(() {
+      firmName.text = prefs.getString('${_kPrefix}firmName') ?? '';
+      businessName.text = prefs.getString('${_kPrefix}businessName') ?? '';
+      selectedBusinessType = prefs.getString('${_kPrefix}selectedBusinessType');
+      selectedHeadOfficeId = prefs.getString('${_kPrefix}selectedHeadOfficeId');
+      gstNumber.text = prefs.getString('${_kPrefix}gstNumber') ?? '';
+      drugLicenseNumber.text = prefs.getString('${_kPrefix}drugLicenseNumber') ?? '';
+      panNumber.text = prefs.getString('${_kPrefix}panNumber') ?? '';
+      officeAddress.text = prefs.getString('${_kPrefix}officeAddress') ?? '';
+      contactPerson.text = prefs.getString('${_kPrefix}contactPerson') ?? '';
+      designation.text = prefs.getString('${_kPrefix}designation') ?? '';
+      mobileNumber.text = prefs.getString('${_kPrefix}mobileNumber') ?? '';
+      emailAddress.text = prefs.getString('${_kPrefix}emailAddress') ?? '';
+      website.text = prefs.getString('${_kPrefix}website') ?? '';
+      yearsInBusiness.text = prefs.getString('${_kPrefix}yearsInBusiness') ?? '';
+      areasOfOperation.text = prefs.getString('${_kPrefix}areasOfOperation') ?? '';
+      distributorships.text = prefs.getString('${_kPrefix}distributorships') ?? '';
+      warehouseFacility = prefs.getBool('${_kPrefix}warehouseFacility') ?? false;
+      coldStorageAvailable = prefs.getBool('${_kPrefix}coldStorageAvailable') ?? false;
+      storageSize.text = prefs.getString('${_kPrefix}storageSize') ?? '';
+      salesReps.text = prefs.getString('${_kPrefix}salesReps') ?? '';
+      bankName.text = prefs.getString('${_kPrefix}bankName') ?? '';
+      branch.text = prefs.getString('${_kPrefix}branch') ?? '';
+      accountNumber.text = prefs.getString('${_kPrefix}accountNumber') ?? '';
+      ifscCode.text = prefs.getString('${_kPrefix}ifscCode') ?? '';
+      selectedLocation = prefs.getString('${_kPrefix}selectedLocation');
+      selectedlatitude = prefs.getString('${_kPrefix}selectedlatitude');
+      selectedlongitude = prefs.getString('${_kPrefix}selectedlongitude');
+      final turnoversJson = prefs.getString('${_kPrefix}annualTurnovers');
+      if (turnoversJson != null && turnoversJson.isNotEmpty) {
+        try {
+          final parsed = jsonDecode(turnoversJson) as List<dynamic>;
+          _annualTurnovers = parsed.map((e) => {"year": e["year"], "amount": e["amount"]}).toList();
+        } catch (e) {
+          if (kDebugMode) print('turnovers parse error: $e');
+        }
+      }
+      _activeStep = prefs.getInt('${_kPrefix}activeStep') ?? 0;
+      if (_activeStep < 0 || _activeStep >= _totalSteps) _activeStep = 0;
+
+      for (final key in _documentImages.keys) {
+        final path = prefs.getString('${_kPrefix}doc_${_safeKey(key)}');
+        if (path != null && path.isNotEmpty) {
+          final f = File(path);
+          if (f.existsSync()) {
+            _documentImages[key] = f;
+          }
+        }
+        final b64 = prefs.getString('${_kPrefix}b64_${_safeKey(key)}');
+        if (b64 != null && b64.isNotEmpty) _base64Images[key] = b64;
+      }
+    });
+  }
+
+  Future<void> _clearFormDraft() async {
+    final prefs = await _prefs;
+    final keys = prefs.getKeys().where((k) => k.startsWith(_kPrefix)).toList();
+    for (final k in keys) await prefs.remove(k);
+  }
+
+  // ---------------------------
+  // Networking: fetch head offices
+  // ---------------------------
   Future<void> fetchHeadOffices() async {
     try {
-      AuthManager authManager = AuthManager();
-      final token = await authManager.getAuthToken();
-      final response = await http.get(
-        Uri.parse('${THttpHelper.baseUrl}/users/my-head-offices'),
-        headers: {
-          "Authorization": "Bearer $token",  // Include Bearer token in the header
-          "Accept": "application/json",  // Ensure the server expects JSON
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body)['data'];
+      final token = await AuthManager().getAuthToken();
+      final res = await _dio.get('${THttpHelper.baseUrl}/users/my-head-offices',
+          options: dio.Options(headers: {"Authorization": "Bearer $token", "Accept": "application/json"}));
+      if (res.statusCode == 200) {
+        final List<dynamic> data = res.data['data'] ?? [];
         setState(() {
-          _offices = data.map((json) => HeadOffice1.fromJson(json)).toList();
+          _offices = data.map((j) => HeadOffice1.fromJson(j)).toList();
         });
-      } else {
-        // Handle error if response status is not 200
-        print('Failed to load head offices');
       }
     } catch (e) {
-      // Handle error for network or parsing
-      print('Error fetching data: $e');
+      if (kDebugMode) print('fetchHeadOffices error: $e');
     }
   }
 
-  // Fetch the head offices and update the cities list
-  Future<void> fetchCities() async {
+  String _safeKey(String key) => key.replaceAll(' ', '_').toLowerCase();
 
-    print("[DEBUG] API is being called.");
-    // Show loading spinner while fetching head offices
-    CircularLoaderController.showLoader(context);
-    AuthManager authManager = AuthManager();
-
+  Future<File?> _compressImage(File file) async {
     try {
-      final token = await authManager.getAuthToken();
-      final response = await http.get(
-        Uri.parse('${THttpHelper.baseUrl}/users/my-head-offices'),
-        headers: {
-          "Authorization": "Bearer $token",  // Include Bearer token in the header
-          "Accept": "application/json",  // Ensure the server expects JSON
-        },
+      final tempDir = await getTemporaryDirectory();
+      final targetPath =
+          '${tempDir.path}/${DateTime.now().millisecondsSinceEpoch}_cmp.jpg';
+
+      final dynamic result = await FlutterImageCompress.compressAndGetFile(
+        file.absolute.path,
+        targetPath,
+        quality: 70,
+        minWidth: 1080,
+        keepExif: false,
       );
 
-      if (response.statusCode == 200) {
-        CircularLoaderController.hideLoader();  // Hide loading spinner after successful response
-
-        final Map<String, dynamic> jsonResponse = json.decode(response.body);
-
-        if (jsonResponse['success'] == true) {
-          final List<dynamic> cityList = jsonResponse['data'] ?? [];  // Safe null check for data
-
-          setState(() {
-            cities = cityList.map((city) {
-              return {
-                'id': city['_id']?.toString() ?? 'Unknown ID', // Safe null check for '_id'
-                'name': city['name']?.toString() ?? 'Unknown Name', // Safe null check for 'name'
-              };
-            }).toList();
-
-            // Debugging the list of cities fetched
-            print("[DEBUG] Cities list: $cities");
-          });
-        } else {
-          Get.snackbar("Error", "Failed to load Head Office.", backgroundColor: Colors.red);
-        }
-      } else {
-        CircularLoaderController.hideLoader();  // Hide loader on failure
-        Get.snackbar("Error", "Failed to load Head Office.", backgroundColor: Colors.red);
+      if (result == null) return file;
+      if (result is File) return result;
+      try {
+        return File(result.path);
+      } catch (_) {
+        return file;
       }
     } catch (e) {
-      CircularLoaderController.hideLoader();  // Hide loader on exception
-      Get.snackbar("Error", "Failed to load Head Office: $e", backgroundColor: Colors.red);
+      if (kDebugMode) print('compress error: $e');
+      return file;
     }
   }
 
+  Future<String> _fileToBase64(File file) async {
+    try {
+      final bytes = await file.readAsBytes();
+      return base64Encode(bytes);
+    } catch (e) {
+      if (kDebugMode) print('base64 encode error: $e');
+      return '';
+    }
+  }
 
-
-  // Validate that no turnover amount is zero, and that the first three items are required
-  bool _validateTurnovers() {
-    // Ensure that the first three turnover amounts are greater than zero
-    for (int i = 0; i < 3; i++) {
-      if (_annualTurnovers[i]['amount'] == 0) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Amount for the year ${_annualTurnovers[i]['year']} cannot be zero.")),
-        );
-        return false; // Invalid if the amount for any of the first 3 years is zero
+  Future<void> _pickImageForKey(String key, {bool forceCamera = false}) async {
+    final granted = await PermissionHelper.checkAndRequestMediaPermissions();
+    if (!granted) {
+      await PermissionHelper.openAppSettingsIfDenied();
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text('Please enable camera/gallery permissions.')));
       }
+      return;
     }
 
-    // Ensure that no turnover amount is zero
-    for (int i = 0; i < _annualTurnovers.length; i++) {
-      if (_annualTurnovers[i]['amount'] == 0) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Amount for year ${_annualTurnovers[i]['year']} cannot be zero.")),
-        );
-        return false; // Invalid if any amount is zero
-      }
+    if (_documentImages[key] != null && !forceCamera) {
+      _showImageActions(key, _documentImages[key]!);
+      return;
     }
 
-    return true; // Valid if all turnovers are valid
+    final source = await showModalBottomSheet<ImageSource?>(
+      context: context,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(12))),
+      builder: (ctx) {
+        return SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.photo_camera),
+                title: const Text('Take Photo'),
+                onTap: () => Navigator.pop(ctx, ImageSource.camera),
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Choose from Gallery'),
+                onTap: () => Navigator.pop(ctx, ImageSource.gallery),
+              ),
+              ListTile(
+                title: const Center(child: Text('Cancel')),
+                onTap: () => Navigator.pop(ctx, null),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+
+    if (source == null) return;
+
+    XFile? picked;
+    try {
+      picked = await _picker.pickImage(source: source, imageQuality: 90);
+    } catch (e) {
+      if (kDebugMode) print('picker error: $e');
+    }
+    if (picked == null) return;
+
+    final compressed = await _compressImage(File(picked.path));
+    if (compressed == null) return;
+
+    setState(() {
+      _documentImages[key] = compressed;
+      _uploadProgress[key] = 0.0;
+    });
+
+    final b64 = await _fileToBase64(compressed);
+    setState(() {
+      _base64Images[key] = b64.isEmpty ? null : b64;
+      _uploadProgress[key] = 1.0;
+    });
+
+    await _saveFormDraft();
+  }
+
+  Future<void> _removeImageForKey(String key) async {
+    setState(() {
+      _documentImages[key] = null;
+      _uploadProgress[key] = 0.0;
+      _base64Images[key] = null;
+    });
+    await _saveFormDraft();
+  }
+
+  Future<void> _showImageActions(String key, File file) async {
+    if (!mounted) return;
+    await showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      builder: (ctx) {
+        return SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.visibility),
+                title: const Text('View Image'),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _viewImage(file);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_camera),
+                title: const Text('Replace (Camera)'),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _pickImageForKey(key, forceCamera: true);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Replace (Gallery)'),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _pickImageForKey(key, forceCamera: false);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.delete, color: Colors.red),
+                title: const Text('Remove', style: TextStyle(color: Colors.red)),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _removeImageForKey(key);
+                },
+              ),
+              ListTile(
+                title: const Center(child: Text('Cancel')),
+                onTap: () => Navigator.pop(ctx),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _viewImage(File file) async {
+    if (!mounted) return;
+    await showDialog(
+      context: context,
+      builder: (_) => Dialog(
+        backgroundColor: Colors.black,
+        insetPadding: const EdgeInsets.all(8),
+        child: Stack(
+          children: [
+            PhotoView(
+              imageProvider: FileImage(file),
+              backgroundDecoration: const BoxDecoration(color: Colors.black),
+            ),
+            Positioned(
+              right: 6,
+              top: 6,
+              child: IconButton(
+                icon: const Icon(Icons.close, color: Colors.white, size: 28),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Future<void> _submitDistributorForm() async {
-    if (!_validateTurnovers()) {
-      return; // Prevent submission if the turnover data is invalid
-    }
+    if (!_validateStep(_activeStep, finalValidation: true)) return;
+    if (!_validateTurnovers()) return;
 
-    if (kDebugMode) {
-      print("[DEBUG] headOffice: $headOffice");
-    }
-
-    final Uri apiUrl = Uri.parse("${THttpHelper.baseUrl}/stockists");
-
-    Map<String, dynamic> requestBody = {
-      "firmName": firmName.text,
-      "registeredBusinessName": businessName.text,
-      "natureOfBusiness": selectedBusinessType ?? "",
-      "gstNumber": gstNumber.text.trim().isEmpty ? "" : gstNumber.text,
-      "drugLicenseNumber": drugLicenseNumber.text.trim().isEmpty ? "" : drugLicenseNumber.text,
-      "panNumber": panNumber.text.trim().isEmpty ? "" : panNumber.text,
-      "registeredOfficeAddress": officeAddress.text,
-      "latitude": selectedlatitude,
-      "longitude": selectedlongitude,
-      "contactPerson": contactPerson.text,
-      "designation": designation.text.trim().isEmpty ? "" : designation.text,
-      "mobileNumber": mobileNumber.text.trim().isEmpty ? "" : mobileNumber.text,
-      "emailAddress": emailAddress.text.trim().isEmpty ? "" : emailAddress.text,
-      "website": website.text.trim().isEmpty ? "" : website.text,
-      "yearsInBusiness": int.tryParse(yearsInBusiness.text) ?? 0,
-      "areasOfOperation": areasOfOperation.text.trim().isNotEmpty
-          ? areasOfOperation.text.split(',').map((e) => e.trim()).toList()
-          : [],
-      "currentPharmaDistributorships": distributorships.text.trim().isNotEmpty
-          ? distributorships.text.split(',').map((e) => e.trim()).toList()
-          : [],
-      "annualTurnover": _annualTurnovers.map((e) => {
-        "year": e["year"],
-        "amount": e["amount"]
-      }).toList(),
-      "warehouseFacility": warehouseFacility,
-      "storageFacilitySize": int.tryParse(storageSize.text) ?? 0,
-      "coldStorageAvailable": coldStorageAvailable,
-      "numberOfSalesRepresentatives": int.tryParse(salesReps.text) ?? 0,
-      "bankDetails": {
-        "bankName": bankName.text.trim().isEmpty ? "" : bankName.text,
-        "branch": branch.text.trim().isEmpty ? "" : branch.text,
-        "accountNumber": accountNumber.text.trim().isEmpty ? "" : accountNumber.text,
-        "ifscCode": ifscCode.text.trim().isEmpty ? "" : ifscCode.text,
-      },
-      "headOffice": selectedHeadOfficeId, // Use the fetched head office value here
-    };
+    CircularLoaderController.showLoader(context);
 
     try {
-      print("AddStockController Sending POST request to: $apiUrl");
-      print("AddStockController Request Body: ${jsonEncode(requestBody)}");
+      final Map<String, String> imagesMap = {};
+      _base64Images.forEach((k, v) {
+        if (v != null && v.isNotEmpty) {
+          final rand = DateTime.now().millisecondsSinceEpoch.toString() + '_' + (Random().nextInt(9999)).toString();
+          final keyName = '${_safeKey(k)}_$rand';
+          imagesMap[keyName] = v;
+        }
+      });
 
-      AuthManager authManager = AuthManager();
-      final token = await authManager.getAuthToken();
+      final body = {
+        "firmName": firmName.text.trim(),
+        "registeredBusinessName": businessName.text.trim(),
+        "natureOfBusiness": selectedBusinessType ?? '',
+        "gstNumber": gstNumber.text.trim(),
+        "drugLicenseNumber": drugLicenseNumber.text.trim(),
+        "panNumber": panNumber.text.trim(),
+        "registeredOfficeAddress": officeAddress.text.trim(),
+        "latitude": selectedlatitude,
+        "longitude": selectedlongitude,
+        "contactPerson": contactPerson.text.trim(),
+        "designation": designation.text.trim(),
+        "mobileNumber": mobileNumber.text.trim(),
+        "emailAddress": emailAddress.text.trim(),
+        "website": website.text.trim(),
+        "yearsInBusiness": int.tryParse(yearsInBusiness.text) ?? 0,
+        "areasOfOperation": areasOfOperation.text
+            .split(',')
+            .map((e) => e.trim())
+            .where((e) => e.isNotEmpty)
+            .toList(),
+        "currentPharmaDistributorships": distributorships.text
+            .split(',')
+            .map((e) => e.trim())
+            .where((e) => e.isNotEmpty)
+            .toList(),
+        "annualTurnover": _annualTurnovers,
+        "warehouseFacility": warehouseFacility,
+        "storageFacilitySize": int.tryParse(storageSize.text) ?? 0,
+        "coldStorageAvailable": coldStorageAvailable,
+        "numberOfSalesRepresentatives": int.tryParse(salesReps.text) ?? 0,
+        "bankDetails": {
+          "bankName": bankName.text.trim(),
+          "branch": branch.text.trim(),
+          "accountNumber": accountNumber.text.trim(),
+          "ifscCode": ifscCode.text.trim(),
+        },
+        "headOffice": selectedHeadOfficeId,
+        "images": imagesMap,
+      };
 
-      final response = await http.post(
-        apiUrl,
-        headers: {"Content-Type": "application/json", "Authorization": "Bearer $token", },
-        body: jsonEncode(requestBody),
-      );
+      final token = await AuthManager().getAuthToken();
+      final res = await _dio.post('${THttpHelper.baseUrl}/stockists',
+          data: body,
+          options: dio.Options(
+              headers: {"Authorization": "Bearer $token", "Content-Type": "application/json"}));
 
-      print("AddStockController Response received");
-      print("AddStockController Status Code: ${response.statusCode}");
-      print("AddStockController Response Body: ${response.body}");
-
-      if (response.statusCode == 201 || response.statusCode == 200) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Distributor registered successfully")),
-        );
-        Navigator.pop(context,true);
+      if (res.statusCode == 200 || res.statusCode == 201) {
+        await _clearFormDraft();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Distributor registered successfully')));
+          Navigator.pop(context, true);
+        }
       } else {
-        print("AddStockController Server returned error");
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Failed: ${response.statusCode} - ${response.body}")),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text('Submit failed: ${res.statusCode}')));
+        }
       }
-    } catch (e, stackTrace) {
-      print("AddStockController Exception occurred during POST request");
-      print("AddStockController Error: $e");
-      print("AddStockController StackTrace: $stackTrace");
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error: $e")),
-      );
+    } catch (e) {
+      if (kDebugMode) print('submit error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
+    } finally {
+      CircularLoaderController.hideLoader();
     }
-
   }
 
+  bool _validateTurnovers() {
+    for (final t in _annualTurnovers) {
+      if ((t['amount'] == null) ||
+          (t['amount'] is num && (t['amount'] as num) <= 0)) {
+        _showSnack('Please provide turnover amount for ${t['year']}');
+        return false;
+      }
+    }
+    return true;
+  }
+
+  bool _validateStep(int step, {bool finalValidation = false}) {
+    if (finalValidation) {
+      if (firmName.text.trim().isEmpty) { _showStepError(0, 'Firm Name required'); return false; }
+      if (businessName.text.trim().isEmpty) { _showStepError(0, 'Business Name required'); return false; }
+      if (selectedHeadOfficeId == null || selectedHeadOfficeId!.isEmpty) { _showStepError(0, 'Select Head Office'); return false; }
+      if (contactPerson.text.trim().isEmpty) { _showStepError(1, 'Contact Person required'); return false; }
+      if (mobileNumber.text.trim().isEmpty) { _showStepError(1, 'Mobile Number required'); return false; }
+      if (emailAddress.text.trim().isEmpty) { _showStepError(1, 'Email Address required'); return false; }
+      if (gstNumber.text.trim().isEmpty) { _showStepError(2, 'GST Number required'); return false; }
+      if (drugLicenseNumber.text.trim().isEmpty) { _showStepError(2, 'Drug License required'); return false; }
+      if (panNumber.text.trim().isEmpty) { _showStepError(2, 'PAN Number required'); return false; }
+      if (officeAddress.text.trim().isEmpty) { _showStepError(2, 'Office Address required'); return false; }
+      if (!_validateTurnovers()) return false;
+      if (bankName.text.trim().isEmpty) { _showStepError(5, 'Bank name required'); return false; }
+      if (branch.text.trim().isEmpty) { _showStepError(5, 'Branch required'); return false; }
+      if (accountNumber.text.trim().isEmpty) { _showStepError(5, 'Account Number required'); return false; }
+      if (ifscCode.text.trim().isEmpty) { _showStepError(5, 'IFSC required'); return false; }
+      if (selectedlatitude == null || selectedlongitude == null || selectedLocation == null) { _showSnack('Select location before submit'); return false; }
+      for (final entry in _documentImages.entries) {
+        if (entry.key != 'Business Profile' && entry.value == null) {
+          _showStepError(6, '${entry.key} image required');
+          return false;
+        }
+        if (entry.key != 'Business Profile' && (_base64Images[entry.key] == null || _base64Images[entry.key]!.isEmpty)) {
+          _showStepError(6, '${entry.key} image required (base64 missing)');
+          return false;
+        }
+      }
+      return true;
+    }
+
+    switch (step) {
+      case 0:
+        if (firmName.text.trim().isEmpty || businessName.text.trim().isEmpty) { _showSnack('Firm & Business name required'); return false; }
+        if (selectedHeadOfficeId == null || selectedHeadOfficeId!.isEmpty) { _showSnack('Please select Head Office'); return false; }
+        return true;
+      case 1:
+        if (contactPerson.text.trim().isEmpty || mobileNumber.text.trim().isEmpty || emailAddress.text.trim().isEmpty) { _showSnack('Contact person, mobile & email are required'); return false; }
+        return true;
+      case 2:
+        if (yearsInBusiness.text.trim().isEmpty || officeAddress.text.trim().isEmpty) { _showSnack('Years in business and office address required'); return false; }
+        return true;
+      case 3:
+        return _validateTurnovers();
+      case 4:
+        return true;
+      case 5:
+        if (bankName.text.trim().isEmpty || branch.text.trim().isEmpty || accountNumber.text.trim().isEmpty || ifscCode.text.trim().isEmpty) { _showSnack('Complete bank details'); return false; }
+        return true;
+      case 6:
+        return true;
+      default:
+        return true;
+    }
+  }
+
+  void _showStepError(int step, String message) {
+    setState(() {
+      _activeStep = step;
+    });
+    _showSnack(message);
+  }
+
+  void _showSnack(String message) {
+    Get.snackbar('Validation', message, snackPosition: SnackPosition.BOTTOM);
+  }
+
+  Future<void> _confirmClearAllDocuments() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Clear all documents?'),
+        content: const Text('This will remove all selected documents from this form (local only). Continue?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Clear', style: TextStyle(color: Colors.red))),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      setState(() {
+        for (final k in _documentImages.keys) {
+          _documentImages[k] = null;
+          _uploadProgress[k] = 0.0;
+          _base64Images[k] = null;
+        }
+      });
+      await _saveFormDraft();
+    }
+  }
+
+  @override
+  void dispose() {
+    firmName.dispose();
+    businessName.dispose();
+    gstNumber.dispose();
+    drugLicenseNumber.dispose();
+    panNumber.dispose();
+    officeAddress.dispose();
+    contactPerson.dispose();
+    designation.dispose();
+    mobileNumber.dispose();
+    emailAddress.dispose();
+    website.dispose();
+    yearsInBusiness.dispose();
+    areasOfOperation.dispose();
+    distributorships.dispose();
+    storageSize.dispose();
+    salesReps.dispose();
+    bankName.dispose();
+    branch.dispose();
+    accountNumber.dispose();
+    ifscCode.dispose();
+    _dio.close();
+    super.dispose();
+  }
+
+  // ---------------------------
+  // BUILD UI (uses extracted widgets)
+  // ---------------------------
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -355,314 +711,207 @@ class _PharmaDistributorFormScreenState extends State<PharmaDistributorFormScree
         title: const Text("Distributor Registration", style: TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: TColors.primary,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+      body: SafeArea(
         child: Form(
           key: _formKey,
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _sectionTitle("Basic Details"),
-              _requiredField(firmName, "Firm Name"),
-              _requiredField(businessName, "Registered Business Name"),
-              //_headOfficeDropdown(),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 6),
-            child: DropdownButtonFormField<String>(
-              value: selectedHeadOfficeId,  // The selected head office ID
-              decoration: const InputDecoration(
-                labelText: "Head Office *", // Label for the field (required)
-                border: OutlineInputBorder(),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 12),
+                child: EasyStepper(
+                  activeStep: _activeStep,
+                  finishedStepTextColor: TColors.primary,
+                  activeStepTextColor: TColors.primary,
+                  unreachedStepIconColor: Colors.grey,
+                  finishedStepBackgroundColor: TColors.primary,
+                  activeStepBackgroundColor: TColors.primary,
+                  unreachedStepBackgroundColor: Colors.grey.shade300,
+                  internalPadding: 8,
+                  borderThickness: 2,
+                  steps: const [
+                    EasyStep(icon: Icon(Icons.details, color: Colors.white), title: 'Basic'),
+                    EasyStep(icon: Icon(Icons.contact_phone, color: Colors.white), title: 'Contact'),
+                    EasyStep(icon: Icon(Icons.business, color: Colors.white), title: 'Business'),
+                    EasyStep(icon: Icon(Icons.trending_up, color: Colors.white), title: 'Turnover'),
+                    EasyStep(icon: Icon(Icons.inventory_2, color: Colors.white), title: 'Facilities'),
+                    EasyStep(icon: Icon(Icons.account_balance, color: Colors.white), title: 'Bank'),
+                    EasyStep(icon: Icon(Icons.upload, color: Colors.white), title: 'Media'),
+                  ],
+                  onStepReached: (index) async {
+                    if (index < _activeStep) {
+                      setState(() => _activeStep = index);
+                      await _saveFormDraft();
+                      return;
+                    }
+                    if (_validateStep(_activeStep)) {
+                      setState(() => _activeStep = index);
+                      await _saveFormDraft();
+                    }
+                  },
+                ),
               ),
-              items: _offices.map((office) {
-                return DropdownMenuItem<String>(
-                  value: office.id, // Use the ID as the value
-                  child: Text(office.name), // Display the name of the head office
-                );
-              }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  selectedHeadOfficeId = value; // Store the selected head office ID
-                });
-              },
-              validator: (value) => value == null || value.isEmpty
-                  ? 'Please select a head office' // Make the dropdown required
-                  : null,
-            ),
-          ),
 
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  child: IndexedStack(
+                    index: _activeStep,
+                    children: [
+                      BasicDetailsSection(
+                        firmName: firmName,
+                        businessName: businessName,
+                        selectedHeadOfficeId: selectedHeadOfficeId,
+                        offices: _offices,
+                        onHeadOfficeChanged: (v) async {
+                          setState(() => selectedHeadOfficeId = v);
+                          await _saveFormDraft();
+                        },
+                        gstNumber: gstNumber,
+                        selectedBusinessType: selectedBusinessType,
+                        businessTypes: businessTypes,
+                        onBusinessTypeChanged: (v) async {
+                          setState(() => selectedBusinessType = v);
+                          await _saveFormDraft();
+                        },
+                      ),
+                      ContactDetailsSection(
+                        contactPerson: contactPerson,
+                        designation: designation,
+                        mobileNumber: mobileNumber,
+                        emailAddress: emailAddress,
+                        website: website,
+                      ),
+                      BusinessProfileSection(
+                        yearsInBusiness: yearsInBusiness,
+                        areasOfOperation: areasOfOperation,
+                        distributorships: distributorships,
+                        officeAddress: officeAddress,
+                        onPickLocation: () async {
+                          try {
+                            final result = await Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => LocationPickerScreen()),
+                            );
+                            if (result != null) {
+                              setState(() {
+                                selectedlatitude = result['latitude'].toString();
+                                selectedlongitude = result['longitude'].toString();
+                                selectedLocation = result['address'].toString();
+                              });
+                              Get.snackbar(
+                                "📍 Location Selected",
+                                "$selectedLocation\nLat: $selectedlatitude, Lng: $selectedlongitude",
+                                backgroundColor: Colors.green,
+                                duration: const Duration(seconds: 4),
+                              );
+                              await _saveFormDraft();
+                            } else {
+                              Get.snackbar(
+                                "Location Not Selected",
+                                "Please try again or cancel",
+                                backgroundColor: Colors.orange,
+                              );
+                            }
+                          } catch (e) {
+                            if (kDebugMode) print("Location picker error: $e");
+                          }
+                        },
+                      ),
+                      // Note: Keep using your existing AnnualTurnoverSection from ../widets/AnnualGTurnOverSection.dart
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 4),
+                          const Padding(
+                            padding: EdgeInsets.only(bottom: 8.0),
+                            child: Text(
+                              "Annual Turnover",
+                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: TColors.primary),
+                            ),
+                          ),
+                          AnnualTurnoverSection(
+                            turnovers: _annualTurnovers,
+                            onChanged: (updatedList) {
+                              setState(() => _annualTurnovers = updatedList);
+                              _saveFormDraft();
+                            },
+                          ),
+                        ],
+                      ),
+                      FacilitiesSection(
+                        warehouseFacility: warehouseFacility,
+                        coldStorageAvailable: coldStorageAvailable,
+                        storageSize: storageSize,
+                        salesReps: salesReps,
+                        onWarehouseChanged: (val) async {
+                          setState(() => warehouseFacility = val);
+                          await _saveFormDraft();
+                        },
+                        onColdStorageChanged: (val) async {
+                          setState(() => coldStorageAvailable = val);
+                          await _saveFormDraft();
+                        },
+                      ),
+                      BankDetailsSection(
+                        bankName: bankName,
+                        branch: branch,
+                        accountNumber: accountNumber,
+                        ifscCode: ifscCode,
+                        onSubmitNow: () async {
+                          if (!_validateStep(_activeStep, finalValidation: true)) return;
+                          await _saveFormDraft();
+                          await _submitDistributorForm();
+                        },
+                      ),
+                      DocumentUploadSection(
+                        documentImages: _documentImages,
+                        uploadProgress: _uploadProgress,
+                        base64Images: _base64Images,
+                        pickImageForKey: _pickImageForKey,
+                        showImageActions: _showImageActions,
+                        confirmClearAllDocuments: _confirmClearAllDocuments,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
 
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 6),
-                child: DropdownButtonFormField<String>(
-                  decoration: const InputDecoration(
-                    labelText: "Nature of Business *",
-                    border: OutlineInputBorder(),
-                  ),
-                  value: selectedBusinessType,
-                  items: businessTypes.map((type) {
-                    return DropdownMenuItem(
-                      value: type,
-                      child: Text(type),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      selectedBusinessType = value;
-                    });
-                  },
-                  validator: (value) => value == null || value.isEmpty
-                      ? "Please select a business type"
-                      : null,
-                ),
-              ),
-
-              _requiredField(gstNumber, "GST Number"),
-              _requiredField(drugLicenseNumber, "Drug License Number"),
-              _requiredField(panNumber, "PAN Number"),
-              _requiredField(officeAddress, "Registered Office Address", maxLines: 2),
-
-              const SizedBox(height: 10),
-              _sectionTitle("Contact Details"),
-              _requiredField(contactPerson, "Contact Person"),
-              _textField(designation, "Designation"),
-              _requiredField(mobileNumber, "Mobile Number", inputType: TextInputType.phone),
-              _requiredField(emailAddress, "Email Address", inputType: TextInputType.emailAddress),
-              _textField(website, "Website"),
-
-              const SizedBox(height: 10),
-              _sectionTitle("Business Profile"),
-              _requiredField(yearsInBusiness, "Years in Business", inputType: TextInputType.number),
-              _textField(areasOfOperation, "Areas of Operation (comma separated)"),
-              _textField(distributorships, "Current Pharma Distributorships (comma separated)"),
-
-              const SizedBox(height: 10),
-              _sectionTitle("Annual Turnover"),
-              AnnualTurnoverSection(
-                turnovers: _annualTurnovers,
-                onChanged: (updatedList) {
-                  setState(() {
-                    _annualTurnovers = updatedList;
-                  });
-                },
-              ),
-
-              const SizedBox(height: 10),
-              _sectionTitle("Facilities"),
-              _checkbox("Warehouse Facility", warehouseFacility, (val) => setState(() => warehouseFacility = val)),
-              _textField(storageSize, "Storage Facility Size (in sqft)", inputType: TextInputType.number),
-              _checkbox("Cold Storage Available", coldStorageAvailable, (val) => setState(() => coldStorageAvailable = val)),
-              _textField(salesReps, "No. of Sales Representatives", inputType: TextInputType.number),
-
-              const SizedBox(height: 10),
-              _sectionTitle("Bank Details"),
-              _requiredField(bankName, "Bank Name"),
-              _requiredField(branch, "Branch"),
-              _requiredField(accountNumber, "Account Number", inputType: TextInputType.number),
-              _requiredField(ifscCode, "IFSC Code"),
-
-              const SizedBox(height: 20),
-
-              TextButton(
-                onPressed: () async {
-
-
-
-                  try {
-                    final result = await Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => LocationPickerScreen()),
-                    );
-
-                    print(" Returned from Location Picker");
-                    print("Result: $result");
-
-                    if (result != null ) {
-                      setState(() {
-                        selectedlatitude = result['latitude'].toString();
-                        selectedlongitude = result['longitude'].toString();
-                        selectedLocation = result['address'].toString();
-                      });
-
-                      print("Location selected:");
-                      print("Address: Lat: $selectedlatitude");
-                      print("Address: Lng: $selectedlongitude");
-                      print("Address: $selectedLocation");
-
-                      Get.snackbar(
-                        "📍 Location Selected",
-                        "$selectedLocation\nLat: $selectedlatitude, Lng: $selectedlongitude",
-                        backgroundColor: Colors.green,
-                        duration: const Duration(seconds: 4),
-                      );
-                    } else {
-                      print("❌ Location selection failed or cancelled.");
-                      Get.snackbar(
-                        "Location Not Selected",
-                        "Please try again or cancel",
-                        backgroundColor: Colors.orange,
-                      );
-                    }
-                  } catch (e) {
-                    print("Address: $e");
-                  }
-
-                },
-                style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-                  backgroundColor: TColors.primary, // Background color for the button
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  elevation: 5, // Shadow for the button
-                ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
+                child: Row(
                   children: [
-                    Icon(
-                      Icons.location_on,
-                      color: Colors.white,
-                      size: 22,
-                    ),
-                    SizedBox(width: 8),
-                    Text(
-                      'Select Location',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                    if (_activeStep > 0)
+                      OutlinedButton(
+                        onPressed: () async {
+                          setState(() => _activeStep--);
+                          await _saveFormDraft();
+                        },
+                        child: const Text('Back'),
                       ),
+                    const Spacer(),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(backgroundColor: TColors.primary),
+                      onPressed: () async {
+                        if (_activeStep == _totalSteps - 1) {
+                          if (!_validateStep(_activeStep, finalValidation: true)) return;
+                          await _saveFormDraft();
+                          await _submitDistributorForm();
+                        } else {
+                          if (_validateStep(_activeStep)) {
+                            setState(() => _activeStep++);
+                            await _saveFormDraft();
+                          }
+                        }
+                      },
+                      child: Text(_activeStep == _totalSteps - 1 ? 'Submit' : 'Next'),
                     ),
                   ],
-                ),
-              ),
-
-              const SizedBox(height: 20),
-              Center(
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: TColors.primary),
-                  onPressed: () {
-
-                    if (_formKey.currentState!.validate()) {
-
-
-                      if (selectedlatitude == null || selectedlongitude == null || selectedLocation == null) {
-                        Get.snackbar(
-                          "⚠️ Location Required",
-                          "Please select a location before submitting.",
-                          backgroundColor: Colors.redAccent,
-                          colorText: Colors.white,
-                          duration: const Duration(seconds: 3),
-                        );
-                        return; // Stop submission
-                      }
-
-                      _submitDistributorForm();
-                    }
-                  },
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 40, vertical: 4),
-                    child: Text("Submit", style: TextStyle(fontSize: 16)),
-                  ),
                 ),
               ),
             ],
           ),
         ),
       ),
-    );
-  }
-
-  Widget _sectionTitle(String title) => Padding(
-    padding: const EdgeInsets.only(bottom: 8.0),
-    child: Text(
-      title,
-      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: TColors.primary),
-    ),
-  );
-
-  Widget _headOfficeDropdown() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: DropdownButtonFormField<String>(
-        value: selectedHeadOfficeId,  // The selected head office ID
-        decoration: const InputDecoration(
-          labelText: "Head Office *", // Label for the field (required)
-          border: OutlineInputBorder(),
-        ),
-        items: cities.map((office) {
-          return DropdownMenuItem<String>(
-            value: office['id'], // Use the ID as the value
-            child: Text(office['name']!), // Display the name of the head office
-          );
-        }).toList(),
-        onChanged: (value) {
-          setState(() {
-            selectedHeadOfficeId = value; // Store the selected head office ID
-          });
-        },
-        validator: (value) => value == null || value.isEmpty
-            ? 'Please select a head office' // Make the dropdown required
-            : null,
-      ),
-    );
-  }
-
-
-  Widget _requiredField(TextEditingController controller, String label,
-      {TextInputType inputType = TextInputType.text, int maxLines = 1}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: TextFormField(
-        controller: controller,
-        keyboardType: inputType,
-        maxLines: maxLines,
-        decoration: InputDecoration(
-          labelText: "$label *",
-          border: const OutlineInputBorder(),
-        ),
-        validator: (value) => (value == null || value.isEmpty) ? 'Required' : null,
-      ),
-    );
-  }
-
-  Widget _textField(TextEditingController controller, String label,
-      {TextInputType inputType = TextInputType.text, int maxLines = 1}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: TextFormField(
-        controller: controller,
-        keyboardType: inputType,
-        maxLines: maxLines,
-        decoration: InputDecoration(
-          labelText: label,
-          border: const OutlineInputBorder(),
-        ),
-      ),
-    );
-  }
-
-  Widget _checkbox(String title, bool value, Function(bool) onChanged) {
-    return CheckboxListTile(
-      title: Text(title),
-      value: value,
-      activeColor: TColors.primary,
-      onChanged: (val) => onChanged(val ?? false),
-    );
-  }
-}
-// Define a class for the response data
-class HeadOffice1 {
-  final String id;
-  final String name;
-
-  HeadOffice1({required this.id, required this.name});
-
-  // Factory constructor to parse the response JSON
-  factory HeadOffice1.fromJson(Map<String, dynamic> json) {
-    return HeadOffice1(
-      id: json['_id'],
-      name: json['name'],
     );
   }
 }

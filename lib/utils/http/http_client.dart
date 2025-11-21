@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 class THttpHelper {
     static const String baseUrl = 'https://test.gluckscare.com/api'; // API base URL prod
     // static const String baseUrl = 'https://apiv2.gluckscare.com/api'; // API base URL prod
- // static const String baseUrl = 'https://api.gluckscare.com/api'; // API base URL prod test
+  // static const String baseUrl = 'https://api.gluckscare.com/api'; // API base URL prod test
 
   // Helper method to make a GET request
   static Future<Map<String, dynamic>> get(String endpoint) async {
@@ -21,6 +21,7 @@ class THttpHelper {
     );
     return _handleResponse(response);
   }
+
 
   // Helper method to make a PUT request
   static Future<Map<String, dynamic>> put(String endpoint, dynamic data) async {

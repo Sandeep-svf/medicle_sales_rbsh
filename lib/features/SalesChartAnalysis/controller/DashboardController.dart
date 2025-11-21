@@ -6,7 +6,7 @@ import 'package:medicle_sales_rbsh/utils/local_storage/auth_manager.dart';
 import '../model/SalesChartDashboardModel.dart';
 
 class DashboardController extends GetxController {
-  Rx<SalesChartDashboardModel?> dashboardData = Rx<SalesChartDashboardModel?>(null); // Reactive data
+  Rx<DashboardResponse?> dashboardData = Rx<DashboardResponse?>(null); // Reactive data
   RxBool isLoading = true.obs; // Reactive loading state
 
   final String _debugPrefix = '[DashboardController]';
@@ -42,7 +42,7 @@ class DashboardController extends GetxController {
 
         // If server returns a success response, parse the data
         final Map<String, dynamic> data = json.decode(response.body);
-        dashboardData.value = SalesChartDashboardModel.fromJson(data); // Update the reactive variable
+        dashboardData.value = DashboardResponse.fromJson(data); // Update the reactive variable
         isLoading.value = false;
       } else {
         // Handle failure, maybe throw an exception

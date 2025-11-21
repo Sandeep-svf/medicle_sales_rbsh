@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:medicle_sales_rbsh/utils/local_storage/auth_manager.dart';
 import '../utils/device/DeviceInfoHelper.dart';
 import '../utils/http/http_client.dart';
@@ -36,6 +37,12 @@ class LocationController {
       deviceId = "No Device Id found"; // Assign default value if null
     }
 
+
+    final now = DateTime.now();
+    final formattedTime = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
+
+    // Store in a string variable
+    String timestamp = formattedTime;
     print("LocationController Device ID: $deviceId");
     print("LocationController userId ID: $userId");
     print("LocationController latitude: $latitude");
@@ -50,7 +57,7 @@ class LocationController {
         "event_type": "location_update",
         "latitude": latitude,
         "longitude": longitude,
-        "timestamp": "2025-10-04T10:30:00Z",
+        "timestamp": timestamp,
         "metadata": {
           "battery_level": 85,
           "network_type": "4g tab test 8 Oct",

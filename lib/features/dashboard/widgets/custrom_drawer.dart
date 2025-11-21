@@ -11,7 +11,7 @@ import 'package:medicle_sales_rbsh/features/expenses/screens/expenses.dart';
 import 'package:medicle_sales_rbsh/features/order/screens/order.dart';
 import 'package:medicle_sales_rbsh/features/report/screens/report.dart';
 import 'package:medicle_sales_rbsh/features/salesActivity/screens/salesActivity.dart';
-import 'package:medicle_sales_rbsh/features/ticket/screen/TicketScreen.dart';
+
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 import 'package:medicle_sales_rbsh/utils/helpers/helper_functions.dart';
@@ -22,6 +22,7 @@ import '../../../utils/local_storage/auth_manager.dart';
 import '../../Blog/screen/blog.dart';
 import '../../Inbox/Screen/InboxScreen.dart';
 
+import '../../InvoiceTrackerShipment/screen/InvoiceScreen.dart';
 import '../../PtsPtrCalculator/PtsPtrCalculator.dart';
 import '../../SalesChartAnalysis/Screen/salesChartHome2.dart';
 import '../../addStokist/screen/StokistList.dart';
@@ -29,6 +30,7 @@ import '../../authentication/models/UserModel.dart';
 import '../../authentication/screens/login/login.dart';
 import '../../marketing/screen/MarketingScreen.dart';
 import '../../marketing/screen/marketing.dart';
+import '../../ticket/screen/ticketscreen.dart';
 import '../../visit/Doctor/screens/ScheduleVisit.dart';
 
 
@@ -176,6 +178,14 @@ class _CustomDrawerState extends State<CustomDrawer> {
                     onTap: () => widget.onMenuSelected(OrderScreen(), TTexts.order),
                     isSelected: widget.currentScreen == TTexts.order,
                   ),
+                  _buildDrawerItem(
+                    icon: Icons.inventory,
+                    text: TTexts.invoiceScreen,
+                    onTap: () => widget.onMenuSelected(InvoiceScreen(), TTexts.invoiceScreen),
+                    isSelected: widget.currentScreen == TTexts.invoiceScreen,
+                  ),
+                  // InvoiceScreen
+
                   _buildDrawerItem(
                     icon: Icons.expand,
                     text: TTexts.expenses,
