@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:medicle_sales_rbsh/features/TrackingOptimizedBgLocation/debug/debug_repository.dart';
+import 'package:medicle_sales_rbsh/features/TrackingOptimizedBgLocation/debug/debug_screen.dart';
 import 'package:medicle_sales_rbsh/features/authentication/screens/onboarding/splash.dart';
 
 import 'package:medicle_sales_rbsh/utils/anim/CustomPageTransition.dart';
@@ -58,6 +60,7 @@ class _AppState extends State<App> with WidgetsBindingObserver {
       darkTheme: SAppTheme.darkTheme,
       theme: SAppTheme.lightTheme,
       home: const SplashScreen(),
+     // home:  DebugScreen(),
       defaultTransition: Transition.noTransition,
       customTransition: CustomPageTransition(),
     );

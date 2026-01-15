@@ -11,11 +11,13 @@ class Clinic {
   final String latitude;
   final String longitude;
   final int yearsInBusiness;
+  final String? geoImageUrl;
   final String headOfficeId;
-  final String createdAt;
-  final String updatedAt;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final HeadOffice headOffice;
   final List<AnnualTurnover> annualTurnover;
-  final HeadOffice? headOffice;
+  final bool geoImageStatus;
 
   Clinic({
     required this.id,
@@ -30,86 +32,82 @@ class Clinic {
     required this.latitude,
     required this.longitude,
     required this.yearsInBusiness,
+    this.geoImageUrl,
     required this.headOfficeId,
     required this.createdAt,
     required this.updatedAt,
+    required this.headOffice,
     required this.annualTurnover,
-    this.headOffice,
+    required this.geoImageStatus,
   });
 
   factory Clinic.fromJson(Map<String, dynamic> json) {
     return Clinic(
-      id: json['id'] ?? '',
-      firmName: json['firm_name'] ?? '',
-      contactPersonName: json['contact_person_name'] ?? '',
-      designation: json['designation'] ?? '',
-      mobileNo: json['mobile_no'] ?? '',
-      emailId: json['email_id'] ?? '',
-      drugLicenseNumber: json['drug_license_number'] ?? '',
-      gstNo: json['gst_no'] ?? '',
-      address: json['address'] ?? '',
-      latitude: json['latitude'] ?? '',
-      longitude: json['longitude'] ?? '',
-      yearsInBusiness: json['years_in_business'] ?? 0,
-      headOfficeId: json['head_office_id'] ?? '',
-      createdAt: json['created_at'] ?? '',
-      updatedAt: json['updated_at'] ?? '',
-      annualTurnover: (json['annualTurnover'] as List<dynamic>?)
-          ?.map((e) => AnnualTurnover.fromJson(e))
-          .toList() ??
-          [],
+      id: json['id']?.toString() ?? '',
+      firmName: json['firm_name']?.toString() ?? '',
+      contactPersonName: json['contact_person_name']?.toString() ?? '',
+      designation: json['designation']?.toString() ?? '',
+      mobileNo: json['mobile_no']?.toString() ?? '',
+      emailId: json['email_id']?.toString() ?? '',
+      drugLicenseNumber: json['drug_license_number']?.toString() ?? '',
+      gstNo: json['gst_no']?.toString() ?? '',
+      address: json['address']?.toString() ?? '',
+
+      // Latitude/Longitude can be null or string, safe fallback to "0.0"
+      latitude: json['latitude']?.toString() ?? '0.0',
+      longitude: json['longitude']?.toString() ?? '0.0',
+
+      // Safe int parsing
+      yearsInBusiness: int.tryParse(json['years_in_business']?.toString() ?? '0') ?? 0,
+
+      geoImageUrl: json['geo_image_url']?.toString(),
+      headOfficeId: json['head_office_id']?.toString() ?? '',
+
+      // Safe Date parsing
+      createdAt: DateTime.tryParse(json['created_at'] ?? '') ?? DateTime.now(),
+      updatedAt: DateTime.tryParse(json['updated_at'] ?? '') ?? DateTime.now(),
+
+      // Nested Objects
       headOffice: json['headOffice'] != null
           ? HeadOffice.fromJson(json['headOffice'])
-          : null,
+          : HeadOffice(id: '', name: ''),
+
+      // List Parsing
+      annualTurnover: (json['annualTurnover'] as List<dynamic>?)
+          ?.map((e) => AnnualTurnover.fromJson(e))
+          .toList() ?? [],
+
+      geoImageStatus: json['geo_image_status'] ?? false,
     );
   }
 }
 
-
-class AnnualTurnover {
-  final int? year;
-  final int? amount;
-
-  AnnualTurnover({
-    this.year,
-    this.amount,
-  });
-
-  factory AnnualTurnover.fromJson(Map<String, dynamic> json) {
-    return AnnualTurnover(
-      year: json['year'] ?? 0,
-      amount: json['amount'] ?? 0,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'year': year ?? 0,
-      'amount': amount ?? 0,
-    };
-  }
-}
+// --- Nested Models ---
 
 class HeadOffice {
-  final String? id;
-  final String? name;
+  final String id;
+  final String name;
 
-  HeadOffice({
-    this.id,
-    this.name,
-  });
+  HeadOffice({required this.id, required this.name});
 
   factory HeadOffice.fromJson(Map<String, dynamic> json) {
     return HeadOffice(
-      id: json['id'] ?? '',
-      name: json['name'] ?? '',
+      id: json['id']?.toString() ?? '',
+      name: json['name']?.toString() ?? '',
     );
   }
+}
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id ?? '',
-      'name': name ?? '',
-    };
+class AnnualTurnover {
+  final int year;
+  final double amount;
+
+  AnnualTurnover({required this.year, required this.amount});
+
+  factory AnnualTurnover.fromJson(Map<String, dynamic> json) {
+    return AnnualTurnover(
+      year: int.tryParse(json['year']?.toString() ?? '0') ?? 0,
+      amount: double.tryParse(json['amount']?.toString() ?? '0') ?? 0.0,
+    );
   }
 }

@@ -213,7 +213,8 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
           final travelRequest = TravelAllowanceRequest(
             userId: userId,
             description: payload['description']?.toString() ?? '',
-
+            category: "", //added
+            bill: "", //added
             travelDetails: travelDetails.map((t) => TravelDetail(
               from: t['from'],
               to: t['to'],

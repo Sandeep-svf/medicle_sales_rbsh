@@ -1,10 +1,15 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:medicle_sales_rbsh/features/addDoctor/models/HeadofficeModel.dart';
+import 'package:medicle_sales_rbsh/features/addDoctor/screens/add_doctro_new_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../utils/camera/CameraLocationResult.dart';
 import '../../../utils/constants/text_strings.dart';
 import '../../../utils/helpers/zoom_in_out_anim.dart';
 import '../../../utils/constants/colors.dart';
@@ -19,6 +24,9 @@ import '../../authentication/models/headoffice.dart';
 import '../controllers/DoctroController.dart';
 import '../controllers/addDoctorController.dart';
 import '../models/CityOfflineModel.dart';
+import '../models/DoctorModelList.dart';
+import '../wigets/gps_image_preview_widget.dart';
+import '../wigets/image_with_location_widget.dart';
 import 'doctorDetails.dart';
 import 'map.dart';
 
@@ -30,8 +38,8 @@ class AddDoctorScreen extends StatefulWidget {
 }
 
 class _AddDoctorScreenState extends State<AddDoctorScreen> {
-  final DoctorListController _doctorListController = Get.put(
-      DoctorListController());
+  final DoctorListController _doctorListController =
+      Get.put(DoctorListController());
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = "";
   String? selectedCityId; // Store the selected city ID
@@ -43,18 +51,17 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
   String? selectedAddress;
 
   @override
-  void initState()  {
+  void initState() {
     super.initState();
     _initializeData();
-
   }
 
   Future<void> _initializeData() async {
     try {
       // await to wait for the async operations
       await _doctorListController.fetchDoctorList();
-      await fetchCities();
-     // cities = (await getHeadOffices()).cast<Map<String, String>>();
+      //await fetchCities();
+      // cities = (await getHeadOffices()).cast<Map<String, String>>();
     } catch (e) {
       // Handle any errors here
       if (kDebugMode) {
@@ -62,7 +69,8 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
       }
     }
   }
- /* Future<void> fetchCities() async {
+
+  /* Future<void> fetchCities() async {
     CircularLoaderController.showLoader(context);
     AuthManager authManager = AuthManager();
     final token = await authManager.getAuthToken();
@@ -93,7 +101,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
     }
   }*/
 
- // without saving in db...
+  // without saving in db...
   /*Future<void> fetchCities() async {
     // Show loading spinner while fetching head offices
     CircularLoaderController.showLoader(context);
@@ -163,8 +171,6 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
     }
   }*/
 
-
-
   Future<void> fetchCities() async {
     CircularLoaderController.showLoader(context);
     AuthManager authManager = AuthManager();
@@ -195,9 +201,9 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
           //  Convert to CityOfflineModel
           final citiesData = cityList
               .map((e) => CityOfflineModel(
-            id: e['id'].toString(),
-            name: e['name'].toString(),
-          ))
+                    id: e['id'].toString(),
+                    name: e['name'].toString(),
+                  ))
               .toList();
 
           print("[DEBUG] API returned ${citiesData.length} cities.");
@@ -212,7 +218,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
           //  Update UI from local DB (for display)
           final localCities = await dbHelper.getAll(
             'cities',
-                (json) => CityOfflineModel.fromJson(json),
+            (json) => CityOfflineModel.fromJson(json),
           );
 
           setState(() {
@@ -224,10 +230,12 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
           print("[DEBUG] Loaded ${cities.length} cities from local DB.");
         } else {
           Get.snackbar("Error", "Failed to load cities (success=false)",
-              backgroundColor: Colors.red, duration: const Duration(seconds: 3));
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 3));
         }
       } else {
-        print("[ERROR] Failed to load Head Office. Status: ${response.statusCode}");
+        print(
+            "[ERROR] Failed to load Head Office. Status: ${response.statusCode}");
         Get.snackbar("Error",
             "Failed to load cities. Status Code: ${response.statusCode}",
             backgroundColor: Colors.red);
@@ -239,7 +247,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
       //  Fallback to local DB
       final localCities = await dbHelper.getAll(
         'cities',
-            (json) => CityOfflineModel.fromJson(json),
+        (json) => CityOfflineModel.fromJson(json),
       );
 
       if (localCities.isNotEmpty) {
@@ -250,15 +258,12 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
         });
         print("[DEBUG] Loaded cached cities (offline mode).");
       } else {
-        Get.snackbar("Error", "No cached data available. Please connect to the internet.",
+        Get.snackbar("Error",
+            "No cached data available. Please connect to the internet.",
             backgroundColor: Colors.red);
       }
     }
   }
-
-
-
-
 
   void _showAddDoctorDialog() {
     TextEditingController nameController = TextEditingController();
@@ -523,30 +528,30 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
 
-        if (selectedLatitude == null || selectedLongitude == null || selectedAddress == null) {
-        // Show error message if location is not selected
-        Get.snackbar("Error", "Please select a location",
-        backgroundColor: Colors.red, duration: const Duration(seconds: 3));
-        } else {
+                      if (selectedLatitude == null || selectedLongitude == null || selectedAddress == null) {
+                        // Show error message if location is not selected
+                        Get.snackbar("Error", "Please select a location",
+                            backgroundColor: Colors.red, duration: const Duration(seconds: 3));
+                      } else {
 
 
-                      // Call the addDoctor API
-                      AddDoctorController.addDoctor(
-                        context: context,
-                        nameController: nameController,
-                        specializationController: specializationController,
-                        emailController: emailController,
-                        phoneController: phoneController,
-                        registrationController: registrationController,
-                        experienceController: experienceController,
-                        dobController: dobController,
-                        anniversaryController: anniversaryController,
-                        selectedCityId: selectedCityId!,
-                        selectedGender: selectedGender!,
-                        selectedLatitude: selectedLatitude.toString(),
-                        selectedLongitude: selectedLongitude.toString(),
+                        // Call the addDoctor API
+                        AddDoctorController.addDoctor(
+                          context: context,
+                          nameController: nameController,
+                          specializationController: specializationController,
+                          emailController: emailController,
+                          phoneController: phoneController,
+                          registrationController: registrationController,
+                          experienceController: experienceController,
+                          dobController: dobController,
+                          anniversaryController: anniversaryController,
+                          selectedCityId: selectedCityId!,
+                          selectedGender: selectedGender!,
+                          selectedLatitude: selectedLatitude.toString(),
+                          selectedLongitude: selectedLongitude.toString(),
                           selectedAddress: selectedAddress.toString(),
-                      );
+                        );
                       }
                     } else {
                       HapticFeedback.vibrate();
@@ -566,7 +571,6 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
       },
     );
   }
-
 
   /*void _showAddDoctorDialog() {
     TextEditingController nameController = TextEditingController();
@@ -696,7 +700,10 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                   ),
                   const SizedBox(height: 12),
                   // Date of Birth (DOB) Picker
-                  */ /*GestureDetector(
+                  */
+
+
+  /*GestureDetector(
                     onTap: () => _selectDate(context, false),
                     child: AbsorbPointer(
                       child: TextField(
@@ -805,8 +812,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
     );
   }*/
 
-
- /* @override
+  /* @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Column(
@@ -894,8 +900,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
     );
   }*/
 
-
-@override
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Column(
@@ -907,17 +912,20 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
               decoration: InputDecoration(
                 labelText: TTexts.searchDoctor,
                 border: OutlineInputBorder(),
-                prefixIcon: const Icon(Icons.search,color: TColors.primary,),
+                prefixIcon: const Icon(
+                  Icons.search,
+                  color: TColors.primary,
+                ),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(
-                  icon: const Icon(Icons.clear),
-                  onPressed: () {
-                    setState(() {
-                      _searchController.clear();
-                      _searchQuery = "";
-                    });
-                  },
-                )
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          setState(() {
+                            _searchController.clear();
+                            _searchQuery = "";
+                          });
+                        },
+                      )
                     : null,
               ),
               onChanged: (value) {
@@ -927,7 +935,9 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
               },
             ),
           ),
-          Expanded(
+
+          // old working code is here..
+          /*Expanded(
             child: Obx(() {
               if (_doctorListController.isLoading.value) {
                 return const Center(child: CircularProgressIndicator());
@@ -977,15 +987,491 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                 },
               );
             }),
-          ),
+          ),*/
+
+          // new code with inhance ui
+          Expanded(
+            child: Obx(() {
+              if (_doctorListController.isLoading.value) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              final filteredDoctors = _doctorListController.doctorList
+                  .where((doctor) => doctor.name
+                      .toLowerCase()
+                      .contains(_searchQuery.toLowerCase()))
+                  .toList();
+
+              if (filteredDoctors.isEmpty) {
+                return const Center(child: Text(TTexts.noDoctorAvailable));
+              }
+
+              return LayoutBuilder(
+                builder: (context, constraints) {
+                  final width = constraints.maxWidth;
+                  // Breakpoints
+                  final bool isMobile = width < 600;
+                  final bool isTabletPortrait = width >= 600 && width < 900;
+
+                  // --- Card Builder Function ---
+                  Widget buildDoctorCard(Doctor doctor,
+                      {required bool isTablet}) {
+                    // Initials
+                    final String initials = doctor.name.trim().isNotEmpty
+                        ? doctor.name.trim()[0].toUpperCase()
+                        : "?";
+
+                    // Theme & Priority
+                    const Color themeColor = TColors.primary;
+
+                    // --- PRIORITY LOGIC ---
+                    String priorityValue = doctor.priority;
+                    Color priorityColor;
+                    String priorityLabel;
+
+                    // Check for invalid or empty priority
+                    if (priorityValue.isEmpty || priorityValue.toLowerCase() == 'null') {
+                      priorityColor = Colors.grey;
+                      priorityLabel = "Not Added";
+                    } else {
+                      switch (priorityValue) {
+                        case 'A':
+                          priorityColor = Colors.red;
+                          priorityLabel = "Priority A";
+                          break;
+                        case 'B':
+                          priorityColor = Colors.orange;
+                          priorityLabel = "Priority B";
+                          break;
+                        case 'C':
+                          priorityColor = Colors.blueGrey;
+                          priorityLabel = "Priority C";
+                          break;
+                        default:
+                          priorityColor = Colors.grey;
+                          priorityLabel = "Not Added";
+                          break;
+                      }
+                    }
 
 
+                    // Map Validation
+                    final double? lat = double.tryParse(doctor.latitude);
+                    final double? lng = double.tryParse(doctor.longitude);
+                    final bool isValidMap = lat != null && lng != null;
+
+                    // --- Inner Content Widget ---
+                    Widget cardContent = Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // Left strip
+                        Container(width: 5, color: themeColor),
+
+                        Expanded(
+                          child: Column(
+                            // Use min to keep content compact at the top
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // ================= HEADER =================
+                              Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: themeColor.withOpacity(0.04),
+                                  border: Border(
+                                    bottom:
+                                        BorderSide(color: Colors.grey.shade100),
+                                  ),
+                                ),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // Avatar
+                                    Container(
+                                      padding: const EdgeInsets.all(2),
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: themeColor.withOpacity(0.3),
+                                          width: 2,
+                                        ),
+                                      ),
+                                      child: CircleAvatar(
+                                        radius: 24,
+                                        backgroundColor: Colors.white,
+                                        child: Text(
+                                          initials,
+                                          style: const TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                            color: themeColor,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+
+                                    // Name & Details
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Expanded(
+                                                child: Text(
+                                                  doctor.name,
+                                                  maxLines: 1,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: const TextStyle(
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ),
+                                              // Priority Badge
+                                              Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 8,
+                                                        vertical: 4),
+                                                decoration: BoxDecoration(
+                                                  color: priorityColor
+                                                      .withOpacity(0.12),
+                                                  borderRadius:
+                                                      BorderRadius.circular(6),
+                                                  border: Border.all(
+                                                    color: priorityColor
+                                                        .withOpacity(0.35),
+                                                  ),
+                                                ),
+                                                child: Text(
+                                                  "$priorityLabel",
+                                                  style: TextStyle(
+                                                    fontSize: 10,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: priorityColor,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            doctor.specialization,
+                                            style: TextStyle(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w600,
+                                              color: Colors.grey[800],
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Row(
+                                            children: [
+                                              Icon(Icons.location_on_rounded,
+                                                  size: 12,
+                                                  color: Colors.grey[600]),
+                                              const SizedBox(width: 4),
+                                              Expanded(
+                                                child: Text(
+                                                  doctor.location,
+                                                  maxLines: 1,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: TextStyle(
+                                                      fontSize: 12,
+                                                      color: Colors.grey[600]),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              // ================= BODY =================
+                              _buildBodyContent(context, doctor, isValidMap,
+                                  themeColor, isTablet),
+                            ],
+                          ),
+                        ),
+                      ],
+                    );
+
+                    // Container Wrapper
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: themeColor.withOpacity(0.35)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 12,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      child: isTablet
+                          ? cardContent
+                          : IntrinsicHeight(child: cardContent),
+                    );
+                  }
+
+                  // --- Layout Selection ---
+                  if (isMobile) {
+                    return ListView.builder(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: filteredDoctors.length,
+                      itemBuilder: (_, i) => Padding(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        child: buildDoctorCard(filteredDoctors[i],
+                            isTablet: false),
+                      ),
+                    );
+                  } else {
+                    // Tablet Grid Configuration
+                    final int crossAxisCount = isTabletPortrait ? 2 : 3;
+                    // Adjusted ratio to reduce bottom space
+                    // Portrait cells are wider than landscape cells, so they need a higher width/height ratio
+                    final double ratio = isTabletPortrait ? 1.3 : 1.2;
+
+                    return GridView.builder(
+                      padding: const EdgeInsets.all(16),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: crossAxisCount,
+                        crossAxisSpacing: 16,
+                        mainAxisSpacing: 16,
+                        childAspectRatio: ratio,
+                      ),
+                      itemCount: filteredDoctors.length,
+                      itemBuilder: (_, i) =>
+                          buildDoctorCard(filteredDoctors[i], isTablet: true),
+                    );
+                  }
+                },
+              );
+            }),
+          )
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _showAddDoctorDialog,
+        onPressed: () {
+          Get.to(() => AddDoctorNewScreen());
+         // _showAddDoctorDialog();
+        },
         backgroundColor: TColors.primary,
         child: const Icon(Icons.add, color: Colors.white),
+      ),
+    );
+  }
+
+  Widget _buildBody(
+    BuildContext context,
+    Doctor doctor,
+    bool isValidMap, {
+    required bool isTablet,
+  }) {
+    const Color themeColor = TColors.primary;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          children: [
+            Icon(Icons.work_history_rounded, size: 16, color: Colors.grey[700]),
+            const SizedBox(width: 6),
+            Text(
+              "${doctor.yearsOfExperience} Years Exp.",
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const Spacer(),
+            if (doctor.gender.isNotEmpty)
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.grey[100],
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  doctor.gender,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey[700],
+                  ),
+                ),
+              ),
+          ],
+        ),
+
+        // ✅ ONLY tablet needs spacing push
+        if (isTablet) const Spacer(),
+
+        const SizedBox(height: 16),
+
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => DoctorDetailsScreen(doctor: doctor),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: themeColor,
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: const Text(
+              "View Profile",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+        ),
+
+        if (isValidMap) ...[
+          const SizedBox(height: 8),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => DoctorDetailsScreen(doctor: doctor),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.map_outlined, size: 18),
+              label: const Text("Locate on Map"),
+              style: OutlinedButton.styleFrom(
+                side: BorderSide(color: themeColor.withOpacity(0.5)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildBodyContent(BuildContext context, Doctor doctor, bool isValidMap,
+      Color themeColor, bool isTablet) {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        // Keep min so it doesn't stretch empty space
+        children: [
+          Row(
+            children: [
+              Icon(Icons.work_history_rounded,
+                  size: 16, color: Colors.grey[700]),
+              const SizedBox(width: 6),
+              Text(
+                "${doctor.yearsOfExperience} Years Exp.",
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const Spacer(),
+              if (doctor.gender.isNotEmpty)
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[100],
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    doctor.gender,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                ),
+            ],
+          ),
+
+          // Fixed spacing
+          const SizedBox(height: 16),
+
+          SizedBox(
+            width: double.infinity,
+            height: 40,
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => DoctorDetailsScreen(doctor: doctor),
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: themeColor,
+                padding: EdgeInsets.zero,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Text(
+                "View Profile",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ),
+
+          if (isValidMap) ...[
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => DoctorDetailsScreen(doctor: doctor),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.map_outlined, size: 18),
+                label: const Text(
+                  "Locate on Map",
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  side: BorderSide(color: themeColor.withOpacity(0.5)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }

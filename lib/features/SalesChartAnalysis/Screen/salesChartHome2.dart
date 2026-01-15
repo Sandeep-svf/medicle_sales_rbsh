@@ -4,14 +4,17 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../../utils/check_internet/network_monitor.dart';
 import '../../../utils/local_storage/auth_manager.dart';
 import '../../authentication/models/UserModel.dart';
+import '../../dashboard/widgets/LiveClockWidget.dart';
 import '../../ticket/controller/TicketController.dart';
 import '../controller/DashboardController.dart';
 import '../model/SalesChartDashboardModel.dart';
 import 'package:get/get.dart';
 
 class SalesChartHomeScreen extends StatelessWidget {
+
 
 
 
@@ -88,30 +91,22 @@ class SalesChartHomeScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              "👋 Welcome",
+                              "👋 ${ user.name ?? "No Name"} ",
                               style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.red.shade800,
                               ),
                             ),
-                            const SizedBox(height: 20),
-                            Text(
-                              user.name ?? "No Name",
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black87,
-                              ),
-                            ),
+
                             const SizedBox(height: 4),
-                            Text(
+                           /* Text(
                               user.email ?? "No Email",
                               style: TextStyle(
                                 fontSize: 14,
                                 color: Colors.grey[700],
                               ),
-                            ),
+                            ),*/
                           ],
                         ),
 
@@ -119,14 +114,9 @@ class SalesChartHomeScreen extends StatelessWidget {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
-                            Text(
-                              DateFormat('dd MMM yyyy').format(DateTime.now()),
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.black87,
-                              ),
-                            ),
+                            const LiveClockWidget(),
+                            const SizedBox(height: 10),
+                            networkStatusRow(),
                           ],
                         ),
                       ],
@@ -134,7 +124,7 @@ class SalesChartHomeScreen extends StatelessWidget {
                   );
                 },
               ),
-              SizedBox(height: 15),
+              const SizedBox(height: 15),
               // Visits Summary
               Row(
                 children: [
@@ -349,6 +339,38 @@ class SalesChartHomeScreen extends StatelessWidget {
       ],
     );
   }
+
+  Widget networkStatusRow() {
+    final monitor = NetworkMonitor();
+
+    return ValueListenableBuilder<bool>(
+      valueListenable: monitor.isOnline,
+      builder: (context, isOnline, _) {
+        return Row(
+          children: [
+            Container(
+              width: 10,
+              height: 10,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: isOnline ? Colors.green : Colors.red,
+              ),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              isOnline ? 'Online' : 'Offline',
+              style: TextStyle(
+                fontSize: 12,
+                color: isOnline ? Colors.green : Colors.red,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
 }
 
 

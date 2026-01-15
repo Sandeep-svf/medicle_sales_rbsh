@@ -12,6 +12,8 @@ class BasicDetailsSection extends StatelessWidget {
   final List<HeadOffice1> offices;
   final ValueChanged<String?> onHeadOfficeChanged;
   final TextEditingController gstNumber;
+  final TextEditingController drugLicenceNumber;
+  final TextEditingController panNumber;
   final String? selectedBusinessType;
   final List<String> businessTypes;
   final ValueChanged<String?> onBusinessTypeChanged;
@@ -26,6 +28,8 @@ class BasicDetailsSection extends StatelessWidget {
     required this.selectedBusinessType,
     required this.businessTypes,
     required this.onBusinessTypeChanged,
+    required this.drugLicenceNumber,
+    required this.panNumber,
     super.key,
   });
 
@@ -83,6 +87,10 @@ class BasicDetailsSection extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         _requiredField(gstNumber, 'GST Number'),
+        const SizedBox(height: 8),
+        _requiredField(panNumber, ' PAN Number'),
+        const SizedBox(height: 8),
+        _requiredField(drugLicenceNumber, 'Drug License Number'),
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(
           decoration: const InputDecoration(

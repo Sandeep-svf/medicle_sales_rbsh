@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:medicle_sales_rbsh/features/MarketingMaterials/Screens/pramotion.dart';
-
 import 'brochure.dart';
 
 class MarketingmaterialsScreen extends StatelessWidget {

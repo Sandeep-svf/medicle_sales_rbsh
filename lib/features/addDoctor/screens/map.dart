@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
@@ -22,8 +21,11 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
   @override
   void initState() {
     super.initState();
-    _initLocationServices();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initLocationServices();
+    });
   }
+
 
   Future<void> _initLocationServices() async {
     try {

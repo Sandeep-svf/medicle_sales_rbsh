@@ -1,30 +1,26 @@
 import 'dart:convert';
-
-import 'package:date_picker_plus/date_picker_plus.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
-import 'package:medicle_sales_rbsh/common/Model/SMResponseModel.dart';
-
-import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
+
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 import '../../../../../../utils/LocationHelper/LocationHelper.dart';
 import '../../../../../../utils/constants/colors.dart';
 import '../../../../../../utils/constants/text_strings.dart';
-import '../../../../../../utils/helpers/zoom_in_out_anim.dart';
 import '../../../../../../utils/local_storage/auth_manager.dart';
+import '../../../../common/Model/DoctorVisitResponse.dart';
 import '../../../../utils/http/http_client.dart';
-import '../../../addDoctor/controllers/DoctroController.dart';
+
+// Import Stockist Controller and Model
 import '../../../addStokist/controllers/StokistListController.dart';
-import '../controllers/ScheduleVisitcontroller.dart';
 import '../controllers/visitListController.dart';
-import '../models/stockistvisitConfirm.dart';
 import '../models/visitSalesData.dart';
+import 'ScheduleStockistVisitScreen.dart';
 
 class VisitStockistScreen extends StatefulWidget {
   const VisitStockistScreen({super.key});
@@ -37,562 +33,348 @@ class _VisitStockistScreenState extends State<VisitStockistScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = "";
 
- // DoctorListController _doctorListController = Get.put(DoctorListController());
-  StokistListController _stokistListController = Get.put(StokistListController());
-
-  String? selectedDoctorId; // This will store the selected doctor's ID
-  String? selectedDoctorName; // This will store the selected doctor's name
-
+  final StokistListController _stokistListController = Get.put(StokistListController());
   late VisitListController _visitListController;
-  final AuthManager authManager = AuthManager(); // Initialize AuthManager
+  final AuthManager authManager = AuthManager();
 
-  //location helper
   String _location = 'Fetching location...';
-  // Instance of LocationHelper
   LocationHelper locationHelper = LocationHelper();
 
-  // sam
+  // Filter State
+  VisitDateFilter _selectedFilter = VisitDateFilter.today;
+  DateTimeRange? _selectedDateRange;
 
   @override
   void initState() {
     super.initState();
     _stokistListController.fetchStokist();
+
     _visitListController = VisitListController();
-    _visitListController
-        .fetchSalesList(); // Fetch the visit data when screen loads
+    _visitListController.fetchSalesList(filter: VisitDateFilter.today);
   }
 
-  void _showAddDoctorDialog() {
-    TextEditingController nameController = TextEditingController();
-    TextEditingController dateController = TextEditingController();
-    TextEditingController callNotesController = TextEditingController();
-    String selectedDate = "";
-    final _formKey = GlobalKey<FormState>();
+  // --- NAVIGATION ---
+  void _navigateToScheduleScreen() async {
+    final result = await Get.to(() => const ScheduleStockistVisitScreen());
+    if (result == true) {
+      _visitListController.fetchSalesList(
+        filter: _selectedFilter,
+        startDate: _selectedDateRange?.start,
+        endDate: _selectedDateRange?.end,
+      );
+      Get.snackbar("Success", "Stockist list updated", backgroundColor: TColors.success.withOpacity(0.1), colorText: TColors.success);
+    }
+  }
 
-    Future<void> _pickDate() async {
-      final pickedDate = await showDatePickerDialog(
+  // --- FILTER LOGIC ---
+  void _onFilterChanged(VisitDateFilter filter) async {
+    if (filter == VisitDateFilter.custom) {
+      final DateTimeRange? picked = await showDateRangePicker(
         context: context,
-        minDate: DateTime(2020),
-        maxDate: DateTime(2034),
-        initialDate: DateTime.now(),
-        selectedCellDecoration: const BoxDecoration(
-          color: Colors.blue,
-          shape: BoxShape.circle,
-        ),
-        selectedCellTextStyle: const TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.bold,
-        ),
-        leadingDateTextStyle: const TextStyle(
-          color: Colors.white,
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-        ),
-        highlightColor: Colors.blue,
-        splashColor: Colors.blueAccent,
-        splashRadius: 20.0,
+        firstDate: DateTime(2023),
+        lastDate: DateTime.now().add(const Duration(days: 365)),
+        builder: (context, child) {
+          return Theme(
+            data: Theme.of(context).copyWith(
+              colorScheme: const ColorScheme.light(
+                primary: TColors.primary,
+                onPrimary: Colors.white,
+                onSurface: Colors.black,
+              ),
+            ),
+            child: child!,
+          );
+        },
       );
 
-      if (pickedDate != null) {
+      if (picked != null) {
         setState(() {
-          dateController.text =
-          "${pickedDate.day}-${pickedDate.month}-${pickedDate.year}";
+          _selectedFilter = filter;
+          _selectedDateRange = picked;
         });
+        _visitListController.fetchSalesList(filter: VisitDateFilter.custom, startDate: picked.start, endDate: picked.end);
       }
+    } else {
+      setState(() {
+        _selectedFilter = filter;
+        _selectedDateRange = null;
+      });
+      _visitListController.fetchSalesList(filter: filter);
     }
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return ZoomInOutDialog(
-          child: AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            title: const Text(TTexts.scheduleVisitTitle),
-            content: Form(
-              key: _formKey, // Add Form Key for validation
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: DropdownButtonFormField<String>(
-                      decoration: const InputDecoration(
-                        labelText: "Select Stockist",
-                        border: OutlineInputBorder(),
-                      ),
-                      value: selectedDoctorName,
-                      items: _stokistListController.stokistList.map((doctor) {
-                        return DropdownMenuItem<String>(
-                          value: doctor.firmName,
-                          child: Text(doctor.firmName??''),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          selectedDoctorName = value;
-                          selectedDoctorId = _stokistListController.stokistList
-                              .firstWhere((doctor) => doctor.firmName == value)
-                              .id;
-                        });
-                      },
-                      hint: const Text("Please select"),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please select a stockist';
-                        }
-                        return null;
-                      },
-                      isExpanded: true,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    controller: dateController,
-                    readOnly: true,
-                    decoration: const InputDecoration(
-                      labelText: TTexts.date,
-                      hintText: "Date (DD-MM-YYYY)",
-                      border: OutlineInputBorder(),
-                      suffixIcon: Icon(Icons.calendar_today),
-                    ),
-                    onTap: _pickDate,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please select a date';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    controller: callNotesController,
-                    maxLines: 3,
-                    decoration: const InputDecoration(
-                      labelText: TTexts.notes,
-                      border: OutlineInputBorder(),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter notes';
-                      }
-                      return null;
-                    },
-                  ),
-                ],
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text(TTexts.cancel),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    String formattedTime = DateFormat('hh:mm a').format(DateTime.now());
-
-                    setState(() {
-                      // Call the controller to create a doctor visit
-                      StockistVisitController.createDoctorVisit(
-                        doctorId: selectedDoctorId,
-                        date: dateController.text,
-                        notes: callNotesController.text,
-                        context: context,
-                        authManager: authManager,  // Pass AuthManager instance here
-                      ).then((_) {
-                        // After adding, fetch the updated sales list
-                        _visitListController.fetchSalesList().then((_) {
-                          setState(() {
-                            // This ensures the UI is updated after fetching the data
-                          });
-                        });
-                      });
-                    });
-
-                    Navigator.pop(context);
-                  } else {
-                    Get.snackbar("Error", "Please fill all required fields.");
-                  }
-                },
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Text(TTexts.submit),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
   }
 
-  void _showDeleteConfirmationDialog(int index) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16)),
-          title: const Text(TTexts.confirmDeletion),
-          content: const Text(TTexts.areYouSureYouWantToDeleteThisLog),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text(
-                  TTexts.no, style: TextStyle(color: Colors.grey)),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  _visitListController.salesList.removeAt(index);
-                });
-                Navigator.pop(context);
-              },
-              child: const Text(TTexts.yes),
-            ),
-          ],
-        );
-      },
-    );
+  String _getFilterName(VisitDateFilter filter) {
+    switch (filter) {
+      case VisitDateFilter.today: return "Today";
+      case VisitDateFilter.last7Days: return "Last 7 Days";
+      case VisitDateFilter.last15Days: return "Last 15 Days";
+      case VisitDateFilter.custom:
+        if (_selectedDateRange != null) {
+          return "${DateFormat('MMM dd').format(_selectedDateRange!.start)} - ${DateFormat('MMM dd').format(_selectedDateRange!.end)}";
+        }
+        return "Custom Range";
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[50],
       body: Column(
         children: [
+          // 1. Search Bar
           Padding(
             padding: const EdgeInsets.all(16),
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
                 labelText: "Search Stockist",
-                border: OutlineInputBorder(),
+                fillColor: Colors.white,
+                filled: true,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.withOpacity(0.2))),
+                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: TColors.primary)),
                 prefixIcon: const Icon(Icons.search, color: TColors.primary),
                 suffixIcon: _searchQuery.isNotEmpty
-                    ? IconButton(
-                  icon: const Icon(Icons.clear),
-                  onPressed: () {
-                    setState(() {
-                      _searchController.clear();
-                      _searchQuery = "";
-                    });
-                  },
-                )
+                    ? IconButton(icon: const Icon(Icons.clear), onPressed: () => setState(() { _searchController.clear(); _searchQuery = ""; }))
                     : null,
               ),
-              onChanged: (value) {
-                setState(() {
-                  _searchQuery = value;
-                });
-              },
+              onChanged: (value) => setState(() => _searchQuery = value),
             ),
           ),
+
+          // 2. Horizontal Filter List
+          SizedBox(
+            height: 50,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              children: [
+                _buildFilterChip(VisitDateFilter.today),
+                const SizedBox(width: 8),
+                _buildFilterChip(VisitDateFilter.last7Days),
+                const SizedBox(width: 8),
+                _buildFilterChip(VisitDateFilter.last15Days),
+                const SizedBox(width: 8),
+                _buildFilterChip(VisitDateFilter.custom),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+
+          // 3. Main Content (Summary + List)
           Expanded(
-            child: FutureBuilder(
-              future: _visitListController.fetchSalesList(),
-              // Fetch sales list here
-              builder: (context, AsyncSnapshot<void> snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(
-                      child: CircularProgressIndicator()); // Show loading indicator
-                } else if (snapshot.hasError) {
-                  return Center(child: Text(
-                      'Error: ${snapshot.error}')); // Show error message if any
+            child: ListenableBuilder(
+              listenable: _visitListController,
+              builder: (context, child) {
+                if (_visitListController.isLoading) {
+                  return const Center(child: CircularProgressIndicator());
                 } else if (_visitListController.salesList.isEmpty) {
-                  return const Center(child: Text(
-                      TTexts.noRecentCallAvailable)); // No data available
+                  return _buildEmptyState();
                 } else {
-                  // Filter the stockist based on the search query
-                  List<StockistVisit> filteredDoctors = _visitListController
-                      .salesList
-                      .where((doctor) =>
-                  doctor.stockist?.firmName?.toLowerCase().contains(
-                      _searchQuery.toLowerCase()) ?? false).cast<StockistVisit>()
+                  // Stats
+                  final allVisits = _visitListController.salesList;
+                  final int totalVisits = allVisits.length;
+                  final int confirmedVisits = allVisits.where((v) => (v as StockistVisit).confirmed == true).length;
+                  final int pendingVisits = totalVisits - confirmedVisits;
+
+                  // Filter List
+                  List<StockistVisit> filteredList = allVisits.cast<StockistVisit>()
+                      .where((visit) =>
+                      (visit.stockist?.firmName?.toLowerCase() ?? "").contains(_searchQuery.toLowerCase()))
                       .toList();
 
-                  return ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: filteredDoctors.length,
-                    itemBuilder: (context, index) {
-                      final doctorVisit = filteredDoctors[index];
-                      return Card(
-                        elevation: 2,
-                        margin: const EdgeInsets.symmetric(vertical: 8),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12)),
-                        child: ListTile(
-                          title: Text(
-                            doctorVisit.stockist?.firmName ?? "Unknown Doctor",
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text("Sales Rep: ${doctorVisit.stockist?.firmName ?? ""}"),
-                              Text(
-                                "Time: ${DateFormat('hh:mm a').format(doctorVisit.date ?? DateTime.now())}",
-                              ),
+                  return Column(
+                    children: [
+                      _buildStatusSummaryDashboard(totalVisits, confirmedVisits, pendingVisits),
+                      const SizedBox(height: 10),
 
-                              Text("Call Notes: ${doctorVisit.notes ??
-                                  "No Notes"}"),
-                              const SizedBox(height: TSizes.spaceBtwText),
-                              Center(
-                                child: ElevatedButton(
-                                  onPressed: doctorVisit.confirmed == true
-                                      ? () {
-                                    // Show a snackbar if the visit is already confirmed
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text('You have already marked this visit confirmed.'),
-                                        backgroundColor: Colors.orange,
-                                      ),
-                                    );
-                                  }
-                                      : () {
-                                    // Show confirmation dialog
-                                    QuickAlert.show(
-                                      context: context,
-                                      type: QuickAlertType.confirm,
-                                      title: "Confirm Visit",
-                                      text: "Are you sure you want to mark this visit as confirmed?",
-                                      confirmBtnText: "Yes",
-                                      cancelBtnText: "Cancel",
-                                      confirmBtnColor: TColors.primary,
-                                      width: 300,
-                                      onConfirmBtnTap: () async {
-                                        // Close the confirmation QuickAlert dialog first
-                                        Navigator.of(context).pop();
+                      if (filteredList.isEmpty)
+                        const Expanded(child: Center(child: Text("No stockists found matching your search.")))
+                      else
+                        Expanded(
+                          child: LayoutBuilder(
+                            builder: (context, constraints) {
+                              bool isTablet = constraints.maxWidth > 600;
 
-                                        // Get the doctor visit ID
-                                        final visitId = doctorVisit.id;
-                                        String _message = '';
-                                        double? userLatitude;
-                                        double? userLongitude;
+                              Widget buildCard(StockistVisit visit) {
+                                final stockistName = visit.stockist?.firmName ?? "Unknown Stockist";
+                                final String initials = stockistName.trim().isNotEmpty
+                                    ? stockistName.trim().substring(0, 1).toUpperCase()
+                                    : "S";
 
-                                        // Fetch current latitude and longitude
-                                        // Request location permission
-                                        var permission = await Permission
-                                            .location
-                                            .request();
+                                final isConfirmed = visit.confirmed == true;
+                                final statusColor = isConfirmed ? TColors.success : TColors.primary;
+                                final statusText = isConfirmed ? "Completed" : "Action Needed";
+                                final statusIcon = isConfirmed ? Icons.check_circle : Icons.pending;
 
-                                        if (!permission.isGranted) {
-                                          QuickAlert.show(
-                                            context: context,
-                                            type: QuickAlertType.error,
-                                            text:
-                                            "Location permission is required to confirm the visit.",
-                                            confirmBtnColor:
-                                            TColors.primary,
-                                            width: 300,
-                                          );
-                                          return;
-                                        }
-
-                                        // Fetch current location
-                                        try {
-                                          Position position =
-                                          await Geolocator
-                                              .getCurrentPosition(
-                                            desiredAccuracy:
-                                            LocationAccuracy.high,
-                                          );
-                                          userLatitude =
-                                              position.latitude;
-                                          userLongitude =
-                                              position.longitude;
-                                          print(
-                                              'LOCATION IS: $userLatitude, $userLongitude');
-                                        } catch (e) {
-                                          QuickAlert.show(
-                                            context: context,
-                                            type: QuickAlertType.error,
-                                            text:
-                                            "Unable to fetch location. Try again.",
-                                            confirmBtnColor:
-                                            TColors.primary,
-                                            width: 300,
-                                          );
-                                          return;
-                                        }
-
-                                        if (kDebugMode) {
-                                          print('LOCATION IS: $_location');
-                                        }
-
-                                        // Make a PUT request to update the confirmation status
-                                        final response = await http.put(
-                                          Uri.parse(
-                                              '${THttpHelper.baseUrl}/stockist-visits/$visitId/confirm'),
-                                          headers: {
-                                            'Content-Type': 'application/json',
-                                          },
-                                          body: json.encode({
-                                            'userLatitude': userLatitude,
-                                            'userLongitude': userLongitude,
-                                          }),
-                                        );
-
-
-
-                                        print("Stockist Visit : reponseStatusCodeStockist: ${response.statusCode}");
-                                        print("Stockist Visit reponseStatusCodeStockist: ${response.body}");
-                                        print("Stockist Visit reponseStatusCodeStockist: ${THttpHelper.baseUrl}/stockists/visits/$visitId/confirm");
-
-                                        if (response.statusCode == 200) {
-                                          final responseBody = json.decode(response.body);
-
-                                          print("Stockist Visit Confirm response data: $responseBody");
-
-
-
-                                          // Parse the response using the VisitResponse model
-                                          VisitConfirmationResponse visitResponse = VisitConfirmationResponse.fromJson(responseBody);
-
-                                          print("Stockist Visit status ${visitResponse.status}");
-                                          print("Stockist Visit message ${visitResponse.message}");
-
-                                          if (visitResponse.status==true) {
-                                            // If status is true, handle success
-                                            setState(() {
-                                              _message = visitResponse.message!; // Set the correct message
-                                            });
-
-                                            print("Success message: $_message");
-
-                                            // Show a success message using QuickAlert
-                                            QuickAlert.show(
-                                              context: context,
-                                              type: QuickAlertType.success,
-                                              text: _message,
-                                              confirmBtnColor: TColors.primary,
-                                              width: 300,
-                                            );
-                                          } else {
-                                            // If status is false, handle failure
-                                            setState(() {
-                                              _message = visitResponse.message!;
-                                            });
-
-                                            print("Failure message: $_message");
-
-                                            // Show an error message using QuickAlert
-                                            QuickAlert.show(
-                                              context: context,
-                                              type: QuickAlertType.error,
-                                              text: _message,
-                                              backgroundColor: Colors.blue.shade50,
-                                              confirmBtnColor: TColors.primary,
-                                              width: 300,
-                                            );
-                                          }
-
-                                          // Refresh the visit list to reflect the changes
-                                          await _visitListController.fetchSalesList();
-
-                                          // Ensure the UI gets updated
-                                          setState(() {});
-                                        } else {
-                                          // Handle the case when the PUT request fails
-                                          QuickAlert.show(
-                                            context: context,
-                                            type: QuickAlertType.error,
-                                            text: "Failed to confirm the visit",
-                                            backgroundColor: TColors.primary,
-                                            confirmBtnColor: TColors.primary,
-                                            width: 300,
-                                          );
-                                        }
-
-
-                                        /*if (response.statusCode == 200) {
-                                          final responseBody = json.decode(response.body);
-
-                                          print("Stockist Visit Confirm response data: $responseBody");
-
-
-                                          // Parse the response using the VisitResponse model
-                                          SMResponse visitResponse =
-                                          SMResponse.fromJson(responseBody);
-
-                                          print("Stockist Visit Confirm response data: ${visitResponse.status}");
-
-                                          if (visitResponse.status) {
-                                            // If status is true, handle success
-                                            setState(() {
-                                              _message = 'Visit confirmed successfully!';
-                                            });
-
-                                            // Show a success message using QuickAlert
-                                            QuickAlert.show(
-                                              context: context,
-                                              type: QuickAlertType.success,
-                                              text: _message,
-                                              confirmBtnColor: TColors.primary,
-                                              width: 300,
-                                            );
-                                          } else {
-                                            // If status is false, handle failure (e.g., too far from the doctor)
-                                            setState(() {
-                                              _message = visitResponse.message;
-                                            });
-
-                                            // Show an error message using QuickAlert
-                                            QuickAlert.show(
-                                              context: context,
-                                              type: QuickAlertType.error,
-                                              text: _message,
-                                              backgroundColor: Colors.blue.shade50,
-                                              confirmBtnColor: TColors.primary,
-                                              width: 300,
-                                            );
-                                          }
-
-                                          // Refresh the visit list to reflect the changes
-                                          await _visitListController.fetchSalesList();
-
-                                          // Ensure the UI gets updated
-                                          setState(() {});
-                                        } else {
-                                          // Handle the case when the PUT request fails
-                                          QuickAlert.show(
-                                            context: context,
-                                            type: QuickAlertType.error,
-                                            text: "Failed to confirm the visit",
-                                            backgroundColor: TColors.primary,
-                                            confirmBtnColor: TColors.primary,
-                                            width: 300,
-                                          );
-                                        }*/
-                                      },
-                                      onCancelBtnTap: () {
-                                        // If user clicks "Cancel", dismiss the QuickAlert dialog
-                                        Navigator.of(context).pop();
-                                      },
-                                    );
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: doctorVisit.confirmed == true
-                                        ? TColors.success
-                                        : TColors.primary,
+                                return Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(color: TColors.primary.withOpacity(0.4), width: 1),
+                                    boxShadow: [
+                                      BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 15, offset: const Offset(0, 6)),
+                                    ],
                                   ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                                    child: Text(
-                                      doctorVisit.confirmed == true
-                                          ? TTexts.visitConfirmed
-                                          : TTexts.confirmVisit,
+                                  clipBehavior: Clip.antiAlias,
+                                  child: IntrinsicHeight(
+                                    child: Row(
+                                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                                      children: [
+                                        Container(width: 6, color: statusColor),
+                                        Expanded(
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              // Header
+                                              Container(
+                                                padding: const EdgeInsets.all(16.0),
+                                                decoration: BoxDecoration(color: statusColor.withOpacity(0.04)),
+                                                child: Row(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    Container(
+                                                      padding: const EdgeInsets.all(2),
+                                                      decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: statusColor.withOpacity(0.3), width: 2)),
+                                                      child: CircleAvatar(
+                                                        radius: 22,
+                                                        backgroundColor: Colors.white,
+                                                        child: Text(initials, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: statusColor)),
+                                                      ),
+                                                    ),
+                                                    const SizedBox(width: 12),
+                                                    Expanded(
+                                                      child: Column(
+                                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                                        children: [
+                                                          Text(
+                                                            stockistName,
+                                                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
+                                                            maxLines: 1, overflow: TextOverflow.ellipsis,
+                                                          ),
+                                                          const SizedBox(height: 6),
+                                                          Row(
+                                                            children: [
+                                                              Icon(Icons.calendar_today_rounded, size: 14, color: Colors.grey[600]),
+                                                              const SizedBox(width: 4),
+                                                              Expanded(
+                                                                child: Text(
+                                                                  DateFormat('dd MMM, hh:mm a').format(visit.date ?? DateTime.now()),
+                                                                  style: TextStyle(fontSize: 12, color: Colors.grey[600], fontWeight: FontWeight.w500),
+                                                                  maxLines: 1, overflow: TextOverflow.ellipsis,
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              // Body
+                                              Padding(
+                                                padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                                                child: Column(
+                                                  children: [
+                                                    // Info Row (Status)
+                                                    Row(
+                                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                      children: [
+                                                        Container(
+                                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                                          decoration: BoxDecoration(color: statusColor.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                                                          child: Row(
+                                                            children: [
+                                                              Icon(statusIcon, size: 14, color: statusColor),
+                                                              const SizedBox(width: 6),
+                                                              Text(statusText, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: statusColor)),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    const SizedBox(height: 12),
+                                                    // Notes
+                                                    Container(
+                                                      width: double.infinity,
+                                                      padding: const EdgeInsets.all(12),
+                                                      decoration: BoxDecoration(color: Colors.grey[50], borderRadius: BorderRadius.circular(10), border: Border.all(color: Colors.grey[200]!)),
+                                                      child: Column(
+                                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                                        children: [
+                                                          Text("CALL NOTES", style: TextStyle(fontSize: 10, color: Colors.grey[500], fontWeight: FontWeight.w700, letterSpacing: 0.5)),
+                                                          const SizedBox(height: 4),
+                                                          Text(
+                                                            visit.notes?.isNotEmpty == true ? visit.notes! : "No notes provided.",
+                                                            style: TextStyle(fontSize: 13, color: Colors.grey[700], fontStyle: visit.notes?.isNotEmpty == true ? FontStyle.normal : FontStyle.italic),
+                                                            maxLines: 2, overflow: TextOverflow.ellipsis,
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 12),
+                                                    // Button
+                                                    SizedBox(
+                                                      width: double.infinity,
+                                                      child: ElevatedButton(
+                                                        onPressed: isConfirmed
+                                                            ? () { ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Visit already confirmed.'), backgroundColor: Colors.orange)); }
+                                                            : () => _confirmVisitLogic(visit),
+                                                        style: ElevatedButton.styleFrom(
+                                                          backgroundColor: statusColor,
+                                                          foregroundColor: Colors.white,
+                                                          elevation: isConfirmed ? 0 : 2,
+                                                          shadowColor: statusColor.withOpacity(0.4),
+                                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                                          minimumSize: const Size(double.infinity, 44),
+                                                        ),
+                                                        child: Row(
+                                                          mainAxisAlignment: MainAxisAlignment.center,
+                                                          children: [
+                                                            Icon(isConfirmed ? Icons.verified : Icons.touch_app_rounded, size: 20),
+                                                            const SizedBox(width: 8),
+                                                            Text(isConfirmed ? TTexts.visitConfirmed : TTexts.confirmVisit, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                )
-                              ),
-                            ],
+                                );
+                              }
+
+                              if (isTablet) {
+                                return GridView.builder(
+                                  padding: const EdgeInsets.all(16),
+                                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisCount: 2,
+                                      crossAxisSpacing: 16,
+                                      mainAxisSpacing: 16,
+                                      childAspectRatio: 1.3 // Changed from 2.0 to 1.3 to fix Overflow
+                                  ),
+                                  itemCount: filteredList.length,
+                                  itemBuilder: (context, index) => buildCard(filteredList[index]),
+                                );
+                              } else {
+                                return ListView.builder(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                  itemCount: filteredList.length,
+                                  itemBuilder: (context, index) => Padding(padding: const EdgeInsets.only(bottom: 16.0), child: buildCard(filteredList[index])),
+                                );
+                              }
+                            },
                           ),
                         ),
-                      );
-                    },
+                    ],
                   );
                 }
               },
@@ -600,25 +382,101 @@ class _VisitStockistScreenState extends State<VisitStockistScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _showAddDoctorDialog,
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _navigateToScheduleScreen,
         backgroundColor: TColors.primary,
-        child: const Icon(Icons.add, color: Colors.white),
+        icon: const Icon(Icons.add, color: Colors.white),
+        label: const Text("New Visit", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
       ),
     );
   }
 
-  // Function to get location and update UI
-  Future<void> _fetchLocation() async {
-    try {
-      String? location = await locationHelper.getCurrentLocation();
-      setState(() {
-        _location = location ?? 'Location not found';
-      });
-    } catch (e) {
-      setState(() {
-        _location = 'Error: $e';
-      });
-    }
+  void _confirmVisitLogic(StockistVisit visit) {
+    QuickAlert.show(
+        context: context,
+        type: QuickAlertType.confirm,
+        title: "Confirm Visit",
+        text: "Mark this stockist visit as completed?",
+        confirmBtnText: "Yes",
+        confirmBtnColor: TColors.primary,
+        onConfirmBtnTap: () async {
+          Navigator.pop(context);
+
+          var permission = await Permission.location.request();
+          if (!permission.isGranted) {
+            Get.snackbar("Permission", "Location required");
+            return;
+          }
+
+          try {
+            Position pos = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+
+            final response = await http.put(
+              Uri.parse('${THttpHelper.baseUrl}/stockist-visits/${visit.id}/confirm'),
+              headers: {'Content-Type': 'application/json'},
+              body: json.encode({
+                'userLatitude': pos.latitude,
+                'userLongitude': pos.longitude,
+              }),
+            );
+
+            if (response.statusCode == 200) {
+              final body = json.decode(response.body);
+              VisitConfirmResponse res = VisitConfirmResponse.fromJson(body);
+
+              if (res.status == true) {
+                QuickAlert.show(context: context, type: QuickAlertType.success, text: res.message, confirmBtnColor: TColors.primary);
+                _visitListController.fetchSalesList(filter: _selectedFilter);
+              } else {
+                Get.snackbar("Error", res.message ?? "Failed");
+              }
+            } else {
+              Get.snackbar("Error", "Server error: ${response.statusCode}");
+            }
+          } catch (e) {
+            Get.snackbar("Error", e.toString());
+          }
+        }
+    );
+  }
+
+  Widget _buildStatusSummaryDashboard(int total, int confirmed, int pending) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: Colors.grey.withOpacity(0.2)), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 2))]),
+        child: Row(
+          children: [
+            _buildStatusCard("Total", total.toString(), TColors.primary, Icons.inventory_2),
+            Container(width: 1, height: 40, color: Colors.grey.withOpacity(0.2)),
+            _buildStatusCard("Done", confirmed.toString(), TColors.success, Icons.check_circle_outline),
+            Container(width: 1, height: 40, color: Colors.grey.withOpacity(0.2)),
+            _buildStatusCard("Pending", pending.toString(), Colors.orange, Icons.pending_outlined),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatusCard(String label, String count, Color color, IconData icon) {
+    return Expanded(child: Column(children: [Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(icon, size: 16, color: color.withOpacity(0.8)), const SizedBox(width: 6), Text(count, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: color))]), const SizedBox(height: 4), Text(label.toUpperCase(), style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: Colors.grey[600]))]));
+  }
+
+  Widget _buildFilterChip(VisitDateFilter filter) {
+    final bool isSelected = _selectedFilter == filter;
+    return ChoiceChip(
+      label: Text(_getFilterName(filter), style: TextStyle(color: isSelected ? Colors.white : Colors.black87, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
+      selected: isSelected,
+      onSelected: (bool selected) { if (selected) _onFilterChanged(filter); },
+      selectedColor: TColors.primary,
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide(color: isSelected ? TColors.primary : Colors.grey.shade300)),
+      showCheckmark: false,
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.inventory_2_outlined, size: 64, color: Colors.grey[300]), const SizedBox(height: 16), Text("No Stockist Visits Found", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey[600])), TextButton(onPressed: _navigateToScheduleScreen, child: const Text("Schedule Now"))]));
   }
 }

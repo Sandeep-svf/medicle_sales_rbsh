@@ -34,6 +34,10 @@ class DocumentUploadSection extends StatelessWidget {
     Widget buildTile(String title, bool isRequired) {
       final file = documentImages[title];
       final progress = uploadProgress[title] ?? 0.0;
+
+      // Special icon for Stockist Image to indicate Camera capture
+      final bool isGeoImage = title == 'Stockist Image';
+
       return GestureDetector(
         onTap: () {
           if (file == null) {
@@ -64,7 +68,12 @@ class DocumentUploadSection extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                     child: file != null
                         ? Image.file(file, fit: BoxFit.cover)
-                        : const Icon(Icons.cloud_upload_outlined, color: Colors.grey, size: 44),
+                        : Icon(
+                      // Change icon based on type
+                        isGeoImage ? Icons.add_a_photo : Icons.cloud_upload_outlined,
+                        color: isGeoImage ? TColors.primary : Colors.grey,
+                        size: 44
+                    ),
                   ),
                 ),
                 if (isRequired && file == null)
@@ -110,10 +119,13 @@ class DocumentUploadSection extends StatelessWidget {
           spacing: 18,
           runSpacing: 18,
           children: [
+            // --- ADDED THIS LINE ---
+            buildTile('Stockist Image', true),
+
             buildTile('GST', true),
             buildTile('Drug License', true),
             buildTile('PAN Card', true),
-            buildTile('Cancelled Cheque', true),
+            buildTile('Security Cheque', true),
             buildTile('Business Profile', false),
           ],
         ),
@@ -124,20 +136,25 @@ class DocumentUploadSection extends StatelessWidget {
               onPressed: () {
                 bool ok = true;
                 for (var e in documentImages.entries) {
-                  if (e.key != 'Business Profile' && e.value == null) { ok = false; ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${e.key} required'))); break; }
+                  // Validate all except Business Profile
+                  if (e.key != 'Business Profile' && e.value == null) {
+                    ok = false;
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${e.key} required')));
+                    break;
+                  }
                 }
                 if (ok) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('All required documents selected')));
               },
               icon: const Icon(Icons.check),
-              label: const Text('Validate Uploads'),
+              label: const Text('Validate Uploads '),
               style: ElevatedButton.styleFrom(backgroundColor: TColors.primary),
             ),
             const SizedBox(width: 12),
             ElevatedButton.icon(
               onPressed: confirmClearAllDocuments,
               icon: const Icon(Icons.delete_forever),
-              label: const Text('Clear All'),
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.grey),
+              label: const Text('Clear All  '),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.grey,),
             ),
           ],
         ),

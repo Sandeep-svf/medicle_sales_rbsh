@@ -9,7 +9,12 @@ import '../model/clinic.dart';
 
 class ClinicListController extends GetxController {
   var isLoading = false.obs;
+
+  // 1. ORIGINAL LIST (Preserved for other screens)
   var clinicList = <Clinic>[].obs;
+
+  // 2. FILTERED LIST (For Search Sheet)
+  var filteredClinicList = <Clinic>[].obs;
 
   static const String _baseUrl = THttpHelper.baseUrl;
   AuthManager authManager = AuthManager();
@@ -20,13 +25,11 @@ class ClinicListController extends GetxController {
     super.onInit();
   }
 
-
   Future<void> fetchClinicList() async {
     print("httpChemist: Fetching chemist list...");
 
     try {
       isLoading.value = true;
-      //headOffice = (await authManager.getHeadOffice())!;
       final token  = await authManager.getAuthToken();
 
       print("httpChemist: Head Office: $headOffice");
@@ -38,83 +41,53 @@ class ClinicListController extends GetxController {
 
       print("httpChemist: Response: ${response.body}");
 
-      // Close loading dialog if open
-      if (Get.isDialogOpen!) Get.back();
+      if (Get.isDialogOpen ?? false) Get.back();
 
       if (response.statusCode == 200) {
         Map<String, dynamic> jsonData = jsonDecode(response.body);
 
-        // Check if 'success' flag is true
         if (jsonData['success'] == true) {
-          // Check if 'Data' key exists and is not null
           var data = jsonData['data'] ?? [];
 
           if (data is List) {
-            print("httpChemist: Response: data.length: ${data.length}");
+            // Assign to BOTH lists
+            List<Clinic> loadedData = data.map<Clinic>((json) => Clinic.fromJson(json)).toList();
 
-            // Only assign the data if it's a valid list
-            clinicList.assignAll(
-              data.map<Clinic>((json) => Clinic.fromJson(json)).toList(),
-            );
-            Get.snackbar(
-              "Success",
-              'Clinic list fetched successfully.', // Display the success message from the response
-              snackPosition: SnackPosition.BOTTOM,
-              backgroundColor: Colors.green,
-              colorText: Colors.white,
-            );
+            clinicList.assignAll(loadedData);
+            filteredClinicList.assignAll(loadedData); // Sync filtered list
+
             print("httpChemist: Successfully fetched clinic list.");
           } else {
-            // Handle case where 'Data' is not a list
-            Get.snackbar(
-              "Warning",
-              "Invalid data format received.",
-              snackPosition: SnackPosition.BOTTOM,
-              backgroundColor: Colors.redAccent,
-              colorText: Colors.white,
-            );
-            print("httpChemist: Error: 'Data' is not a valid list.");
+            Get.snackbar("Warning", "Invalid data format received.");
           }
         } else {
-          // If success is false, show message from the response
-          Get.snackbar(
-            "Warning",
-            jsonData['message'],
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.redAccent,
-            colorText: Colors.white,
-          );
-          print("httpChemist: Error fetching data: ${jsonData['message']}");
+          Get.snackbar("Warning", jsonData['message']);
         }
       } else {
-        // Handle status codes other than 200 (e.g., 500, 404)
-        Get.snackbar(
-          "Note",
-          "No Chemist added yet.: ${response.statusCode}",
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.redAccent,
-          colorText: Colors.white,
-        );
-        print("httpChemist: Error: Failed to load chemists. Status code: ${response.statusCode}");
+        Get.snackbar("Note", "No Chemist added yet.: ${response.statusCode}");
       }
     } catch (e) {
       if (kDebugMode) {
         print("httpChemist: Exception caught: $e");
       }
-      // Ensure dialog is closed if any error occurs
-      if (Get.isDialogOpen!) Get.back();
-     /* Get.snackbar(
-        "Warning",
-        "Something went wrong: $e",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.redAccent,
-        colorText: Colors.white,
-      );*/
+      if (Get.isDialogOpen ?? false) Get.back();
     } finally {
       print("httpChemist: Fetching completed.");
       isLoading.value = false;
     }
   }
+
+  // 3. FILTER LOGIC
+  void filterClinics(String query) {
+    if (query.isEmpty) {
+      filteredClinicList.assignAll(clinicList);
+    } else {
+      filteredClinicList.assignAll(clinicList.where((clinic) {
+        return (clinic.firmName ?? "").toLowerCase().contains(query.toLowerCase());
+      }).toList());
+    }
+  }
+
 
 
 /*Future<void> fetchClinicList() async {

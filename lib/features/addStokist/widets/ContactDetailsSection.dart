@@ -63,6 +63,7 @@ class ContactDetailsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+
         _sectionTitle("Contact Information"),
         _requiredField(contactPerson, "Contact Person"),
         _textField(designation, "Designation"),

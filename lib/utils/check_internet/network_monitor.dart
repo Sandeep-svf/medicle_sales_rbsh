@@ -13,6 +13,7 @@ class NetworkMonitor {
   static final NetworkMonitor _instance = NetworkMonitor._internal();
   factory NetworkMonitor() => _instance;
   NetworkMonitor._internal();
+  final ValueNotifier<bool> isOnline = ValueNotifier<bool>(true); // Dashboard toggle variable.
 
   StreamSubscription<List<ConnectivityResult>>? _subscription;
   bool _isOfflineShown = false;
@@ -29,8 +30,12 @@ class NetworkMonitor {
 
       if (result == ConnectivityResult.none) {
         _isOfflineShown = true;
+        isOnline.value = false; // Dashboard toggle
         _showSnackBar("️ No Internet Connection");
         return;
+      }else{
+        // only used for dashboard toggle
+        isOnline.value = true;
       }
 
       try {

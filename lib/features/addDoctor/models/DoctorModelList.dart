@@ -1,3 +1,5 @@
+import 'package:intl/intl.dart';
+
 class Doctor {
   final String id;
   final String name;
@@ -8,14 +10,17 @@ class Doctor {
   final String email;
   final String phone;
   final String registrationNumber;
-  final int yearsOfExperience;
-  final DateTime dateOfBirth;
+  final String? yearsOfExperience; // Keeping as String to be safe, or int?
+  final DateTime? dateOfBirth;
+  final String? geoImageUrl;
   final String gender;
   final DateTime? anniversary;
-  final HeadOffice headOffice;
-  final List<dynamic> visitHistory;
+  final String priority;
+  final String headOfficeId;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final HeadOffice headOffice;
+  final List<dynamic> visitHistory; // Added to support your UI code
 
   Doctor({
     required this.id,
@@ -27,100 +32,114 @@ class Doctor {
     required this.email,
     required this.phone,
     required this.registrationNumber,
-    required this.yearsOfExperience,
-    required this.dateOfBirth,
+    this.yearsOfExperience,
+    this.dateOfBirth,
+    this.geoImageUrl,
     required this.gender,
     this.anniversary,
-    required this.headOffice,
-    required this.visitHistory,
+    required this.priority,
+    required this.headOfficeId,
     required this.createdAt,
     required this.updatedAt,
+    required this.headOffice,
+    this.visitHistory = const [],
   });
 
   factory Doctor.fromJson(Map<String, dynamic> json) {
     return Doctor(
-      id: json['_id'] ?? '',  // Default empty string if null
-      name: json['name'] ?? '',  // Default empty string if null
-      specialization: json['specialization'] ?? '',  // Default empty string if null
-      location: json['location'] ?? '',  // Default empty string if null
-      latitude: json['latitude'] ?? 28.704060,  // Default empty string if null
-      longitude: json['longitude'] ?? 77.102493,  // Default empty string if null
-      email: json['email'] ?? '',  // Default empty string if null
-      phone: json['phone'] ?? '',  // Default empty string if null
-      registrationNumber: json['registration_number'] ?? '',  // Default empty string if null
-      yearsOfExperience: json['years_of_experience'] is double
-          ? (json['years_of_experience'] as double).toInt() // If it's a double, cast to int
-          : (json['years_of_experience'] is int ? json['years_of_experience'] : 0), // Handle both cases (int or null)
+      id: json['id']?.toString() ?? '',
+      name: json['name']?.toString() ?? 'Unknown Doctor',
+
+      // Handle null strings by providing empty default
+      specialization: json['specialization']?.toString() ?? '',
+      location: json['location']?.toString() ?? '',
+
+      // Lat/Lng are strings in your JSON, handle nulls
+      latitude: json['latitude']?.toString() ?? '0.0',
+      longitude: json['longitude']?.toString() ?? '0.0',
+
+      email: json['email']?.toString() ?? '',
+      phone: json['phone']?.toString() ?? '',
+      registrationNumber: json['registration_number']?.toString() ?? '',
+
+      // Parse Experience (Handle int or string representation)
+      yearsOfExperience: json['years_of_experience']?.toString(),
+
+      // Parse Dates (Handle nulls)
       dateOfBirth: json['date_of_birth'] != null
-          ? DateTime.parse(json['date_of_birth'])
-          : DateTime.now(),  // Use current date if null
-      gender: json['gender'] ?? '',  // Default empty string if null
+          ? DateTime.tryParse(json['date_of_birth'])
+          : null,
+
+      geoImageUrl: json['geo_image_url']?.toString(),
+
+      gender: json['gender']?.toString() ?? 'Unknown',
+
       anniversary: json['anniversary'] != null
-          ? DateTime.parse(json['anniversary'])
-          : null,  // Handle null anniversary
+          ? DateTime.tryParse(json['anniversary'])
+          : null,
+
+      priority: json['priority']?.toString() ?? 'C',
+      headOfficeId: json['headOfficeId']?.toString() ?? '',
+
+      // Parse ISO Dates
+      createdAt: DateTime.tryParse(json['created_at'] ?? '') ?? DateTime.now(),
+      updatedAt: DateTime.tryParse(json['updated_at'] ?? '') ?? DateTime.now(),
+
+      // Parse Nested Object
       headOffice: json['headOffice'] != null
           ? HeadOffice.fromJson(json['headOffice'])
-          : HeadOffice.empty(),  // Handle null head office
-      visitHistory: List<dynamic>.from(json['visit_history'] ?? []),  // Default empty list if null
-      createdAt: DateTime.parse(json['createdAt'] ?? DateTime.now().toString()),  // Default current date if null
-      updatedAt: DateTime.parse(json['updatedAt'] ?? DateTime.now().toString()),  // Default current date if null
+          : HeadOffice(id: '', name: ''),
+
+      // Default to empty list as it's missing in JSON but used in UI
+      visitHistory: json['visitHistory'] ?? [],
     );
   }
 
-
-/*factory Doctor.fromJson(Map<String, dynamic> json) {
-    return Doctor(
-      id: json['_id'] ?? '',  // Default empty string if null
-      name: json['name'] ?? '',  // Default empty string if null
-      specialization: json['specialization'] ?? '',  // Default empty string if null
-      location: json['location'] ?? '',  // Default empty string if null
-      email: json['email'] ?? '',  // Default empty string if null
-      phone: json['phone'] ?? '',  // Default empty string if null
-      registrationNumber: json['registration_number'] ?? '',  // Default empty string if null
-      //yearsOfExperience: json['years_of_experience'] ?? '0',  // Default to 0 if null
-      yearsOfExperience: (json['years_of_experience'] is double)
-          ? (json['years_of_experience'] as double).toInt() // If it's a double, convert to int
-          : json['years_of_experience'] ?? 0,  // Default to 0 if null or not a double
-      dateOfBirth: json['date_of_birth'] != null ? DateTime.parse(json['date_of_birth']) : DateTime.now(),  // Use current date if null
-      gender: json['gender'] ?? '',  // Default empty string if null
-      anniversary: json['anniversary'] != null ? DateTime.parse(json['anniversary']) : null,  // Handle null anniversary
-      headOffice: json['headOffice'] != null ? HeadOffice.fromJson(json['headOffice']) : HeadOffice.empty(),  // Handle null head office
-      visitHistory: List<dynamic>.from(json['visit_history'] ?? []),  // Default empty list if null
-      createdAt: DateTime.parse(json['createdAt'] ?? DateTime.now().toString()),  // Default current date if null
-      updatedAt: DateTime.parse(json['updatedAt'] ?? DateTime.now().toString()),  // Default current date if null
-    );
-  }*/
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'specialization': specialization,
+      'location': location,
+      'latitude': latitude,
+      'longitude': longitude,
+      'email': email,
+      'phone': phone,
+      'registration_number': registrationNumber,
+      'years_of_experience': yearsOfExperience,
+      'date_of_birth': dateOfBirth?.toIso8601String(),
+      'geo_image_url': geoImageUrl,
+      'gender': gender,
+      'anniversary': anniversary?.toIso8601String(),
+      'priority': priority,
+      'headOfficeId': headOfficeId,
+      'created_at': createdAt.toIso8601String(),
+      'updated_at': updatedAt.toIso8601String(),
+      'headOffice': headOffice.toJson(),
+    };
+  }
 }
 
 class HeadOffice {
   final String id;
   final String name;
-  final DateTime createdAt;
-  final DateTime updatedAt;
 
   HeadOffice({
     required this.id,
     required this.name,
-    required this.createdAt,
-    required this.updatedAt,
   });
 
   factory HeadOffice.fromJson(Map<String, dynamic> json) {
     return HeadOffice(
-      id: json['_id'] ?? '',  // Default empty string if null
-      name: json['name'] ?? 'Unknown',  // Default to 'Unknown' if null
-      createdAt: DateTime.parse(json['createdAt'] ?? DateTime.now().toString()),  // Default to current date if null
-      updatedAt: DateTime.parse(json['updatedAt'] ?? DateTime.now().toString()),  // Default to current date if null
+      id: json['id']?.toString() ?? '',
+      name: json['name']?.toString() ?? '',
     );
   }
 
-  // Create an empty HeadOffice object if the data is missing
-  factory HeadOffice.empty() {
-    return HeadOffice(
-      id: '',
-      name: 'Unknown',
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
-    );
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+    };
   }
 }

@@ -28,7 +28,7 @@ class TTexts {
   static const String userEmail = "User Email";
 
   // -- Slide Menu Text
-  static const String dashboard = "Dashboard";
+  static const String dashboard = "Home";
   static const String userListScreen = "UserListScreen";
   static const String home = "Home";
   static const String addDoctor = "Doctor";
@@ -142,6 +142,10 @@ class TTexts {
  static const String marketingMaterial = "Digital Material";
  static const String blog = "Social";
  static const String inbox = "Inbox";
+ static const String tourPlans = "Tour & Plans";
+ static const String appointments = "Appointments";
+ static const String dailyCallReport = "Daily Call Report(DCR)";
+ static const String visualAidsContent = "Visual Aids and Content";
  static const String clinic = "Chemist";
  static const String stokist = "Stokist";
  static const String ptsptrcalculator = "PTS PTR Calculator";

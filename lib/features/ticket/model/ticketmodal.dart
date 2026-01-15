@@ -25,11 +25,11 @@ class TicketModel {
 
   factory TicketModel.fromJson(Map<String, dynamic> json) {
     return TicketModel(
-      id: json['id'],
+      id: json['id']?.toString(), // Ensure ID is string
       title: json['title'],
       description: json['description'],
       image: json['image'],
-      userId: json['user_id'],
+      userId: json['user_id']?.toString(),
       userName: json['user_name'],
       status: json['status'],
       createdAt: json['created_at'],
@@ -49,10 +49,34 @@ class UserModel {
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
-      id: json['id'],
+      id: json['id']?.toString(),
       name: json['name'],
       email: json['email'],
       employeeCode: json['employee_code'],
+    );
+  }
+}
+
+class TicketsResponseModel {
+  final bool success;
+  final int count;
+  final List<TicketModel>? data;
+
+  TicketsResponseModel({
+    required this.success,
+    required this.count,
+    this.data,
+  });
+
+  factory TicketsResponseModel.fromJson(Map<String, dynamic> json) {
+    return TicketsResponseModel(
+      success: json['success'] ?? false,
+      count: json['count'] ?? 0,
+      data: json['data'] != null
+          ? (json['data'] as List)
+          .map((item) => TicketModel.fromJson(item))
+          .toList()
+          : [],
     );
   }
 }

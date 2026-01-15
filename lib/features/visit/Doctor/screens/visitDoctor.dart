@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:date_picker_plus/date_picker_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -16,15 +15,14 @@ import 'package:quickalert/widgets/quickalert_dialog.dart';
 import '../../../../../../utils/LocationHelper/LocationHelper.dart';
 import '../../../../../../utils/constants/colors.dart';
 import '../../../../../../utils/constants/text_strings.dart';
-import '../../../../../../utils/helpers/zoom_in_out_anim.dart';
 import '../../../../../../utils/local_storage/auth_manager.dart';
 import '../../../../common/Model/DoctorVisitResponse.dart';
 import '../../../../utils/http/http_client.dart';
 import '../../../addDoctor/controllers/DoctroController.dart';
 import '../../../product/controller/ProductController.dart';
-import '../controllers/ScheduleVisitcontroller.dart';
 import '../controllers/visitListController.dart';
 import '../models/visitSalesData.dart';
+import 'ScheduleVisitScreen.dart';
 
 class VisitDoctorScreen extends StatefulWidget {
   const VisitDoctorScreen({super.key});
@@ -37,232 +35,110 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = "";
 
-  DoctorListController _doctorListController = Get.put(DoctorListController());
-
-  String? selectedDoctorId; // This will store the selected doctor's ID
-  String? selectedDoctorName; // This will store the selected doctor's name
+  final DoctorListController _doctorListController = Get.put(DoctorListController());
 
   late VisitListController _visitListController;
-  final AuthManager authManager = AuthManager(); // Initialize AuthManager
-
+  final AuthManager authManager = AuthManager();
   late ProductController productController;
 
-  //location helper
+  // Location helper
   String _location = 'Fetching location...';
-
-  // Instance of LocationHelper
   LocationHelper locationHelper = LocationHelper();
+
+  // Filter State
+  VisitDateFilter _selectedFilter = VisitDateFilter.today;
+  DateTimeRange? _selectedDateRange;
 
   @override
   void initState() {
     super.initState();
     _doctorListController.fetchDoctorList();
+
+    // Initialize controller
     _visitListController = VisitListController();
-    _visitListController.fetchSalesList(); // Fetch the visit data when screen loads
+
+    // Initial Fetch (Default: Today)
+    _visitListController.fetchSalesList(filter: VisitDateFilter.today);
 
     productController = Get.put(ProductController());
     productController.fetchProducts();
   }
 
-  void _showAddDoctorDialog() {
-    TextEditingController nameController = TextEditingController();
-    TextEditingController dateController = TextEditingController();
-    TextEditingController callNotesController = TextEditingController();
-    String selectedDate = "";
-    final _formKey = GlobalKey<FormState>();
+  // --- NEW: Navigation to Schedule Screen ---
+  void _navigateToScheduleScreen() async {
+    // Navigate and wait for result
+    final result = await Get.to(() => const ScheduleVisitScreen());
 
-    Future<void> _pickDate() async {
-      final pickedDate = await showDatePickerDialog(
-        context: context,
-        minDate: DateTime(2020),
-        maxDate: DateTime(2034),
-        initialDate: DateTime.now(),
-        selectedCellDecoration: const BoxDecoration(
-          color: Colors.blue,
-          shape: BoxShape.circle,
-        ),
-        selectedCellTextStyle: const TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.bold,
-        ),
-        leadingDateTextStyle: const TextStyle(
-          color: Colors.white,
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-        ),
-        highlightColor: Colors.blue,
-        splashColor: Colors.blueAccent,
-        splashRadius: 20.0,
+    // If result is true, it means a visit was successfully created
+    if (result == true) {
+      _visitListController.fetchSalesList(
+        filter: _selectedFilter,
+        startDate: _selectedDateRange?.start,
+        endDate: _selectedDateRange?.end,
       );
 
-      if (pickedDate != null) {
-        setState(() {
-          dateController.text =
-              "${pickedDate.day}-${pickedDate.month}-${pickedDate.year}";
-        });
-      }
+      Get.snackbar(
+          "Success",
+          "List updated successfully",
+          backgroundColor: TColors.success.withOpacity(0.1),
+          colorText: TColors.success
+      );
     }
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return ZoomInOutDialog(
-          child: AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            title: const Text(TTexts.scheduleVisitTitle),
-            content: Form(
-              key: _formKey, // Add Form Key for validation
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: DropdownButtonFormField<String>(
-                      decoration: const InputDecoration(
-                        labelText: "Select Doctor",
-                        border: OutlineInputBorder(),
-                      ),
-                      value: selectedDoctorName,
-                      items: _doctorListController.doctorList.map((doctor) {
-                        return DropdownMenuItem<String>(
-                          value: doctor.name,
-                          child: Text(doctor.name),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          selectedDoctorName = value;
-                          selectedDoctorId = _doctorListController.doctorList
-                              .firstWhere((doctor) => doctor.name == value)
-                              .id;
-
-                          print("spinner selectedDoctorName: $selectedDoctorName");
-                          print("spinner selectedDoctorId: $selectedDoctorId");
-                        });
-                      },
-                      hint: const Text("Please select"),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please select a doctor';
-                        }
-                        return null;
-                      },
-                      isExpanded: true,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    controller: dateController,
-                    readOnly: true,
-                    decoration: const InputDecoration(
-                      labelText: TTexts.date,
-                      hintText: "Date (DD-MM-YYYY)",
-                      border: OutlineInputBorder(),
-                      suffixIcon: Icon(Icons.calendar_today),
-                    ),
-                    onTap: _pickDate,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please select a date';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    controller: callNotesController,
-                    maxLines: 3,
-                    decoration: const InputDecoration(
-                      labelText: TTexts.notes,
-                      border: OutlineInputBorder(),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter notes';
-                      }
-                      return null;
-                    },
-                  ),
-                ],
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text(TTexts.cancel),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    String formattedTime =
-                        DateFormat('hh:mm a').format(DateTime.now());
-
-                    setState(() {
-                      // Call the controller to create a doctor visit
-                      DoctorVisitController.createDoctorVisit(
-                        doctorId: selectedDoctorId,
-                        date: dateController.text,
-                        notes: callNotesController.text,
-                        context: context,
-                        authManager:
-                            authManager, // Pass AuthManager instance here
-                      ).then((_) {
-                        // After adding, fetch the updated sales list
-                        _visitListController.fetchSalesList().then((_) {
-                          setState(() {
-                            // This ensures the UI is updated after fetching the data
-                          });
-                        });
-                      });
-                    });
-
-                    Navigator.pop(context);
-                  } else {
-                    Get.snackbar("Error", "Please fill all required fields.");
-                  }
-                },
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Text(TTexts.submit),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
   }
 
-  void _showDeleteConfirmationDialog(int index) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: const Text(TTexts.confirmDeletion),
-          content: const Text(TTexts.areYouSureYouWantToDeleteThisLog),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child:
-                  const Text(TTexts.no, style: TextStyle(color: Colors.grey)),
+  // --- Filter Handling Logic ---
+  void _onFilterChanged(VisitDateFilter filter) async {
+    if (filter == VisitDateFilter.custom) {
+      final DateTimeRange? picked = await showDateRangePicker(
+        context: context,
+        firstDate: DateTime(2023),
+        lastDate: DateTime.now().add(const Duration(days: 365)),
+        builder: (context, child) {
+          return Theme(
+            data: Theme.of(context).copyWith(
+              colorScheme: const ColorScheme.light(
+                primary: TColors.primary,
+                onPrimary: Colors.white,
+                onSurface: Colors.black,
+              ),
             ),
-            ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  _visitListController.salesList.removeAt(index);
-                });
-                Navigator.pop(context);
-              },
-              child: const Text(TTexts.yes),
-            ),
-          ],
+            child: child!,
+          );
+        },
+      );
+
+      if (picked != null) {
+        setState(() {
+          _selectedFilter = filter;
+          _selectedDateRange = picked;
+        });
+        _visitListController.fetchSalesList(
+          filter: VisitDateFilter.custom,
+          startDate: picked.start,
+          endDate: picked.end,
         );
-      },
-    );
+      }
+    } else {
+      setState(() {
+        _selectedFilter = filter;
+        _selectedDateRange = null;
+      });
+      _visitListController.fetchSalesList(filter: filter);
+    }
+  }
+
+  // Helper to get friendly name for filter
+  String _getFilterName(VisitDateFilter filter) {
+    switch (filter) {
+      case VisitDateFilter.today: return "Today";
+      case VisitDateFilter.last7Days: return "Last 7 Days";
+      case VisitDateFilter.last15Days: return "Last 15 Days";
+      case VisitDateFilter.custom:
+        if (_selectedDateRange != null) {
+          return "${DateFormat('MMM dd').format(_selectedDateRange!.start)} - ${DateFormat('MMM dd').format(_selectedDateRange!.end)}";
+        }
+        return "Custom Range";
+    }
   }
 
   @override
@@ -270,24 +146,25 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
     return Scaffold(
       body: Column(
         children: [
+          // 1. Search Bar
           Padding(
             padding: const EdgeInsets.all(16),
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
                 labelText: TTexts.searchDoctor,
-                border: OutlineInputBorder(),
+                border: const OutlineInputBorder(),
                 prefixIcon: const Icon(Icons.search, color: TColors.primary),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          setState(() {
-                            _searchController.clear();
-                            _searchQuery = "";
-                          });
-                        },
-                      )
+                  icon: const Icon(Icons.clear),
+                  onPressed: () {
+                    setState(() {
+                      _searchController.clear();
+                      _searchQuery = "";
+                    });
+                  },
+                )
                     : null,
               ),
               onChanged: (value) {
@@ -297,94 +174,444 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
               },
             ),
           ),
+
+          // 2. Horizontal Filter List
+          SizedBox(
+            height: 50,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              children: [
+                _buildFilterChip(VisitDateFilter.today),
+                const SizedBox(width: 8),
+                _buildFilterChip(VisitDateFilter.last7Days),
+                const SizedBox(width: 8),
+                _buildFilterChip(VisitDateFilter.last15Days),
+                const SizedBox(width: 8),
+                _buildFilterChip(VisitDateFilter.custom),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 10),
+
+          // 3. Main Content List (Includes Status Summary)
           Expanded(
-            child: FutureBuilder(
-              future: _visitListController.fetchSalesList(),
-              // Fetch sales list here
-              builder: (context, AsyncSnapshot<void> snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(
-                      child:
-                          CircularProgressIndicator()); // Show loading indicator
-                } else if (snapshot.hasError) {
-                  return Center(
-                      child: Text(
-                          'Error: ${snapshot.error}')); // Show error message if any
+            child: ListenableBuilder(
+              listenable: _visitListController,
+              builder: (context, child) {
+                if (_visitListController.isLoading) {
+                  return const Center(child: CircularProgressIndicator());
                 } else if (_visitListController.salesList.isEmpty) {
-                  return const Center(
-                      child: Text(
-                          TTexts.noRecentCallAvailable)); // No data available
+                  // Custom Empty State
+                  return _buildEmptyState();
                 } else {
-                  // Filter the doctors based on the search query
-                  List<VisitSalesLogModel> filteredDoctors =
-                      _visitListController.salesList
-                          .where((doctor) =>
-                              doctor.doctor?.name
-                                  ?.toLowerCase()
-                                  .contains(_searchQuery.toLowerCase()) ??
-                              false)
-                          .toList();
+                  // --- CALCULATE SUMMARY STATS ---
+                  final allVisits = _visitListController.salesList;
+                  final int totalVisits = allVisits.length;
+                  final int confirmedVisits = allVisits.where((v) => v.confirmed == true).length;
+                  final int pendingVisits = totalVisits - confirmedVisits;
 
-                  return ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: filteredDoctors.length,
-                    itemBuilder: (context, index) {
-                      final doctorVisit = filteredDoctors[index];
-                      return Card(
-                        elevation: 2,
-                        margin: const EdgeInsets.symmetric(vertical: 8),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12)),
-                        child: ListTile(
-                          title: Text(
-                            doctorVisit.doctor?.name ?? "Unknown Doctor",
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text("Sales Rep: ${doctorVisit.user?.name ?? ""}"),
-                              Text(
-                                  "Time: ${doctorVisit.date}"),
-                              Text(
-                                  "Call Notes: ${doctorVisit.notes ?? "No Notes"}"),
-                              const SizedBox(height: TSizes.spaceBtwText),
-                              Center(
-                                child: ElevatedButton(
-                                  onPressed: doctorVisit.confirmed
-                                      ? () {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text('You have already marked this visit confirmed.'),
-                                        backgroundColor: Colors.orange,
+                  // --- FILTER LOGIC (SEARCH) ---
+                  List<VisitSalesLogModel> filteredDoctors = allVisits
+                      .where((doctor) =>
+                  doctor.doctor?.name
+                      ?.toLowerCase()
+                      .contains(_searchQuery.toLowerCase()) ??
+                      false)
+                      .toList();
+
+                  // Use a Column to show Summary + List
+                  return Column(
+                    children: [
+                      // --- STATUS SUMMARY WIDGET ---
+                      _buildStatusSummaryDashboard(totalVisits, confirmedVisits, pendingVisits),
+
+                      const SizedBox(height: 10),
+
+                      if (filteredDoctors.isEmpty)
+                        const Expanded(child: Center(child: Text("No doctors found matching your search.")))
+                      else
+                        Expanded(
+                          child: LayoutBuilder(
+                            builder: (context, constraints) {
+                              bool isTablet = constraints.maxWidth > 600;
+
+                              // 3. Reusable Card Builder Function
+                              Widget buildCard(VisitSalesLogModel doctorVisit) {
+                                final doctorName = doctorVisit.doctor?.name ?? "Unknown Doctor";
+                                final String initials = doctorName.trim().isNotEmpty
+                                    ? doctorName.trim().substring(0, 1).toUpperCase()
+                                    : "?";
+
+                                // Status Helpers
+                                final isConfirmed = doctorVisit.confirmed;
+                                final statusColor = isConfirmed ? TColors.success : TColors.primary;
+                                final statusText = isConfirmed ? "Completed" : "Action Needed";
+                                final statusIcon = isConfirmed ? Icons.check_circle : Icons.pending;
+
+                                // Priority Logic (Placeholder)
+                                const String priority = "C";
+                                Color priorityColor = Colors.blueGrey;
+
+                                return Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                        color: TColors.primary.withOpacity(0.4), width: 1),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.06),
+                                        blurRadius: 15,
+                                        offset: const Offset(0, 6),
                                       ),
-                                    );
-                                  }
-                                      : () async {
-                                    List<String> selectedProducts = await _showProductSelectionDialog(context);
-                                    _confirmVisit(context, doctorVisit.id, selectedProducts);
-                                  },
-
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor:
-                                    doctorVisit.confirmed ? TColors.success : TColors.primary,
+                                    ],
                                   ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                                    child: Text(
-                                      doctorVisit.confirmed
-                                          ? TTexts.visitConfirmed
-                                          : TTexts.confirmVisit,
+                                  clipBehavior: Clip.antiAlias,
+                                  child: IntrinsicHeight(
+                                    child: Row(
+                                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                                      children: [
+                                        // Left Colored Strip
+                                        Container(width: 6, color: statusColor),
+
+                                        // Main Content
+                                        Expanded(
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              // --- Header Section ---
+                                              Container(
+                                                padding: const EdgeInsets.all(16.0),
+                                                decoration: BoxDecoration(
+                                                  color: statusColor.withOpacity(0.04),
+                                                ),
+                                                child: Row(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    // Avatar
+                                                    Container(
+                                                      padding: const EdgeInsets.all(2),
+                                                      decoration: BoxDecoration(
+                                                        shape: BoxShape.circle,
+                                                        border: Border.all(
+                                                            color: statusColor.withOpacity(0.3),
+                                                            width: 2),
+                                                      ),
+                                                      child: CircleAvatar(
+                                                        radius: 22,
+                                                        backgroundColor: Colors.white,
+                                                        child: Text(
+                                                          initials,
+                                                          style: TextStyle(
+                                                            fontSize: 18,
+                                                            fontWeight: FontWeight.bold,
+                                                            color: statusColor,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    const SizedBox(width: 12),
+
+                                                    // Name, Date & Priority
+                                                    Expanded(
+                                                      child: Column(
+                                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                                        children: [
+                                                          Row(
+                                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                                            children: [
+                                                              Expanded(
+                                                                child: Text(
+                                                                  doctorName,
+                                                                  style: const TextStyle(
+                                                                    fontSize: 16,
+                                                                    fontWeight: FontWeight.bold,
+                                                                    color: Colors.black87,
+                                                                  ),
+                                                                  maxLines: 1,
+                                                                  overflow: TextOverflow.ellipsis,
+                                                                ),
+                                                              ),
+                                                              // Priority Badge
+                                                              Container(
+                                                                padding: const EdgeInsets.symmetric(
+                                                                    horizontal: 8, vertical: 4),
+                                                                decoration: BoxDecoration(
+                                                                  color: priorityColor.withOpacity(0.1),
+                                                                  borderRadius: BorderRadius.circular(6),
+                                                                  border: Border.all(
+                                                                      color: priorityColor.withOpacity(0.3)),
+                                                                ),
+                                                                child: Text(
+                                                                  "Priority $priority",
+                                                                  style: TextStyle(
+                                                                    fontSize: 10,
+                                                                    fontWeight: FontWeight.bold,
+                                                                    color: priorityColor,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                          const SizedBox(height: 6),
+                                                          Row(
+                                                            children: [
+                                                              Icon(Icons.calendar_today_rounded,
+                                                                  size: 14,
+                                                                  color: Colors.grey[600]),
+                                                              const SizedBox(width: 4),
+                                                              Expanded(
+                                                                child: Text(
+                                                                  doctorVisit.date?.toString() ?? "Unknown Date",
+                                                                  style: TextStyle(
+                                                                    fontSize: 12,
+                                                                    color: Colors.grey[600],
+                                                                    fontWeight: FontWeight.w500,
+                                                                  ),
+                                                                  maxLines: 1,
+                                                                  overflow: TextOverflow.ellipsis,
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+
+                                              // --- Body Section ---
+                                              Padding(
+                                                padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                                                child: Column(
+                                                  children: [
+                                                    // --- Rep Name & Status Row ---
+                                                    Row(
+                                                      children: [
+                                                        Expanded(
+                                                          child: Column(
+                                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                                            children: [
+                                                              Text(
+                                                                "SALES REP",
+                                                                style: TextStyle(
+                                                                  fontSize: 10,
+                                                                  color: Colors.grey[500],
+                                                                  fontWeight: FontWeight.w700,
+                                                                  letterSpacing: 0.5,
+                                                                ),
+                                                              ),
+                                                              const SizedBox(height: 4),
+                                                              Row(
+                                                                children: [
+                                                                  Icon(Icons.person_rounded,
+                                                                      size: 16,
+                                                                      color: Colors.grey[700]),
+                                                                  const SizedBox(width: 6),
+                                                                  Expanded(
+                                                                    child: Text(
+                                                                      doctorVisit.user?.name ?? 'N/A',
+                                                                      style: const TextStyle(
+                                                                          fontSize: 13,
+                                                                          fontWeight: FontWeight.w600,
+                                                                          color: Colors.black87),
+                                                                      maxLines: 1,
+                                                                      overflow: TextOverflow.ellipsis,
+                                                                    ),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+
+                                                        Container(
+                                                          padding: const EdgeInsets.symmetric(
+                                                              horizontal: 8, vertical: 4),
+                                                          decoration: BoxDecoration(
+                                                            color: statusColor.withOpacity(0.1),
+                                                            borderRadius: BorderRadius.circular(8),
+                                                          ),
+                                                          child: Row(
+                                                            mainAxisSize: MainAxisSize.min,
+                                                            children: [
+                                                              Icon(statusIcon,
+                                                                  size: 12, color: statusColor),
+                                                              const SizedBox(width: 4),
+                                                              Text(
+                                                                statusText,
+                                                                style: TextStyle(
+                                                                  fontSize: 10,
+                                                                  fontWeight: FontWeight.bold,
+                                                                  color: statusColor,
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+
+                                                    const SizedBox(height: 12),
+
+                                                    // --- Notes ---
+                                                    Container(
+                                                      width: double.infinity,
+                                                      padding: const EdgeInsets.all(12),
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.grey[50],
+                                                        borderRadius: BorderRadius.circular(10),
+                                                        border: Border.all(color: Colors.grey[200]!),
+                                                      ),
+                                                      child: Column(
+                                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                                        children: [
+                                                          Text(
+                                                            "CALL NOTES",
+                                                            maxLines: 1,
+                                                            style: TextStyle(
+                                                              fontSize: 10,
+                                                              color: Colors.grey[500],
+                                                              fontWeight: FontWeight.w700,
+                                                              letterSpacing: 0.5,
+                                                            ),
+                                                          ),
+                                                          const SizedBox(height: 4),
+                                                          Text(
+                                                            doctorVisit.notes?.isNotEmpty == true
+                                                                ? doctorVisit.notes!
+                                                                : "No notes provided.",
+                                                            style: TextStyle(
+                                                              fontSize: 13,
+                                                              color: Colors.grey[700],
+                                                              height: 1.4,
+                                                              fontStyle:
+                                                              doctorVisit.notes?.isNotEmpty == true
+                                                                  ? FontStyle.normal
+                                                                  : FontStyle.italic,
+                                                            ),
+                                                            maxLines: 1,
+                                                            overflow: TextOverflow.ellipsis,
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 12),
+
+                                                    // --- Action Button ---
+                                                    SizedBox(
+                                                      width: double.infinity,
+                                                      child: ElevatedButton(
+                                                        onPressed: isConfirmed
+                                                            ? () {
+                                                          ScaffoldMessenger.of(context)
+                                                              .showSnackBar(
+                                                            const SnackBar(
+                                                              content: Text(
+                                                                  'You have already marked this visit confirmed.'),
+                                                              backgroundColor: Colors.orange,
+                                                            ),
+                                                          );
+                                                        }
+                                                            : () async {
+                                                          List<String> selectedProducts =
+                                                          await _showProductSelectionDialog(
+                                                              context);
+                                                          _confirmVisit(
+                                                              context,
+                                                              doctorVisit.id,
+                                                              selectedProducts);
+                                                        },
+                                                        style: ElevatedButton.styleFrom(
+                                                          backgroundColor: isConfirmed
+                                                              ? TColors.success
+                                                              : TColors.primary,
+                                                          foregroundColor: Colors.white,
+                                                          elevation: isConfirmed ? 0 : 2,
+                                                          shadowColor: (isConfirmed
+                                                              ? TColors.success
+                                                              : TColors.primary)
+                                                              .withOpacity(0.4),
+                                                          shape: RoundedRectangleBorder(
+                                                            borderRadius: BorderRadius.circular(12),
+                                                          ),
+                                                          minimumSize: const Size(double.infinity, 44),
+                                                        ),
+                                                        child: Row(
+                                                          mainAxisAlignment: MainAxisAlignment.center,
+                                                          children: [
+                                                            Icon(
+                                                                isConfirmed
+                                                                    ? Icons.verified
+                                                                    : Icons.touch_app_rounded,
+                                                                size: 20),
+                                                            const SizedBox(width: 8),
+                                                            Text(
+                                                              isConfirmed
+                                                                  ? TTexts.visitConfirmed
+                                                                  : TTexts.confirmVisit,
+                                                              style: const TextStyle(
+                                                                  fontSize: 15,
+                                                                  fontWeight: FontWeight.bold),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                ),
+                                );
+                              }
 
-                              ),
-                            ],
+                              if (isTablet) {
+                                final bool isLandscape =
+                                    constraints.maxWidth > constraints.maxHeight;
+                                final int crossAxisCount = isLandscape ? 3 : 2;
+                                double padding = 16.0;
+                                double spacing = 16.0;
+                                double totalSpacing = (padding * 2) + ((crossAxisCount - 1) * spacing);
+                                double itemWidth = (constraints.maxWidth - totalSpacing) / crossAxisCount;
+                                double requiredHeight = 330.0;
+                                double childAspectRatio = itemWidth / requiredHeight;
+
+                                return GridView.builder(
+                                  padding: EdgeInsets.all(padding),
+                                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: crossAxisCount,
+                                    crossAxisSpacing: spacing,
+                                    mainAxisSpacing: spacing,
+                                    childAspectRatio: childAspectRatio,
+                                  ),
+                                  itemCount: filteredDoctors.length,
+                                  itemBuilder: (context, index) =>
+                                      buildCard(filteredDoctors[index]),
+                                );
+                              } else {
+                                return ListView.builder(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 12),
+                                  itemCount: filteredDoctors.length,
+                                  itemBuilder: (context, index) => Padding(
+                                    padding: const EdgeInsets.only(bottom: 16.0),
+                                    child: buildCard(filteredDoctors[index]),
+                                  ),
+                                );
+                              }
+                            },
                           ),
                         ),
-                      );
-                    },
+                    ],
                   );
                 }
               },
@@ -393,328 +620,183 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _showAddDoctorDialog,
+        onPressed: _navigateToScheduleScreen, // Corrected to use new screen
         backgroundColor: TColors.primary,
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }
 
-  // Function to get location and update UI
-  Future<void> _fetchLocation() async {
-    try {
-      String? location = await locationHelper.getCurrentLocation();
-      setState(() {
-        _location = location ?? 'Location not found';
-      });
-    } catch (e) {
-      setState(() {
-        _location = 'Error: $e';
-      });
-    }
-  }
+  // --- NEW: STATUS SUMMARY WIDGETS ---
 
-  void _showProductSelectionBeforeConfirm(BuildContext context, String visitId) async {
-    final ProductController productController = Get.put(ProductController());
-    await productController.fetchProducts();
-    final RxList<String> selectedProductIds = <String>[].obs;
-
-    await showDialog(
-      context: context,
-      builder: (_) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return Dialog(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              child: Obx(() {
-                if (productController.isLoading.value) {
-                  return const Padding(
-                    padding: EdgeInsets.all(32),
-                    child: Center(child: CircularProgressIndicator()),
-                  );
-                }
-
-                return Container(
-                  padding: const EdgeInsets.all(20),
-                  constraints: const BoxConstraints(maxHeight: 500),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        "Select Products",
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 16),
-                      Expanded(
-                        child: ListView.separated(
-                          itemCount: productController.productList.length,
-                          separatorBuilder: (_, __) => const Divider(height: 16),
-                          itemBuilder: (_, i) {
-                            final product = productController.productList[i];
-                            final isSelected = selectedProductIds.contains(product.id);
-
-                            return InkWell(
-                              onTap: () {
-                                setState(() {
-                                  if (isSelected) {
-                                    selectedProductIds.remove(product.id);
-                                  } else {
-                                    selectedProductIds.add(product.id);
-                                  }
-                                });
-                              },
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(8),
-                                    child: Image.network(
-                                      product.image ?? '',
-                                      width: 48,
-                                      height: 48,
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (_, __, ___) => const Icon(Icons.broken_image),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          product.name,
-                                          style: const TextStyle(fontWeight: FontWeight.w600),
-                                        ),
-                                        if ((product.description ?? '').isNotEmpty)
-                                          Padding(
-                                            padding: const EdgeInsets.only(top: 4),
-                                            child: Text(
-                                              product.description ?? '',
-                                              style: const TextStyle(fontSize: 13, color: Colors.black54),
-                                              maxLines: 2,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                      ],
-                                    ),
-                                  ),
-                                  Checkbox(
-                                    value: isSelected,
-                                    onChanged: (val) {
-                                      setState(() {
-                                        if (val == true) {
-                                          selectedProductIds.add(product.id);
-                                        } else {
-                                          selectedProductIds.remove(product.id);
-                                        }
-                                      });
-                                    },
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(),
-                            child: const Text("Cancel"),
-                          ),
-                          const SizedBox(width: 8),
-                          ElevatedButton(
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                              _confirmVisit(context, visitId, selectedProductIds.toList());
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: TColors.primary,
-                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                            ),
-                            child: const Text("Next"),
-                          ),
-                        ],
-                      )
-                    ],
-                  ),
-                );
-              }),
-            );
-          },
-        );
-      },
+  Widget _buildStatusSummaryDashboard(int total, int confirmed, int pending) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.grey.withOpacity(0.2)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.03),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
+              )
+            ]
+        ),
+        child: Row(
+          children: [
+            _buildStatusCard("Total", total.toString(), TColors.primary, Icons.calendar_today),
+            Container(width: 1, height: 40, color: Colors.grey.withOpacity(0.2)), // Divider
+            _buildStatusCard("Done", confirmed.toString(), TColors.success, Icons.check_circle_outline),
+            Container(width: 1, height: 40, color: Colors.grey.withOpacity(0.2)), // Divider
+            _buildStatusCard("Pending", pending.toString(), Colors.orange, Icons.pending_outlined),
+          ],
+        ),
+      ),
     );
-
-
   }
-  void _confirmVisit(BuildContext context, String visitId, List<String> selectedProducts) async {
-    bool confirmed = false;
 
-    await QuickAlert.show(
-      context: context,
-      type: QuickAlertType.confirm,
-      title: "Confirm Visit",
-      text: "Are you sure you want to mark this visit as confirmed?",
-      confirmBtnText: "Yes",
-      cancelBtnText: "Cancel",
-      confirmBtnColor: TColors.primary,
-      width: 300,
-      onConfirmBtnTap: () {
-        confirmed = true;
-        Navigator.of(context, rootNavigator: true).pop(); // ensure dialog closes
-      },
-      onCancelBtnTap: () {
-        confirmed = false;
-        Navigator.of(context, rootNavigator: true).pop(); // ensure dialog closes
-      },
+  Widget _buildStatusCard(String label, String count, Color color, IconData icon) {
+    return Expanded(
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 16, color: color.withOpacity(0.8)),
+              const SizedBox(width: 6),
+              Text(
+                count,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label.toUpperCase(),
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey[600],
+              letterSpacing: 0.5,
+            ),
+          ),
+        ],
+      ),
     );
-
-    if (!confirmed) return;
-
-    try {
-      var permission = await Permission.location.request();
-      if (!permission.isGranted) {
-        QuickAlert.show(
-          context: context,
-          type: QuickAlertType.error,
-          text: "Location permission is required.",
-          confirmBtnColor: TColors.primary,
-          width: 300,
-        );
-        return;
-      }
-
-      final position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
-
-      final response = await http.put(
-        Uri.parse('${THttpHelper.baseUrl}/doctor-visits/$visitId/confirm'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'userLatitude': position.latitude,
-          'userLongitude': position.longitude,
-          'notes':"",
-          'productIds': selectedProducts,
-        }),
-      );
-
-// Debug: log request details
-      print("Request URL: ${THttpHelper.baseUrl}/doctor-visits/$visitId/confirm");
-      print("Request body: ${json.encode({
-        'userLatitude': position.latitude,
-        'userLongitude': position.longitude,
-        'notes':"",
-        'productIds': selectedProducts,
-      })}");
-
-      if (response.statusCode == 200) {
-        try {
-          final responseBody = json.decode(response.body);
-          print("Response body: $responseBody");
-
-          final visitResponse = VisitConfirmResponse.fromJson(responseBody);
-
-          // Debug: log status and message from server response
-          print("Visit status: ${visitResponse.status}");
-          print("Visit message: ${visitResponse.message}");
-
-          QuickAlert.show(
-            context: context,
-            type: visitResponse.status ? QuickAlertType.success : QuickAlertType.error,
-            text: visitResponse.message,
-            confirmBtnColor: TColors.primary,
-            width: 300,
-          );
-
-          if (visitResponse.status) {
-            await _visitListController.fetchSalesList();
-            if (context.mounted) setState(() {});
-          }
-        } catch (e) {
-          // Debug: catch JSON parsing or other exceptions
-          print("Error parsing response body: $e");
-          QuickAlert.show(
-            context: context,
-            type: QuickAlertType.error,
-            text: "Error processing the response",
-            confirmBtnColor: TColors.primary,
-            width: 300,
-          );
-        }
-      } else {
-        // Debug: log response status and error
-        print("Error: ${response.statusCode}");
-        print("Response body: ${response.body}");
-
-        QuickAlert.show(
-          context: context,
-          type: QuickAlertType.error,
-          text: "Failed to confirm the visit",
-          confirmBtnColor: TColors.primary,
-          width: 300,
-        );
-      }
-
-
-      /* final response = await http.put(
-        Uri.parse('${THttpHelper.baseUrl}/doctor-visits/$visitId/confirm'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'userLatitude': position.latitude,
-          'userLongitude': position.longitude,
-          'products': selectedProducts,
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        final responseBody = json.decode(response.body);
-        final visitResponse = SMResponse.fromJson(responseBody);
-
-        QuickAlert.show(
-          context: context,
-          type: visitResponse.status ? QuickAlertType.success : QuickAlertType.error,
-          text: visitResponse.message,
-          confirmBtnColor: TColors.primary,
-          width: 300,
-        );
-
-        if (visitResponse.status) {
-          await _visitListController.fetchSalesList();
-          if (context.mounted) setState(() {});
-        }
-      } else {
-        QuickAlert.show(
-          context: context,
-          type: QuickAlertType.error,
-          text: "Failed to confirm the visit",
-          confirmBtnColor: TColors.primary,
-          width: 300,
-        );
-      }*/
-    } catch (e) {
-      QuickAlert.show(
-        context: context,
-        type: QuickAlertType.error,
-        text: "Unexpected error: $e",
-        confirmBtnColor: TColors.primary,
-        width: 300,
-      );
-    }
   }
 
 
+  // --- Widget Methods ---
 
+  Widget _buildFilterChip(VisitDateFilter filter) {
+    final bool isSelected = _selectedFilter == filter;
+    return ChoiceChip(
+      label: Text(
+        _getFilterName(filter),
+        style: TextStyle(
+          color: isSelected ? Colors.white : Colors.black87,
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+        ),
+      ),
+      selected: isSelected,
+      onSelected: (bool selected) {
+        if (selected) {
+          _onFilterChanged(filter);
+        }
+      },
+      selectedColor: TColors.primary,
+      backgroundColor: Colors.grey[200],
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      side: BorderSide(color: isSelected ? TColors.primary : Colors.transparent),
+      showCheckmark: false,
+    );
+  }
 
+  Widget _buildEmptyState() {
+    String message = "";
+    switch (_selectedFilter) {
+      case VisitDateFilter.today:
+        message = "No visits scheduled for Today.";
+        break;
+      case VisitDateFilter.last7Days:
+        message = "No visits found in the last 7 days.";
+        break;
+      case VisitDateFilter.last15Days:
+        message = "No visits found in the last 15 days.";
+        break;
+      case VisitDateFilter.custom:
+        message = "No visits found for the selected date range.";
+        break;
+    }
 
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: TColors.primary.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.calendar_month_outlined,
+              size: 64,
+              color: TColors.primary.withOpacity(0.6),
+            ),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            "No Schedules Available",
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey[800],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.grey[600],
+            ),
+          ),
+          const SizedBox(height: 32),
+          ElevatedButton.icon(
+            onPressed: _navigateToScheduleScreen, // Corrected to use new screen
+            icon: const Icon(Icons.add_circle_outline),
+            label: const Text("Schedule New Visit"),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: TColors.primary,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30),
+              ),
+            ),
+          )
+        ],
+      ),
+    );
+  }
 
+  // --- Methods from original code (Add Product, Confirm, etc) ---
 
+  void _showProductSelectionBeforeConfirm(
+      BuildContext context, String visitId) async {
+    // Included via logic flow in cards
+  }
 
-
-// old code
   Future<List<String>> _showProductSelectionDialog(BuildContext context) async {
     final RxList<String> selectedProductIds = <String>[].obs;
     final RxString searchQuery = "".obs;
@@ -746,22 +828,17 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
 
                   return Column(
                     children: [
-                      // Search Field
                       TextField(
                         decoration: InputDecoration(
                           prefixIcon: const Icon(Icons.search),
                           hintText: "Search products...",
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                         ),
                         onChanged: (value) {
                           searchQuery.value = value.toLowerCase();
                         },
                       ),
                       const SizedBox(height: 10),
-
-                      // Filtered List
                       Expanded(
                         child: filteredList.isEmpty
                             ? const Center(child: Text("No matching products found."))
@@ -770,50 +847,18 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
                           itemBuilder: (_, i) {
                             final product = filteredList[i];
                             final isSelected = selectedProductIds.contains(product.id);
-
                             return CheckboxListTile(
                               value: isSelected,
                               title: Text(product.name),
                               subtitle: Text(product.description ?? ""),
-                              secondary: GestureDetector(
-                                onTap: () {
-                                  showDialog(
-                                    context: context,
-                                    builder: (_) => Dialog(
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(16),
-                                      ),
-                                      child: Stack(
-                                        alignment: Alignment.topRight,
-                                        children: [
-                                          Padding(
-                                            padding: const EdgeInsets.all(16.0),
-                                            child: Image.network(
-                                              product.image ?? '',
-                                              fit: BoxFit.contain,
-                                              errorBuilder: (_, __, ___) =>
-                                              const Icon(Icons.broken_image, size: 80),
-                                            ),
-                                          ),
-                                          IconButton(
-                                            icon: const Icon(Icons.close),
-                                            onPressed: () => Navigator.of(context).pop(),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  );
-                                },
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: Image.network(
-                                    product.image ?? '',
-                                    width: 40,
-                                    height: 40,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (_, __, ___) =>
-                                    const Icon(Icons.image_not_supported),
-                                  ),
+                              secondary: ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.network(
+                                  product.image ?? '',
+                                  width: 40,
+                                  height: 40,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) => const Icon(Icons.image_not_supported),
                                 ),
                               ),
                               onChanged: (val) {
@@ -848,13 +893,108 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
           },
         );
       },
-    ) ?? <String>[]; // fallback if dialog dismissed
+    ) ?? <String>[];
   }
 
+  void _confirmVisit(BuildContext context, String visitId, List<String> selectedProducts) async {
+    bool confirmed = false;
 
+    await QuickAlert.show(
+      context: context,
+      type: QuickAlertType.confirm,
+      title: "Confirm Visit",
+      text: "Are you sure you want to mark this visit as confirmed?",
+      confirmBtnText: "Yes",
+      cancelBtnText: "Cancel",
+      confirmBtnColor: TColors.primary,
+      width: 300,
+      onConfirmBtnTap: () {
+        confirmed = true;
+        Navigator.of(context, rootNavigator: true).pop();
+      },
+      onCancelBtnTap: () {
+        confirmed = false;
+        Navigator.of(context, rootNavigator: true).pop();
+      },
+    );
 
+    if (!confirmed) return;
 
+    try {
+      var permission = await Permission.location.request();
+      if (!permission.isGranted) {
+        QuickAlert.show(
+          context: context,
+          type: QuickAlertType.error,
+          text: "Location permission is required.",
+          confirmBtnColor: TColors.primary,
+          width: 300,
+        );
+        return;
+      }
 
+      final position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
 
+      final response = await http.put(
+        Uri.parse('${THttpHelper.baseUrl}/doctor-visits/$visitId/confirm'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'userLatitude': position.latitude,
+          'userLongitude': position.longitude,
+          'notes': "",
+          'productIds': selectedProducts,
+        }),
+      );
 
+      if (response.statusCode == 200) {
+        try {
+          final responseBody = json.decode(response.body);
+          final visitResponse = VisitConfirmResponse.fromJson(responseBody);
+
+          QuickAlert.show(
+            context: context,
+            type: visitResponse.status ? QuickAlertType.success : QuickAlertType.error,
+            text: visitResponse.message,
+            confirmBtnColor: TColors.primary,
+            width: 300,
+          );
+
+          if (visitResponse.status) {
+            // REFRESH LIST using current filter
+            await _visitListController.fetchSalesList(
+                filter: _selectedFilter,
+                startDate: _selectedDateRange?.start,
+                endDate: _selectedDateRange?.end
+            );
+          }
+        } catch (e) {
+          QuickAlert.show(
+            context: context,
+            type: QuickAlertType.error,
+            text: "Error processing the response",
+            confirmBtnColor: TColors.primary,
+            width: 300,
+          );
+        }
+      } else {
+        QuickAlert.show(
+          context: context,
+          type: QuickAlertType.error,
+          text: "Failed to confirm the visit",
+          confirmBtnColor: TColors.primary,
+          width: 300,
+        );
+      }
+    } catch (e) {
+      QuickAlert.show(
+        context: context,
+        type: QuickAlertType.error,
+        text: "Unexpected error: $e",
+        confirmBtnColor: TColors.primary,
+        width: 300,
+      );
+    }
+  }
 }

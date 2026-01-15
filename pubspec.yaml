@@ -69,6 +69,9 @@ dependencies:
   flutter_foreground_task: ^9.1.0
   disable_battery_optimization: ^1.1.2
 
+  encrypt: ^5.0.3
+  cryptography: ^2.7.0
+
 
    #Location related
   #geolocator: ^13.0.3
@@ -86,7 +89,7 @@ dependencies:
   #flutter_local_notifications: ^19.2.1
 
   device_info_plus: ^11.3.0
-
+  android_intent_plus: ^5.1.0
 
 
 

@@ -11,7 +11,6 @@ class DashboardController extends GetxController {
 
   final String _debugPrefix = '[DashboardController]';
 
-
   @override
   void onInit() {
     super.onInit();
@@ -33,7 +32,6 @@ class DashboardController extends GetxController {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
         },
-
       );
 
       if (response.statusCode == 200) {

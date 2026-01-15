@@ -12,6 +12,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dio/dio.dart' as dio;
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:http_parser/http_parser.dart';
+
+// --- Imports specific to your project ---
 import '../../../utils/GlobalPermissionHelper/PermissionHelper.dart';
 import '../../../utils/constants/colors.dart';
 import '../../../utils/http/http_client.dart';
@@ -27,8 +30,9 @@ import '../widets/ContactDetailsSection.dart';
 import '../widets/DocumentUploadSection.dart';
 import '../widets/FacilitiesSection.dart';
 
-// Extracted widgets
-
+// --- Import for Geo Overlay ---
+import '../../../utils/camera/CameraLocationResult.dart';
+import '../../../utils/camera/image_overlay_utils.dart';
 
 class PharmaDistributorFormScreen extends StatefulWidget {
   const PharmaDistributorFormScreen({super.key});
@@ -48,6 +52,17 @@ class _PharmaDistributorFormScreenState
   // Stepper
   int _activeStep = 0;
   final int _totalSteps = 7; // 0..6
+
+  // Regex Patterns
+  final RegExp _mobileRegex = RegExp(r'^[0-9]{10}$');
+  final RegExp _emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+  final RegExp _panRegex = RegExp(r'^[A-Z]{5}[0-9]{4}[A-Z]{1}$');
+  // GST: 2 digits + 5 chars + 4 digits + 1 char + 1 digit + Z + 1 char
+  final RegExp _gstRegex = RegExp(r'^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$');
+  // IFSC: 4 Letters + '0' + 6 Alphanumeric characters
+  final RegExp _ifscRegex = RegExp(r'^[A-Z]{4}0[A-Z0-9]{6}$');
+  // Account Number: Typically 9 to 18 digits in India
+  final RegExp _accountNumberRegex = RegExp(r'^[0-9]{9,18}$');
 
   // Basic fields
   final TextEditingController firmName = TextEditingController();
@@ -105,27 +120,31 @@ class _PharmaDistributorFormScreenState
   // ---------------------------
   // Media documents state
   // ---------------------------
+  // Added 'Stockist Image' here
   final Map<String, File?> _documentImages = {
+    'Stockist Image': null, // New Required Field
     'GST': null,
     'Drug License': null,
     'PAN Card': null,
-    'Cancelled Cheque': null,
+    'Security Cheque': null,
     'Business Profile': null,
   };
 
   final Map<String, double> _uploadProgress = {
+    'Stockist Image': 0.0,
     'GST': 0.0,
     'Drug License': 0.0,
     'PAN Card': 0.0,
-    'Cancelled Cheque': 0.0,
+    'Security Cheque': 0.0,
     'Business Profile': 0.0,
   };
 
   final Map<String, String?> _base64Images = {
+    'Stockist Image': null,
     'GST': null,
     'Drug License': null,
     'PAN Card': null,
-    'Cancelled Cheque': null,
+    'Security Cheque': null,
     'Business Profile': null,
   };
 
@@ -145,7 +164,6 @@ class _PharmaDistributorFormScreenState
 
   // ---------------------------
   // Shared Preferences: Save / Load / Clear
-  // (identical to your original implementations)
   // ---------------------------
   Future<SharedPreferences> get _prefs async =>
       await SharedPreferences.getInstance();
@@ -340,6 +358,47 @@ class _PharmaDistributorFormScreenState
       return;
     }
 
+    // --- Special Logic for Stockist Image (Geo Overlay) ---
+    if (key == 'Stockist Image') {
+      try {
+        CircularLoaderController.showLoader(context);
+        final CameraLocationResult? result = await CameraLocationService.captureImageWithLocation();
+        CircularLoaderController.hideLoader();
+
+        if (result == null) return;
+
+        // Apply Overlay
+        final File layeredImage = await ImageOverlayUtil.addOverlay(
+          original: result.image,
+          lat: result.latitude,
+          lng: result.longitude,
+        );
+
+        // Also update location if missing
+        if (selectedlatitude == null || selectedlatitude!.isEmpty) {
+          setState(() {
+            selectedlatitude = result.latitude.toString();
+            selectedlongitude = result.longitude.toString();
+          });
+        }
+
+        // Save Image
+        setState(() {
+          _documentImages[key] = layeredImage;
+          _uploadProgress[key] = 1.0;
+        });
+
+        // Save to Draft
+        await _saveFormDraft();
+        return; // Exit normal flow as we handled it specifically
+      } catch (e) {
+        CircularLoaderController.hideLoader();
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Camera Error: $e')));
+        return;
+      }
+    }
+
+    // --- Normal Logic for Other Docs ---
     if (_documentImages[key] != null && !forceCamera) {
       _showImageActions(key, _documentImages[key]!);
       return;
@@ -433,14 +492,15 @@ class _PharmaDistributorFormScreenState
                   _pickImageForKey(key, forceCamera: true);
                 },
               ),
-              ListTile(
-                leading: const Icon(Icons.photo_library),
-                title: const Text('Replace (Gallery)'),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  _pickImageForKey(key, forceCamera: false);
-                },
-              ),
+              if(key != 'Stockist Image') // Hide gallery for Stockist Image (Force Camera)
+                ListTile(
+                  leading: const Icon(Icons.photo_library),
+                  title: const Text('Replace (Gallery)'),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _pickImageForKey(key, forceCamera: false);
+                  },
+                ),
               ListTile(
                 leading: const Icon(Icons.delete, color: Colors.red),
                 title: const Text('Remove', style: TextStyle(color: Colors.red)),
@@ -487,6 +547,7 @@ class _PharmaDistributorFormScreenState
     );
   }
 
+  // --- SUBMIT FORM ---
   Future<void> _submitDistributorForm() async {
     if (!_validateStep(_activeStep, finalValidation: true)) return;
     if (!_validateTurnovers()) return;
@@ -494,16 +555,10 @@ class _PharmaDistributorFormScreenState
     CircularLoaderController.showLoader(context);
 
     try {
-      final Map<String, String> imagesMap = {};
-      _base64Images.forEach((k, v) {
-        if (v != null && v.isNotEmpty) {
-          final rand = DateTime.now().millisecondsSinceEpoch.toString() + '_' + (Random().nextInt(9999)).toString();
-          final keyName = '${_safeKey(k)}_$rand';
-          imagesMap[keyName] = v;
-        }
-      });
+      final token = await AuthManager().getAuthToken();
+      debugPrint('PharmaDistributorFormScreen: token fetched');
 
-      final body = {
+      final formData = dio.FormData.fromMap({
         "firmName": firmName.text.trim(),
         "registeredBusinessName": businessName.text.trim(),
         "natureOfBusiness": selectedBusinessType ?? '',
@@ -519,54 +574,105 @@ class _PharmaDistributorFormScreenState
         "emailAddress": emailAddress.text.trim(),
         "website": website.text.trim(),
         "yearsInBusiness": int.tryParse(yearsInBusiness.text) ?? 0,
-        "areasOfOperation": areasOfOperation.text
+
+        "areasOfOperation[]": areasOfOperation.text
             .split(',')
             .map((e) => e.trim())
             .where((e) => e.isNotEmpty)
             .toList(),
-        "currentPharmaDistributorships": distributorships.text
+
+        "currentPharmaDistributorships[]": distributorships.text
             .split(',')
             .map((e) => e.trim())
             .where((e) => e.isNotEmpty)
             .toList(),
-        "annualTurnover": _annualTurnovers,
+
+        "annualTurnover": jsonEncode(_annualTurnovers),
+
         "warehouseFacility": warehouseFacility,
         "storageFacilitySize": int.tryParse(storageSize.text) ?? 0,
         "coldStorageAvailable": coldStorageAvailable,
         "numberOfSalesRepresentatives": int.tryParse(salesReps.text) ?? 0,
-        "bankDetails": {
-          "bankName": bankName.text.trim(),
-          "branch": branch.text.trim(),
-          "accountNumber": accountNumber.text.trim(),
-          "ifscCode": ifscCode.text.trim(),
-        },
-        "headOffice": selectedHeadOfficeId,
-        "images": imagesMap,
-      };
 
-      final token = await AuthManager().getAuthToken();
-      final res = await _dio.post('${THttpHelper.baseUrl}/stockists',
-          data: body,
-          options: dio.Options(
-              headers: {"Authorization": "Bearer $token", "Content-Type": "application/json"}));
+        "bankDetails[bankName]": bankName.text.trim(),
+        "bankDetails[branch]": branch.text.trim(),
+        "bankDetails[accountNumber]": accountNumber.text.trim(),
+        "bankDetails[ifscCode]": ifscCode.text.trim(),
+
+        "headOffice": selectedHeadOfficeId,
+
+        // -------- FILE PARTS --------
+
+        // 1. Stockist Geo Image
+        if (_documentImages['Stockist Image'] != null)
+          "geo_image": await dio.MultipartFile.fromFile(
+            _documentImages['Stockist Image']!.path,
+            filename: "stockist_geo.jpg",
+            contentType: MediaType('image', 'jpeg'),
+          ),
+
+        if (_documentImages['GST'] != null)
+          "gstCertificate": await dio.MultipartFile.fromFile(
+            _documentImages['GST']!.path,
+            filename: "gst.jpg",
+          ),
+
+        if (_documentImages['Drug License'] != null)
+          "drugLicense": await dio.MultipartFile.fromFile(
+            _documentImages['Drug License']!.path,
+            filename: "drug_license.jpg",
+          ),
+
+        if (_documentImages['PAN Card'] != null)
+          "panCard": await dio.MultipartFile.fromFile(
+            _documentImages['PAN Card']!.path,
+            filename: "pan_card.jpg",
+          ),
+
+        if (_documentImages['Security Cheque'] != null)
+          "cancelledCheque": await dio.MultipartFile.fromFile(
+            _documentImages['Security Cheque']!.path,
+            filename: "cheque.jpg",
+          ),
+
+        if (_documentImages['Business Profile'] != null)
+          "businessProfile": await dio.MultipartFile.fromFile(
+            _documentImages['Business Profile']!.path,
+            filename: "business_profile.jpg",
+          ),
+      });
+
+      final res = await _dio.post(
+        '${THttpHelper.baseUrl}/stockists',
+        data: formData,
+        options: dio.Options(
+          headers: {
+            "Authorization": "Bearer $token",
+          },
+        ),
+      );
 
       if (res.statusCode == 200 || res.statusCode == 201) {
         await _clearFormDraft();
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Distributor registered successfully')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Distributor registered successfully')),
+          );
           Navigator.pop(context, true);
         }
       } else {
         if (mounted) {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text('Submit failed: ${res.statusCode}')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Submit failed: ${res.statusCode}')),
+          );
         }
       }
-    } catch (e) {
-      if (kDebugMode) print('submit error: $e');
+    } catch (e, s) {
+      debugPrint('PharmaDistributorFormScreen: submit error -> $e');
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Error: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
       }
     } finally {
       CircularLoaderController.hideLoader();
@@ -585,6 +691,8 @@ class _PharmaDistributorFormScreenState
   }
 
   bool _validateStep(int step, {bool finalValidation = false}) {
+    String ifscVal = ifscCode.text.trim().toUpperCase();
+    String accVal = accountNumber.text.trim();
     if (finalValidation) {
       if (firmName.text.trim().isEmpty) { _showStepError(0, 'Firm Name required'); return false; }
       if (businessName.text.trim().isEmpty) { _showStepError(0, 'Business Name required'); return false; }
@@ -602,13 +710,20 @@ class _PharmaDistributorFormScreenState
       if (accountNumber.text.trim().isEmpty) { _showStepError(5, 'Account Number required'); return false; }
       if (ifscCode.text.trim().isEmpty) { _showStepError(5, 'IFSC required'); return false; }
       if (selectedlatitude == null || selectedlongitude == null || selectedLocation == null) { _showSnack('Select location before submit'); return false; }
+
+      // Check Document Images
       for (final entry in _documentImages.entries) {
-        if (entry.key != 'Business Profile' && entry.value == null) {
-          _showStepError(6, '${entry.key} image required');
+        // Business Profile is optional
+        if (entry.key == 'Business Profile') continue;
+
+        // Stockist Image is Required (New Check)
+        if (entry.key == 'Stockist Image' && entry.value == null) {
+          _showStepError(6, 'Stockist Image (Geo-Tagged) is required');
           return false;
         }
-        if (entry.key != 'Business Profile' && (_base64Images[entry.key] == null || _base64Images[entry.key]!.isEmpty)) {
-          _showStepError(6, '${entry.key} image required (base64 missing)');
+
+        if (entry.value == null) {
+          _showStepError(6, '${entry.key} image required');
           return false;
         }
       }
@@ -619,21 +734,47 @@ class _PharmaDistributorFormScreenState
       case 0:
         if (firmName.text.trim().isEmpty || businessName.text.trim().isEmpty) { _showSnack('Firm & Business name required'); return false; }
         if (selectedHeadOfficeId == null || selectedHeadOfficeId!.isEmpty) { _showSnack('Please select Head Office'); return false; }
+        if (!_gstRegex.hasMatch(gstNumber.text.trim().toUpperCase())) {
+          _showSnack('Invalid GST number'); return false;
+        }
+        if (!_panRegex.hasMatch(panNumber.text.trim().toUpperCase())) {
+          _showSnack('Invalid PAN number'); return false;
+        }
+        if (drugLicenseNumber.text.trim().isEmpty) {
+          _showSnack('Drug License required'); return false;
+        }
         return true;
       case 1:
         if (contactPerson.text.trim().isEmpty || mobileNumber.text.trim().isEmpty || emailAddress.text.trim().isEmpty) { _showSnack('Contact person, mobile & email are required'); return false; }
+        if (!_mobileRegex.hasMatch(mobileNumber.text.trim())) {
+          _showSnack('Enter valid 10-digit mobile number'); return false;
+        }
+        if (!_emailRegex.hasMatch(emailAddress.text.trim())) {
+          _showSnack('Enter valid email address'); return false;
+        }
         return true;
       case 2:
         if (yearsInBusiness.text.trim().isEmpty || officeAddress.text.trim().isEmpty) { _showSnack('Years in business and office address required'); return false; }
+        if(selectedLocation!.isEmpty){ _showSnack('Please select address on map'); return false; };
         return true;
       case 3:
         return _validateTurnovers();
       case 4:
         return true;
       case 5:
-        if (bankName.text.trim().isEmpty || branch.text.trim().isEmpty || accountNumber.text.trim().isEmpty || ifscCode.text.trim().isEmpty) { _showSnack('Complete bank details'); return false; }
+        if (bankName.text.trim().isEmpty) { _showSnack('Bank Name required'); return false; }
+        if (branch.text.trim().isEmpty) { _showSnack('Branch Name required'); return false; }
+        if (accVal.isEmpty) { _showSnack('Account Number required'); return false; }
+        if (!_accountNumberRegex.hasMatch(accVal)) { _showSnack('Invalid Account Number (9-18 digits)'); return false; }
+        if (ifscVal.isEmpty) { _showSnack('IFSC Code required'); return false; }
+        if (!_ifscRegex.hasMatch(ifscVal)) { _showSnack('Invalid IFSC Code format (e.g. SBIN0123456)'); return false; }
         return true;
       case 6:
+      // Ensure Stockist Image is captured before submitting
+        if (_documentImages['Stockist Image'] == null) {
+          _showSnack('Please capture the Stockist Geo Image');
+          return false;
+        }
         return true;
       default:
         return true;
@@ -701,15 +842,15 @@ class _PharmaDistributorFormScreenState
     super.dispose();
   }
 
-  // ---------------------------
-  // BUILD UI (uses extracted widgets)
-  // ---------------------------
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Distributor Registration", style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text("Distributor Registration", style: TextStyle(fontWeight: FontWeight.bold,color: Colors.white)),
         backgroundColor: TColors.primary,
+        iconTheme: const IconThemeData(
+          color: Colors.white,
+        ),
       ),
       body: SafeArea(
         child: Form(
@@ -729,7 +870,7 @@ class _PharmaDistributorFormScreenState
                   internalPadding: 8,
                   borderThickness: 2,
                   steps: const [
-                    EasyStep(icon: Icon(Icons.details, color: Colors.white), title: 'Basic'),
+                    EasyStep(icon: Icon(Icons.details, color: Colors.white), title: 'Applicant'),
                     EasyStep(icon: Icon(Icons.contact_phone, color: Colors.white), title: 'Contact'),
                     EasyStep(icon: Icon(Icons.business, color: Colors.white), title: 'Business'),
                     EasyStep(icon: Icon(Icons.trending_up, color: Colors.white), title: 'Turnover'),
@@ -762,6 +903,8 @@ class _PharmaDistributorFormScreenState
                         businessName: businessName,
                         selectedHeadOfficeId: selectedHeadOfficeId,
                         offices: _offices,
+                        drugLicenceNumber: drugLicenseNumber,
+                        panNumber: panNumber,
                         onHeadOfficeChanged: (v) async {
                           setState(() => selectedHeadOfficeId = v);
                           await _saveFormDraft();
@@ -817,7 +960,7 @@ class _PharmaDistributorFormScreenState
                           }
                         },
                       ),
-                      // Note: Keep using your existing AnnualTurnoverSection from ../widets/AnnualGTurnOverSection.dart
+                      // Turnover Section
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [

@@ -25,6 +25,7 @@ import '../../Inbox/Screen/InboxScreen.dart';
 import '../../InvoiceTrackerShipment/screen/InvoiceScreen.dart';
 import '../../PtsPtrCalculator/PtsPtrCalculator.dart';
 import '../../SalesChartAnalysis/Screen/salesChartHome2.dart';
+import '../../Tour & Plans/Screen/tour_plane_doctor_screen.dart';
 import '../../addStokist/screen/StokistList.dart';
 import '../../authentication/models/UserModel.dart';
 import '../../authentication/screens/login/login.dart';
@@ -32,12 +33,6 @@ import '../../marketing/screen/MarketingScreen.dart';
 import '../../marketing/screen/marketing.dart';
 import '../../ticket/screen/ticketscreen.dart';
 import '../../visit/Doctor/screens/ScheduleVisit.dart';
-
-
-
-
-
-
 
 class CustomDrawer extends StatefulWidget {
   final Function(Widget, String) onMenuSelected;
@@ -53,7 +48,7 @@ class CustomDrawer extends StatefulWidget {
 }
 
 class _CustomDrawerState extends State<CustomDrawer> {
- // late String? userRole;  // Store the user role variable
+  // late String? userRole;  // Store the user role variable
 
   /*@override
   void initState() {
@@ -63,7 +58,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
   }*/
 
   // Function to fetch user role from SharedPreferences
- /* Future<void> fetchUserRole() async {
+  /* Future<void> fetchUserRole() async {
     AuthManager authManager = AuthManager();
     userRole = await authManager.getUserRole();
    // userRole = prefs.getString('roleKey');  // Replace with actual key for user role
@@ -74,7 +69,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 450,
+      width: 350,
       child: Drawer(
         child: Column(
           children: [
@@ -86,7 +81,8 @@ class _CustomDrawerState extends State<CustomDrawer> {
                     icon: Icons.home,
                     text: TTexts.dashboard,
                     onTap: () =>
-                        widget.onMenuSelected(SalesChartHomeScreen(), TTexts.dashboard),
+                        widget.onMenuSelected(
+                            SalesChartHomeScreen(), TTexts.dashboard),
                     isSelected: widget.currentScreen == TTexts.dashboard,
                   ),
 
@@ -96,9 +92,43 @@ class _CustomDrawerState extends State<CustomDrawer> {
                       icon: Icons.home,
                       text: TTexts.userListScreen,
                       onTap: () =>
-                          widget.onMenuSelected(UserListScreen(), TTexts.userListScreen),
+                          widget.onMenuSelected(
+                              UserListScreen(), TTexts.userListScreen),
                       isSelected: widget.currentScreen == TTexts.userListScreen,
                     ),
+
+                  _buildDrawerItem(
+                    icon: Icons.tour,
+                    text: TTexts.tourPlans,
+                    onTap: () =>
+                        widget.onMenuSelected(TourPlan(), TTexts.tourPlans),
+                    isSelected: widget.currentScreen == TTexts.tourPlans,
+                  ),
+
+                  _buildDrawerItem(
+                    icon: Icons.meeting_room,
+                    text: TTexts.appointments,
+                    onTap: () =>
+                        widget.onMenuSelected(
+                            ScheduleVisit(), TTexts.appointments),
+                    isSelected: widget.currentScreen == TTexts.appointments,
+                  ),
+
+                 /* _buildDrawerItem(
+                    icon: Icons.report,
+                    text: TTexts.dailyCallReport,
+                    onTap: () =>
+                        widget.onMenuSelected(InboxScreen(), TTexts.inbox),
+                    isSelected: widget.currentScreen == TTexts.inbox,
+                  ),
+
+                  _buildDrawerItem(
+                    icon: Icons.perm_media,
+                    text: TTexts.visualAidsContent,
+                    onTap: () =>
+                        widget.onMenuSelected(InboxScreen(), TTexts.inbox),
+                    isSelected: widget.currentScreen == TTexts.inbox,
+                  ),
 
                   _buildDrawerItem(
                     icon: Icons.mail,
@@ -106,82 +136,89 @@ class _CustomDrawerState extends State<CustomDrawer> {
                     onTap: () =>
                         widget.onMenuSelected(InboxScreen(), TTexts.inbox),
                     isSelected: widget.currentScreen == TTexts.inbox,
-                  ),
+                  ),*/
 
                   // Other drawer items
                   _buildDrawerItem(
                     icon: Icons.money,
                     text: TTexts.marketingMaterial,
-                    onTap: () => widget.onMenuSelected(
-                        MarketingmaterialsScreen(), TTexts.marketingMaterial),
-                    isSelected: widget.currentScreen == TTexts.marketingMaterial,
+                    onTap: () =>
+                        widget.onMenuSelected(
+                            MarketingmaterialsScreen(),
+                            TTexts.marketingMaterial),
+                    isSelected: widget.currentScreen ==
+                        TTexts.marketingMaterial,
                   ),
                   _buildDrawerItem(
                     icon: Icons.picture_as_pdf,
                     text: TTexts.filesAndPdfs,
                     onTap: () =>
-                        widget.onMenuSelected(MarketingScreen(), TTexts.filesAndPdfs),
+                        widget.onMenuSelected(
+                            MarketingScreen(), TTexts.filesAndPdfs),
                     isSelected: widget.currentScreen == TTexts.filesAndPdfs,
                   ),
                   _buildDrawerItem(
                     icon: Icons.person,
                     text: TTexts.addDoctor,
                     onTap: () =>
-                        widget.onMenuSelected(AddDoctorScreen(), TTexts.addDoctor),
+                        widget.onMenuSelected(
+                            AddDoctorScreen(), TTexts.addDoctor),
                     isSelected: widget.currentScreen == TTexts.addDoctor,
                   ),
                   _buildDrawerItem(
                     icon: Icons.local_hospital,
                     text: TTexts.clinic,
                     onTap: () =>
-                        widget.onMenuSelected(ClinicListScreen(), TTexts.clinic),
+                        widget.onMenuSelected(
+                            ClinicListScreen(), TTexts.clinic),
                     isSelected: widget.currentScreen == TTexts.clinic,
                   ),
                   _buildDrawerItem(
                     icon: Icons.local_hospital,
                     text: TTexts.stokist,
                     onTap: () =>
-                        widget.onMenuSelected(StokistListScreen(), TTexts.stokist),
+                        widget.onMenuSelected(
+                            StokistListScreen(), TTexts.stokist),
                     isSelected: widget.currentScreen == TTexts.stokist,
                   ),
                   _buildDrawerItem(
                     icon: Icons.calculate,
                     text: TTexts.ptsptrcalculator,
                     onTap: () =>
-                        widget.onMenuSelected(PtrPtsCalculatorScreen(), TTexts.ptsptrcalculator),
-                    isSelected: widget.currentScreen == TTexts.stokist,
+                        widget.onMenuSelected(
+                            PtrPtsCalculatorScreen(), TTexts.ptsptrcalculator),
+                    isSelected: widget.currentScreen == TTexts.ptsptrcalculator,
                   ),
-                  _buildDrawerItem(
-                    icon: Icons.place,
-                    text: TTexts.doctorVisit,
-                    onTap: () =>
-                        widget.onMenuSelected(ScheduleVisit(), TTexts.doctorVisit),
-                    isSelected: widget.currentScreen == TTexts.doctorVisit,
-                  ),
+
                   _buildDrawerItem(
                     icon: Icons.money,
                     text: TTexts.salesActivity,
                     onTap: () =>
-                        widget.onMenuSelected(SalesactivityScreen(), TTexts.salesActivity),
+                        widget.onMenuSelected(
+                            SalesactivityScreen(), TTexts.salesActivity),
                     isSelected: widget.currentScreen == TTexts.salesActivity,
                   ),
                   _buildDrawerItem(
                     icon: Icons.add,
                     text: TTexts.addProduct,
                     onTap: () =>
-                        widget.onMenuSelected(AddproductScreen(), TTexts.addProduct),
+                        widget.onMenuSelected(
+                            AddproductScreen(), TTexts.addProduct),
                     isSelected: widget.currentScreen == TTexts.addProduct,
                   ),
                   _buildDrawerItem(
                     icon: Icons.reorder,
                     text: TTexts.order,
-                    onTap: () => widget.onMenuSelected(OrderScreen(), TTexts.order),
+                    onTap: () =>
+                        widget.onMenuSelected(OrderScreen(), TTexts.order),
                     isSelected: widget.currentScreen == TTexts.order,
                   ),
                   _buildDrawerItem(
                     icon: Icons.inventory,
                     text: TTexts.invoiceScreen,
-                    onTap: () => widget.onMenuSelected(InvoiceScreen(), TTexts.invoiceScreen),
+                    onTap: () =>
+                        widget.onMenuSelected(
+                        InvoiceScreen(), TTexts.invoiceScreen),
                     isSelected: widget.currentScreen == TTexts.invoiceScreen,
                   ),
                   // InvoiceScreen
@@ -189,25 +226,30 @@ class _CustomDrawerState extends State<CustomDrawer> {
                   _buildDrawerItem(
                     icon: Icons.expand,
                     text: TTexts.expenses,
-                    onTap: () => widget.onMenuSelected(ExpensesScreen(), TTexts.expenses),
+                    onTap: () =>
+                        widget.onMenuSelected(
+                        ExpensesScreen(), TTexts.expenses),
                     isSelected: widget.currentScreen == TTexts.expenses,
                   ),
                   _buildDrawerItem(
                     icon: Icons.post_add,
                     text: TTexts.blog,
-                    onTap: () => widget.onMenuSelected(Blogscreen(), TTexts.blog),
+                    onTap: () =>
+                        widget.onMenuSelected(Blogscreen(), TTexts.blog),
                     isSelected: widget.currentScreen == TTexts.blog,
                   ),
                   _buildDrawerItem(
                     icon: Icons.support,
                     text: TTexts.support,
-                    onTap: () => widget.onMenuSelected(TicketScreen(), TTexts.support),
+                    onTap: () =>
+                        widget.onMenuSelected(TicketScreen(), TTexts.support),
                     isSelected: widget.currentScreen == TTexts.support,
                   ),
                   _buildDrawerItem(
                     icon: Icons.report,
                     text: TTexts.report,
-                    onTap: () => widget.onMenuSelected(ReportScreen(), TTexts.report),
+                    onTap: () =>
+                        widget.onMenuSelected(ReportScreen(), TTexts.report),
                     isSelected: widget.currentScreen == TTexts.report,
                   ),
                   _buildDrawerItem(
@@ -255,13 +297,13 @@ class _CustomDrawerState extends State<CustomDrawer> {
 
         return Container(
           color: dark ? Colors.black : Colors.grey[300],
-          padding: EdgeInsets.symmetric(vertical: 50, horizontal: 16),
+          padding: EdgeInsets.symmetric(vertical: 25, horizontal: 16),
           width: double.infinity,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               CircleAvatar(
-                radius: 50,
+                radius: 27,
                 backgroundColor: TColors.primary,
                 child: Icon(Icons.person, size: 50, color: Colors.white),
               ),
@@ -269,9 +311,23 @@ class _CustomDrawerState extends State<CustomDrawer> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(user.user!.name, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  Text(user.user!.email, style: TextStyle(fontSize: 14)),
+                  Text(
+                    user.user!.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    user.user!.email,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 14),
+                  ),
                 ],
+
               ),
             ],
           ),
@@ -303,7 +359,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
   }
 
   /// **Drawer Item Template**
-  Widget _buildDrawerItem({
+ /* Widget _buildDrawerItem({
     required IconData icon,
     required String text,
     required VoidCallback onTap,
@@ -311,17 +367,48 @@ class _CustomDrawerState extends State<CustomDrawer> {
   }) {
     return ListTile(
       leading: Icon(icon, color: isSelected ? TColors.primary : Colors.grey),
-      title: Text(text, style: TextStyle(fontSize: 16, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
+      title: Text(text, style: TextStyle(fontSize: 14, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
       tileColor: isSelected ? Colors.blue.withOpacity(0.1) : Colors.transparent,
       onTap: onTap,
     );
+  }*/
+
+
+  Widget _buildDrawerItem({
+    required IconData icon,
+    required String text,
+    required VoidCallback onTap,
+    bool isSelected = false,
+  }) {
+    return ListTile(
+      dense: true,
+      //  reduces height
+      visualDensity: const VisualDensity(
+        vertical: -2, //  tighter spacing
+      ),
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 16,
+        vertical: 0,
+      ),
+      leading: Icon(
+        icon,
+        size: 20,
+        color: isSelected ? TColors.primary : Colors.grey,
+      ),
+      title: Text(
+        text,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          fontSize: 14,
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+        ),
+      ),
+      tileColor:
+      isSelected ? TColors.primary.withOpacity(0.1) : Colors.transparent,
+      onTap: onTap,
+    );
   }
-}
-
-
-
-
-
 
 /*class CustomDrawer extends StatelessWidget {
   final Function(Widget, String) onMenuSelected;
@@ -571,3 +658,5 @@ class _CustomDrawerState extends State<CustomDrawer> {
     );
   }
 }*/
+
+}

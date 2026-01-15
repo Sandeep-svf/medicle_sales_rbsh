@@ -1,4 +1,432 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import '../../../utils/constants/colors.dart';
+import '../../addStokist/widets/AnnualGTurnOverSection.dart';
+import '../controllers/AddChemistController.dart';
+
+
+class AddChemistScreen extends StatelessWidget {
+  const AddChemistScreen({Key? key}) : super(key: key);
+
+  final String _bannerAsset = "assets/logos/chemist_banner.png"; // Make sure this asset exists
+
+  @override
+  Widget build(BuildContext context) {
+    // Put the controller
+    final controller = Get.put(AddChemistController());
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF4F6F9),
+      body: CustomScrollView(
+        slivers: [
+          // 1. SLIVER APP BAR WITH BANNER
+          SliverAppBar(
+            expandedHeight: 160.0,
+            floating: false,
+            pinned: true,
+            backgroundColor: TColors.primary,
+            leading: IconButton(
+              icon: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(color: Colors.black26, shape: BoxShape.circle),
+                child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
+              ),
+              onPressed: () => Get.back(),
+            ),
+            flexibleSpace: FlexibleSpaceBar(
+              centerTitle: true,
+              title: const Text(
+                "Add New Chemist",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  shadows: [Shadow(offset: Offset(0, 1), blurRadius: 3.0, color: Colors.black45)],
+                ),
+              ),
+              background: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Image.asset(
+                    _bannerAsset,
+                    fit: BoxFit.fill,
+                    errorBuilder: (_, __, ___) => Container(color: TColors.primary),
+                  ),
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [Colors.black38, Colors.transparent, TColors.primary.withOpacity(0.9)],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // 2. BODY CONTENT
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                children: [
+                  // --- TOP: IMAGE & LOCATION ---
+                  Row(
+                    children: [
+                      Expanded(child: _buildImagePicker(controller,context)),
+                      const SizedBox(width: 15),
+                      Expanded(child: _buildLocationPicker(controller)),
+                    ],
+                  ),
+                  const SizedBox(height: 25),
+
+                  // --- FORM CARD ---
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(color: Colors.grey.withOpacity(0.08), blurRadius: 15, offset: const Offset(0, 5)),
+                      ],
+                    ),
+                    child: Form(
+                      key: controller.formKey,
+                      child: Column(
+                        children: [
+                          _buildSectionHeader("01", "Basic Details"),
+                          const SizedBox(height: 15),
+
+                          _buildTextField(controller.firmNameController, "Firm Name", Icons.store, required: true),
+                          const SizedBox(height: 15),
+                          _buildTextField(controller.contactPersonController, "Contact Person", Icons.person, required: true),
+                          const SizedBox(height: 15),
+
+                          // Head Office Dropdown
+                          Obx(() => DropdownButtonFormField<String>(
+                            value: controller.selectedHeadOfficeId.value,
+                            icon: const Icon(Icons.keyboard_arrow_down_rounded),
+                            decoration: _inputDecoration("Select Head Office", Icons.domain),
+                            items: controller.headOffices.map((office) {
+                              return DropdownMenuItem<String>(
+                                value: office['id'],
+                                child: Text(office['name'] ?? "Unknown", style: const TextStyle(fontSize: 14)),
+                              );
+                            }).toList(),
+                            onChanged: (val) => controller.selectedHeadOfficeId.value = val,
+                            validator: (v) => v == null ? "Required" : null,
+                          )),
+                          const SizedBox(height: 15),
+
+                          _buildTextField(controller.phoneController, "Mobile Number", Icons.phone, isNumber: true, required: true),
+                          const SizedBox(height: 15),
+                          _buildTextField(controller.emailController, "Email ID", Icons.email, keyboardType: TextInputType.emailAddress, required: true),
+                          const SizedBox(height: 15),
+                          _buildTextField(controller.addressController, "Full Address", Icons.location_on_outlined, maxLines: 2, required: true),
+
+                          const SizedBox(height: 30),
+                          _buildSectionHeader("02", "Business Details"),
+                          const SizedBox(height: 15),
+
+                          _buildTextField(controller.designationController, "Designation", Icons.badge_outlined),
+                          const SizedBox(height: 15),
+                          _buildTextField(controller.drugLicenseNumberController, "Drug License No.", Icons.description_outlined, required: true),
+                          const SizedBox(height: 15),
+                          _buildTextField(controller.gstController, "GST No.", Icons.receipt_long),
+                          const SizedBox(height: 15),
+                          _buildTextField(controller.yearsInBusinessController, "Years in Business", Icons.history, isNumber: true),
+
+                          const SizedBox(height: 30),
+                          _buildSectionHeader("03", "Turnover"),
+                          const SizedBox(height: 10),
+
+                          // --- TURNOVER SECTION (Fixed GetX Issue) ---
+                          // We pass the actual list (not the Rx variable) to the widget
+                          // and update it via the callback
+                          Obx(() => AnnualTurnoverSection(
+                            turnovers: controller.annualTurnovers.toList(), // Pass as List
+                            onChanged: (updatedList) {
+                              controller.updateTurnovers(updatedList);
+                            },
+                          )),
+
+                          const SizedBox(height: 40),
+
+                          // --- SUBMIT BUTTON ---
+                          SizedBox(
+                            width: double.infinity,
+                            height: 55,
+                            child: Obx(() => ElevatedButton(
+                              onPressed: controller.isLoading.value ? null : controller.submitForm,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: TColors.primary,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                elevation: 5,
+                                shadowColor: TColors.primary.withOpacity(0.4),
+                              ),
+                              child: controller.isLoading.value
+                                  ? const CircularProgressIndicator(color: Colors.white)
+                                  : const Text(
+                                "COMPLETE REGISTRATION",
+                                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, letterSpacing: 1.0, color: Colors.white),
+                              ),
+                            )),
+                          ),
+                          const SizedBox(height: 20),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ================= HELPER WIDGETS =================
+
+  // 1. Image Picker with View & Retake Buttons
+  Widget _buildImagePicker(AddChemistController controller, BuildContext context) {
+    return Container(
+      height: 160,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Obx(() {
+          // A. Loading State
+          if (controller.isImageProcessing.value) {
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const CircularProgressIndicator(color: TColors.primary),
+                const SizedBox(height: 8),
+                Text("Processing...", style: TextStyle(fontSize: 10, color: Colors.grey[600]))
+              ],
+            );
+          }
+
+          // B. Image Captured State
+          if (controller.chemistImage.value != null) {
+            return Stack(
+              fit: StackFit.expand,
+              children: [
+                // 1. The Image
+                Image.file(controller.chemistImage.value!, fit: BoxFit.cover),
+
+                // 2. Dim Overlay (Optional, for better contrast)
+                Container(color: Colors.black12),
+
+                // 3. Control Buttons (Center Pill)
+                Center(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.5),
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // VIEW BUTTON
+                        GestureDetector(
+                          onTap: () => _showFullImage(context, controller.chemistImage.value!),
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.9),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.visibility, color: TColors.primary, size: 20),
+                          ),
+                        ),
+
+                        const SizedBox(width: 15),
+
+                        // RETAKE BUTTON
+                        GestureDetector(
+                          onTap: controller.captureImage,
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: TColors.primary.withOpacity(0.9),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.refresh, color: Colors.white, size: 20),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              ],
+            );
+          }
+
+          // C. Empty State
+          return InkWell(
+            onTap: controller.captureImage,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.add_a_photo_outlined, size: 40, color: TColors.primary.withOpacity(0.6)),
+                const SizedBox(height: 10),
+                Text(
+                    "Capture\nPhoto",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.grey[600], fontSize: 13, fontWeight: FontWeight.w600)
+                ),
+              ],
+            ),
+          );
+        }),
+      ),
+    );
+  }
+
+  Widget _buildLocationPicker(AddChemistController controller) {
+    return InkWell(
+      onTap: controller.pickLocation,
+      child: Container(
+        height: 160,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: TColors.primary.withOpacity(0.1)),
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
+        ),
+        child: Obx(() {
+          bool isSet = controller.latitude.value != 0.0;
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: isSet ? Colors.green.withOpacity(0.1) : TColors.primary.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.location_on, size: 30, color: isSet ? Colors.green : TColors.primary),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                isSet ? "Location Set" : "Select Location",
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              ),
+              if (isSet)
+                Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Text(
+                    "Lat: ${controller.latitude.value.toStringAsFixed(4)}",
+                    style: const TextStyle(fontSize: 11, color: Colors.grey),
+                  ),
+                )
+            ],
+          );
+        }),
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(String number, String title) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(color: TColors.primary.withOpacity(0.1), borderRadius: BorderRadius.circular(6)),
+          child: Text(number, style: const TextStyle(color: TColors.primary, fontWeight: FontWeight.bold, fontSize: 12)),
+        ),
+        const SizedBox(width: 10),
+        Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)),
+      ],
+    );
+  }
+
+  Widget _buildTextField(TextEditingController ctrl, String label, IconData icon, {bool isNumber = false, bool required = false, int maxLines = 1, TextInputType? keyboardType}) {
+    return TextFormField(
+      controller: ctrl,
+      keyboardType: keyboardType ?? (isNumber ? TextInputType.number : TextInputType.text),
+      maxLines: maxLines,
+      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+      decoration: _inputDecoration(label, icon),
+      validator: (v) {
+        if (required && (v == null || v.isEmpty)) return "Required";
+        return null;
+      },
+    );
+  }
+
+  InputDecoration _inputDecoration(String label, IconData icon) {
+    return InputDecoration(
+      labelText: label,
+      prefixIcon: Icon(icon, size: 18, color: TColors.primary.withOpacity(0.7)),
+      labelStyle: TextStyle(color: Colors.grey[500], fontSize: 13),
+      filled: true,
+      fillColor: const Color(0xFFFAFAFA),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: TColors.primary, width: 1.5)),
+    );
+  }
+
+  // --- Helper: Show Full Image Popup ---
+  void _showFullImage(BuildContext context, File imageFile) {
+    showDialog(
+      context: context,
+      builder: (_) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.all(12),
+        child: Stack(
+          alignment: Alignment.topRight,
+          children: [
+            // Full Image with Zoom
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: InteractiveViewer(
+                panEnabled: true,
+                minScale: 1.0,
+                maxScale: 4.0,
+                child: Image.file(imageFile, fit: BoxFit.contain),
+              ),
+            ),
+
+            // Close Button
+            Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: GestureDetector(
+                onTap: () => Navigator.of(context).pop(),
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.6),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 1.5),
+                  ),
+                  child: const Icon(Icons.close, color: Colors.white, size: 22),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
+  // old working code without geo_image
+ /*import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:medicle_sales_rbsh/features/authentication/controllers/AuthController.dart';
@@ -62,7 +490,7 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
     // headOfficeId = authController.getHeadOffice() as String;
   }
 
- /* Future<void> _fetchHeadOffices() async {
+ *//* Future<void> _fetchHeadOffices() async {
     setState(() {
       isLoadingHeadOffices = true; // Show loader while fetching head offices
     });
@@ -86,7 +514,7 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
       });
       Get.snackbar("Error", "Failed to fetch head offices: $e", backgroundColor: Colors.red);
     }
-  }*/
+  }*//*
 
 
   Future<void> _fetchHeadOffices() async {
@@ -227,7 +655,7 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
   }
 
 
-  /*Future<void> _submitForm() async {
+  *//*Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => isLoading = true); // Show loading while submitting the form
@@ -252,7 +680,7 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
     };
 
 
-    *//*final body = {
+    *//**//*final body = {
       "firmName": firmNameController.text,
       "contactPersonName": contactPersonController.text,
       "mobileNo": phoneController.text,
@@ -269,7 +697,7 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
         "year": e["year"],
         "amount": e["amount"]
       }).toList(),
-    };*//*
+    };*//**//*
 
     try {
       final response = await http.post(
@@ -296,7 +724,7 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
     } finally {
       setState(() => isLoading = false); // Hide loader after form submission
     }
-  }*/
+  }*//*
 
   @override
   Widget build(BuildContext context) {
@@ -324,7 +752,7 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
 
                 _buildTextField(addressController, "Address",required: true),
                 // Head Office Dropdown (Required)
-                /*Padding(
+                *//*Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
                   child: isLoadingHeadOffices
                       ? const CircularProgressIndicator() // Show loader while fetching head offices
@@ -353,7 +781,7 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
                         : null,
                   ),
 
-                ),*/
+                ),*//*
 
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -482,7 +910,7 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
                     ],
                   ),
                 ),
-                /*TextButton(
+                *//*TextButton(
                   onPressed: () async {
                     final result = await Navigator.push(
                       context,
@@ -544,7 +972,7 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
                       ),
                     ],
                   ),
-                ),*/
+                ),*//*
 
                 // Centered "Add Chemist" Button
                 Padding(
@@ -612,5 +1040,5 @@ Widget _sectionTitle(String title) => Padding(
       ),
     ),
   ),
-);
+);*/
 
