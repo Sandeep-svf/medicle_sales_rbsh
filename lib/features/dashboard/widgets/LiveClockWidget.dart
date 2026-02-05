@@ -33,7 +33,7 @@ class _LiveClockWidgetState extends State<LiveClockWidget> {
         const Icon(
           Icons.access_time,
           size: 16,
-          color: Colors.grey,
+          color: Colors.white70,
         ),
         const SizedBox(width: 6),
         Text(
@@ -41,7 +41,7 @@ class _LiveClockWidgetState extends State<LiveClockWidget> {
               .format(DateTime.now()),
           style: const TextStyle(
             fontSize: 14,
-            color: Colors.black87,
+            color: Colors.white,
           ),
         ),
       ],

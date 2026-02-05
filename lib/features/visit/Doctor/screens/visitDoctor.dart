@@ -1,5 +1,8 @@
 import 'dart:convert';
-
+import 'dart:io';
+import 'package:flutter/services.dart';
+import 'package:image/image.dart' as img; // Rename to avoid conflict with Flutter Image
+import 'package:http_parser/http_parser.dart'; // For MediaType
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -17,12 +20,16 @@ import '../../../../../../utils/constants/colors.dart';
 import '../../../../../../utils/constants/text_strings.dart';
 import '../../../../../../utils/local_storage/auth_manager.dart';
 import '../../../../common/Model/DoctorVisitResponse.dart';
+import '../../../../utils/camera/CameraLocationResult.dart';
+import '../../../../utils/camera/image_overlay_utils.dart';
 import '../../../../utils/http/http_client.dart';
 import '../../../addDoctor/controllers/DoctroController.dart';
 import '../../../product/controller/ProductController.dart';
+import '../../GeoVerificationScreen.dart';
 import '../controllers/visitListController.dart';
 import '../models/visitSalesData.dart';
 import 'ScheduleVisitScreen.dart';
+
 
 class VisitDoctorScreen extends StatefulWidget {
   const VisitDoctorScreen({super.key});
@@ -35,7 +42,8 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = "";
 
-  final DoctorListController _doctorListController = Get.put(DoctorListController());
+  final DoctorListController _doctorListController = Get.put(
+      DoctorListController());
 
   late VisitListController _visitListController;
   final AuthManager authManager = AuthManager();
@@ -130,12 +138,17 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
   // Helper to get friendly name for filter
   String _getFilterName(VisitDateFilter filter) {
     switch (filter) {
-      case VisitDateFilter.today: return "Today";
-      case VisitDateFilter.last7Days: return "Last 7 Days";
-      case VisitDateFilter.last15Days: return "Last 15 Days";
+      case VisitDateFilter.today:
+        return "Today";
+      case VisitDateFilter.last7Days:
+        return "Last 7 Days";
+      case VisitDateFilter.last15Days:
+        return "Last 15 Days";
       case VisitDateFilter.custom:
         if (_selectedDateRange != null) {
-          return "${DateFormat('MMM dd').format(_selectedDateRange!.start)} - ${DateFormat('MMM dd').format(_selectedDateRange!.end)}";
+          return "${DateFormat('MMM dd').format(
+              _selectedDateRange!.start)} - ${DateFormat('MMM dd').format(
+              _selectedDateRange!.end)}";
         }
         return "Custom Range";
     }
@@ -209,7 +222,9 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
                   // --- CALCULATE SUMMARY STATS ---
                   final allVisits = _visitListController.salesList;
                   final int totalVisits = allVisits.length;
-                  final int confirmedVisits = allVisits.where((v) => v.confirmed == true).length;
+                  final int confirmedVisits = allVisits
+                      .where((v) => v.confirmed == true)
+                      .length;
                   final int pendingVisits = totalVisits - confirmedVisits;
 
                   // --- FILTER LOGIC (SEARCH) ---
@@ -225,12 +240,14 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
                   return Column(
                     children: [
                       // --- STATUS SUMMARY WIDGET ---
-                      _buildStatusSummaryDashboard(totalVisits, confirmedVisits, pendingVisits),
+                      _buildStatusSummaryDashboard(
+                          totalVisits, confirmedVisits, pendingVisits),
 
                       const SizedBox(height: 10),
 
                       if (filteredDoctors.isEmpty)
-                        const Expanded(child: Center(child: Text("No doctors found matching your search.")))
+                        const Expanded(child: Center(child: Text(
+                            "No doctors found matching your search.")))
                       else
                         Expanded(
                           child: LayoutBuilder(
@@ -239,16 +256,26 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
 
                               // 3. Reusable Card Builder Function
                               Widget buildCard(VisitSalesLogModel doctorVisit) {
-                                final doctorName = doctorVisit.doctor?.name ?? "Unknown Doctor";
-                                final String initials = doctorName.trim().isNotEmpty
-                                    ? doctorName.trim().substring(0, 1).toUpperCase()
+                                final doctorName = doctorVisit.doctor?.name ??
+                                    "Unknown Doctor";
+                                final String initials = doctorName
+                                    .trim()
+                                    .isNotEmpty
+                                    ? doctorName
+                                    .trim()
+                                    .substring(0, 1)
+                                    .toUpperCase()
                                     : "?";
 
                                 // Status Helpers
                                 final isConfirmed = doctorVisit.confirmed;
-                                final statusColor = isConfirmed ? TColors.success : TColors.primary;
-                                final statusText = isConfirmed ? "Completed" : "Action Needed";
-                                final statusIcon = isConfirmed ? Icons.check_circle : Icons.pending;
+                                final statusColor = isConfirmed ? TColors
+                                    .success : TColors.primary;
+                                final statusText = isConfirmed
+                                    ? "Completed"
+                                    : "Action Needed";
+                                final statusIcon = isConfirmed ? Icons
+                                    .check_circle : Icons.pending;
 
                                 // Priority Logic (Placeholder)
                                 const String priority = "C";
@@ -259,7 +286,8 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
                                     color: Colors.white,
                                     borderRadius: BorderRadius.circular(16),
                                     border: Border.all(
-                                        color: TColors.primary.withOpacity(0.4), width: 1),
+                                        color: TColors.primary.withOpacity(0.4),
+                                        width: 1),
                                     boxShadow: [
                                       BoxShadow(
                                         color: Colors.black.withOpacity(0.06),
@@ -271,7 +299,8 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
                                   clipBehavior: Clip.antiAlias,
                                   child: IntrinsicHeight(
                                     child: Row(
-                                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                                      crossAxisAlignment: CrossAxisAlignment
+                                          .stretch,
                                       children: [
                                         // Left Colored Strip
                                         Container(width: 6, color: statusColor),
@@ -283,30 +312,38 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
                                             children: [
                                               // --- Header Section ---
                                               Container(
-                                                padding: const EdgeInsets.all(16.0),
+                                                padding: const EdgeInsets.all(
+                                                    16.0),
                                                 decoration: BoxDecoration(
-                                                  color: statusColor.withOpacity(0.04),
+                                                  color: statusColor
+                                                      .withOpacity(0.04),
                                                 ),
                                                 child: Row(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  crossAxisAlignment: CrossAxisAlignment
+                                                      .start,
                                                   children: [
                                                     // Avatar
                                                     Container(
-                                                      padding: const EdgeInsets.all(2),
+                                                      padding: const EdgeInsets
+                                                          .all(2),
                                                       decoration: BoxDecoration(
                                                         shape: BoxShape.circle,
                                                         border: Border.all(
-                                                            color: statusColor.withOpacity(0.3),
+                                                            color: statusColor
+                                                                .withOpacity(
+                                                                0.3),
                                                             width: 2),
                                                       ),
                                                       child: CircleAvatar(
                                                         radius: 22,
-                                                        backgroundColor: Colors.white,
+                                                        backgroundColor: Colors
+                                                            .white,
                                                         child: Text(
                                                           initials,
                                                           style: TextStyle(
                                                             fontSize: 18,
-                                                            fontWeight: FontWeight.bold,
+                                                            fontWeight: FontWeight
+                                                                .bold,
                                                             color: statusColor,
                                                           ),
                                                         ),
@@ -317,62 +354,88 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
                                                     // Name, Date & Priority
                                                     Expanded(
                                                       child: Column(
-                                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                                        crossAxisAlignment: CrossAxisAlignment
+                                                            .start,
                                                         children: [
                                                           Row(
-                                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                                            mainAxisAlignment: MainAxisAlignment
+                                                                .spaceBetween,
+                                                            crossAxisAlignment: CrossAxisAlignment
+                                                                .start,
                                                             children: [
                                                               Expanded(
                                                                 child: Text(
                                                                   doctorName,
                                                                   style: const TextStyle(
                                                                     fontSize: 16,
-                                                                    fontWeight: FontWeight.bold,
-                                                                    color: Colors.black87,
+                                                                    fontWeight: FontWeight
+                                                                        .bold,
+                                                                    color: Colors
+                                                                        .black87,
                                                                   ),
                                                                   maxLines: 1,
-                                                                  overflow: TextOverflow.ellipsis,
+                                                                  overflow: TextOverflow
+                                                                      .ellipsis,
                                                                 ),
                                                               ),
                                                               // Priority Badge
                                                               Container(
-                                                                padding: const EdgeInsets.symmetric(
-                                                                    horizontal: 8, vertical: 4),
+                                                                padding: const EdgeInsets
+                                                                    .symmetric(
+                                                                    horizontal: 8,
+                                                                    vertical: 4),
                                                                 decoration: BoxDecoration(
-                                                                  color: priorityColor.withOpacity(0.1),
-                                                                  borderRadius: BorderRadius.circular(6),
-                                                                  border: Border.all(
-                                                                      color: priorityColor.withOpacity(0.3)),
+                                                                  color: priorityColor
+                                                                      .withOpacity(
+                                                                      0.1),
+                                                                  borderRadius: BorderRadius
+                                                                      .circular(
+                                                                      6),
+                                                                  border: Border
+                                                                      .all(
+                                                                      color: priorityColor
+                                                                          .withOpacity(
+                                                                          0.3)),
                                                                 ),
                                                                 child: Text(
                                                                   "Priority $priority",
                                                                   style: TextStyle(
                                                                     fontSize: 10,
-                                                                    fontWeight: FontWeight.bold,
+                                                                    fontWeight: FontWeight
+                                                                        .bold,
                                                                     color: priorityColor,
                                                                   ),
                                                                 ),
                                                               ),
                                                             ],
                                                           ),
-                                                          const SizedBox(height: 6),
+                                                          const SizedBox(
+                                                              height: 6),
                                                           Row(
                                                             children: [
-                                                              Icon(Icons.calendar_today_rounded,
+                                                              Icon(Icons
+                                                                  .calendar_today_rounded,
                                                                   size: 14,
-                                                                  color: Colors.grey[600]),
-                                                              const SizedBox(width: 4),
+                                                                  color: Colors
+                                                                      .grey[600]),
+                                                              const SizedBox(
+                                                                  width: 4),
                                                               Expanded(
                                                                 child: Text(
-                                                                  doctorVisit.date?.toString() ?? "Unknown Date",
+                                                                  doctorVisit
+                                                                      .date
+                                                                      ?.toString() ??
+                                                                      "Unknown Date",
                                                                   style: TextStyle(
                                                                     fontSize: 12,
-                                                                    color: Colors.grey[600],
-                                                                    fontWeight: FontWeight.w500,
+                                                                    color: Colors
+                                                                        .grey[600],
+                                                                    fontWeight: FontWeight
+                                                                        .w500,
                                                                   ),
                                                                   maxLines: 1,
-                                                                  overflow: TextOverflow.ellipsis,
+                                                                  overflow: TextOverflow
+                                                                      .ellipsis,
                                                                 ),
                                                               ),
                                                             ],
@@ -386,7 +449,8 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
 
                                               // --- Body Section ---
                                               Padding(
-                                                padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                                                padding: const EdgeInsets
+                                                    .fromLTRB(16, 16, 16, 12),
                                                 child: Column(
                                                   children: [
                                                     // --- Rep Name & Status Row ---
@@ -394,33 +458,46 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
                                                       children: [
                                                         Expanded(
                                                           child: Column(
-                                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                                            crossAxisAlignment: CrossAxisAlignment
+                                                                .start,
                                                             children: [
                                                               Text(
                                                                 "SALES REP",
                                                                 style: TextStyle(
                                                                   fontSize: 10,
-                                                                  color: Colors.grey[500],
-                                                                  fontWeight: FontWeight.w700,
+                                                                  color: Colors
+                                                                      .grey[500],
+                                                                  fontWeight: FontWeight
+                                                                      .w700,
                                                                   letterSpacing: 0.5,
                                                                 ),
                                                               ),
-                                                              const SizedBox(height: 4),
+                                                              const SizedBox(
+                                                                  height: 4),
                                                               Row(
                                                                 children: [
-                                                                  Icon(Icons.person_rounded,
+                                                                  Icon(Icons
+                                                                      .person_rounded,
                                                                       size: 16,
-                                                                      color: Colors.grey[700]),
-                                                                  const SizedBox(width: 6),
+                                                                      color: Colors
+                                                                          .grey[700]),
+                                                                  const SizedBox(
+                                                                      width: 6),
                                                                   Expanded(
                                                                     child: Text(
-                                                                      doctorVisit.user?.name ?? 'N/A',
+                                                                      doctorVisit
+                                                                          .user
+                                                                          ?.name ??
+                                                                          'N/A',
                                                                       style: const TextStyle(
                                                                           fontSize: 13,
-                                                                          fontWeight: FontWeight.w600,
-                                                                          color: Colors.black87),
+                                                                          fontWeight: FontWeight
+                                                                              .w600,
+                                                                          color: Colors
+                                                                              .black87),
                                                                       maxLines: 1,
-                                                                      overflow: TextOverflow.ellipsis,
+                                                                      overflow: TextOverflow
+                                                                          .ellipsis,
                                                                     ),
                                                                   ),
                                                                 ],
@@ -430,23 +507,32 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
                                                         ),
 
                                                         Container(
-                                                          padding: const EdgeInsets.symmetric(
-                                                              horizontal: 8, vertical: 4),
+                                                          padding: const EdgeInsets
+                                                              .symmetric(
+                                                              horizontal: 8,
+                                                              vertical: 4),
                                                           decoration: BoxDecoration(
-                                                            color: statusColor.withOpacity(0.1),
-                                                            borderRadius: BorderRadius.circular(8),
+                                                            color: statusColor
+                                                                .withOpacity(
+                                                                0.1),
+                                                            borderRadius: BorderRadius
+                                                                .circular(8),
                                                           ),
                                                           child: Row(
-                                                            mainAxisSize: MainAxisSize.min,
+                                                            mainAxisSize: MainAxisSize
+                                                                .min,
                                                             children: [
                                                               Icon(statusIcon,
-                                                                  size: 12, color: statusColor),
-                                                              const SizedBox(width: 4),
+                                                                  size: 12,
+                                                                  color: statusColor),
+                                                              const SizedBox(
+                                                                  width: 4),
                                                               Text(
                                                                 statusText,
                                                                 style: TextStyle(
                                                                   fontSize: 10,
-                                                                  fontWeight: FontWeight.bold,
+                                                                  fontWeight: FontWeight
+                                                                      .bold,
                                                                   color: statusColor,
                                                                 ),
                                                               ),
@@ -461,41 +547,58 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
                                                     // --- Notes ---
                                                     Container(
                                                       width: double.infinity,
-                                                      padding: const EdgeInsets.all(12),
+                                                      padding: const EdgeInsets
+                                                          .all(12),
                                                       decoration: BoxDecoration(
                                                         color: Colors.grey[50],
-                                                        borderRadius: BorderRadius.circular(10),
-                                                        border: Border.all(color: Colors.grey[200]!),
+                                                        borderRadius: BorderRadius
+                                                            .circular(10),
+                                                        border: Border.all(
+                                                            color: Colors
+                                                                .grey[200]!),
                                                       ),
                                                       child: Column(
-                                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                                        crossAxisAlignment: CrossAxisAlignment
+                                                            .start,
                                                         children: [
                                                           Text(
                                                             "CALL NOTES",
                                                             maxLines: 1,
                                                             style: TextStyle(
                                                               fontSize: 10,
-                                                              color: Colors.grey[500],
-                                                              fontWeight: FontWeight.w700,
+                                                              color: Colors
+                                                                  .grey[500],
+                                                              fontWeight: FontWeight
+                                                                  .w700,
                                                               letterSpacing: 0.5,
                                                             ),
                                                           ),
-                                                          const SizedBox(height: 4),
+                                                          const SizedBox(
+                                                              height: 4),
                                                           Text(
-                                                            doctorVisit.notes?.isNotEmpty == true
-                                                                ? doctorVisit.notes!
+                                                            doctorVisit.notes
+                                                                ?.isNotEmpty ==
+                                                                true
+                                                                ? doctorVisit
+                                                                .notes!
                                                                 : "No notes provided.",
                                                             style: TextStyle(
                                                               fontSize: 13,
-                                                              color: Colors.grey[700],
+                                                              color: Colors
+                                                                  .grey[700],
                                                               height: 1.4,
                                                               fontStyle:
-                                                              doctorVisit.notes?.isNotEmpty == true
-                                                                  ? FontStyle.normal
-                                                                  : FontStyle.italic,
+                                                              doctorVisit.notes
+                                                                  ?.isNotEmpty ==
+                                                                  true
+                                                                  ? FontStyle
+                                                                  .normal
+                                                                  : FontStyle
+                                                                  .italic,
                                                             ),
                                                             maxLines: 1,
-                                                            overflow: TextOverflow.ellipsis,
+                                                            overflow: TextOverflow
+                                                                .ellipsis,
                                                           ),
                                                         ],
                                                       ),
@@ -508,55 +611,66 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
                                                       child: ElevatedButton(
                                                         onPressed: isConfirmed
                                                             ? () {
-                                                          ScaffoldMessenger.of(context)
+                                                          ScaffoldMessenger
+                                                              .of(
+                                                              context)
                                                               .showSnackBar(
                                                             const SnackBar(
-                                                              content: Text(
-                                                                  'You have already marked this visit confirmed.'),
-                                                              backgroundColor: Colors.orange,
-                                                            ),
+                                                                content: Text(
+                                                                    'You have already marked this visit confirmed.'),
+                                                                backgroundColor: Colors
+                                                                    .orange),
                                                           );
                                                         }
-                                                            : () async {
-                                                          List<String> selectedProducts =
-                                                          await _showProductSelectionDialog(
-                                                              context);
-                                                          _confirmVisit(
+                                                            : () {
+                                                          // CALL THE NEW FLOW
+                                                          _handleVisitConfirmationFlow(
                                                               context,
-                                                              doctorVisit.id,
-                                                              selectedProducts);
+                                                              doctorVisit);
                                                         },
-                                                        style: ElevatedButton.styleFrom(
+                                                        style: ElevatedButton
+                                                            .styleFrom(
                                                           backgroundColor: isConfirmed
                                                               ? TColors.success
                                                               : TColors.primary,
-                                                          foregroundColor: Colors.white,
-                                                          elevation: isConfirmed ? 0 : 2,
+                                                          foregroundColor: Colors
+                                                              .white,
+                                                          elevation: isConfirmed
+                                                              ? 0
+                                                              : 2,
                                                           shadowColor: (isConfirmed
                                                               ? TColors.success
                                                               : TColors.primary)
                                                               .withOpacity(0.4),
                                                           shape: RoundedRectangleBorder(
-                                                            borderRadius: BorderRadius.circular(12),
-                                                          ),
-                                                          minimumSize: const Size(double.infinity, 44),
+                                                              borderRadius: BorderRadius
+                                                                  .circular(
+                                                                  12)),
+                                                          minimumSize: const Size(
+                                                              double.infinity,
+                                                              44),
                                                         ),
                                                         child: Row(
-                                                          mainAxisAlignment: MainAxisAlignment.center,
+                                                          mainAxisAlignment: MainAxisAlignment
+                                                              .center,
                                                           children: [
-                                                            Icon(
-                                                                isConfirmed
-                                                                    ? Icons.verified
-                                                                    : Icons.touch_app_rounded,
+                                                            Icon(isConfirmed
+                                                                ? Icons.verified
+                                                                : Icons
+                                                                .touch_app_rounded,
                                                                 size: 20),
-                                                            const SizedBox(width: 8),
+                                                            const SizedBox(
+                                                                width: 8),
                                                             Text(
                                                               isConfirmed
-                                                                  ? TTexts.visitConfirmed
-                                                                  : TTexts.confirmVisit,
+                                                                  ? TTexts
+                                                                  .visitConfirmed
+                                                                  : TTexts
+                                                                  .confirmVisit,
                                                               style: const TextStyle(
                                                                   fontSize: 15,
-                                                                  fontWeight: FontWeight.bold),
+                                                                  fontWeight: FontWeight
+                                                                      .bold),
                                                             ),
                                                           ],
                                                         ),
@@ -576,14 +690,18 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
 
                               if (isTablet) {
                                 final bool isLandscape =
-                                    constraints.maxWidth > constraints.maxHeight;
+                                    constraints.maxWidth >
+                                        constraints.maxHeight;
                                 final int crossAxisCount = isLandscape ? 3 : 2;
                                 double padding = 16.0;
                                 double spacing = 16.0;
-                                double totalSpacing = (padding * 2) + ((crossAxisCount - 1) * spacing);
-                                double itemWidth = (constraints.maxWidth - totalSpacing) / crossAxisCount;
+                                double totalSpacing = (padding * 2) +
+                                    ((crossAxisCount - 1) * spacing);
+                                double itemWidth = (constraints.maxWidth -
+                                    totalSpacing) / crossAxisCount;
                                 double requiredHeight = 330.0;
-                                double childAspectRatio = itemWidth / requiredHeight;
+                                double childAspectRatio = itemWidth /
+                                    requiredHeight;
 
                                 return GridView.builder(
                                   padding: EdgeInsets.all(padding),
@@ -602,10 +720,13 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 16, vertical: 12),
                                   itemCount: filteredDoctors.length,
-                                  itemBuilder: (context, index) => Padding(
-                                    padding: const EdgeInsets.only(bottom: 16.0),
-                                    child: buildCard(filteredDoctors[index]),
-                                  ),
+                                  itemBuilder: (context, index) =>
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                            bottom: 16.0),
+                                        child: buildCard(
+                                            filteredDoctors[index]),
+                                      ),
                                 );
                               }
                             },
@@ -648,18 +769,26 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
         ),
         child: Row(
           children: [
-            _buildStatusCard("Total", total.toString(), TColors.primary, Icons.calendar_today),
-            Container(width: 1, height: 40, color: Colors.grey.withOpacity(0.2)), // Divider
-            _buildStatusCard("Done", confirmed.toString(), TColors.success, Icons.check_circle_outline),
-            Container(width: 1, height: 40, color: Colors.grey.withOpacity(0.2)), // Divider
-            _buildStatusCard("Pending", pending.toString(), Colors.orange, Icons.pending_outlined),
+            _buildStatusCard("Total", total.toString(), TColors.primary,
+                Icons.calendar_today),
+            Container(
+                width: 1, height: 40, color: Colors.grey.withOpacity(0.2)),
+            // Divider
+            _buildStatusCard("Done", confirmed.toString(), TColors.success,
+                Icons.check_circle_outline),
+            Container(
+                width: 1, height: 40, color: Colors.grey.withOpacity(0.2)),
+            // Divider
+            _buildStatusCard("Pending", pending.toString(), Colors.orange,
+                Icons.pending_outlined),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildStatusCard(String label, String count, Color color, IconData icon) {
+  Widget _buildStatusCard(String label, String count, Color color,
+      IconData icon) {
     return Expanded(
       child: Column(
         children: [
@@ -715,7 +844,8 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
       selectedColor: TColors.primary,
       backgroundColor: Colors.grey[200],
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      side: BorderSide(color: isSelected ? TColors.primary : Colors.transparent),
+      side: BorderSide(
+          color: isSelected ? TColors.primary : Colors.transparent),
       showCheckmark: false,
     );
   }
@@ -792,8 +922,8 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
 
   // --- Methods from original code (Add Product, Confirm, etc) ---
 
-  void _showProductSelectionBeforeConfirm(
-      BuildContext context, String visitId) async {
+  void _showProductSelectionBeforeConfirm(BuildContext context,
+      String visitId) async {
     // Included via logic flow in cards
   }
 
@@ -822,8 +952,10 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
                     return const Center(child: Text("No products available."));
                   }
 
-                  final filteredList = productController.productList.where((product) {
-                    return product.name.toLowerCase().contains(searchQuery.value);
+                  final filteredList = productController.productList.where((
+                      product) {
+                    return product.name.toLowerCase().contains(
+                        searchQuery.value);
                   }).toList();
 
                   return Column(
@@ -832,7 +964,8 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
                         decoration: InputDecoration(
                           prefixIcon: const Icon(Icons.search),
                           hintText: "Search products...",
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8)),
                         ),
                         onChanged: (value) {
                           searchQuery.value = value.toLowerCase();
@@ -841,12 +974,14 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
                       const SizedBox(height: 10),
                       Expanded(
                         child: filteredList.isEmpty
-                            ? const Center(child: Text("No matching products found."))
+                            ? const Center(
+                            child: Text("No matching products found."))
                             : ListView.builder(
                           itemCount: filteredList.length,
                           itemBuilder: (_, i) {
                             final product = filteredList[i];
-                            final isSelected = selectedProductIds.contains(product.id);
+                            final isSelected = selectedProductIds.contains(
+                                product.id);
                             return CheckboxListTile(
                               value: isSelected,
                               title: Text(product.name),
@@ -858,7 +993,8 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
                                   width: 40,
                                   height: 40,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) => const Icon(Icons.image_not_supported),
+                                  errorBuilder: (_, __, ___) =>
+                                  const Icon(Icons.image_not_supported),
                                 ),
                               ),
                               onChanged: (val) {
@@ -884,8 +1020,10 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
                   child: const Text("Skip"),
                 ),
                 ElevatedButton(
-                  onPressed: () => Navigator.pop(context, selectedProductIds.toList()),
-                  style: ElevatedButton.styleFrom(backgroundColor: TColors.primary),
+                  onPressed: () =>
+                      Navigator.pop(context, selectedProductIds.toList()),
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: TColors.primary),
                   child: const Text("Next"),
                 ),
               ],
@@ -896,7 +1034,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
     ) ?? <String>[];
   }
 
-  void _confirmVisit(BuildContext context, String visitId, List<String> selectedProducts) async {
+  /* void _confirmVisit(BuildContext context, String visitId, List<String> selectedProducts) async {
     bool confirmed = false;
 
     await QuickAlert.show(
@@ -996,5 +1134,364 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
         width: 300,
       );
     }
+  }*/
+
+  // 1. FLOW CONTROLLER
+// 1. FLOW CONTROLLER
+  // 1. FLOW CONTROLLER
+// --- REPLACED FLOW CONTROLLER ---
+  void _handleVisitConfirmationFlow(BuildContext context, VisitSalesLogModel doctorVisit) async {
+    // 1. Check Requirement
+    bool isImageRequired = doctorVisit.doctor?.geoImageStatus == false;
+
+    if (isImageRequired) {
+      // 2. Navigate to New Geo Verification Screen
+      // The screen returns TRUE if upload was successful, null/false otherwise
+      final bool? success = await Get.to(() => GeoVerificationScreen(
+        doctorId: doctorVisit.doctorId,
+        doctorName: doctorVisit.doctor?.name ?? "Doctor",
+      ));
+
+      // 3. If they came back without verifying, stop.
+      if (success != true) {
+        return;
+      }
+    }
+
+    // 4. Select Products (Only reached if verification passed or wasn't needed)
+    if (!mounted) return;
+    List<String> selectedProducts = await _showProductSelectionDialog(context);
+
+    // 5. Final Confirm API
+    if (!mounted) return;
+    _confirmVisit(context, doctorVisit.id, selectedProducts);
+  }
+
+  // ... [Keep other existing imports] ...
+
+  Future<File?> _captureAndProcessImage(BuildContext context) async {
+    // 1. Capture Image
+    final result = await CameraLocationService.captureImageWithLocation();
+    if (result == null) return null;
+
+    // 2. Show Loader
+    QuickAlert.show(
+      context: context,
+      type: QuickAlertType.loading,
+      title: "Processing",
+      text: "Adding Watermark & Logo...",
+      disableBackBtn: true,
+    );
+
+    try {
+      final File originalFile = result.image;
+      final bytes = await originalFile.readAsBytes();
+      final img.Image? targetImage = img.decodeImage(bytes);
+
+      if (targetImage != null) {
+        // --- CONFIGURATION ---
+        // TODO: REPLACE WITH YOUR EXACT LOGO PATH
+        const String logoAssetPath = "assets/logos/logo.png";
+
+        // 3. Prepare Data
+        String dateText = DateFormat('dd-MM-yyyy HH:mm').format(DateTime.now());
+        String latText = "Lat: ${result.latitude.toStringAsFixed(5)}";
+        String lngText = "Lng: ${result.longitude.toStringAsFixed(5)}";
+
+        // 4. Draw Black Background Bar (Bottom 15% of image)
+        int barHeight = (targetImage.height * 0.15).toInt();
+        int barY = targetImage.height - barHeight;
+
+        img.fillRect(
+          targetImage,
+          x1: 0,
+          y1: barY,
+          x2: targetImage.width,
+          y2: targetImage.height,
+          color: img.ColorRgb8(0, 0, 0), // Black
+        );
+
+        // 5. Draw Logo (Try to load from assets)
+        try {
+          final ByteData assetData = await rootBundle.load(logoAssetPath);
+          final Uint8List logoBytes = assetData.buffer.asUint8List();
+          img.Image? logo = img.decodeImage(logoBytes);
+
+          if (logo != null) {
+            // Resize logo to fit inside the bar (padding 10px)
+            int logoHeight = barHeight - 20;
+            img.Image resizedLogo = img.copyResize(logo, height: logoHeight);
+
+            // Draw Logo on the left side
+            img.compositeImage(
+                targetImage,
+                resizedLogo,
+                dstX: 20,
+                dstY: barY + 10
+            );
+          }
+        } catch (e) {
+          print("Logo not found or could not be loaded: $e");
+          // Proceed without logo if it fails
+        }
+
+        // 6. Draw Text (White color)
+        // We use the simple bitmap font provided by the package
+        int textX = 150; // Offset text to the right of the logo
+        int textY = barY + 20;
+        int lineHeight = 30;
+
+        // Draw Date
+        img.drawString(
+          targetImage,
+          "Date: $dateText",
+          font: img.arial24,
+          x: textX,
+          y: textY,
+          color: img.ColorRgb8(255, 255, 255), // White
+        );
+
+        // Draw Lat
+        img.drawString(
+          targetImage,
+          latText,
+          font: img.arial24,
+          x: textX,
+          y: textY + lineHeight,
+          color: img.ColorRgb8(255, 255, 255),
+        );
+
+        // Draw Lng
+        img.drawString(
+          targetImage,
+          lngText,
+          font: img.arial24,
+          x: textX,
+          y: textY + (lineHeight * 2),
+          color: img.ColorRgb8(255, 255, 255),
+        );
+
+        // 7. Save File
+        final newImageBytes = img.encodeJpg(targetImage, quality: 90);
+        final File watermarkedFile = File(originalFile.path)..writeAsBytesSync(newImageBytes);
+
+        return watermarkedFile;
+      }
+      return originalFile; // Fallback
+    } catch (e) {
+      print("Watermark Error: $e");
+      return null;
+    } finally {
+      // 8. Close Loader
+      Navigator.of(context, rootNavigator: true).pop();
+    }
+  }  // 3. API CALL (MULTIPART)
+// 3. FINAL CONFIRM VISIT (Simplified)
+  void _confirmVisit(BuildContext context, String visitId,
+      List<String> selectedProducts) async {
+    bool confirmed = false;
+
+    await QuickAlert.show(
+      context: context,
+      type: QuickAlertType.confirm,
+      title: "Confirm Visit",
+      text: "Submit this visit?",
+      confirmBtnText: "Yes",
+      onConfirmBtnTap: () {
+        confirmed = true;
+        Navigator.of(context, rootNavigator: true).pop();
+      },
+    );
+
+    if (!confirmed) return;
+
+    QuickAlert.show(
+        context: context, type: QuickAlertType.loading, title: "Submitting...");
+
+    try {
+      final pos = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high);
+      final uri = Uri.parse(
+          '${THttpHelper.baseUrl}/doctor-visits/$visitId/confirm');
+
+      // Standard JSON Request
+      final response = await http.put(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'userLatitude': pos.latitude,
+          'userLongitude': pos.longitude,
+          'notes': "",
+          'productIds': selectedProducts,
+        }),
+      );
+
+      Navigator.of(context, rootNavigator: true).pop(); // Close Loader
+
+      if (response.statusCode == 200) {
+        final body = jsonDecode(response.body);
+        if (body['status'] == true) {
+          Get.snackbar(
+              "Success", "Visit Confirmed!", backgroundColor: TColors.success,
+              colorText: Colors.white);
+
+          // Refresh List
+          _visitListController.fetchSalesList(
+              filter: _selectedFilter,
+              startDate: _selectedDateRange?.start,
+              endDate: _selectedDateRange?.end
+          );
+        } else {
+          QuickAlert.show(context: context,
+              type: QuickAlertType.error,
+              text: body['message'] ?? "Error");
+        }
+      } else {
+        QuickAlert.show(context: context,
+            type: QuickAlertType.error,
+            text: "Server Error: ${response.statusCode}");
+      }
+    } catch (e) {
+      Navigator.of(context, rootNavigator: true).pop();
+      QuickAlert.show(
+          context: context, type: QuickAlertType.error, text: "Error: $e");
+    }
+  }
+
+  // 2. NEW: UPLOAD DOCTOR GEO IMAGE
+  Future<bool> _uploadDoctorGeoImage(BuildContext context, String doctorId, File imageFile) async {
+    QuickAlert.show(
+      context: context,
+      type: QuickAlertType.loading,
+      title: "Uploading...",
+      text: "Please wait",
+    );
+
+    try {
+      String? token = await authManager.getAuthToken();
+
+      if (token == null || token.isEmpty) {
+        Navigator.of(context, rootNavigator: true).pop();
+        Get.snackbar("Error", "Authentication failed. Please login again.");
+        return false;
+      }
+
+      var uri = Uri.parse('${THttpHelper.baseUrl}/doctors/$doctorId/geo-image');
+      var request = http.MultipartRequest('POST', uri);
+
+      // 1. Authorization Header
+      request.headers.addAll({
+        'Authorization': 'Bearer $token',
+      });
+
+      // 2. Add File with Explicit ContentType
+      var stream = http.ByteStream(imageFile.openRead());
+      var length = await imageFile.length();
+
+      var multipartFile = http.MultipartFile(
+        'geo_image',
+        stream,
+        length,
+        filename: 'geo_image.jpg', // Explicit filename
+        contentType: MediaType('image', 'jpeg'), // Explicit Type (Fixes your server error)
+      );
+
+      request.files.add(multipartFile);
+
+      var streamedResponse = await request.send();
+      var response = await http.Response.fromStream(streamedResponse);
+
+      Navigator.of(context, rootNavigator: true).pop(); // Close Loader
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        Get.snackbar("Success", "Photo Uploaded!", backgroundColor: TColors.primary, colorText: Colors.white);
+        return true;
+      } else {
+        // Show server response for debugging
+        QuickAlert.show(
+          context: context,
+          type: QuickAlertType.error,
+          text: "Upload Failed: ${response.statusCode}\n${response.body}",
+        );
+        return false;
+      }
+    } catch (e) {
+      Navigator.of(context, rootNavigator: true).pop();
+      QuickAlert.show(context: context, type: QuickAlertType.error, text: "Error: $e");
+      return false;
+    }
+  }  Future<bool?> _showImagePreviewDialog(BuildContext context, String doctorId, File imageFile) async {
+    return showDialog<bool>(
+      context: context,
+      barrierDismissible: false, // Force user to choose
+      builder: (BuildContext ctx) {
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          child: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min, // Wrap content height
+              children: [
+                const Text("Preview", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 10),
+
+                // --- THE IMAGE PREVIEW ---
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.file(
+                    imageFile,
+                    height: 250, // Fixed height for the "small box" feel
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // --- BUTTONS ---
+                Row(
+                  children: [
+                    // RETAKE BUTTON
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () {
+                          Navigator.of(ctx).pop(false); // Returns False -> Triggers Retake Loop
+                        },
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.red,
+                          side: const BorderSide(color: Colors.red),
+                        ),
+                        child: const Text("Retake"),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+
+                    // SUBMIT BUTTON
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          // Call your existing upload function
+                          bool success = await _uploadDoctorGeoImage(context, doctorId, imageFile);
+
+                          if (success) {
+                            Navigator.of(ctx).pop(true); // Returns True -> Moves to Next Step
+                          }
+                          // If fail, dialog stays open so they can try again
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: TColors.primary,
+                          foregroundColor: Colors.white,
+                        ),
+                        child: const Text("Submit"),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 }

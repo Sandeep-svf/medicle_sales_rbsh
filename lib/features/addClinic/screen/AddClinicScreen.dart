@@ -5,22 +5,28 @@ import '../../../utils/constants/colors.dart';
 import '../../addStokist/widets/AnnualGTurnOverSection.dart';
 import '../controllers/AddChemistController.dart';
 
+import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import '../../../utils/constants/colors.dart';
+import '../../addStokist/widets/AnnualGTurnOverSection.dart';
+import '../controllers/AddChemistController.dart';
+
 
 class AddChemistScreen extends StatelessWidget {
   const AddChemistScreen({Key? key}) : super(key: key);
 
-  final String _bannerAsset = "assets/logos/chemist_banner.png"; // Make sure this asset exists
+  final String _bannerAsset = "assets/logos/chemist_banner.png";
 
   @override
   Widget build(BuildContext context) {
-    // Put the controller
     final controller = Get.put(AddChemistController());
 
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F9),
       body: CustomScrollView(
         slivers: [
-          // 1. SLIVER APP BAR WITH BANNER
+          // 1. SLIVER APP BAR
           SliverAppBar(
             expandedHeight: 160.0,
             floating: false,
@@ -29,7 +35,7 @@ class AddChemistScreen extends StatelessWidget {
             leading: IconButton(
               icon: Container(
                 padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(color: Colors.black26, shape: BoxShape.circle),
+                decoration: const BoxDecoration(color: Colors.black26, shape: BoxShape.circle),
                 child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
               ),
               onPressed: () => Get.back(),
@@ -73,10 +79,10 @@ class AddChemistScreen extends StatelessWidget {
               padding: const EdgeInsets.all(20.0),
               child: Column(
                 children: [
-                  // --- TOP: IMAGE & LOCATION ---
+                  // --- TOP: IMAGE & LOCATION (Mandatory) ---
                   Row(
                     children: [
-                      Expanded(child: _buildImagePicker(controller,context)),
+                      Expanded(child: _buildImagePicker(controller, context)),
                       const SizedBox(width: 15),
                       Expanded(child: _buildLocationPicker(controller)),
                     ],
@@ -100,16 +106,17 @@ class AddChemistScreen extends StatelessWidget {
                           _buildSectionHeader("01", "Basic Details"),
                           const SizedBox(height: 15),
 
+                          // --- REQUIRED FIELDS ---
                           _buildTextField(controller.firmNameController, "Firm Name", Icons.store, required: true),
                           const SizedBox(height: 15),
                           _buildTextField(controller.contactPersonController, "Contact Person", Icons.person, required: true),
                           const SizedBox(height: 15),
 
-                          // Head Office Dropdown
+                          // Head Office Dropdown (Required)
                           Obx(() => DropdownButtonFormField<String>(
                             value: controller.selectedHeadOfficeId.value,
                             icon: const Icon(Icons.keyboard_arrow_down_rounded),
-                            decoration: _inputDecoration("Select Head Office", Icons.domain),
+                            decoration: _inputDecoration("Select Head Office *", Icons.domain),
                             items: controller.headOffices.map((office) {
                               return DropdownMenuItem<String>(
                                 value: office['id'],
@@ -121,33 +128,33 @@ class AddChemistScreen extends StatelessWidget {
                           )),
                           const SizedBox(height: 15),
 
-                          _buildTextField(controller.phoneController, "Mobile Number", Icons.phone, isNumber: true, required: true),
+                          // --- OPTIONAL FIELDS (Default "") ---
+                          _buildTextField(controller.phoneController, "Mobile Number", Icons.phone, isNumber: true, required: false),
                           const SizedBox(height: 15),
-                          _buildTextField(controller.emailController, "Email ID", Icons.email, keyboardType: TextInputType.emailAddress, required: true),
+                          _buildTextField(controller.emailController, "Email ID", Icons.email, keyboardType: TextInputType.emailAddress, required: false),
                           const SizedBox(height: 15),
-                          _buildTextField(controller.addressController, "Full Address", Icons.location_on_outlined, maxLines: 2, required: true),
+                          _buildTextField(controller.addressController, "Full Address", Icons.location_on_outlined, maxLines: 2, required: false),
 
                           const SizedBox(height: 30),
                           _buildSectionHeader("02", "Business Details"),
                           const SizedBox(height: 15),
 
-                          _buildTextField(controller.designationController, "Designation", Icons.badge_outlined),
+                          _buildTextField(controller.designationController, "Designation", Icons.badge_outlined, required: false),
                           const SizedBox(height: 15),
-                          _buildTextField(controller.drugLicenseNumberController, "Drug License No.", Icons.description_outlined, required: true),
+                          _buildTextField(controller.drugLicenseNumberController, "Drug License No.", Icons.description_outlined, required: false),
                           const SizedBox(height: 15),
-                          _buildTextField(controller.gstController, "GST No.", Icons.receipt_long),
+                          _buildTextField(controller.gstController, "GST No.", Icons.receipt_long, required: false),
                           const SizedBox(height: 15),
-                          _buildTextField(controller.yearsInBusinessController, "Years in Business", Icons.history, isNumber: true),
+
+                          // Optional Int (Default 0)
+                          _buildTextField(controller.yearsInBusinessController, "Years in Business", Icons.history, isNumber: true, required: false),
 
                           const SizedBox(height: 30),
                           _buildSectionHeader("03", "Turnover"),
                           const SizedBox(height: 10),
 
-                          // --- TURNOVER SECTION (Fixed GetX Issue) ---
-                          // We pass the actual list (not the Rx variable) to the widget
-                          // and update it via the callback
                           Obx(() => AnnualTurnoverSection(
-                            turnovers: controller.annualTurnovers.toList(), // Pass as List
+                            turnovers: controller.annualTurnovers.toList(),
                             onChanged: (updatedList) {
                               controller.updateTurnovers(updatedList);
                             },
@@ -191,7 +198,7 @@ class AddChemistScreen extends StatelessWidget {
 
   // ================= HELPER WIDGETS =================
 
-  // 1. Image Picker with View & Retake Buttons
+  // 1. Image Picker
   Widget _buildImagePicker(AddChemistController controller, BuildContext context) {
     return Container(
       height: 160,
@@ -203,7 +210,6 @@ class AddChemistScreen extends StatelessWidget {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
         child: Obx(() {
-          // A. Loading State
           if (controller.isImageProcessing.value) {
             return Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -215,18 +221,12 @@ class AddChemistScreen extends StatelessWidget {
             );
           }
 
-          // B. Image Captured State
           if (controller.chemistImage.value != null) {
             return Stack(
               fit: StackFit.expand,
               children: [
-                // 1. The Image
                 Image.file(controller.chemistImage.value!, fit: BoxFit.cover),
-
-                // 2. Dim Overlay (Optional, for better contrast)
                 Container(color: Colors.black12),
-
-                // 3. Control Buttons (Center Pill)
                 Center(
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -237,7 +237,6 @@ class AddChemistScreen extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // VIEW BUTTON
                         GestureDetector(
                           onTap: () => _showFullImage(context, controller.chemistImage.value!),
                           child: Container(
@@ -249,10 +248,7 @@ class AddChemistScreen extends StatelessWidget {
                             child: const Icon(Icons.visibility, color: TColors.primary, size: 20),
                           ),
                         ),
-
                         const SizedBox(width: 15),
-
-                        // RETAKE BUTTON
                         GestureDetector(
                           onTap: controller.captureImage,
                           child: Container(
@@ -272,7 +268,6 @@ class AddChemistScreen extends StatelessWidget {
             );
           }
 
-          // C. Empty State
           return InkWell(
             onTap: controller.captureImage,
             child: Column(
@@ -281,9 +276,9 @@ class AddChemistScreen extends StatelessWidget {
                 Icon(Icons.add_a_photo_outlined, size: 40, color: TColors.primary.withOpacity(0.6)),
                 const SizedBox(height: 10),
                 Text(
-                    "Capture\nPhoto",
+                    "Capture\nPhoto *",
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.grey[600], fontSize: 13, fontWeight: FontWeight.w600)
+                    style: TextStyle(color: Colors.red[400], fontSize: 13, fontWeight: FontWeight.w600)
                 ),
               ],
             ),
@@ -293,6 +288,7 @@ class AddChemistScreen extends StatelessWidget {
     );
   }
 
+  // 2. Location Picker
   Widget _buildLocationPicker(AddChemistController controller) {
     return InkWell(
       onTap: controller.pickLocation,
@@ -319,9 +315,13 @@ class AddChemistScreen extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               Text(
-                isSet ? "Location Set" : "Select Location",
+                isSet ? "Location Set" : "Select Location *",
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: isSet ? Colors.black : Colors.red[400]
+                ),
               ),
               if (isSet)
                 Padding(
@@ -352,15 +352,16 @@ class AddChemistScreen extends StatelessWidget {
     );
   }
 
+  // Updated Helper: required flag controls the validator and asterisk
   Widget _buildTextField(TextEditingController ctrl, String label, IconData icon, {bool isNumber = false, bool required = false, int maxLines = 1, TextInputType? keyboardType}) {
     return TextFormField(
       controller: ctrl,
       keyboardType: keyboardType ?? (isNumber ? TextInputType.number : TextInputType.text),
       maxLines: maxLines,
       style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-      decoration: _inputDecoration(label, icon),
+      decoration: _inputDecoration(required ? "$label *" : label, icon),
       validator: (v) {
-        if (required && (v == null || v.isEmpty)) return "Required";
+        if (required && (v == null || v.trim().isEmpty)) return "$label is required";
         return null;
       },
     );
@@ -380,7 +381,6 @@ class AddChemistScreen extends StatelessWidget {
     );
   }
 
-  // --- Helper: Show Full Image Popup ---
   void _showFullImage(BuildContext context, File imageFile) {
     showDialog(
       context: context,
@@ -390,7 +390,6 @@ class AddChemistScreen extends StatelessWidget {
         child: Stack(
           alignment: Alignment.topRight,
           children: [
-            // Full Image with Zoom
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
               child: InteractiveViewer(
@@ -400,8 +399,6 @@ class AddChemistScreen extends StatelessWidget {
                 child: Image.file(imageFile, fit: BoxFit.contain),
               ),
             ),
-
-            // Close Button
             Padding(
               padding: const EdgeInsets.all(10.0),
               child: GestureDetector(
@@ -423,7 +420,6 @@ class AddChemistScreen extends StatelessWidget {
     );
   }
 }
-
 
   // old working code without geo_image
  /*import 'package:flutter/material.dart';

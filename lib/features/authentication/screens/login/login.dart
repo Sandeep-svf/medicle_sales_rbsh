@@ -29,11 +29,11 @@ class LoginScreen extends StatelessWidget {
 
                 /// Loader (shows when logging in)
                 Obx(() => authController.isLoading.value
-                    ? Padding(
-                  padding: const EdgeInsets.only(top: 20),
+                    ? const Padding(
+                  padding: EdgeInsets.only(top: 20),
                   child: CircularProgressIndicator(),
                 )
-                    : SizedBox()),
+                    : const SizedBox()),
               ],
             ),
           ),

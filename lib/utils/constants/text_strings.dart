@@ -141,6 +141,8 @@ class TTexts {
  static const String pdfViewer = "PDF Viewer";
  static const String marketingMaterial = "Digital Material";
  static const String blog = "Social";
+ static const String holiday = "Holiday";
+ static const String leave = "Leave";
  static const String inbox = "Inbox";
  static const String tourPlans = "Tour & Plans";
  static const String appointments = "Appointments";

@@ -20,6 +20,7 @@ class Doctor {
   final DateTime createdAt;
   final DateTime updatedAt;
   final HeadOffice headOffice;
+  final bool geoImageStatus;
   final List<dynamic> visitHistory; // Added to support your UI code
 
   Doctor({
@@ -42,6 +43,7 @@ class Doctor {
     required this.createdAt,
     required this.updatedAt,
     required this.headOffice,
+    required this.geoImageStatus,
     this.visitHistory = const [],
   });
 
@@ -90,6 +92,8 @@ class Doctor {
           ? HeadOffice.fromJson(json['headOffice'])
           : HeadOffice(id: '', name: ''),
 
+
+      geoImageStatus: json["geo_image_status"] ?? false,
       // Default to empty list as it's missing in JSON but used in UI
       visitHistory: json['visitHistory'] ?? [],
     );

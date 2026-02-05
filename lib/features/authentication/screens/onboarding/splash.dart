@@ -1411,7 +1411,9 @@ import 'dart:async';
 import 'dart:isolate';
 import 'dart:ui';
 
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:background_locator_2/background_locator.dart';
 import 'package:background_locator_2/location_dto.dart';
@@ -1423,6 +1425,7 @@ import 'package:in_app_update/in_app_update.dart';
 
 import 'package:medicle_sales_rbsh/features/authentication/screens/login/login.dart';
 import '../../../../utils/device/movementdetector.dart';
+import '../../../../utils/local_storage/auth_manager.dart';
 import '../../../dashboard/screen/dashboard.dart';
 import '../../../../services/LocationController.dart';
 import '../../../../utils/constants/image_strings.dart';
@@ -1541,6 +1544,19 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
     _startFlow();
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      final notification = message.notification;
+
+      if (notification != null) {
+        print('FCM Foreground: ${notification.title}');
+
+        showPushNotification(
+          title: notification.title ?? 'New Message',
+          body: notification.body ?? '',
+        );
+      }
+    });
+
   }
 
   Future<void> _startFlow() async {
@@ -1594,6 +1610,31 @@ class _SplashScreenState extends State<SplashScreen> {
     _checkForUpdateAndLogin();
   }
 
+  void showPushNotification({
+    required String title,
+    required String body,
+  }) {
+    final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
+    const androidDetails = AndroidNotificationDetails(
+      'push_channel', //  NEW channel (separate from location)
+      'Push Notifications',
+      importance: Importance.max,
+      priority: Priority.high,
+    );
+
+    const notificationDetails =
+    NotificationDetails(android: androidDetails);
+
+    flutterLocalNotificationsPlugin.show(
+      DateTime.now().millisecondsSinceEpoch ~/ 1000, // unique ID
+      title,
+      body,
+      notificationDetails,
+    );
+  }
+
+
   Future<void> _requestPermissionsAndStart() async {
     await _requestNotificationPermission();
 
@@ -1627,6 +1668,7 @@ class _SplashScreenState extends State<SplashScreen> {
       print("Notification permission denied.");
     }
   }
+
 
   Future<void> _initBackgroundLocator() async {
     try {
@@ -1749,19 +1791,35 @@ class _SplashScreenState extends State<SplashScreen> {
 
 
   Future<void> _navigateAfterDelay() async {
-    final prefs = await SharedPreferences.getInstance();
-    final userId = prefs.getString("user_id");
+    final AuthManager authManager = AuthManager();
+
+    final String? userId = await authManager.getUserId();
+    final String? token  = await authManager.getAuthToken();
 
     await Future.delayed(const Duration(seconds: 2));
 
-    if (userId != null && userId.isNotEmpty) {
+    // BOTH must exist
+    if (userId != null &&
+        userId.isNotEmpty &&
+        token != null &&
+        token.isNotEmpty) {
+
       Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (_) => DashboardScreen()));
+        context,
+        MaterialPageRoute(builder: (_) => DashboardScreen()),
+      );
+
     } else {
+      // clean broken session (optional but recommended)
+      await authManager.logout();
+
       Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (_) => const LoginScreen()));
+        context,
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+      );
     }
   }
+
 
   @override
   Widget build(BuildContext context) {

@@ -2,11 +2,14 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:easy_stepper/easy_stepper.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:permission_handler_platform_interface/permission_handler_platform_interface.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dio/dio.dart' as dio;
@@ -16,6 +19,7 @@ import 'package:http_parser/http_parser.dart';
 
 // --- Imports specific to your project ---
 import '../../../utils/GlobalPermissionHelper/PermissionHelper.dart';
+import '../../../utils/camera/MediaPermissionHelper.dart';
 import '../../../utils/constants/colors.dart';
 import '../../../utils/http/http_client.dart';
 import '../../../utils/local_storage/auth_manager.dart';
@@ -348,114 +352,133 @@ class _PharmaDistributorFormScreenState
   }
 
   Future<void> _pickImageForKey(String key, {bool forceCamera = false}) async {
-    final granted = await PermissionHelper.checkAndRequestMediaPermissions();
+
+    final granted = await MediaPermissionHelper.requestCameraAndGallery();
+
     if (!granted) {
-      await PermissionHelper.openAppSettingsIfDenied();
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text('Please enable camera/gallery permissions.')));
+      _showSnack("Camera permission required");
+
+      if (await MediaPermissionHelper.isPermanentlyDenied()) {
+        _showSettingsDialog();
       }
       return;
     }
 
-    // --- Special Logic for Stockist Image (Geo Overlay) ---
+    // ---- STOCKIST IMAGE (CAMERA ONLY) ----
     if (key == 'Stockist Image') {
       try {
         CircularLoaderController.showLoader(context);
-        final CameraLocationResult? result = await CameraLocationService.captureImageWithLocation();
+
+        final result = await CameraLocationService.captureImageWithLocation();
+
         CircularLoaderController.hideLoader();
 
         if (result == null) return;
 
-        // Apply Overlay
-        final File layeredImage = await ImageOverlayUtil.addOverlay(
+        final File geoImage = await ImageOverlayUtil.addOverlay(
           original: result.image,
           lat: result.latitude,
           lng: result.longitude,
         );
 
-        // Also update location if missing
-        if (selectedlatitude == null || selectedlatitude!.isEmpty) {
-          setState(() {
-            selectedlatitude = result.latitude.toString();
-            selectedlongitude = result.longitude.toString();
-          });
-        }
-
-        // Save Image
         setState(() {
-          _documentImages[key] = layeredImage;
+          _documentImages[key] = geoImage;
           _uploadProgress[key] = 1.0;
+          selectedlatitude ??= result.latitude.toString();
+          selectedlongitude ??= result.longitude.toString();
         });
 
-        // Save to Draft
         await _saveFormDraft();
-        return; // Exit normal flow as we handled it specifically
       } catch (e) {
         CircularLoaderController.hideLoader();
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Camera Error: $e')));
-        return;
+        _showSnack("Camera error");
       }
-    }
-
-    // --- Normal Logic for Other Docs ---
-    if (_documentImages[key] != null && !forceCamera) {
-      _showImageActions(key, _documentImages[key]!);
       return;
     }
 
+    // ---- NORMAL CAMERA / GALLERY ----
     final source = await showModalBottomSheet<ImageSource?>(
       context: context,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(12))),
-      builder: (ctx) {
-        return SafeArea(
-          child: Wrap(
-            children: [
-              ListTile(
-                leading: const Icon(Icons.photo_camera),
-                title: const Text('Take Photo'),
-                onTap: () => Navigator.pop(ctx, ImageSource.camera),
-              ),
-              ListTile(
-                leading: const Icon(Icons.photo_library),
-                title: const Text('Choose from Gallery'),
-                onTap: () => Navigator.pop(ctx, ImageSource.gallery),
-              ),
-              ListTile(
-                title: const Center(child: Text('Cancel')),
-                onTap: () => Navigator.pop(ctx, null),
-              ),
-            ],
-          ),
-        );
-      },
+      builder: (_) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: const Text("Take Photo"),
+              onTap: () => Navigator.pop(context, ImageSource.camera),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text("Choose from Gallery"),
+              onTap: () => Navigator.pop(context, ImageSource.gallery),
+            ),
+          ],
+        ),
+      ),
     );
 
     if (source == null) return;
 
-    XFile? picked;
-    try {
-      picked = await _picker.pickImage(source: source, imageQuality: 90);
-    } catch (e) {
-      if (kDebugMode) print('picker error: $e');
-    }
+    final picked = await _picker.pickImage(
+      source: source,
+      imageQuality: 90,
+    );
+
     if (picked == null) return;
 
-    final compressed = await _compressImage(File(picked.path));
-    if (compressed == null) return;
-
     setState(() {
-      _documentImages[key] = compressed;
-      _uploadProgress[key] = 0.0;
-    });
-
-    final b64 = await _fileToBase64(compressed);
-    setState(() {
-      _base64Images[key] = b64.isEmpty ? null : b64;
+      _documentImages[key] = File(picked.path);
       _uploadProgress[key] = 1.0;
     });
 
     await _saveFormDraft();
+  }
+
+
+
+  void _showSettingsDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Permission Required"),
+        content: const Text("You have previously denied permissions. Please enable Camera and Photos in App Settings to continue."),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Cancel")),
+          TextButton(
+              onPressed: () {
+                Navigator.pop(ctx);
+                openAppSettings(); // Function from permission_handler
+              },
+              child: const Text("Settings")
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _proceedToPickImage(String key, bool forceCamera) {
+    // Your existing logic to show ModalBottomSheet and pick image...
+  }
+
+// Helper function to show the dialog if they denied the popup
+  void _showPermissionDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Permission Required"),
+        content: const Text("To upload documents, please allow Camera and Storage permissions in the next screen or in App Settings."),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Cancel")),
+          TextButton(
+              onPressed: () {
+                Navigator.pop(ctx);
+                PermissionHelper.openAppSettingsIfDenied();
+              },
+              child: const Text("Settings")
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _removeImageForKey(String key) async {

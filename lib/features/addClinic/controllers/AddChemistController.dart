@@ -37,13 +37,12 @@ class AddChemistController extends GetxController {
 
   var latitude = 0.0.obs;
   var longitude = 0.0.obs;
+  // This is purely for internal logic; the address text is sent via addressController
   var selectedLocationAddress = "".obs;
 
   var chemistImage = Rxn<File>();
   var isImageProcessing = false.obs;
 
-  // --- Annual Turnover List (Observable) ---
-  // We initialize it with one empty entry for the current year
   var annualTurnovers = <Map<String, dynamic>>[
     {"year": DateTime.now().year, "amount": 0}
   ].obs;
@@ -54,8 +53,6 @@ class AddChemistController extends GetxController {
     fetchHeadOffices();
   }
 
-  // --- HELPER: Update Turnovers ---
-  // This method is critical for Obx to detect changes
   void updateTurnovers(List<Map<String, dynamic>> newList) {
     annualTurnovers.assignAll(newList);
   }
@@ -78,7 +75,7 @@ class AddChemistController extends GetxController {
         if (jsonResponse['success'] == true) {
           final List<dynamic> data = jsonResponse['data'];
           headOffices.assignAll(data.map((e) => {
-            'id': e['_id'].toString(), // Adjust key if needed (e.g., 'id' or '_id')
+            'id': e['id'].toString(),
             'name': e['name'].toString(),
           }).toList());
         }
@@ -123,32 +120,37 @@ class AddChemistController extends GetxController {
     if (result != null) {
       latitude.value = double.tryParse(result['latitude'].toString()) ?? 0.0;
       longitude.value = double.tryParse(result['longitude'].toString()) ?? 0.0;
+
+      // We fill the address controller so the user can see/edit it
       addressController.text = result['address'].toString();
+
       Get.snackbar("Location Set", "Coordinates updated.", backgroundColor: Colors.green, colorText: Colors.white);
     }
   }
 
   // --- 4. SUBMIT FORM ---
-  // --- 4. SUBMIT FORM (Updated) ---
   Future<void> submitForm() async {
-    // 1. Validation checks...
+    // 1. Basic Form Validation (Checks Firm Name & Contact Person in UI)
     if (!formKey.currentState!.validate()) {
-      Get.snackbar("Required", "Please fill all required fields", backgroundColor: Colors.orange, colorText: Colors.white);
+      Get.snackbar("Required", "Please fill all mandatory fields (marked with *)", backgroundColor: Colors.orange, colorText: Colors.white);
       return;
     }
+
+    // 2. Manual Validation for Non-Form Fields
     if (chemistImage.value == null) {
       Get.snackbar("Missing Image", "Please capture the Chemist shop photo", backgroundColor: Colors.red, colorText: Colors.white);
       return;
     }
-    if (latitude.value == 0.0 || selectedHeadOfficeId.value == null) {
-      Get.snackbar("Incomplete", "Please select Location and Head Office", backgroundColor: Colors.red, colorText: Colors.white);
+
+    // Check Head Office
+    if (selectedHeadOfficeId.value == null) {
+      Get.snackbar("Required", "Please select a Head Office", backgroundColor: Colors.orange, colorText: Colors.white);
       return;
     }
-    // Validation: At least one turnover > 0
-    bool hasValidTurnover = annualTurnovers.isNotEmpty &&
-        annualTurnovers.any((t) => (t['amount'] is num) && t['amount'] > 0);
-    if (!hasValidTurnover) {
-      Get.snackbar("Required", "Please add at least one valid Annual Turnover amount", backgroundColor: Colors.red, colorText: Colors.white);
+
+    // Check Location (Lat/Lng)
+    if (latitude.value == 0.0 || longitude.value == 0.0) {
+      Get.snackbar("Location Required", "Please select the location on the map", backgroundColor: Colors.red, colorText: Colors.white);
       return;
     }
 
@@ -161,21 +163,35 @@ class AddChemistController extends GetxController {
       var request = http.MultipartRequest('POST', uri);
       request.headers.addAll({"Authorization": "Bearer $token"});
 
-      // --- Add Fields ---
-      request.fields['firmName'] = firmNameController.text;
-      request.fields['contactPersonName'] = contactPersonController.text;
-      request.fields['designation'] = designationController.text;
-      request.fields['mobileNo'] = phoneController.text;
-      request.fields['emailId'] = emailController.text;
-      request.fields['drugLicenseNumber'] = drugLicenseNumberController.text;
-      request.fields['gstNo'] = gstController.text;
-      request.fields['address'] = addressController.text;
+      // --- MANDATORY FIELDS ---
+      request.fields['firmName'] = firmNameController.text.trim();
+      request.fields['contactPersonName'] = contactPersonController.text.trim();
       request.fields['headOffice'] = selectedHeadOfficeId.value!;
+
+      // Location is mandatory
       request.fields['latitude'] = latitude.value.toString();
       request.fields['longitude'] = longitude.value.toString();
-      request.fields['yearsInBusiness'] = yearsInBusinessController.text.isEmpty ? "0" : yearsInBusinessController.text;
+
+      // --- OPTIONAL FIELDS (Default Logic) ---
+
+      // String Defaults: Send "" if empty
+      request.fields['mobileNo'] = phoneController.text.trim();
+      request.fields['email'] = emailController.text.trim();
+      request.fields['designation'] = designationController.text.trim();
+      request.fields['drugLicenseNumber'] = drugLicenseNumberController.text.trim();
+      request.fields['gstNo'] = gstController.text.trim();
+      request.fields['address'] = addressController.text.trim();
+
+      // Integer Defaults: Send "0" if empty
+      String yearsInput = yearsInBusinessController.text.trim();
+      int yearsVal = yearsInput.isEmpty ? 0 : (int.tryParse(yearsInput) ?? 0);
+      request.fields['yearsInBusiness'] = yearsVal.toString();
+
+      // Turnover: Usually contains numbers. If amount is empty or invalid, logic ensures valid JSON.
+      // If list is empty or amounts are 0, it sends 0s.
       request.fields['annualTurnover'] = jsonEncode(annualTurnovers.toList());
 
+      // --- ADD IMAGE (Mandatory) ---
       if (chemistImage.value != null) {
         request.files.add(await http.MultipartFile.fromPath(
           'geo_image',
@@ -184,31 +200,38 @@ class AddChemistController extends GetxController {
         ));
       }
 
+      print("Submitting to: $uri");
+      print("Fields: ${request.fields}");
+
       var streamedResponse = await request.send();
       var response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode == 201 || response.statusCode == 200) {
         // --- SUCCESS SEQUENCE ---
-
-        // 1. Refresh the List (Try to find the list controller)
         try {
-          final listController = Get.find<ClinicListController>();
-          await listController.fetchClinicList(); // Ensure it waits for refresh
+          if (Get.isRegistered<ClinicListController>()) {
+            final listController = Get.find<ClinicListController>();
+            await listController.fetchClinicList();
+          }
         } catch(e) {
-          print("List Controller not found in memory: $e");
+          print("List Controller error: $e");
         }
 
-        // 2. Clear Form Data
         _clearForm();
 
-        // 3. Show Success Message
         Get.snackbar("Success", "Chemist Added Successfully!",
             backgroundColor: Colors.green, colorText: Colors.white, duration: const Duration(seconds: 2));
 
-        // 4. Go Back (Return 'true' to trigger refresh in previous screen if waiting)
-        Get.back(result: true);
+        await Future.delayed(const Duration(milliseconds: 1500));
+
+        if(Get.context != null && Navigator.canPop(Get.context!)) {
+          Navigator.of(Get.context!).pop(true);
+        } else {
+          Get.back(result: true);
+        }
 
       } else {
+        print("Server Error Body: ${response.body}");
         Get.snackbar("Failed", "Server Error: ${response.statusCode}", backgroundColor: Colors.red, colorText: Colors.white);
       }
 
@@ -219,7 +242,6 @@ class AddChemistController extends GetxController {
     }
   }
 
-  // --- HELPER: Clear Form ---
   void _clearForm() {
     firmNameController.clear();
     contactPersonController.clear();
@@ -236,8 +258,6 @@ class AddChemistController extends GetxController {
     longitude.value = 0.0;
     selectedLocationAddress.value = "";
     selectedHeadOfficeId.value = null;
-
-    // Reset turnover to default state
     annualTurnovers.assignAll([{"year": DateTime.now().year, "amount": 0}]);
   }
 

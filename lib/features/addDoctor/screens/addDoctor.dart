@@ -905,91 +905,30 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
     return Scaffold(
       body: Column(
         children: [
+          // --- Search Bar ---
           Padding(
             padding: const EdgeInsets.all(16),
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
                 labelText: TTexts.searchDoctor,
-                border: OutlineInputBorder(),
-                prefixIcon: const Icon(
-                  Icons.search,
-                  color: TColors.primary,
-                ),
+                border: const OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.search, color: TColors.primary),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          setState(() {
-                            _searchController.clear();
-                            _searchQuery = "";
-                          });
-                        },
-                      )
+                  icon: const Icon(Icons.clear),
+                  onPressed: () => setState(() {
+                    _searchController.clear();
+                    _searchQuery = "";
+                  }),
+                )
                     : null,
               ),
-              onChanged: (value) {
-                setState(() {
-                  _searchQuery = value;
-                });
-              },
+              onChanged: (value) => setState(() => _searchQuery = value),
             ),
           ),
 
-          // old working code is here..
-          /*Expanded(
-            child: Obx(() {
-              if (_doctorListController.isLoading.value) {
-                return const Center(child: CircularProgressIndicator());
-              }
-
-              // Debugging log to check the doctor list
-              print("Doctors List: ${_doctorListController.doctorList}");
-
-              var filteredDoctors = _doctorListController.doctorList.where(
-                    (doctor) => doctor.name.toLowerCase().contains(_searchQuery.toLowerCase()),
-              ).toList();
-
-              return filteredDoctors.isEmpty
-                  ? const Center(child: Text(TTexts.noDoctorAvailable))
-                  : ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: filteredDoctors.length,
-                itemBuilder: (context, index) {
-                  final doctor = filteredDoctors[index];
-                  return Card(
-                    elevation: 2,
-                    margin: const EdgeInsets.symmetric(vertical: 8),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: Colors.blue.shade100,
-                        child: const Icon(Icons.person, color: TColors.primary),
-                      ),
-                      title: Text(
-                        doctor.name,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      subtitle: Text(doctor.specialization),
-                      onTap: () {
-                        // Navigate to the doctor details screen and pass doctor data
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                DoctorDetailsScreen(doctor: doctor),
-                          ),
-                        );
-                      },
-
-                    ),
-                  );
-                },
-              );
-            }),
-          ),*/
-
-          // new code with inhance ui
+          // --- Doctor List ---
           Expanded(
             child: Obx(() {
               if (_doctorListController.isLoading.value) {
@@ -997,9 +936,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
               }
 
               final filteredDoctors = _doctorListController.doctorList
-                  .where((doctor) => doctor.name
-                      .toLowerCase()
-                      .contains(_searchQuery.toLowerCase()))
+                  .where((doctor) => doctor.name.toLowerCase().contains(_searchQuery.toLowerCase()))
                   .toList();
 
               if (filteredDoctors.isEmpty) {
@@ -1009,237 +946,134 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
               return LayoutBuilder(
                 builder: (context, constraints) {
                   final width = constraints.maxWidth;
-                  // Breakpoints
                   final bool isMobile = width < 600;
                   final bool isTabletPortrait = width >= 600 && width < 900;
 
-                  // --- Card Builder Function ---
-                  Widget buildDoctorCard(Doctor doctor,
-                      {required bool isTablet}) {
-                    // Initials
-                    final String initials = doctor.name.trim().isNotEmpty
-                        ? doctor.name.trim()[0].toUpperCase()
-                        : "?";
-
-                    // Theme & Priority
+                  // --- Card Builder ---
+                  Widget buildDoctorCard(Doctor doctor, {required bool isTablet}) {
+                    final String initials = doctor.name.trim().isNotEmpty ? doctor.name.trim()[0].toUpperCase() : "?";
                     const Color themeColor = TColors.primary;
 
-                    // --- PRIORITY LOGIC ---
+                    // Priority Logic
                     String priorityValue = doctor.priority;
                     Color priorityColor;
                     String priorityLabel;
 
-                    // Check for invalid or empty priority
                     if (priorityValue.isEmpty || priorityValue.toLowerCase() == 'null') {
                       priorityColor = Colors.grey;
                       priorityLabel = "Not Added";
                     } else {
                       switch (priorityValue) {
-                        case 'A':
-                          priorityColor = Colors.red;
-                          priorityLabel = "Priority A";
-                          break;
-                        case 'B':
-                          priorityColor = Colors.orange;
-                          priorityLabel = "Priority B";
-                          break;
-                        case 'C':
-                          priorityColor = Colors.blueGrey;
-                          priorityLabel = "Priority C";
-                          break;
-                        default:
-                          priorityColor = Colors.grey;
-                          priorityLabel = "Not Added";
-                          break;
+                        case 'A': priorityColor = Colors.red; priorityLabel = "Priority A"; break;
+                        case 'B': priorityColor = Colors.orange; priorityLabel = "Priority B"; break;
+                        case 'C': priorityColor = Colors.blueGrey; priorityLabel = "Priority C"; break;
+                        default: priorityColor = Colors.grey; priorityLabel = "Not Added"; break;
                       }
                     }
 
-
-                    // Map Validation
+                    // Geo Image Logic
+                    bool showImageWarning = doctor.geoImageStatus != true;
                     final double? lat = double.tryParse(doctor.latitude);
                     final double? lng = double.tryParse(doctor.longitude);
                     final bool isValidMap = lat != null && lng != null;
 
-                    // --- Inner Content Widget ---
                     Widget cardContent = Row(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        // Left strip
                         Container(width: 5, color: themeColor),
-
                         Expanded(
                           child: Column(
-                            // Use min to keep content compact at the top
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              // ================= HEADER =================
+                              // Header
                               Container(
                                 padding: const EdgeInsets.all(16),
                                 decoration: BoxDecoration(
                                   color: themeColor.withOpacity(0.04),
-                                  border: Border(
-                                    bottom:
-                                        BorderSide(color: Colors.grey.shade100),
-                                  ),
+                                  border: Border(bottom: BorderSide(color: Colors.grey.shade100)),
                                 ),
                                 child: Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    // Avatar
                                     Container(
                                       padding: const EdgeInsets.all(2),
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
-                                          color: themeColor.withOpacity(0.3),
-                                          width: 2,
-                                        ),
-                                      ),
+                                      decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: themeColor.withOpacity(0.3), width: 2)),
                                       child: CircleAvatar(
-                                        radius: 24,
-                                        backgroundColor: Colors.white,
-                                        child: Text(
-                                          initials,
-                                          style: const TextStyle(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.bold,
-                                            color: themeColor,
-                                          ),
-                                        ),
+                                          radius: 24,
+                                          backgroundColor: Colors.white,
+                                          child: Text(initials, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: themeColor))
                                       ),
                                     ),
                                     const SizedBox(width: 12),
-
-                                    // Name & Details
                                     Expanded(
                                       child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                        crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
                                           Row(
                                             children: [
-                                              Expanded(
-                                                child: Text(
-                                                  doctor.name,
-                                                  maxLines: 1,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                  style: const TextStyle(
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                              ),
-                                              // Priority Badge
+                                              Expanded(child: Text(doctor.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
                                               Container(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                        horizontal: 8,
-                                                        vertical: 4),
-                                                decoration: BoxDecoration(
-                                                  color: priorityColor
-                                                      .withOpacity(0.12),
-                                                  borderRadius:
-                                                      BorderRadius.circular(6),
-                                                  border: Border.all(
-                                                    color: priorityColor
-                                                        .withOpacity(0.35),
-                                                  ),
-                                                ),
-                                                child: Text(
-                                                  "$priorityLabel",
-                                                  style: TextStyle(
-                                                    fontSize: 10,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: priorityColor,
-                                                  ),
-                                                ),
+                                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                                decoration: BoxDecoration(color: priorityColor.withOpacity(0.12), borderRadius: BorderRadius.circular(6), border: Border.all(color: priorityColor.withOpacity(0.35))),
+                                                child: Text(priorityLabel, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: priorityColor)),
                                               ),
                                             ],
                                           ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            doctor.specialization,
-                                            style: TextStyle(
-                                              fontSize: 13,
-                                              fontWeight: FontWeight.w600,
-                                              color: Colors.grey[800],
+
+                                          // --- GEO IMAGE TAG ---
+                                          if (showImageWarning) ...[
+                                            const SizedBox(height: 6),
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                              decoration: BoxDecoration(color: Colors.red.withOpacity(0.1), borderRadius: BorderRadius.circular(4), border: Border.all(color: Colors.red.withOpacity(0.3))),
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: const [
+                                                  Icon(Icons.add_a_photo_outlined, size: 12, color: Colors.red),
+                                                  SizedBox(width: 4),
+                                                  Text("Add Image from Details", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.red)),
+                                                ],
+                                              ),
                                             ),
-                                          ),
+                                          ],
+
                                           const SizedBox(height: 4),
-                                          Row(
-                                            children: [
-                                              Icon(Icons.location_on_rounded,
-                                                  size: 12,
-                                                  color: Colors.grey[600]),
-                                              const SizedBox(width: 4),
-                                              Expanded(
-                                                child: Text(
-                                                  doctor.location,
-                                                  maxLines: 1,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                  style: TextStyle(
-                                                      fontSize: 12,
-                                                      color: Colors.grey[600]),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
+                                          Text(doctor.specialization, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.grey[800])),
+                                          const SizedBox(height: 4),
+                                          Row(children: [Icon(Icons.location_on_rounded, size: 12, color: Colors.grey[600]), const SizedBox(width: 4), Expanded(child: Text(doctor.location, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, color: Colors.grey[600])))]),
                                         ],
                                       ),
                                     ),
                                   ],
                                 ),
                               ),
-
-                              // ================= BODY =================
-                              _buildBodyContent(context, doctor, isValidMap,
-                                  themeColor, isTablet),
+                              // Body
+                              _buildBodyContent(context, doctor, isValidMap, themeColor, isTablet),
                             ],
                           ),
                         ),
                       ],
                     );
 
-                    // Container Wrapper
                     return Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: themeColor.withOpacity(0.35)),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 12,
-                            offset: const Offset(0, 6),
-                          ),
-                        ],
-                      ),
+                      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: themeColor.withOpacity(0.35)), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 12, offset: const Offset(0, 6))]),
                       clipBehavior: Clip.antiAlias,
-                      child: isTablet
-                          ? cardContent
-                          : IntrinsicHeight(child: cardContent),
+                      child: isTablet ? cardContent : IntrinsicHeight(child: cardContent),
                     );
                   }
 
-                  // --- Layout Selection ---
                   if (isMobile) {
                     return ListView.builder(
                       padding: const EdgeInsets.all(16),
                       itemCount: filteredDoctors.length,
-                      itemBuilder: (_, i) => Padding(
-                        padding: const EdgeInsets.only(bottom: 16),
-                        child: buildDoctorCard(filteredDoctors[i],
-                            isTablet: false),
-                      ),
+                      itemBuilder: (_, i) => Padding(padding: const EdgeInsets.only(bottom: 16), child: buildDoctorCard(filteredDoctors[i], isTablet: false)),
                     );
                   } else {
-                    // Tablet Grid Configuration
+                    // --- TABLET GRID CONFIGURATION ---
                     final int crossAxisCount = isTabletPortrait ? 2 : 3;
-                    // Adjusted ratio to reduce bottom space
-                    // Portrait cells are wider than landscape cells, so they need a higher width/height ratio
-                    final double ratio = isTabletPortrait ? 1.3 : 1.2;
+
+                    // FIX: Adjusted ratio to 1.2 to remove excess space but keep content safe
+                    final double ratio = isTabletPortrait ? 1.2 : 1.2;
 
                     return GridView.builder(
                       padding: const EdgeInsets.all(16),
@@ -1250,8 +1084,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                         childAspectRatio: ratio,
                       ),
                       itemCount: filteredDoctors.length,
-                      itemBuilder: (_, i) =>
-                          buildDoctorCard(filteredDoctors[i], isTablet: true),
+                      itemBuilder: (_, i) => buildDoctorCard(filteredDoctors[i], isTablet: true),
                     );
                   }
                 },
@@ -1263,7 +1096,6 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Get.to(() => AddDoctorNewScreen());
-         // _showAddDoctorDialog();
         },
         backgroundColor: TColors.primary,
         child: const Icon(Icons.add, color: Colors.white),
@@ -1314,7 +1146,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
           ],
         ),
 
-        // ✅ ONLY tablet needs spacing push
+        //  ONLY tablet needs spacing push
         if (isTablet) const Spacer(),
 
         const SizedBox(height: 16),

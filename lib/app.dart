@@ -1,3 +1,4 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:medicle_sales_rbsh/features/TrackingOptimizedBgLocation/debug/debug_repository.dart';
@@ -7,6 +8,7 @@ import 'package:medicle_sales_rbsh/features/authentication/screens/onboarding/sp
 import 'package:medicle_sales_rbsh/utils/anim/CustomPageTransition.dart';
 import 'package:medicle_sales_rbsh/utils/check_internet/network_monitor.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/notificationservice/PushNotificationService.dart';
 import 'package:medicle_sales_rbsh/utils/theam/theme.dart';
 import 'package:flutter/services.dart';
 
@@ -21,6 +23,25 @@ class _AppState extends State<App> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
+    requestNotificationPermission();
+    getFCMToken();
+  /*  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      print("Foreground message received");
+      print("Title: ${message.notification?.title}");
+      print("Body: ${message.notification?.body}");
+    });*/
+
+    FirebaseMessaging.onMessage.listen((message) {
+      final n = message.notification;
+      if (n != null) {
+        PushNotificationService.show(
+          title: n.title ?? 'New Message',
+          body: n.body ?? '',
+        );
+      }
+    });
+
+
     WidgetsBinding.instance.addObserver(this);
 
     //  Start global network monitoring
@@ -65,4 +86,21 @@ class _AppState extends State<App> with WidgetsBindingObserver {
       customTransition: CustomPageTransition(),
     );
   }
+
+  Future<void> requestNotificationPermission() async {
+    FirebaseMessaging messaging = FirebaseMessaging.instance;
+
+    await messaging.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+  }
+
+  Future<void> getFCMToken() async {
+    String? token = await FirebaseMessaging.instance.getToken();
+    print("FCM TOKEN: $token");
+  }
+
+
 }

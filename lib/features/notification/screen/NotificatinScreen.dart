@@ -4,9 +4,6 @@ import '../controller/NotificationController.dart';
 import '../model/NotificationModel.dart';
 import 'NotificaitonDetailsScreen.dart';  // Import NotificationDetailsScreen
 
-void main() {
-  runApp(MaterialApp(home: NotificationScreen()));
-}
 
 class NotificationScreen extends StatefulWidget {
   @override

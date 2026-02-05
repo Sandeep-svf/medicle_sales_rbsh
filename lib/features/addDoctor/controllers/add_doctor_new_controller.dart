@@ -5,16 +5,14 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
-// --- Ensure these imports match your project structure ---
+
 import '../../../utils/camera/CameraLocationResult.dart';
 import '../../../utils/camera/image_overlay_utils.dart';
 import '../../../utils/constants/colors.dart';
-import '../../../utils/http/http_client.dart'; // Contains THttpHelper
-import '../../../utils/local_storage/auth_manager.dart'; // Contains AuthManager
+import '../../../utils/http/http_client.dart';
+import '../../../utils/local_storage/auth_manager.dart';
 import '../screens/map.dart';
-
-// import '../../../utils/sqlite_helper/GenericDatabaseHelper.dart';
-// import '../models/CityOfflineModel.dart';
+import 'DoctroController.dart';
 
 class AddDoctorNewController extends GetxController {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
@@ -87,11 +85,7 @@ class AddDoctorNewController extends GetxController {
             'id': e['id'].toString(),
             'name': e['name'].toString(),
           }).toList());
-
-          print("[DEBUG] Loaded ${headOffices.length} Head Offices.");
         }
-      } else {
-        print("[ERROR] Failed to load Head Offices: ${response.statusCode}");
       }
     } catch (e) {
       print("[ERROR] Exception fetching Head Offices: $e");
@@ -100,27 +94,37 @@ class AddDoctorNewController extends GetxController {
     }
   }
 
-  // --- 2. SUBMIT FUNCTION (FIXED) ---
-
-
-// ... inside AddDoctorNewController
-
-  Future<void> submit() async {
-    // 1. Validation
+  // --- 2. SUBMIT FUNCTION (UPDATED) ---
+  Future<void> submit(BuildContext context) async {
+    // 1. Validation for REQUIRED fields only
     if (!formKey.currentState!.validate()) {
-      Get.snackbar("Required", "Please fill all fields.", backgroundColor: Colors.orange, colorText: Colors.white);
+      Get.snackbar("Required", "Please fill required fields (marked *).",
+          backgroundColor: Colors.orange, colorText: Colors.white);
       return;
     }
+
+    if (selectedHeadOfficeId.value == null) {
+      Get.snackbar("Missing Info", "Please select a Head Office.",
+          backgroundColor: Colors.orange, colorText: Colors.white);
+      return;
+    }
+
     if (doctorImage.value == null) {
-      Get.snackbar("Missing Photo", "Please capture the doctor's photo.", backgroundColor: Colors.red, colorText: Colors.white);
+      Get.snackbar("Missing Photo", "Please capture the doctor's photo.",
+          backgroundColor: Colors.red, colorText: Colors.white);
       return;
     }
     if (latitude.value == 0.0) {
-      Get.snackbar("Missing Location", "Please select location on map.", backgroundColor: Colors.red, colorText: Colors.white);
+      Get.snackbar("Missing Location", "Please select location on map.",
+          backgroundColor: Colors.red, colorText: Colors.white);
       return;
     }
 
-    Get.dialog(const Center(child: CircularProgressIndicator()), barrierDismissible: false);
+    // 2. Show Loader
+    Get.dialog(
+      const Center(child: CircularProgressIndicator(color: TColors.primary)),
+      barrierDismissible: false,
+    );
 
     try {
       final token = await AuthManager().getAuthToken();
@@ -132,78 +136,92 @@ class AddDoctorNewController extends GetxController {
         "Authorization": "Bearer $token",
       });
 
-      // Add Text Fields
-      request.fields['name'] = nameController.text;
-      request.fields['specialization'] = specializationController.text;
-      request.fields['location'] = address1Controller.text;
+      // --- ADD FIELDS ---
+
+      // REQUIRED FIELDS
+      request.fields['name'] = nameController.text.trim();
+      request.fields['headOfficeId'] = selectedHeadOfficeId.value!;
       request.fields['latitude'] = latitude.value.toString();
       request.fields['longitude'] = longitude.value.toString();
-      request.fields['email'] = emailController.text;
-      request.fields['phone'] = phoneController.text;
-      request.fields['registration_number'] = registrationController.text;
-      request.fields['years_of_experience'] = experienceController.text;
-      request.fields['date_of_birth'] = dobController.text;
       request.fields['gender'] = selectedGender.value;
-      request.fields['anniversary'] = anniversaryController.text;
-      request.fields['headOfficeId'] = selectedHeadOfficeId.value ?? "";
       request.fields['priority'] = selectedPriority.value;
 
-      /*if(address2Controller.text.isNotEmpty) request.fields['address2'] = address2Controller.text;
-      if(stateController.text.isNotEmpty) request.fields['state'] = stateController.text;
-      if(pincodeController.text.isNotEmpty) request.fields['pincode'] = pincodeController.text;
-      if(countryController.text.isNotEmpty) request.fields['country'] = countryController.text;
-      if(postOfficeController.text.isNotEmpty) request.fields['post_office'] = postOfficeController.text;*/
+      // OPTIONAL: INT TYPES (Send "0" if empty)
+      request.fields['years_of_experience'] = experienceController.text.isEmpty
+          ? "0"
+          : experienceController.text.trim();
 
-      // --- FIX: Explicitly set Content Type ---
+      // OPTIONAL: TEXT TYPES (Send "" if empty)
+      request.fields['specialization'] = specializationController.text.trim();
+      request.fields['location'] = address1Controller.text.trim();
+      request.fields['email'] = emailController.text.trim();
+      request.fields['phone'] = phoneController.text.trim();
+      request.fields['registration_number'] = registrationController.text.trim();
+
+      // --- UPDATED PART: DATES (Send null) ---
+      // Logic: In Multipart, we cannot send actual 'null'.
+      // We must OMIT the key entirely so the backend treats it as null.
+
+      if (dobController.text.isNotEmpty) {
+        request.fields['date_of_birth'] = dobController.text;
+      }
+
+      if (anniversaryController.text.isNotEmpty) {
+        request.fields['anniversary'] = anniversaryController.text;
+      }
+      // ----------------------------------------
+
+      // Add Image
       if (doctorImage.value != null) {
         request.files.add(await http.MultipartFile.fromPath(
           'geo_image',
           doctorImage.value!.path,
-          contentType: MediaType('image', 'jpeg'), // Explicitly sets MIME type to image/jpeg
+          contentType: MediaType('image', 'jpeg'),
         ));
       }
-
-      print("[DEBUG] Submitting to $url");
 
       var streamedResponse = await request.send();
       var response = await http.Response.fromStream(streamedResponse);
 
-      Get.back(); // Hide Loader
+      // 3. CLOSE LOADER
+      if (Get.isDialogOpen == true) {
+        Get.back();
+      }
 
       print('[DEBUG] Response Status: ${response.statusCode}');
-      print('[DEBUG] Response Body: ${response.body}');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         Get.snackbar("Success", "Doctor Created Successfully",
-            backgroundColor: Colors.green, colorText: Colors.white);
-        await Future.delayed(const Duration(milliseconds: 500));
-        Get.back();
+            backgroundColor: Colors.green, colorText: Colors.white, duration: const Duration(seconds: 2));
+
+        if (Get.isRegistered<DoctorListController>()) {
+          Get.find<DoctorListController>().fetchDoctorList();
+        }
+
+        await Future.delayed(const Duration(seconds: 2));
+
+        if (context.mounted) {
+          Navigator.of(context).pop();
+        }
       } else {
-        // Parse error message safely
         String errorMsg = "Failed to add doctor";
         try {
-          // Your server returned HTML error, so JSON decode might fail.
-          // If it is JSON:
           var jsonBody = json.decode(response.body);
-          if(jsonBody['message'] != null) errorMsg = jsonBody['message'];
-        } catch (_) {
-          // If server returned HTML (like the error you posted), use generic message
-          if(response.body.contains("Only image files are allowed")) {
-            errorMsg = "Server Error: Only image files allowed.";
-          }
-        }
+          if (jsonBody['message'] != null) errorMsg = jsonBody['message'];
+        } catch (_) {}
         Get.snackbar("Error", errorMsg, backgroundColor: Colors.red, colorText: Colors.white);
       }
 
     } catch (e) {
-      Get.back();
+      if (Get.isDialogOpen == true) {
+        Get.back();
+      }
       print("[ERROR] Submit Exception: $e");
       Get.snackbar("Error", "An error occurred: $e", backgroundColor: Colors.red, colorText: Colors.white);
     }
   }
 
   // --- Helper: Date Picker ---
-  // --- Date Picker (Updated Format to yyyy-MM-dd) ---
   Future<void> selectDate(BuildContext context, bool isAnniversary) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -222,9 +240,7 @@ class AddDoctorNewController extends GetxController {
     );
 
     if (picked != null) {
-      // CHANGED: Format is now yyyy-MM-dd (e.g., 2024-12-12)
       String val = DateFormat('yyyy-MM-dd').format(picked);
-
       if (isAnniversary) {
         anniversaryController.text = val;
       } else {

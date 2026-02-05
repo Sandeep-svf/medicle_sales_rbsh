@@ -91,7 +91,7 @@ class AddDoctorNewScreen extends StatelessWidget {
 
                 return Column(
                   children: [
-                    // --- TOP SECTION: IMAGE & LOCATION ---
+                    // --- TOP SECTION: IMAGE & LOCATION (REQUIRED) ---
                     Transform.translate(
                       offset: const Offset(0, -50),
                       child: Padding(
@@ -101,8 +101,10 @@ class AddDoctorNewScreen extends StatelessWidget {
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
+                              // Image is Required
                               Expanded(child: _buildSideBySideImagePicker(context, controller)),
                               SizedBox(width: spacing),
+                              // Location is Required
                               Expanded(child: _buildSideBySideLocationPicker(controller)),
                             ],
                           ),
@@ -120,25 +122,25 @@ class AddDoctorNewScreen extends StatelessWidget {
                           child: Column(
                             children: [
                               // 01 Basic Info
-                              _buildSectionHeader(number: "01", title: "Basic Information", subtitle: "Name & Gender"),
+                              _buildSectionHeader(number: "01", title: "Basic Information", subtitle: "Personal Details"),
                               const SizedBox(height: 15),
                               _buildBasicInfoCard(controller, context),
                               const SizedBox(height: 30),
 
                               // 02 Professional Info
-                              _buildSectionHeader(number: "02", title: "Professional", subtitle: "Specialization & Priority"),
+                              _buildSectionHeader(number: "02", title: "Professional", subtitle: "Work Details"),
                               const SizedBox(height: 15),
                               _buildProfessionalInfoCard(controller),
                               const SizedBox(height: 30),
 
                               // 03 Contact Info
-                              _buildSectionHeader(number: "03", title: "Contact Info", subtitle: "Email & Phone"),
+                              _buildSectionHeader(number: "03", title: "Contact Info", subtitle: "Optional"),
                               const SizedBox(height: 15),
                               _buildContactInfoCard(controller),
                               const SizedBox(height: 30),
 
                               // 04 Address Details
-                              _buildSectionHeader(number: "04", title: "Address Details", subtitle: "Full Clinic Address"),
+                              _buildSectionHeader(number: "04", title: "Address Details", subtitle: "Location (Auto)"),
                               const SizedBox(height: 15),
                               _buildAddressFieldsCard(controller),
 
@@ -148,7 +150,7 @@ class AddDoctorNewScreen extends StatelessWidget {
                               Center(
                                 child: ConstrainedBox(
                                   constraints: BoxConstraints(maxWidth: isWide ? 500 : double.infinity),
-                                  child: _buildSubmitButton(controller),
+                                  child: _buildSubmitButton(controller,context),
                                 ),
                               ),
                               const SizedBox(height: 50),
@@ -176,7 +178,7 @@ class AddDoctorNewScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 4))],
+        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 4))],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
@@ -186,8 +188,8 @@ class AddDoctorNewScreen extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  CircularProgressIndicator(color: TColors.primary),
-                  SizedBox(height: 8),
+                  const CircularProgressIndicator(color: TColors.primary),
+                  const SizedBox(height: 8),
                   Text("Processing...", style: TextStyle(fontSize: 10, color: Colors.grey[600]))
                 ],
               ),
@@ -202,7 +204,7 @@ class AddDoctorNewScreen extends StatelessWidget {
                 Image.file(img, fit: BoxFit.contain),
                 Center(
                   child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
                       color: Colors.black.withOpacity(0.4),
                       borderRadius: BorderRadius.circular(30),
@@ -244,7 +246,7 @@ class AddDoctorNewScreen extends StatelessWidget {
                 children: [
                   Icon(Icons.add_a_photo, size: 36, color: TColors.primary.withOpacity(0.6)),
                   const SizedBox(height: 8),
-                  Text("Capture\nPhoto",
+                  Text("Capture\nPhoto *",
                       textAlign: TextAlign.center,
                       style: TextStyle(color: Colors.grey[600], fontSize: 13, fontWeight: FontWeight.bold)),
                 ],
@@ -296,7 +298,7 @@ class AddDoctorNewScreen extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 4))],
+          boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 4))],
           border: Border.all(color: TColors.primary.withOpacity(0.1)),
         ),
         child: Column(
@@ -308,7 +310,7 @@ class AddDoctorNewScreen extends StatelessWidget {
               child: const Icon(Icons.location_on, color: TColors.primary, size: 28),
             ),
             const SizedBox(height: 10),
-            const Text("Set Clinic\nLocation",
+            const Text("Set Doctor\nLocation *",
                 textAlign: TextAlign.center,
                 style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 13)),
             const SizedBox(height: 5),
@@ -353,18 +355,19 @@ class AddDoctorNewScreen extends StatelessWidget {
     );
   }
 
+  // --- UPDATED: 01. BASIC INFO ---
   Widget _buildBasicInfoCard(AddDoctorNewController controller, BuildContext context) {
     return _ModernCard(
       child: Column(
         children: [
           _ModernTextField(
             controller: controller.nameController,
-            label: "Full Name",
+            label: "Full Name *",
             hint: "Dr. John Doe",
             icon: Icons.person_outline_rounded,
+            isRequired: true,
           ),
           const SizedBox(height: 16),
-          // Gender Dropdown
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             decoration: BoxDecoration(
@@ -403,6 +406,7 @@ class AddDoctorNewScreen extends StatelessWidget {
                   icon: Icons.cake_outlined,
                   isReadOnly: true,
                   onTap: () => controller.selectDate(context, false),
+                  isRequired: false, // OPTIONAL
                 ),
               ),
               const SizedBox(width: 12),
@@ -413,6 +417,7 @@ class AddDoctorNewScreen extends StatelessWidget {
                   icon: Icons.celebration_outlined,
                   isReadOnly: true,
                   onTap: () => controller.selectDate(context, true),
+                  isRequired: false, // OPTIONAL
                 ),
               ),
             ],
@@ -422,7 +427,6 @@ class AddDoctorNewScreen extends StatelessWidget {
     );
   }
 
-  // --- UPDATED: 02. PROFESSIONAL (Added Priority) ---
   // --- UPDATED: 02. PROFESSIONAL ---
   Widget _buildProfessionalInfoCard(AddDoctorNewController controller) {
     return _ModernCard(
@@ -433,6 +437,7 @@ class AddDoctorNewScreen extends StatelessWidget {
             label: "Specialization",
             hint: "e.g. Cardiologist",
             icon: Icons.medical_services_outlined,
+            isRequired: false,
           ),
           const SizedBox(height: 16),
           Row(
@@ -443,6 +448,7 @@ class AddDoctorNewScreen extends StatelessWidget {
                   controller: controller.registrationController,
                   label: "Reg. Number",
                   icon: Icons.verified_user_outlined,
+                  isRequired: false,
                 ),
               ),
               const SizedBox(width: 12),
@@ -452,15 +458,15 @@ class AddDoctorNewScreen extends StatelessWidget {
                   controller: controller.experienceController,
                   label: "Exp (Yrs)",
                   isNumber: true,
+                  isRequired: false, // OPTIONAL
                 ),
               ),
             ],
           ),
           const SizedBox(height: 16),
 
-          // --- FIXED HEAD OFFICE DROPDOWN ---
+          // --- HEAD OFFICE DROPDOWN (REQUIRED) ---
           Obx(() {
-            // 1. Loading State
             if (controller.isLoadingHeadOffices.value) {
               return Center(
                 child: Padding(
@@ -474,11 +480,10 @@ class AddDoctorNewScreen extends StatelessWidget {
               );
             }
 
-            // 2. Dropdown Field
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text("Select Head Office",
+                const Text("Select Head Office *",
                     style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF636E72))),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<String>(
@@ -496,7 +501,6 @@ class AddDoctorNewScreen extends StatelessWidget {
                     enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
                     focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: TColors.primary, width: 1.5)),
                   ),
-                  // FIX: .toList() ensures the Obx rebuilds when the list content changes
                   items: controller.headOffices.toList().map((item) {
                     return DropdownMenuItem<String>(
                       value: item['id'],
@@ -514,7 +518,7 @@ class AddDoctorNewScreen extends StatelessWidget {
 
           const SizedBox(height: 16),
 
-          // --- PRIORITY DROPDOWN ---
+          // --- PRIORITY DROPDOWN (Optional) ---
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             decoration: BoxDecoration(
@@ -531,7 +535,7 @@ class AddDoctorNewScreen extends StatelessWidget {
                     child: DropdownButton<String>(
                       value: controller.selectedPriority.value,
                       isExpanded: true,
-                      hint: Text("Priority", style: TextStyle(fontSize: 14, color: Colors.grey[400])),
+                      hint: Text("Priority (Optional)", style: TextStyle(fontSize: 14, color: Colors.grey[400])),
                       icon: const Icon(Icons.keyboard_arrow_down_rounded),
                       items: controller.priorities.map((String value) {
                         return DropdownMenuItem<String>(
@@ -561,6 +565,7 @@ class AddDoctorNewScreen extends StatelessWidget {
             hint: "doctor@hospital.com",
             icon: Icons.email_outlined,
             inputType: TextInputType.emailAddress,
+            isRequired: false,
           ),
           const SizedBox(height: 16),
           _ModernTextField(
@@ -570,6 +575,7 @@ class AddDoctorNewScreen extends StatelessWidget {
             icon: Icons.phone_android_rounded,
             inputType: TextInputType.phone,
             isNumber: true,
+            isRequired: false,
           ),
         ],
       ),
@@ -582,10 +588,11 @@ class AddDoctorNewScreen extends StatelessWidget {
         children: [
           _ModernTextField(
             controller: controller.address1Controller,
-            label: "Address Line 1 (Location)",
+            label: "Address Line 1 (Auto-filled)",
             hint: "Auto-filled from Map",
             icon: Icons.map,
             filledColor: Colors.blue[50],
+            isRequired: false, // Not strictly required as text, but Map pin is required
           ),
           const SizedBox(height: 16),
           _ModernTextField(
@@ -593,6 +600,7 @@ class AddDoctorNewScreen extends StatelessWidget {
             label: "Address Line 2",
             hint: "Floor, Unit No, Landmark",
             icon: Icons.edit_location_alt_outlined,
+            isRequired: false,
           ),
           const SizedBox(height: 16),
           Row(
@@ -602,6 +610,7 @@ class AddDoctorNewScreen extends StatelessWidget {
                   controller: controller.stateController,
                   label: "State",
                   hint: "State",
+                  isRequired: false,
                 ),
               ),
               const SizedBox(width: 12),
@@ -611,6 +620,7 @@ class AddDoctorNewScreen extends StatelessWidget {
                   label: "Pincode",
                   hint: "XXXXXX",
                   isNumber: true,
+                  isRequired: false,
                 ),
               ),
             ],
@@ -623,6 +633,7 @@ class AddDoctorNewScreen extends StatelessWidget {
                   controller: controller.postOfficeController,
                   label: "Post Office",
                   hint: "PO Name",
+                  isRequired: false,
                 ),
               ),
               const SizedBox(width: 12),
@@ -631,6 +642,7 @@ class AddDoctorNewScreen extends StatelessWidget {
                   controller: controller.countryController,
                   label: "Country",
                   hint: "Country",
+                  isRequired: false,
                 ),
               ),
             ],
@@ -640,7 +652,7 @@ class AddDoctorNewScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSubmitButton(AddDoctorNewController controller) {
+  Widget _buildSubmitButton(AddDoctorNewController controller, BuildContext context) {
     return Container(
       width: double.infinity,
       height: 55,
@@ -652,7 +664,8 @@ class AddDoctorNewScreen extends StatelessWidget {
         ],
       ),
       child: ElevatedButton(
-        onPressed: controller.submit,
+        // Pass context to submit
+        onPressed: () => controller.submit(context),
         style: ElevatedButton.styleFrom(
           backgroundColor: TColors.primary,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -702,6 +715,7 @@ class _ModernTextField extends StatelessWidget {
   final VoidCallback? onTap;
   final Color? filledColor;
   final TextInputType? inputType;
+  final bool isRequired;
 
   const _ModernTextField({
     Key? key,
@@ -714,6 +728,7 @@ class _ModernTextField extends StatelessWidget {
     this.onTap,
     this.filledColor,
     this.inputType,
+    this.isRequired = false,
   }) : super(key: key);
 
   @override
@@ -721,14 +736,25 @@ class _ModernTextField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF636E72))),
+        Row(
+          children: [
+            Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF636E72))),
+            if(isRequired)
+              const Text(" *", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+          ],
+        ),
         const SizedBox(height: 8),
         TextFormField(
           controller: controller,
           readOnly: isReadOnly,
           onTap: onTap,
           keyboardType: inputType ?? (isNumber ? TextInputType.number : TextInputType.text),
-          validator: (v) => (!isReadOnly && (v == null || v.isEmpty)) ? 'Required' : null,
+          validator: (v) {
+            if (isRequired && (v == null || v.trim().isEmpty)) {
+              return 'Required';
+            }
+            return null;
+          },
           style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: Color(0xFF2D3436)),
           decoration: InputDecoration(
             hintText: hint,
@@ -741,51 +767,6 @@ class _ModernTextField extends StatelessWidget {
             enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
             focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: TColors.primary, width: 1.5)),
           ),
-        ),
-      ],
-    );
-  }
-}
-
-class _ModernDropdown extends StatelessWidget {
-  final String hint;
-  final String? value;
-  final List<Map<String, String>> items;
-  final IconData icon;
-  final Function(String?) onChanged;
-
-  const _ModernDropdown(
-      {Key? key,
-        required this.hint,
-        required this.value,
-        required this.items,
-        required this.icon,
-        required this.onChanged})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(hint, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF636E72))),
-        const SizedBox(height: 8),
-        DropdownButtonFormField<String>(
-          value: value,
-          icon: const Icon(Icons.keyboard_arrow_down_rounded),
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF2D3436)),
-          decoration: InputDecoration(
-            prefixIcon: Icon(icon, color: TColors.primary.withOpacity(0.8), size: 18),
-            filled: true,
-            fillColor: const Color(0xFFFAFAFA),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
-            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
-            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: TColors.primary, width: 1.5)),
-          ),
-          items: items.map((e) => DropdownMenuItem(value: e['id'], child: Text(e['name']!))).toList(),
-          onChanged: onChanged,
-          validator: (v) => v == null ? "Required" : null,
         ),
       ],
     );

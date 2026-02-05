@@ -179,11 +179,17 @@ import 'dart:isolate';
 import 'dart:ui';
 
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_in_app_messaging/firebase_in_app_messaging.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart' as geolocator;
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:medicle_sales_rbsh/services/LocationController.dart';
+import 'package:medicle_sales_rbsh/utils/notificationservice/PushNotificationService.dart';
 import 'package:medicle_sales_rbsh/utils/offline_model/BaseOfflineModel.dart';
 import 'package:provider/provider.dart';
 
@@ -193,7 +199,9 @@ import 'package:background_locator_2/location_dto.dart';
 import 'package:background_locator_2/settings/locator_settings.dart';
 import 'package:background_locator_2/settings/android_settings.dart';
 import 'package:background_locator_2/settings/ios_settings.dart';
+import 'package:provider/provider.dart' as provider;
 
+import 'features/Inbox/service/AuthService.dart';
 import 'features/SalesChartAnalysis/controller/DashboardController.dart';
 import 'features/addDoctor/models/DoctorOfflineModel.dart';
 import 'features/addDoctor/services/SyncService.dart';
@@ -203,17 +211,66 @@ import 'app.dart';
 import 'dart:async';
 
 import 'features/ticket/controller/TicketController.dart';
-void main() {
+import 'firebase_options.dart';
+
+Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  print("Background message: ${message.messageId}");
+}
+
+void initFIAM() {
+  FirebaseInAppMessaging.instance.setMessagesSuppressed(false);
+}
+
+void main() async{
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  FirebaseMessaging.onBackgroundMessage(
+      firebaseMessagingBackgroundHandler);
+
+  FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(true);
+
+  await FirebaseMessaging.instance.requestPermission();
+  final token = await FirebaseMessaging.instance.getToken();
+
+
+
+  initFIAM();
+  await PushNotificationService.init();
+
+
+
   Get.put(DashboardController()); // Register DashboardController
-  runApp(
+  /*runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => SalesController()),
       ],
       child: const App(),  // just your App widget
+
+
+
+    ),
+  );*/
+
+  // Adding Riverpod
+  runApp(
+    ProviderScope( // Riverpod
+      child: provider.MultiProvider( // Provider
+        providers: [
+          provider.ChangeNotifierProvider(
+            create: (_) => SalesController(),
+          ),
+        ],
+        child: const App(),
+      ),
     ),
   );
+
 }
 /*
 import 'dart:async';

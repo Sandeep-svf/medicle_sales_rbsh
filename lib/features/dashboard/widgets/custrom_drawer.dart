@@ -20,6 +20,7 @@ import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../utils/local_storage/auth_manager.dart';
 import '../../Blog/screen/blog.dart';
+import '../../Holiday/screen/HolidayScreen.dart';
 import '../../Inbox/Screen/InboxScreen.dart';
 
 import '../../InvoiceTrackerShipment/screen/InvoiceScreen.dart';
@@ -29,6 +30,7 @@ import '../../Tour & Plans/Screen/tour_plane_doctor_screen.dart';
 import '../../addStokist/screen/StokistList.dart';
 import '../../authentication/models/UserModel.dart';
 import '../../authentication/screens/login/login.dart';
+import '../../leaves/screen/LeaveDashboard.dart';
 import '../../marketing/screen/MarketingScreen.dart';
 import '../../marketing/screen/marketing.dart';
 import '../../ticket/screen/ticketscreen.dart';
@@ -128,7 +130,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                     onTap: () =>
                         widget.onMenuSelected(InboxScreen(), TTexts.inbox),
                     isSelected: widget.currentScreen == TTexts.inbox,
-                  ),
+                  ),*/
 
                   _buildDrawerItem(
                     icon: Icons.mail,
@@ -136,7 +138,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                     onTap: () =>
                         widget.onMenuSelected(InboxScreen(), TTexts.inbox),
                     isSelected: widget.currentScreen == TTexts.inbox,
-                  ),*/
+                  ),
 
                   // Other drawer items
                   _buildDrawerItem(
@@ -238,6 +240,26 @@ class _CustomDrawerState extends State<CustomDrawer> {
                         widget.onMenuSelected(Blogscreen(), TTexts.blog),
                     isSelected: widget.currentScreen == TTexts.blog,
                   ),
+
+
+                  _buildDrawerItem(
+                    icon: Icons.holiday_village_outlined,
+                    text: TTexts.holiday,
+                    onTap: () =>
+                        widget.onMenuSelected(HolidayTimelineScreen(), TTexts.holiday),
+                    isSelected: widget.currentScreen == TTexts.holiday,
+                  ),
+
+
+
+                  _buildDrawerItem(
+                    icon: Icons.leave_bags_at_home_outlined,
+                    text: TTexts.leave,
+                    onTap: () =>
+                        widget.onMenuSelected(LeaveDashboard(), TTexts.leave),
+                    isSelected: widget.currentScreen == TTexts.leave,
+                  ),
+
                   _buildDrawerItem(
                     icon: Icons.support,
                     text: TTexts.support,

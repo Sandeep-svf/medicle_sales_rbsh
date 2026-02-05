@@ -1,35 +1,73 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:http/http.dart' as http;
+import 'package:permission_handler/permission_handler.dart';
+import 'package:http_parser/http_parser.dart'; // <--- ADD THIS
+// --- Project Imports ---
+import 'package:medicle_sales_rbsh/utils/http/http_client.dart';
+import 'package:medicle_sales_rbsh/utils/local_storage/auth_manager.dart';
 import '../../../utils/constants/colors.dart';
 import '../models/DoctorModelList.dart';
 
-class DoctorDetailsScreen extends StatelessWidget {
+// --- Geo Overlay Utilities ---
+import '../../../utils/camera/CameraLocationResult.dart';
+import '../../../utils/camera/image_overlay_utils.dart';
+import '../../../utils/loder/CircularLoaderController.dart';
+
+class DoctorDetailsScreen extends StatefulWidget {
   final Doctor doctor;
 
   const DoctorDetailsScreen({super.key, required this.doctor});
+
+  @override
+  State<DoctorDetailsScreen> createState() => _DoctorDetailsScreenState();
+}
+
+class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
+  bool _isUploading = false;
+  final ImagePicker _picker = ImagePicker();
+
+  // Holds the locally captured image before uploading
+  File? _localImageFile;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
-        title: Text(doctor.name, style: const TextStyle(color: Colors.white)),
+        title: Text(widget.doctor.name, style: const TextStyle(color: Colors.white)),
         backgroundColor: TColors.primary,
         iconTheme: const IconThemeData(color: Colors.white),
         centerTitle: false,
         elevation: 0,
       ),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          bool isTablet = constraints.maxWidth > 600;
-          if (isTablet) {
-            return _buildTabletLayout(context, constraints);
-          } else {
-            return _buildMobileLayout(context);
-          }
-        },
+      body: Stack(
+        children: [
+          LayoutBuilder(
+            builder: (context, constraints) {
+              bool isTablet = constraints.maxWidth > 600;
+              if (isTablet) {
+                return _buildTabletLayout(context, constraints);
+              } else {
+                return _buildMobileLayout(context);
+              }
+            },
+          ),
+
+          // Loading Overlay
+          if (_isUploading)
+            Container(
+              color: Colors.black54,
+              child: const Center(
+                child: CircularProgressIndicator(color: Colors.white),
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -47,7 +85,7 @@ class DoctorDetailsScreen extends StatelessWidget {
           const SizedBox(height: 16),
           _buildMapSection(),
           const SizedBox(height: 16),
-          // --- GEO IMAGE SECTION ---
+          // GEO IMAGE SECTION
           _buildGeoImageSection(context),
           const SizedBox(height: 16),
           _buildBasicInfo(),
@@ -147,86 +185,99 @@ class DoctorDetailsScreen extends StatelessWidget {
     );
   }
 
-  // --- 1. FIXED GEO IMAGE SECTION ---
+  // ==================== GEO IMAGE SECTION (LOGIC UPDATED) ====================
+
   Widget _buildGeoImageSection(BuildContext context) {
-    // Determine if we have a valid image URL
-    final String? imageUrl = doctor.geoImageUrl;
-    final bool hasImage = imageUrl != null && imageUrl.isNotEmpty;
+    // 1. Check existing Server Image
+    final String? serverImageUrl = widget.doctor.geoImageUrl;
+    final bool hasServerImage = serverImageUrl != null && serverImageUrl.isNotEmpty;
+
+    // 2. Check local preview Image (User just took a photo)
+    final bool hasLocalPreview = _localImageFile != null;
 
     return _buildStyledCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSectionTitle("Geo Location Image", Icons.image_outlined),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _buildSectionTitle("Geo Location Image", Icons.image_outlined),
+              // Show Edit button ONLY if we are currently showing the server image
+              // If we have a local preview, the "Change" button is already inside that view
+              if (hasServerImage && !hasLocalPreview)
+                IconButton(
+                  onPressed: () => _showImageSourceSheet(context),
+                  icon: const Icon(Icons.edit, size: 20, color: Colors.grey),
+                  tooltip: "Replace Image",
+                ),
+            ],
+          ),
           const Divider(),
           const SizedBox(height: 8),
-          Container(
-            height: 250,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: Colors.grey[100],
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey.shade300),
+
+          // --- FIXED LOGIC ORDER ---
+          if (hasLocalPreview)
+          // PRIORITY 1: Show the new image user just captured (Review Mode)
+            _buildLocalPreviewView()
+
+          else if (hasServerImage)
+          // PRIORITY 2: Show existing server image (Read-Only)
+            _buildServerImageView(context, serverImageUrl!)
+
+          else
+          // PRIORITY 3: Nothing exists, show upload placeholder
+            _buildUploadPlaceholder(context),
+        ],
+      ),
+    );
+  }
+
+  // --- View for Server Image ---
+  Widget _buildServerImageView(BuildContext context, String url) {
+    return Container(
+      height: 250,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.grey[100],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Image.network(
+              url,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) =>
+              const Center(child: Icon(Icons.broken_image, color: Colors.grey)),
+              loadingBuilder: (context, child, loadingProgress) {
+                if (loadingProgress == null) return child;
+                return const Center(child: CircularProgressIndicator(color: TColors.primary));
+              },
             ),
-            // Use 'hasImage' check. If true, use imageUrl! (safe because of check)
-            child: hasImage
-                ? Stack(
-              fit: StackFit.expand,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Image.network(
-                    imageUrl!, // Safe here because hasImage is true
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return const Center(child: Text("Failed to load image"));
-                    },
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return Center(
-                        child: CircularProgressIndicator(
-                          value: loadingProgress.expectedTotalBytes != null
-                              ? loadingProgress.cumulativeBytesLoaded /
-                              loadingProgress.expectedTotalBytes!
-                              : null,
-                        ),
-                      );
-                    },
-                  ),
+          ),
+          Positioned(
+            right: 12,
+            bottom: 12,
+            child: GestureDetector(
+              onTap: () => _showFullImage(context, url, isLocal: false),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.6),
+                  borderRadius: BorderRadius.circular(30),
                 ),
-                Positioned(
-                  right: 12,
-                  bottom: 12,
-                  child: GestureDetector(
-                    onTap: () => _showFullImage(context, imageUrl),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.6),
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      child: const Row(
-                        children: [
-                          Icon(Icons.visibility, color: Colors.white, size: 18),
-                          SizedBox(width: 6),
-                          Text("View", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
-                        ],
-                      ),
-                    ),
-                  ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.visibility, color: Colors.white, size: 18),
+                    SizedBox(width: 6),
+                    Text("View", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
+                  ],
                 ),
-              ],
-            )
-                : Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.broken_image_outlined, size: 50, color: Colors.grey.shade400),
-                const SizedBox(height: 10),
-                Text(
-                  "No Geo Location Image added yet",
-                  style: TextStyle(color: Colors.grey.shade500, fontSize: 14, fontWeight: FontWeight.w500),
-                ),
-              ],
+              ),
             ),
           ),
         ],
@@ -234,7 +285,254 @@ class DoctorDetailsScreen extends StatelessWidget {
     );
   }
 
-  // --- 2. FIXED BASIC INFO (Removed '!' operators) ---
+  // --- View for Local Preview (With Submit/Change) ---
+  Widget _buildLocalPreviewView() {
+    return Column(
+      children: [
+        Container(
+          height: 250,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: Colors.grey[100],
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: TColors.primary, width: 2), // Highlight border
+          ),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: Image.file(_localImageFile!, fit: BoxFit.cover),
+              ),
+              Positioned(
+                right: 12,
+                bottom: 12,
+                child: GestureDetector(
+                  onTap: () => _showFullImage(context, _localImageFile!.path, isLocal: true),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.6),
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    child: const Icon(Icons.zoom_in, color: Colors.white, size: 20),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: () => _showImageSourceSheet(context), // Re-pick
+                icon: const Icon(Icons.refresh, color: Colors.grey),
+                label: const Text("Change", style: TextStyle(color: Colors.grey)),
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: Colors.grey),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: () => _uploadImageToApi(_localImageFile!), // Upload
+                icon: const Icon(Icons.cloud_upload),
+                label: const Text("Submit Image"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: TColors.primary,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  // --- View for No Image (Initial State) ---
+  Widget _buildUploadPlaceholder(BuildContext context) {
+    return Container(
+      height: 180,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade300, style: BorderStyle.solid),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.add_a_photo_outlined, size: 40, color: Colors.grey[400]),
+          const SizedBox(height: 12),
+          const Text(
+            "No Geo Location Image added yet",
+            style: TextStyle(color: Colors.grey, fontSize: 14, fontWeight: FontWeight.w500),
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton.icon(
+            onPressed: () => _showImageSourceSheet(context),
+            icon: const Icon(Icons.camera_alt),
+            label: const Text("Capture / Upload"),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: TColors.primary,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ==================== IMAGE PICKER & API LOGIC ====================
+
+  void _showImageSourceSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      builder: (_) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: const Text('Take Photo (Geo Overlay)'),
+              subtitle: const Text("Recommended"),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(isCamera: true);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('Choose from Gallery'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(isCamera: false);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickImage({required bool isCamera}) async {
+    // 1. Permission Check
+    PermissionStatus status;
+    if (isCamera) {
+      status = await Permission.camera.request();
+    } else {
+      if (Platform.isAndroid) {
+        status = await Permission.photos.request();
+        if(status.isDenied) status = await Permission.storage.request();
+      } else {
+        status = await Permission.photos.request();
+      }
+    }
+
+    if (status.isPermanentlyDenied) {
+      openAppSettings();
+      return;
+    }
+
+    try {
+      File? tempImage;
+
+      // 2. Capture
+      if (isCamera) {
+        // --- CAMERA: Capture + Geo Overlay ---
+        final CameraLocationResult? result = await CameraLocationService.captureImageWithLocation();
+
+        if (result != null) {
+          // Apply Overlay (Lat/Lng/Date)
+          tempImage = await ImageOverlayUtil.addOverlay(
+            original: result.image,
+            lat: result.latitude,
+            lng: result.longitude,
+          );
+        }
+      } else {
+        // --- GALLERY: Simple Pick ---
+        final XFile? pickedFile = await _picker.pickImage(
+          source: ImageSource.gallery,
+          imageQuality: 80,
+        );
+        if (pickedFile != null) {
+          tempImage = File(pickedFile.path);
+        }
+      }
+
+      // 3. Update State (Preview Mode) - Do NOT upload yet
+      if (tempImage != null) {
+        setState(() {
+          _localImageFile = tempImage;
+        });
+      }
+
+    } catch (e) {
+      Get.snackbar("Error", "Failed to capture image: $e", backgroundColor: Colors.red, colorText: Colors.white);
+    }
+  }
+
+  Future<void> _uploadImageToApi(File imageFile) async {
+    setState(() => _isUploading = true);
+
+    try {
+      final token = await AuthManager().getAuthToken();
+
+      // API Endpoint
+      final String url = '${THttpHelper.baseUrl}/doctors/${widget.doctor.id}/geo-image';
+
+      // POST Request
+      var request = http.MultipartRequest('POST', Uri.parse(url));
+
+      request.headers.addAll({
+        "Authorization": "Bearer $token",
+      });
+
+      // --- FIX: Explicitly set Content-Type ---
+      request.files.add(await http.MultipartFile.fromPath(
+        'geo_image',
+        imageFile.path,
+        contentType: MediaType('image', 'jpeg'), // <--- THIS FIXES THE SERVER ERROR
+      ));
+
+      print("Uploading to: $url");
+
+      var streamedResponse = await request.send();
+      var response = await http.Response.fromStream(streamedResponse);
+
+      print("Status: ${response.statusCode}");
+      print("Body: ${response.body}");
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        Get.snackbar("Success", "Geo Image Uploaded Successfully!", backgroundColor: Colors.green, colorText: Colors.white);
+        await Future.delayed(const Duration(seconds: 1));
+        if (mounted) Navigator.pop(context, true); // Refresh list
+      } else {
+        // If server sends HTML error, try to show a generic message instead of raw HTML
+        String msg = response.body.contains("Only image files")
+            ? "Server Error: Only image files are allowed."
+            : "Upload failed: ${response.statusCode}";
+
+        Get.snackbar("Failed", msg, backgroundColor: Colors.red, colorText: Colors.white);
+      }
+
+    } catch (e) {
+      Get.snackbar("Error", "Exception: $e", backgroundColor: Colors.red, colorText: Colors.white);
+    } finally {
+      if (mounted) setState(() => _isUploading = false);
+    }
+  }
+
+  // ==================== OTHER WIDGETS ====================
+
   Widget _buildBasicInfo() {
     return _buildStyledCard(
       child: Column(
@@ -242,69 +540,50 @@ class DoctorDetailsScreen extends StatelessWidget {
         children: [
           _buildSectionTitle("Basic Information", Icons.info_outline),
           const Divider(),
-          _buildInfoRow(Icons.badge_outlined, "Registration", doctor.registrationNumber),
+          _buildInfoRow(Icons.badge_outlined, "Registration", widget.doctor.registrationNumber),
 
-          // FIX: Check for NULL before formatting date
           _buildInfoRow(
               Icons.calendar_today_outlined,
               "DOB",
-              doctor.dateOfBirth != null
-                  ? DateFormat('dd MMM yyyy').format(doctor.dateOfBirth!)
+              widget.doctor.dateOfBirth != null
+                  ? DateFormat('dd MMM yyyy').format(widget.doctor.dateOfBirth!)
                   : "N/A"
           ),
 
-          // FIX: Check for NULL before formatting anniversary
           _buildInfoRow(
               Icons.cake_outlined,
               "Anniversary",
-              doctor.anniversary != null
-                  ? DateFormat('dd MMM yyyy').format(doctor.anniversary!)
+              widget.doctor.anniversary != null
+                  ? DateFormat('dd MMM yyyy').format(widget.doctor.anniversary!)
                   : 'N/A'
           ),
 
           _buildInfoRow(
               Icons.work_history_outlined,
               "Experience",
-              doctor.yearsOfExperience != null ? "${doctor.yearsOfExperience} Years" : "N/A"
+              widget.doctor.yearsOfExperience != null ? "${widget.doctor.yearsOfExperience} Years" : "N/A"
           ),
 
-          _buildInfoRow(Icons.person_outline, "Gender", doctor.gender),
+          _buildInfoRow(Icons.person_outline, "Gender", widget.doctor.gender),
         ],
       ),
     );
   }
 
-  // --- OTHER WIDGETS ---
-
   Widget _buildProfileHeader() {
-    String priority = doctor.priority; // Use value from model
+    String priority = widget.doctor.priority;
     Color priorityColor;
     String priorityLabel;
 
-
-    // Normalize input to handle potential "null" strings or empty values
     if (priority.isEmpty || priority.toLowerCase() == 'null') {
       priorityColor = Colors.grey;
       priorityLabel = "Not added";
     } else {
       switch (priority) {
-        case 'A':
-          priorityColor = Colors.red;
-          priorityLabel = "High Priority";
-          break;
-        case 'B':
-          priorityColor = Colors.orange;
-          priorityLabel = "Medium Priority";
-          break;
-        case 'C':
-          priorityColor = Colors.blueGrey;
-          priorityLabel = "Standard Priority";
-          break;
-        default:
-        // Handles cases where priority might be "D" or random text
-          priorityColor = Colors.grey;
-          priorityLabel = "Not added";
-          break;
+        case 'A': priorityColor = Colors.red; priorityLabel = "High Priority"; break;
+        case 'B': priorityColor = Colors.orange; priorityLabel = "Medium Priority"; break;
+        case 'C': priorityColor = Colors.blueGrey; priorityLabel = "Standard Priority"; break;
+        default: priorityColor = Colors.grey; priorityLabel = "Not added"; break;
       }
     }
 
@@ -334,7 +613,7 @@ class DoctorDetailsScreen extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        doctor.name,
+                        widget.doctor.name,
                         style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black87),
                       ),
                     ),
@@ -354,7 +633,7 @@ class DoctorDetailsScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  doctor.specialization.isNotEmpty ? doctor.specialization : "N/A",
+                  widget.doctor.specialization.isNotEmpty ? widget.doctor.specialization : "N/A",
                   style: TextStyle(color: Colors.grey.shade600, fontSize: 16, fontWeight: FontWeight.w500),
                 ),
                 const SizedBox(height: 8),
@@ -364,7 +643,7 @@ class DoctorDetailsScreen extends StatelessWidget {
                     const SizedBox(width: 4),
                     Expanded(
                       child: Text(
-                        doctor.location.isNotEmpty ? doctor.location : "N/A",
+                        widget.doctor.location.isNotEmpty ? widget.doctor.location : "N/A",
                         style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -387,8 +666,8 @@ class DoctorDetailsScreen extends StatelessWidget {
         children: [
           _buildSectionTitle("Contact Information", Icons.contact_phone_outlined),
           const Divider(),
-          _buildInfoRow(Icons.email_outlined, "Email", doctor.email),
-          _buildInfoRow(Icons.phone_outlined, "Phone", doctor.phone),
+          _buildInfoRow(Icons.email_outlined, "Email", widget.doctor.email),
+          _buildInfoRow(Icons.phone_outlined, "Phone", widget.doctor.phone),
         ],
       ),
     );
@@ -401,7 +680,7 @@ class DoctorDetailsScreen extends StatelessWidget {
         children: [
           _buildSectionTitle("Head Office", Icons.business_outlined),
           const Divider(),
-          _buildInfoRow(Icons.store_mall_directory_outlined, "Office Name", doctor.headOffice.name),
+          _buildInfoRow(Icons.store_mall_directory_outlined, "Office Name", widget.doctor.headOffice.name),
         ],
       ),
     );
@@ -414,7 +693,7 @@ class DoctorDetailsScreen extends StatelessWidget {
         children: [
           _buildSectionTitle("Visit History", Icons.history_edu_outlined),
           const Divider(),
-          if (doctor.visitHistory.isEmpty)
+          if (widget.doctor.visitHistory.isEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 16.0),
               child: Center(
@@ -441,16 +720,16 @@ class DoctorDetailsScreen extends StatelessWidget {
         children: [
           _buildSectionTitle("Account Metadata", Icons.manage_accounts_outlined),
           const Divider(),
-          _buildInfoRow(Icons.access_time, "Created", DateFormat('dd MMM yyyy, hh:mm a').format(doctor.createdAt)),
-          _buildInfoRow(Icons.update, "Last Updated", DateFormat('dd MMM yyyy, hh:mm a').format(doctor.updatedAt)),
+          _buildInfoRow(Icons.access_time, "Created", DateFormat('dd MMM yyyy, hh:mm a').format(widget.doctor.createdAt)),
+          _buildInfoRow(Icons.update, "Last Updated", DateFormat('dd MMM yyyy, hh:mm a').format(widget.doctor.updatedAt)),
         ],
       ),
     );
   }
 
   Widget _buildMapSection({double height = 220}) {
-    double? lat = double.tryParse(doctor.latitude);
-    double? lng = double.tryParse(doctor.longitude);
+    double? lat = double.tryParse(widget.doctor.latitude);
+    double? lng = double.tryParse(widget.doctor.longitude);
     bool isValidLocation = lat != null && lng != null && lat != 0.0 && lng != 0.0;
 
     return Container(
@@ -479,7 +758,7 @@ class DoctorDetailsScreen extends StatelessWidget {
             child: isValidLocation
                 ? GoogleMap(
               initialCameraPosition: CameraPosition(target: LatLng(lat, lng), zoom: 15),
-              markers: {Marker(markerId: const MarkerId("doctor_location"), position: LatLng(lat, lng), infoWindow: InfoWindow(title: doctor.name))},
+              markers: {Marker(markerId: const MarkerId("doctor_location"), position: LatLng(lat, lng), infoWindow: InfoWindow(title: widget.doctor.name))},
             )
                 : const Center(child: Text("Invalid Location Coordinates")),
           ),
@@ -536,7 +815,7 @@ class DoctorDetailsScreen extends StatelessWidget {
     );
   }
 
-  void _showFullImage(BuildContext context, String imageUrl) {
+  void _showFullImage(BuildContext context, String path, {required bool isLocal}) {
     showDialog(
       context: context,
       builder: (_) => Dialog(
@@ -551,7 +830,9 @@ class DoctorDetailsScreen extends StatelessWidget {
                 panEnabled: true,
                 minScale: 1.0,
                 maxScale: 4.0,
-                child: Image.network(imageUrl, fit: BoxFit.contain),
+                child: isLocal
+                    ? Image.file(File(path), fit: BoxFit.contain)
+                    : Image.network(path, fit: BoxFit.contain),
               ),
             ),
             Padding(

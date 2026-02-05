@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "41278159745",
-    "project_id": "gluckscaresalespro",
-    "storage_bucket": "gluckscaresalespro.firebasestorage.app"
+    "project_number": "83559767175",
+    "project_id": "gluckscaresalespro-ca891",
+    "storage_bucket": "gluckscaresalespro-ca891.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:41278159745:android:bebd38c59313d5bd4e4680",
+        "mobilesdk_app_id": "1:83559767175:android:557c26e056d150e75eac22",
         "android_client_info": {
           "package_name": "com.rbsh.medicle_sales_rbsh"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyCkqP_uX33XSVVkCNjtWmAR0Z1rZrsG02w"
+          "current_key": "AIzaSyA1iTfmgVV1QlFmVbYoJ3vdOEncPBXN_t8"
         }
       ],
       "services": {

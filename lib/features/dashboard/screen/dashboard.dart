@@ -1,4 +1,11 @@
 import 'dart:convert';
+import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:firebase_in_app_messaging/firebase_in_app_messaging.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:medicle_sales_rbsh/features/addDoctor/screens/add_doctro_new_screen.dart';
+import 'package:medicle_sales_rbsh/features/visit/Doctor/screens/ScheduleVisit.dart';
+import 'package:medicle_sales_rbsh/features/visit/Doctor/screens/ScheduleVisitScreen.dart';
+
 import '../../../utils/http/http_client.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/cupertino.dart';
@@ -16,6 +23,7 @@ import '../../Blog/screen/blog.dart';
 import '../../Inbox/Screen/InboxScreen.dart';
 import '../../MarketingMaterials/Screens/MarketingMaterials.dart';
 import '../../SalesChartAnalysis/Screen/salesChartHome2.dart';
+import '../../addDoctor/screens/addDoctor.dart';
 import '../../marketing/screen/MarketingScreen.dart';
 import '../../marketing/screen/marketing.dart';
 import '../../notification/screen/NotificatinScreen.dart';
@@ -44,7 +52,76 @@ class _DashboardScreenState extends State<DashboardScreen> {
     fetchVersionInfo(); // Call the function to fetch version details
     fetchUserRole();
     _navigateToSalesChartHome();
+    updateFCMToken();
   }
+
+  Future<void> updateFCMToken() async {
+
+    AuthManager authManager = AuthManager();
+    final token = await authManager.getAuthToken();
+
+    const baseUrl = THttpHelper.baseUrl;
+    final fcmToken = await getFCMToken();
+
+    final url = Uri.parse('$baseUrl/users/fcm-token');
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          'fcmToken': fcmToken,
+        }),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print('FCM Token synced successfully.');
+      } else {
+        // Handle server-side errors
+        print('Failed to update token. Status: ${response.statusCode}');
+        print('Response: ${response.body}');
+      }
+    } catch (e) {
+      // Handle network or parsing errors
+      print('Error occurred while updating FCM token: $e');
+      rethrow;
+    }
+  }
+
+
+
+
+  Future<String?> getFCMToken() async {
+    FirebaseMessaging messaging = FirebaseMessaging.instance;
+
+    try {
+      // 1. Request permission (Required for iOS and Android 13+)
+      NotificationSettings settings = await messaging.requestPermission(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+
+      if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+        // 2. Fetch the token
+        String? token = await messaging.getToken();
+
+        print('FCM Token Generated ---');
+        print('FCM $token');
+        return token;
+      } else {
+        print('User declined or has not accepted permission');
+        return null;
+      }
+    } catch (e) {
+      print('Error fetching FCM token: $e');
+      return null;
+    }
+  }
+
 
   @override
   void dispose() {
@@ -63,6 +140,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
 
   }
+
+
 
   // Function to navigate to SalesChartHomeScreen
   void _navigateToSalesChartHome() {
@@ -83,8 +162,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   List<Widget> _buildScreens() => [
     SalesChartHomeScreen(),
     MarketingScreen(),
-    MarketingmaterialsScreen(),
-    Blogscreen(),
+    ScheduleVisit(),
+    AddDoctorScreen(),
     InboxScreen()
   ];
 
@@ -105,23 +184,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
       title: const Text('Files & PDFs'),
     ),
     BottomBarItem(
-      icon: const Icon(Icons.trending_up),
-      selectedIcon: const Icon(Icons.trending_up_rounded),
+      icon: const Icon(Icons.schedule_outlined),
+      selectedIcon: const Icon(Icons.schedule_sharp),
       selectedColor: TColors.primary,
       unSelectedColor: Colors.grey,
-      title: const Text('Digital Marketing'),
+      title: const Text('Appointments'),
     ),
     BottomBarItem(
-      icon: const Icon(Icons.business),
-      selectedIcon: const Icon(Icons.business_center),
+      icon: const Icon(Icons.medical_services_outlined),
+      selectedIcon: const Icon(Icons.medical_services_outlined),
       selectedColor: TColors.primary,
       unSelectedColor: Colors.grey,
-      title: const Text('Social'),
+      title: const Text('Add Doctor'),
     ),
 
     BottomBarItem(
-      icon: const Icon(Icons.business),
-      selectedIcon: const Icon(Icons.business_center),
+      icon: const Icon(Icons.inbox_outlined),
+      selectedIcon: const Icon(Icons.all_inbox),
       selectedColor: TColors.primary,
       unSelectedColor: Colors.grey,
       title: const Text('Inbox'),
@@ -225,8 +304,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
             _currentTitle = [
               TTexts.dashboard,
               TTexts.filesAndPdfs,
-              TTexts.marketingMaterial,
-              TTexts.blog,
+              TTexts.appointments,
+              TTexts.addDoctor,
               TTexts.inbox,
             ][index];
             _currentScreen = _buildScreens()[index];
