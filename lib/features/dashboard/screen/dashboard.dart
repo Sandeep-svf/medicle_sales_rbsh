@@ -167,6 +167,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     InboxScreen()
   ];
 
+  // working fine.
 
   List<BottomBarItem> _navBarsItems() => [
     BottomBarItem(
