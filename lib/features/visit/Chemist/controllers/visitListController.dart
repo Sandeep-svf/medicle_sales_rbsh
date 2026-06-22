@@ -23,6 +23,153 @@ class VisitListController with ChangeNotifier {
 
   final String fetchApiUrl = THttpHelper.baseUrl;
 
+
+
+  Future<List<dynamic>> fetchAreas() async {
+    try {
+      final token = await authManager.getAuthToken();
+
+      final response = await http.get(
+        Uri.parse('${THttpHelper.baseUrl}/areas'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      debugPrint("AREAS STATUS => ${response.statusCode}");
+      debugPrint("AREAS RESPONSE => ${response.body}");
+
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body);
+
+        if (json is Map && json['data'] is List) {
+          return json['data'];
+        }
+      }
+
+      return [];
+    } catch (e) {
+      debugPrint('fetchAreas Error: $e');
+      return [];
+    }
+  }
+
+  Future<String?> createArea({
+    required String areaName,
+    required String pincode,
+    required String postOffice,
+    required String headOfficeId,
+  }) async {
+    try {
+      final token = await authManager.getAuthToken();
+
+      final response = await http.post(
+        Uri.parse('${THttpHelper.baseUrl}/areas'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          'name': areaName,
+          'pincode': pincode,
+          'post_office': postOffice,
+          'head_office_id': headOfficeId,
+        }),
+      );
+
+      debugPrint(
+        "CREATE AREA STATUS => ${response.statusCode}",
+      );
+
+      debugPrint(
+        "CREATE AREA RESPONSE => ${response.body}",
+      );
+
+      if (response.statusCode == 200 ||
+          response.statusCode == 201) {
+
+        final data = jsonDecode(response.body);
+
+        if (data['data'] != null &&
+            data['data']['id'] != null) {
+          return data['data']['id'];
+        }
+
+        if (data['id'] != null) {
+          return data['id'];
+        }
+      }
+
+      return null;
+    } catch (e) {
+      debugPrint(
+        'createArea Error: $e',
+      );
+
+      return null;
+    }
+  }
+
+  Future<bool> assignAreaToChemist({
+    required String chemistId,
+    required String areaId,
+  }) async {
+    try {
+      final token =
+      await authManager.getAuthToken();
+
+      debugPrint(
+        "ASSIGN AREA STATUS => ${chemistId}",
+      );
+
+      debugPrint(
+        "ASSIGN AREA STATUS => ${areaId}",
+      );
+
+      debugPrint(
+        "ASSIGN URL => ${THttpHelper.baseUrl}/chemist/$chemistId",
+      );
+
+
+      final response = await http.put(
+        Uri.parse(
+          '${THttpHelper.baseUrl}/chemists/$chemistId',
+        ),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          'areaId': areaId,
+        }),
+      );
+
+
+      debugPrint(
+        "ASSIGN BODY => ${jsonEncode({
+          'areaId': areaId,
+        })}",
+      );
+
+      debugPrint(
+        "ASSIGN AREA STATUS => ${response.statusCode}",
+      );
+
+      debugPrint(
+        "ASSIGN AREA RESPONSE => ${response.body}",
+      );
+
+      return response.statusCode == 200;
+    } catch (e) {
+      debugPrint(
+        'assignAreaToChemist Error => $e',
+      );
+
+      return false;
+    }
+  }
+
   // Updated fetch to handle filters
   Future<void> fetchVisitList({
     VisitDateFilter filter = VisitDateFilter.today,

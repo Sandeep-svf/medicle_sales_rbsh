@@ -21,7 +21,7 @@ class ExpenseController with ChangeNotifier {
 
       if (response.statusCode == 200) {
         List<dynamic> data = jsonDecode(response.body);
-        return data.map((item) => ExpenseModel.fromJson(item)).toList(); // ✅ fixed here
+        return data.map((item) => ExpenseModel.fromJson(item)).toList(); //  fixed here
       } else {
         throw Exception('Failed to load expenses');
       }

@@ -27,6 +27,8 @@ import '../../InvoiceTrackerShipment/screen/InvoiceScreen.dart';
 import '../../PtsPtrCalculator/PtsPtrCalculator.dart';
 import '../../SalesChartAnalysis/Screen/salesChartHome2.dart';
 import '../../Tour & Plans/Screen/tour_plane_doctor_screen.dart';
+
+import '../../Tour & Plans/updated_tour_panes/Screen/StpScreen.dart';
 import '../../addStokist/screen/StokistList.dart';
 import '../../authentication/models/UserModel.dart';
 import '../../authentication/screens/login/login.dart';
@@ -103,7 +105,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                     icon: Icons.tour,
                     text: TTexts.tourPlans,
                     onTap: () =>
-                        widget.onMenuSelected(TourPlan(), TTexts.tourPlans),
+                        widget.onMenuSelected(MtpScreen(), TTexts.tourPlans),
                     isSelected: widget.currentScreen == TTexts.tourPlans,
                   ),
 

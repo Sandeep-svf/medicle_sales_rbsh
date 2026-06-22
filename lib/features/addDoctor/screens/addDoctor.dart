@@ -281,8 +281,6 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
     String? selectedCityId;
     String? selectedCityName = 'Head Office';
 
-
-
     final _formKey = GlobalKey<FormState>();
 
     void _selectDate(BuildContext context, bool isAnniversary) async {
@@ -306,7 +304,6 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-
         // Get the screen width to decide the dialog width
         double screenWidth = MediaQuery.of(context).size.width;
         bool isTablet = screenWidth > 600;
@@ -318,7 +315,8 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                   borderRadius: BorderRadius.circular(16)),
               title: const Text(TTexts.addDoctorTitle),
               content: Container(
-                width: isTablet ? screenWidth * 0.8 : double.maxFinite, // Set 80% width on tablets
+                width: isTablet ? screenWidth * 0.8 : double.maxFinite,
+                // Set 80% width on tablets
 
                 child: Form(
                   key: _formKey,
@@ -331,8 +329,9 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                           labelText: TTexts.doctorName,
                           border: OutlineInputBorder(),
                         ),
-                        validator: (value) =>
-                        value == null || value.isEmpty ? 'This field is required' : null,
+                        validator: (value) => value == null || value.isEmpty
+                            ? 'This field is required'
+                            : null,
                       ),
                       const SizedBox(height: 12),
                       TextFormField(
@@ -358,12 +357,13 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                         onChanged: (value) {
                           setState(() {
                             selectedCityId = value;
-                            selectedCityName =
-                            cities.firstWhere((city) => city['id'] == value)['name'];
+                            selectedCityName = cities.firstWhere(
+                                (city) => city['id'] == value)['name'];
                           });
                         },
-                        validator: (value) =>
-                        value == null || value.isEmpty ? 'Please select a head office' : null,
+                        validator: (value) => value == null || value.isEmpty
+                            ? 'Please select a head office'
+                            : null,
                       ),
                       const SizedBox(height: 12),
                       TextFormField(
@@ -378,7 +378,9 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                       TextFormField(
                         controller: phoneController,
                         keyboardType: TextInputType.number,
-                        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly
+                        ],
                         decoration: const InputDecoration(
                           labelText: 'Phone Number',
                           border: OutlineInputBorder(),
@@ -395,9 +397,11 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                       const SizedBox(height: 12),
                       TextFormField(
                         controller: experienceController,
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true),
                         inputFormatters: [
-                          FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
+                          FilteringTextInputFormatter.allow(
+                              RegExp(r'^\d*\.?\d{0,2}')),
                         ],
                         decoration: const InputDecoration(
                           labelText: 'Years of Experience',
@@ -460,7 +464,8 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                         onPressed: () async {
                           final result = await Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (_) => LocationPickerScreen()),
+                            MaterialPageRoute(
+                                builder: (_) => LocationPickerScreen()),
                           );
 
                           if (result != null &&
@@ -486,7 +491,8 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                           }
                         },
                         style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 12, horizontal: 20),
                           backgroundColor: TColors.primary,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -517,7 +523,6 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                     ],
                   ),
                 ),
-
               ),
               actions: [
                 TextButton(
@@ -527,14 +532,14 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                 ElevatedButton(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
-
-                      if (selectedLatitude == null || selectedLongitude == null || selectedAddress == null) {
+                      if (selectedLatitude == null ||
+                          selectedLongitude == null ||
+                          selectedAddress == null) {
                         // Show error message if location is not selected
                         Get.snackbar("Error", "Please select a location",
-                            backgroundColor: Colors.red, duration: const Duration(seconds: 3));
+                            backgroundColor: Colors.red,
+                            duration: const Duration(seconds: 3));
                       } else {
-
-
                         // Call the addDoctor API
                         AddDoctorController.addDoctor(
                           context: context,
@@ -701,7 +706,6 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                   const SizedBox(height: 12),
                   // Date of Birth (DOB) Picker
                   */
-
 
   /*GestureDetector(
                     onTap: () => _selectDate(context, false),
@@ -916,12 +920,12 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                 prefixIcon: const Icon(Icons.search, color: TColors.primary),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(
-                  icon: const Icon(Icons.clear),
-                  onPressed: () => setState(() {
-                    _searchController.clear();
-                    _searchQuery = "";
-                  }),
-                )
+                        icon: const Icon(Icons.clear),
+                        onPressed: () => setState(() {
+                          _searchController.clear();
+                          _searchQuery = "";
+                        }),
+                      )
                     : null,
               ),
               onChanged: (value) => setState(() => _searchQuery = value),
@@ -936,7 +940,9 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
               }
 
               final filteredDoctors = _doctorListController.doctorList
-                  .where((doctor) => doctor.name.toLowerCase().contains(_searchQuery.toLowerCase()))
+                  .where((doctor) => doctor.name
+                      .toLowerCase()
+                      .contains(_searchQuery.toLowerCase()))
                   .toList();
 
               if (filteredDoctors.isEmpty) {
@@ -946,12 +952,15 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
               return LayoutBuilder(
                 builder: (context, constraints) {
                   final width = constraints.maxWidth;
-                  final bool isMobile = width < 600;
-                  final bool isTabletPortrait = width >= 600 && width < 900;
+                  final bool isMobile = width < 650;
+                  final bool isTabletPortrait = width >= 650 && width < 950;
 
                   // --- Card Builder ---
-                  Widget buildDoctorCard(Doctor doctor, {required bool isTablet}) {
-                    final String initials = doctor.name.trim().isNotEmpty ? doctor.name.trim()[0].toUpperCase() : "?";
+                  Widget buildDoctorCard(Doctor doctor,
+                      {required bool isTablet}) {
+                    final String initials = doctor.name.trim().isNotEmpty
+                        ? doctor.name.trim()[0].toUpperCase()
+                        : "?";
                     const Color themeColor = TColors.primary;
 
                     // Priority Logic
@@ -959,15 +968,28 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                     Color priorityColor;
                     String priorityLabel;
 
-                    if (priorityValue.isEmpty || priorityValue.toLowerCase() == 'null') {
+                    if (priorityValue.isEmpty ||
+                        priorityValue.toLowerCase() == 'null') {
                       priorityColor = Colors.grey;
                       priorityLabel = "Not Added";
                     } else {
                       switch (priorityValue) {
-                        case 'A': priorityColor = Colors.red; priorityLabel = "Priority A"; break;
-                        case 'B': priorityColor = Colors.orange; priorityLabel = "Priority B"; break;
-                        case 'C': priorityColor = Colors.blueGrey; priorityLabel = "Priority C"; break;
-                        default: priorityColor = Colors.grey; priorityLabel = "Not Added"; break;
+                        case 'A':
+                          priorityColor = Colors.red;
+                          priorityLabel = "Priority A";
+                          break;
+                        case 'B':
+                          priorityColor = Colors.orange;
+                          priorityLabel = "Priority B";
+                          break;
+                        case 'C':
+                          priorityColor = Colors.blueGrey;
+                          priorityLabel = "Priority C";
+                          break;
+                        default:
+                          priorityColor = Colors.grey;
+                          priorityLabel = "Not Added";
+                          break;
                       }
                     }
 
@@ -990,57 +1012,190 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                                 padding: const EdgeInsets.all(16),
                                 decoration: BoxDecoration(
                                   color: themeColor.withOpacity(0.04),
-                                  border: Border(bottom: BorderSide(color: Colors.grey.shade100)),
+                                  border: Border(
+                                      bottom: BorderSide(
+                                          color: Colors.grey.shade100)),
                                 ),
                                 child: Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Container(
                                       padding: const EdgeInsets.all(2),
-                                      decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: themeColor.withOpacity(0.3), width: 2)),
+                                      decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                              color:
+                                                  themeColor.withOpacity(0.3),
+                                              width: 2)),
                                       child: CircleAvatar(
                                           radius: 24,
                                           backgroundColor: Colors.white,
-                                          child: Text(initials, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: themeColor))
-                                      ),
+                                          child: Text(initials,
+                                              style: const TextStyle(
+                                                  fontSize: 20,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: themeColor))),
                                     ),
                                     const SizedBox(width: 12),
                                     Expanded(
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Row(
                                             children: [
-                                              Expanded(child: Text(doctor.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
+                                              Expanded(
+                                                  child: Text(doctor.name,
+                                                      maxLines: 1,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                      style: const TextStyle(
+                                                          fontSize: 16,
+                                                          fontWeight: FontWeight
+                                                              .bold))),
                                               Container(
-                                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                                decoration: BoxDecoration(color: priorityColor.withOpacity(0.12), borderRadius: BorderRadius.circular(6), border: Border.all(color: priorityColor.withOpacity(0.35))),
-                                                child: Text(priorityLabel, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: priorityColor)),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 8,
+                                                        vertical: 4),
+                                                decoration: BoxDecoration(
+                                                    color: priorityColor
+                                                        .withOpacity(0.12),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            6),
+                                                    border: Border.all(
+                                                        color: priorityColor
+                                                            .withOpacity(
+                                                                0.35))),
+                                                child: Text(priorityLabel,
+                                                    style: TextStyle(
+                                                        fontSize: 10,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: priorityColor)),
                                               ),
                                             ],
                                           ),
 
                                           // --- GEO IMAGE TAG ---
-                                          if (showImageWarning) ...[
+                                         /* if (showImageWarning) ...[
                                             const SizedBox(height: 6),
                                             Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                              decoration: BoxDecoration(color: Colors.red.withOpacity(0.1), borderRadius: BorderRadius.circular(4), border: Border.all(color: Colors.red.withOpacity(0.3))),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 8,
+                                                      vertical: 4),
+                                              decoration: BoxDecoration(
+                                                  color: Colors.red
+                                                      .withOpacity(0.1),
+                                                  borderRadius:
+                                                      BorderRadius.circular(4),
+                                                  border: Border.all(
+                                                      color: Colors.red
+                                                          .withOpacity(0.3))),
                                               child: Row(
                                                 mainAxisSize: MainAxisSize.min,
                                                 children: const [
-                                                  Icon(Icons.add_a_photo_outlined, size: 12, color: Colors.red),
+                                                  Icon(
+                                                      Icons
+                                                          .add_a_photo_outlined,
+                                                      size: 12,
+                                                      color: Colors.red),
                                                   SizedBox(width: 4),
-                                                  Text("Add Image from Details", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.red)),
+                                                  Text("Add Image from Details",
+                                                      style: TextStyle(
+                                                          fontSize: 10,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color: Colors.red)),
                                                 ],
                                               ),
                                             ),
-                                          ],
+                                          ],*/
+
+                                          // --- DYNAMIC AREA STATUS CONDITION CHECK ---
+                                          const SizedBox(height: 6),
+
+                                          if ((doctor.areaId ?? '')
+                                              .trim()
+                                              .isEmpty)
+                                            GestureDetector(
+                                              onTap: () => _showAssignAreaSheet(
+                                                doctor,
+                                              ),
+                                              child: Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                  horizontal: 8,
+                                                  vertical: 4,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.amber
+                                                      .withOpacity(0.15),
+                                                  borderRadius:
+                                                      BorderRadius.circular(4),
+                                                  border: Border.all(
+                                                    color: Colors.amber.shade700
+                                                        .withOpacity(0.4),
+                                                  ),
+                                                ),
+                                                child: Row(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  children: [
+                                                    Icon(
+                                                      Icons
+                                                          .add_location_alt_outlined,
+                                                      size: 12,
+                                                      color:
+                                                          Colors.amber.shade900,
+                                                    ),
+                                                    const SizedBox(width: 4),
+                                                    Text(
+                                                      "Add Area Missing",
+                                                      style: TextStyle(
+                                                        fontSize: 10,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Colors
+                                                            .amber.shade900,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
 
                                           const SizedBox(height: 4),
-                                          Text(doctor.specialization, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.grey[800])),
+                                          Text(doctor.specialization,
+                                              style: TextStyle(
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: Colors.grey[800])),
+
                                           const SizedBox(height: 4),
-                                          Row(children: [Icon(Icons.location_on_rounded, size: 12, color: Colors.grey[600]), const SizedBox(width: 4), Expanded(child: Text(doctor.location, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, color: Colors.grey[600])))]),
+                                          Text(doctor.specialization,
+                                              style: TextStyle(
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: Colors.grey[800])),
+                                          const SizedBox(height: 4),
+                                          Row(children: [
+                                            Icon(Icons.location_on_rounded,
+                                                size: 12,
+                                                color: Colors.grey[600]),
+                                            const SizedBox(width: 4),
+                                            Expanded(
+                                                child: Text(doctor.location,
+                                                    maxLines: 1,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    style: TextStyle(
+                                                        fontSize: 12,
+                                                        color:
+                                                            Colors.grey[600])))
+                                          ]),
                                         ],
                                       ),
                                     ),
@@ -1048,7 +1203,8 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                                 ),
                               ),
                               // Body
-                              _buildBodyContent(context, doctor, isValidMap, themeColor, isTablet),
+                              _buildBodyContent(context, doctor, isValidMap,
+                                  themeColor, isTablet),
                             ],
                           ),
                         ),
@@ -1056,9 +1212,21 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                     );
 
                     return Container(
-                      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: themeColor.withOpacity(0.35)), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 12, offset: const Offset(0, 6))]),
+                      decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border:
+                              Border.all(color: themeColor.withOpacity(0.35)),
+                          boxShadow: [
+                            BoxShadow(
+                                color: Colors.black.withOpacity(0.05),
+                                blurRadius: 12,
+                                offset: const Offset(0, 6))
+                          ]),
                       clipBehavior: Clip.antiAlias,
-                      child: isTablet ? cardContent : IntrinsicHeight(child: cardContent),
+                      child: isTablet
+                          ? cardContent
+                          : IntrinsicHeight(child: cardContent),
                     );
                   }
 
@@ -1066,14 +1234,20 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                     return ListView.builder(
                       padding: const EdgeInsets.all(16),
                       itemCount: filteredDoctors.length,
-                      itemBuilder: (_, i) => Padding(padding: const EdgeInsets.only(bottom: 16), child: buildDoctorCard(filteredDoctors[i], isTablet: false)),
+                      itemBuilder: (_, i) => Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: buildDoctorCard(filteredDoctors[i],
+                              isTablet: false)),
                     );
                   } else {
                     // --- TABLET GRID CONFIGURATION ---
                     final int crossAxisCount = isTabletPortrait ? 2 : 3;
 
                     // FIX: Adjusted ratio to 1.2 to remove excess space but keep content safe
-                    final double ratio = isTabletPortrait ? 1.2 : 1.2;
+                    //  final double ratio = isTabletPortrait ? 1.2 : 1.2;
+
+                    // FIX: Dropping below 1.0 significantly increases card height capacity for heavy text rows
+                    final double ratio = isTabletPortrait ? 1.08 : 1.12;
 
                     return GridView.builder(
                       padding: const EdgeInsets.all(16),
@@ -1084,7 +1258,8 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                         childAspectRatio: ratio,
                       ),
                       itemCount: filteredDoctors.length,
-                      itemBuilder: (_, i) => buildDoctorCard(filteredDoctors[i], isTablet: true),
+                      itemBuilder: (_, i) =>
+                          buildDoctorCard(filteredDoctors[i], isTablet: true),
                     );
                   }
                 },
@@ -1204,6 +1379,161 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
     );
   }
 
+  // PLACE THIS INSIDE YOUR _AddDoctorScreenState CLASS
+  void _showAddAreaDialog(
+    Doctor doctor,
+  ) {
+    final pinController = TextEditingController();
+
+    Get.bottomSheet(
+      Container(
+        padding: const EdgeInsets.all(24),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(28),
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                height: 90,
+                width: 90,
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.location_searching,
+                  size: 50,
+                  color: TColors.primary,
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                "Create New Area",
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                "Enter pincode and we'll automatically fetch all available areas and post offices.",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                  height: 1.4,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(
+                      Icons.info_outline,
+                      color: Colors.blue,
+                    ),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        "No need to enter Post Office manually. We will fetch it automatically.",
+                      ),
+                    )
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              TextField(
+                controller: pinController,
+                keyboardType: TextInputType.number,
+                maxLength: 6,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 5,
+                ),
+                decoration: InputDecoration(
+                  counterText: "",
+                  hintText: "201306",
+                  prefixIcon: const Icon(
+                    Icons.pin_drop,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                height: 55,
+                child: ElevatedButton.icon(
+                  icon: const Icon(Icons.search),
+                  label: const Text(
+                    "Verify & Fetch Areas",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  onPressed: () async {
+                    final pin = pinController.text.trim();
+
+                    if (pin.length != 6) {
+                      Get.snackbar(
+                        "Invalid Pincode",
+                        "Please enter a valid 6 digit pincode",
+                      );
+                      return;
+                    }
+
+                    final response = await http.get(
+                      Uri.parse(
+                        "https://api.postalpincode.in/pincode/$pin",
+                      ),
+                    );
+
+                    final data = jsonDecode(response.body);
+
+                    if (data.isEmpty ||
+                        data[0]['Status'] != 'Success' ||
+                        data[0]['PostOffice'] == null) {
+                      Get.snackbar(
+                        "Error",
+                        "Invalid Pincode",
+                      );
+                      return;
+                    }
+
+                    final offices = data[0]['PostOffice'];
+
+                    Get.back();
+
+                    _showAreaSelectionSheet(
+                      doctor,
+                      pin,
+                      offices,
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      isScrollControlled: true,
+    );
+  }
+
   Widget _buildBodyContent(BuildContext context, Doctor doctor, bool isValidMap,
       Color themeColor, bool isTablet) {
     return Padding(
@@ -1305,6 +1635,392 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
           ],
         ],
       ),
+    );
+  }
+
+  void _showAreaSelectionSheet(
+    Doctor doctor,
+    String pincode,
+    List offices,
+  ) {
+    int selectedIndex = 0;
+
+    Get.bottomSheet(
+      StatefulBuilder(
+        builder: (context, setState) {
+          return Container(
+            padding: const EdgeInsets.all(20),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(
+                top: Radius.circular(24),
+              ),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  "Select Area",
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                SizedBox(
+                  height: 300,
+                  child: ListView.builder(
+                    itemCount: offices.length,
+                    itemBuilder: (_, index) {
+                      final office = offices[index];
+
+                      return RadioListTile<int>(
+                        value: index,
+                        groupValue: selectedIndex,
+                        title: Text(
+                          office['Name'],
+                        ),
+                        subtitle: Text(
+                          office['Block'] ?? '',
+                        ),
+                        onChanged: (value) {
+                          setState(() {
+                            selectedIndex = value!;
+                          });
+                        },
+                      );
+                    },
+                  ),
+                ),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    child: const Text(
+                      "Continue",
+                    ),
+                    onPressed: () {
+                      Get.back();
+
+                      final office = offices[selectedIndex];
+
+                      _showCreateAreaForm(
+                        doctor,
+                        office,
+                        pincode,
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  void _showCreateAreaForm(
+    Doctor doctor,
+    Map office,
+    String pincode,
+  ) {
+    final areaController = TextEditingController(
+      text: office['Name'],
+    );
+
+    Get.dialog(
+      Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          constraints: const BoxConstraints(
+            maxWidth: 500,
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  height: 90,
+                  width: 90,
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade50,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.location_city,
+                    color: Colors.green,
+                    size: 50,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                const Text(
+                  "Confirm New Area",
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  "Review the detected area information before creating it.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                TextField(
+                  controller: areaController,
+                  decoration: InputDecoration(
+                    labelText: "Area Name",
+                    prefixIcon: const Icon(Icons.edit_location_alt),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: Colors.grey.shade300,
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      _infoRow(
+                        Icons.pin_drop,
+                        "Pincode",
+                        pincode,
+                      ),
+                      const Divider(),
+                      _infoRow(
+                        Icons.local_post_office,
+                        "Post Office",
+                        office['Name'] ?? '',
+                      ),
+                      const Divider(),
+                      _infoRow(
+                        Icons.location_city,
+                        "Block",
+                        office['Block'] ?? '-',
+                      ),
+                      const Divider(),
+                      _infoRow(
+                        Icons.map,
+                        "District",
+                        office['District'] ?? '-',
+                      ),
+                      const Divider(),
+                      _infoRow(
+                        Icons.flag,
+                        "State",
+                        office['State'] ?? '-',
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Get.back(),
+                        child: const Text(
+                          "Cancel",
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      flex: 2,
+                      child: ElevatedButton.icon(
+                        icon: const Icon(
+                          Icons.check_circle,
+                        ),
+                        label: const Text(
+                          "Create Area",
+                        ),
+                        onPressed: () async {
+                          final createdAreaId =
+                              await _doctorListController.createNewArea(
+                            name: areaController.text.trim(),
+                            pincode: pincode,
+                            postOffice: office['Name'],
+                            headOfficeId: doctor.headOfficeId,
+                          );
+
+                          if (createdAreaId != null) {
+                            await _doctorListController.assignAreaToDoctor(
+                              doctorId: doctor.id,
+                              areaId: createdAreaId,
+                            );
+
+                            Get.back();
+                          }
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _infoRow(
+    IconData icon,
+    String title,
+    String value,
+  ) {
+    return Row(
+      children: [
+        Icon(
+          icon,
+          size: 18,
+          color: TColors.primary,
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            title,
+            style: const TextStyle(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        Text(
+          value,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showAssignAreaSheet(
+    Doctor doctor,
+  ) async {
+    final areas = await _doctorListController.fetchAreas();
+
+    final searchController = TextEditingController();
+
+    List<dynamic> filteredAreas = List.from(areas);
+
+    Get.bottomSheet(
+      StatefulBuilder(
+        builder: (context, setState) {
+          return Container(
+            height: Get.height * .80,
+            padding: const EdgeInsets.all(16),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(
+                top: Radius.circular(24),
+              ),
+            ),
+            child: Column(
+              children: [
+                const Text(
+                  "Assign Area",
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: searchController,
+                  decoration: InputDecoration(
+                    hintText: "Search Area",
+                    prefixIcon: const Icon(
+                      Icons.search,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(
+                        12,
+                      ),
+                    ),
+                  ),
+                  onChanged: (value) {
+                    setState(() {
+                      filteredAreas = areas
+                          .where(
+                            (area) => (area["name"] ?? "")
+                                .toString()
+                                .toLowerCase()
+                                .contains(
+                                  value.toLowerCase(),
+                                ),
+                          )
+                          .toList();
+                    });
+                  },
+                ),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: filteredAreas.length,
+                    itemBuilder: (_, index) {
+                      final area = filteredAreas[index];
+
+                      return ListTile(
+                        leading: const Icon(
+                          Icons.location_on,
+                        ),
+                        title: Text(
+                          area["name"] ?? "",
+                        ),
+                        subtitle: Text(
+                          area["pincode"] ?? "",
+                        ),
+                        onTap: () async {
+                          Get.back();
+
+                          await _doctorListController.assignAreaToDoctor(
+                            doctorId: doctor.id,
+                            areaId: area["id"],
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    icon: const Icon(
+                      Icons.add,
+                    ),
+                    label: const Text(
+                      "Create New Area",
+                    ),
+                    onPressed: () {
+                      Get.back();
+
+                      _showAddAreaDialog(
+                        doctor,
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+      isScrollControlled: true,
     );
   }
 }

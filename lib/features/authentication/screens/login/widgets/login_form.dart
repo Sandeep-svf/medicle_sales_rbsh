@@ -15,6 +15,9 @@ class LoginForm extends StatelessWidget {
     final TextEditingController emailController = TextEditingController();
     final TextEditingController passwordController = TextEditingController();
 
+    // 1. Add a ValueNotifier to track the hidden state
+    final ValueNotifier<bool> hidePassword = ValueNotifier<bool>(true);
+
     return Form(
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: TSizes.spaceBtwSections),
@@ -23,7 +26,7 @@ class LoginForm extends StatelessWidget {
             /// Email
             TextFormField(
               controller: emailController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 prefixIcon: Icon(Iconsax.direct_right),
                 labelText: TTexts.userEmail,
               ),
@@ -32,14 +35,25 @@ class LoginForm extends StatelessWidget {
             const SizedBox(height: TSizes.spaceBtwItems),
 
             /// Password
-            TextFormField(
-              controller: passwordController,
-              obscureText: true,
-              decoration: InputDecoration(
-                prefixIcon: Icon(Iconsax.password_check),
-                labelText: TTexts.password,
-                suffixIcon: Icon(Iconsax.eye_slash),
-              ),
+            // 2. Wrap TextFormField with ValueListenableBuilder
+            ValueListenableBuilder(
+              valueListenable: hidePassword,
+              builder: (context, value, child) {
+                return TextFormField(
+                  controller: passwordController,
+                  obscureText: value, // Use the notifier value here
+                  decoration: InputDecoration(
+                    prefixIcon: const Icon(Iconsax.password_check),
+                    labelText: TTexts.password,
+                    suffixIcon: IconButton(
+                      // 3. Change icon based on state
+                      icon: Icon(value ? Iconsax.eye_slash : Iconsax.eye),
+                      // 4. Toggle the value on click
+                      onPressed: () => hidePassword.value = !hidePassword.value,
+                    ),
+                  ),
+                );
+              },
             ),
 
             const SizedBox(height: TSizes.spaceBtwSections),

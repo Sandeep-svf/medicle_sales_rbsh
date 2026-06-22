@@ -13,6 +13,7 @@ class AddDoctorNewScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = Get.put(AddDoctorNewController());
     final screenWidth = MediaQuery.of(context).size.width;
+    final BuildContext pageContext = context;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F9),
@@ -32,7 +33,8 @@ class AddDoctorNewScreen extends StatelessWidget {
                   color: Colors.black.withOpacity(0.3),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
+                child:
+                    const Icon(Icons.arrow_back, color: Colors.white, size: 20),
               ),
               onPressed: () => Get.back(),
             ),
@@ -46,7 +48,10 @@ class AddDoctorNewScreen extends StatelessWidget {
                   fontSize: 16,
                   letterSpacing: 0.5,
                   shadows: [
-                    Shadow(offset: Offset(0, 1), blurRadius: 3.0, color: Colors.black45)
+                    Shadow(
+                        offset: Offset(0, 1),
+                        blurRadius: 3.0,
+                        color: Colors.black45)
                   ],
                 ),
               ),
@@ -86,8 +91,11 @@ class AddDoctorNewScreen extends StatelessWidget {
                 bool isWide = constraints.maxWidth > 700;
                 double horizontalPadding = isWide ? 30 : 20;
                 double spacing = 15.0;
-                double singleCardWidth = (constraints.maxWidth - (horizontalPadding * 2) - spacing) / 2;
-                double dynamicHeight = (singleCardWidth * 0.85).clamp(160.0, 280.0);
+                double singleCardWidth =
+                    (constraints.maxWidth - (horizontalPadding * 2) - spacing) /
+                        2;
+                double dynamicHeight =
+                    (singleCardWidth * 0.85).clamp(160.0, 280.0);
 
                 return Column(
                   children: [
@@ -95,17 +103,22 @@ class AddDoctorNewScreen extends StatelessWidget {
                     Transform.translate(
                       offset: const Offset(0, -50),
                       child: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                        padding:
+                            EdgeInsets.symmetric(horizontal: horizontalPadding),
                         child: SizedBox(
                           height: dynamicHeight,
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               // Image is Required
-                              Expanded(child: _buildSideBySideImagePicker(context, controller)),
+                              Expanded(
+                                  child: _buildSideBySideImagePicker(
+                                      context, controller)),
                               SizedBox(width: spacing),
                               // Location is Required
-                              Expanded(child: _buildSideBySideLocationPicker(controller)),
+                              Expanded(
+                                  child: _buildSideBySideLocationPicker(
+                                      controller)),
                             ],
                           ),
                         ),
@@ -116,41 +129,71 @@ class AddDoctorNewScreen extends StatelessWidget {
                     Transform.translate(
                       offset: const Offset(0, -20),
                       child: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                        padding:
+                            EdgeInsets.symmetric(horizontal: horizontalPadding),
                         child: Form(
                           key: controller.formKey,
                           child: Column(
                             children: [
                               // 01 Basic Info
-                              _buildSectionHeader(number: "01", title: "Basic Information", subtitle: "Personal Details"),
+                              _buildSectionHeader(
+                                  number: "01",
+                                  title: "Basic Information",
+                                  subtitle: "Personal Details"),
                               const SizedBox(height: 15),
                               _buildBasicInfoCard(controller, context),
                               const SizedBox(height: 30),
 
                               // 02 Professional Info
-                              _buildSectionHeader(number: "02", title: "Professional", subtitle: "Work Details"),
+                              _buildSectionHeader(
+                                  number: "02",
+                                  title: "Professional",
+                                  subtitle: "Work Details"),
                               const SizedBox(height: 15),
-                              _buildProfessionalInfoCard(controller),
+                              _buildProfessionalInfoCard(context, controller),
                               const SizedBox(height: 30),
 
                               // 03 Contact Info
-                              _buildSectionHeader(number: "03", title: "Contact Info", subtitle: "Optional"),
+                              _buildSectionHeader(
+                                  number: "03",
+                                  title: "Contact Info",
+                                  subtitle: "Optional"),
                               const SizedBox(height: 15),
                               _buildContactInfoCard(controller),
                               const SizedBox(height: 30),
 
                               // 04 Address Details
-                              _buildSectionHeader(number: "04", title: "Address Details", subtitle: "Location (Auto)"),
+                              _buildSectionHeader(
+                                  number: "04",
+                                  title: "Address Details",
+                                  subtitle: "Location (Auto)"),
                               const SizedBox(height: 15),
                               _buildAddressFieldsCard(controller),
+
+                              const SizedBox(height: 30),
+
+// 05 Area Assignment
+                              _buildSectionHeader(
+                                number: "05",
+                                title: "Area Assignment",
+                                subtitle: "Select Coverage Area",
+                              ),
+                              const SizedBox(height: 15),
+
+                              _buildAreaSelector(
+                                context,
+                                controller,
+                              ),
 
                               const SizedBox(height: 40),
 
                               // Submit Button
                               Center(
                                 child: ConstrainedBox(
-                                  constraints: BoxConstraints(maxWidth: isWide ? 500 : double.infinity),
-                                  child: _buildSubmitButton(controller,context),
+                                  constraints: BoxConstraints(
+                                      maxWidth: isWide ? 500 : double.infinity),
+                                  child:
+                                      _buildSubmitButton(controller, context),
                                 ),
                               ),
                               const SizedBox(height: 50),
@@ -173,12 +216,15 @@ class AddDoctorNewScreen extends StatelessWidget {
   // WIDGET BUILDERS (Helpers)
   // ===========================================================================
 
-  Widget _buildSideBySideImagePicker(BuildContext context, AddDoctorNewController controller) {
+  Widget _buildSideBySideImagePicker(
+      BuildContext context, AddDoctorNewController controller) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 4))],
+        boxShadow: const [
+          BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 4))
+        ],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
@@ -190,7 +236,8 @@ class AddDoctorNewScreen extends StatelessWidget {
                 children: [
                   const CircularProgressIndicator(color: TColors.primary),
                   const SizedBox(height: 8),
-                  Text("Processing...", style: TextStyle(fontSize: 10, color: Colors.grey[600]))
+                  Text("Processing...",
+                      style: TextStyle(fontSize: 10, color: Colors.grey[600]))
                 ],
               ),
             );
@@ -204,7 +251,8 @@ class AddDoctorNewScreen extends StatelessWidget {
                 Image.file(img, fit: BoxFit.contain),
                 Center(
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
                       color: Colors.black.withOpacity(0.4),
                       borderRadius: BorderRadius.circular(30),
@@ -217,8 +265,10 @@ class AddDoctorNewScreen extends StatelessWidget {
                           child: Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.9), shape: BoxShape.circle),
-                            child: const Icon(Icons.visibility, color: TColors.primary, size: 20),
+                                color: Colors.white.withOpacity(0.9),
+                                shape: BoxShape.circle),
+                            child: const Icon(Icons.visibility,
+                                color: TColors.primary, size: 20),
                           ),
                         ),
                         const SizedBox(width: 15),
@@ -227,8 +277,10 @@ class AddDoctorNewScreen extends StatelessWidget {
                           child: Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                                color: TColors.primary.withOpacity(0.9), shape: BoxShape.circle),
-                            child: const Icon(Icons.refresh, color: Colors.white, size: 20),
+                                color: TColors.primary.withOpacity(0.9),
+                                shape: BoxShape.circle),
+                            child: const Icon(Icons.refresh,
+                                color: Colors.white, size: 20),
                           ),
                         ),
                       ],
@@ -244,11 +296,15 @@ class AddDoctorNewScreen extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.add_a_photo, size: 36, color: TColors.primary.withOpacity(0.6)),
+                  Icon(Icons.add_a_photo,
+                      size: 36, color: TColors.primary.withOpacity(0.6)),
                   const SizedBox(height: 8),
                   Text("Capture\nPhoto *",
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.grey[600], fontSize: 13, fontWeight: FontWeight.bold)),
+                      style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold)),
                 ],
               ),
             );
@@ -270,7 +326,9 @@ class AddDoctorNewScreen extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
               child: InteractiveViewer(
-                minScale: 1.0, maxScale: 4.0, panEnabled: true,
+                minScale: 1.0,
+                maxScale: 4.0,
+                panEnabled: true,
                 child: Image.file(imageFile, fit: BoxFit.contain),
               ),
             ),
@@ -280,7 +338,8 @@ class AddDoctorNewScreen extends StatelessWidget {
                 onTap: () => Get.back(),
                 child: Container(
                   padding: const EdgeInsets.all(8),
-                  decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
+                  decoration: const BoxDecoration(
+                      color: Colors.black54, shape: BoxShape.circle),
                   child: const Icon(Icons.close, color: Colors.white, size: 20),
                 ),
               ),
@@ -298,7 +357,10 @@ class AddDoctorNewScreen extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 4))],
+          boxShadow: const [
+            BoxShadow(
+                color: Colors.black12, blurRadius: 8, offset: Offset(0, 4))
+          ],
           border: Border.all(color: TColors.primary.withOpacity(0.1)),
         ),
         child: Column(
@@ -306,30 +368,43 @@ class AddDoctorNewScreen extends StatelessWidget {
           children: [
             Container(
               padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(color: TColors.primary.withOpacity(0.1), shape: BoxShape.circle),
-              child: const Icon(Icons.location_on, color: TColors.primary, size: 28),
+              decoration: BoxDecoration(
+                  color: TColors.primary.withOpacity(0.1),
+                  shape: BoxShape.circle),
+              child: const Icon(Icons.location_on,
+                  color: TColors.primary, size: 28),
             ),
             const SizedBox(height: 10),
             const Text("Set Doctor\nLocation *",
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 13)),
+                style: TextStyle(
+                    color: Colors.black87,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13)),
             const SizedBox(height: 5),
             Obx(() => Text(
-              controller.isLocationSet.value ? " Coordinates Set" : "(Tap to Open Map)",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 10,
-                color: controller.isLocationSet.value ? Colors.green : Colors.grey[500],
-                fontWeight: FontWeight.w500,
-              ),
-            )),
+                  controller.isLocationSet.value
+                      ? " Coordinates Set"
+                      : "(Tap to Open Map)",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: controller.isLocationSet.value
+                        ? Colors.green
+                        : Colors.grey[500],
+                    fontWeight: FontWeight.w500,
+                  ),
+                )),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildSectionHeader({required String number, required String title, required String subtitle}) {
+  Widget _buildSectionHeader(
+      {required String number,
+      required String title,
+      required String subtitle}) {
     return Row(
       children: [
         Container(
@@ -339,14 +414,25 @@ class AddDoctorNewScreen extends StatelessWidget {
             borderRadius: BorderRadius.circular(8),
           ),
           child: Text(number,
-              style: const TextStyle(color: TColors.primary, fontWeight: FontWeight.w800, fontSize: 14)),
+              style: const TextStyle(
+                  color: TColors.primary,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 14)),
         ),
         const SizedBox(width: 12),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.black87)),
-            Text(subtitle, style: TextStyle(fontWeight: FontWeight.w500, fontSize: 11, color: Colors.grey[500])),
+            Text(title,
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                    color: Colors.black87)),
+            Text(subtitle,
+                style: TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 11,
+                    color: Colors.grey[500])),
           ],
         ),
         const Spacer(),
@@ -356,7 +442,8 @@ class AddDoctorNewScreen extends StatelessWidget {
   }
 
   // --- UPDATED: 01. BASIC INFO ---
-  Widget _buildBasicInfoCard(AddDoctorNewController controller, BuildContext context) {
+  Widget _buildBasicInfoCard(
+      AddDoctorNewController controller, BuildContext context) {
     return _ModernCard(
       child: Column(
         children: [
@@ -377,21 +464,28 @@ class AddDoctorNewScreen extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Icon(Icons.people_outline_rounded, color: Colors.grey[600], size: 20),
+                Icon(Icons.people_outline_rounded,
+                    color: Colors.grey[600], size: 20),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Obx(() => DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      value: controller.selectedGender.value,
-                      isExpanded: true,
-                      hint: Text("Select Gender", style: TextStyle(fontSize: 14, color: Colors.grey[400])),
-                      icon: const Icon(Icons.keyboard_arrow_down_rounded),
-                      items: controller.genders.map((String value) {
-                        return DropdownMenuItem<String>(value: value, child: Text(value, style: const TextStyle(fontSize: 14)));
-                      }).toList(),
-                      onChanged: (newValue) => controller.selectedGender.value = newValue!,
-                    ),
-                  )),
+                        child: DropdownButton<String>(
+                          value: controller.selectedGender.value,
+                          isExpanded: true,
+                          hint: Text("Select Gender",
+                              style: TextStyle(
+                                  fontSize: 14, color: Colors.grey[400])),
+                          icon: const Icon(Icons.keyboard_arrow_down_rounded),
+                          items: controller.genders.map((String value) {
+                            return DropdownMenuItem<String>(
+                                value: value,
+                                child: Text(value,
+                                    style: const TextStyle(fontSize: 14)));
+                          }).toList(),
+                          onChanged: (newValue) =>
+                              controller.selectedGender.value = newValue!,
+                        ),
+                      )),
                 ),
               ],
             ),
@@ -428,7 +522,8 @@ class AddDoctorNewScreen extends StatelessWidget {
   }
 
   // --- UPDATED: 02. PROFESSIONAL ---
-  Widget _buildProfessionalInfoCard(AddDoctorNewController controller) {
+  Widget _buildProfessionalInfoCard(
+      BuildContext context, AddDoctorNewController controller) {
     return _ModernCard(
       child: Column(
         children: [
@@ -474,7 +569,8 @@ class AddDoctorNewScreen extends StatelessWidget {
                   child: SizedBox(
                     height: 20,
                     width: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: TColors.primary),
+                    child: CircularProgressIndicator(
+                        strokeWidth: 2, color: TColors.primary),
                   ),
                 ),
               );
@@ -484,22 +580,38 @@ class AddDoctorNewScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text("Select Head Office *",
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF636E72))),
+                    style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF636E72))),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<String>(
                   value: controller.selectedHeadOfficeId.value,
                   isExpanded: true,
-                  hint: Text("Select Head Office", style: TextStyle(fontSize: 14, color: Colors.grey[400])),
+                  hint: Text("Select Head Office",
+                      style: TextStyle(fontSize: 14, color: Colors.grey[400])),
                   icon: const Icon(Icons.keyboard_arrow_down_rounded),
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF2D3436)),
+                  style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF2D3436)),
                   decoration: InputDecoration(
-                    prefixIcon: Icon(Icons.domain, color: TColors.primary.withOpacity(0.8), size: 18),
+                    prefixIcon: Icon(Icons.domain,
+                        color: TColors.primary.withOpacity(0.8), size: 18),
                     filled: true,
                     fillColor: const Color(0xFFFAFAFA),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
-                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
-                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: TColors.primary, width: 1.5)),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 14),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey.shade200)),
+                    enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey.shade200)),
+                    focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(
+                            color: TColors.primary, width: 1.5)),
                   ),
                   items: controller.headOffices.toList().map((item) {
                     return DropdownMenuItem<String>(
@@ -512,6 +624,13 @@ class AddDoctorNewScreen extends StatelessWidget {
                   },
                   validator: (v) => v == null ? "Required" : null,
                 ),
+
+                const SizedBox(height: 16),
+
+                // --- PRIORITY DROPDOWN
+
+                // --- AREA DROPDOWN (REQUIRED) ---
+
               ],
             );
           }),
@@ -528,30 +647,201 @@ class AddDoctorNewScreen extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Icon(Icons.star_outline_rounded, color: TColors.primary.withOpacity(0.8), size: 20),
+                Icon(Icons.star_outline_rounded,
+                    color: TColors.primary.withOpacity(0.8), size: 20),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Obx(() => DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      value: controller.selectedPriority.value,
-                      isExpanded: true,
-                      hint: Text("Priority (Optional)", style: TextStyle(fontSize: 14, color: Colors.grey[400])),
-                      icon: const Icon(Icons.keyboard_arrow_down_rounded),
-                      items: controller.priorities.map((String value) {
-                        return DropdownMenuItem<String>(
-                            value: value,
-                            child: Text("Priority $value", style: const TextStyle(fontSize: 14))
-                        );
-                      }).toList(),
-                      onChanged: (newValue) => controller.selectedPriority.value = newValue!,
-                    ),
-                  )),
+                        child: DropdownButton<String>(
+                          value: controller.selectedPriority.value,
+                          isExpanded: true,
+                          hint: Text("Priority (Optional)",
+                              style: TextStyle(
+                                  fontSize: 14, color: Colors.grey[400])),
+                          icon: const Icon(Icons.keyboard_arrow_down_rounded),
+                          items: controller.priorities.map((String value) {
+                            return DropdownMenuItem<String>(
+                                value: value,
+                                child: Text("Priority $value",
+                                    style: const TextStyle(fontSize: 14)));
+                          }).toList(),
+                          onChanged: (newValue) =>
+                              controller.selectedPriority.value = newValue!,
+                        ),
+                      )),
                 ),
               ],
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildAreaSelector(
+    BuildContext context,
+    AddDoctorNewController controller,
+  ) {
+    final searchController = TextEditingController();
+
+    return StatefulBuilder(
+      builder: (context, setState) {
+        List<Map<String, dynamic>> filtered = controller.areas.toList();
+
+        return Obx(() {
+          filtered = controller.areas
+              .where((area) => area['name'].toString().toLowerCase().contains(
+                    searchController.text.toLowerCase(),
+                  ))
+              .toList();
+
+          return Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFAFAFA),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Colors.grey.shade200,
+              ),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    const Expanded(
+                      child: Text(
+                        "Area *",
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () {
+                        _showAddAreaDialog(
+                          context,
+                          controller,
+                        );
+                      },
+                      icon: const Icon(Icons.add),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: searchController,
+                  decoration: const InputDecoration(
+                    hintText: "Search Area",
+                    prefixIcon: Icon(Icons.search),
+                  ),
+                  onChanged: (_) {
+                    setState(() {});
+                  },
+                ),
+                if (controller.selectedAreaId.value != null)
+                  Container(
+                    width: double.infinity,
+                    margin: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.green.shade50,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: Colors.green.shade300),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.check_circle,
+                          color: Colors.green,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            filtered.firstWhereOrNull(
+                                  (e) =>
+                                      e['id'] ==
+                                      controller.selectedAreaId.value,
+                                )?['name'] ??
+                                "Area Selected",
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  height: 220,
+                  child: controller.isLoadingAreas.value
+                      ? const Center(
+                    child: CircularProgressIndicator(),
+                  )
+                      : filtered.isEmpty
+                      ? ListView(
+                    children: [
+                      ListTile(
+                        leading: const Icon(
+                          Icons.add_circle,
+                          color: Colors.green,
+                        ),
+                        title: Text(
+                          'Create "${searchController.text.trim()}"',
+                        ),
+                        subtitle: const Text(
+                          'Area not found',
+                        ),
+                        onTap: () {
+                          _showAddAreaDialog(
+                            context,
+                            controller,
+                            prefilledAreaName: searchController.text.trim(),
+                          );
+                        },
+                      ),
+                    ],
+                  )
+                      : ListView.builder(
+                    itemCount: filtered.length,
+                    itemBuilder: (_, index) {
+                      final area = filtered[index];
+
+                      final selected =
+                          controller.selectedAreaId.value ==
+                              area['id'];
+
+                      return ListTile(
+                        selected: selected,
+                        tileColor: selected
+                            ? TColors.primary.withOpacity(0.10)
+                            : Colors.transparent,
+                        shape: RoundedRectangleBorder(
+                          borderRadius:
+                          BorderRadius.circular(10),
+                        ),
+                        title: Text(
+                          area['name'],
+                        ),
+                        trailing: selected
+                            ? const Icon(
+                          Icons.check_circle,
+                          color: Colors.green,
+                        )
+                            : null,
+                        onTap: () {
+                          controller.selectedAreaId.value =
+                          area['id'];
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          );
+        });
+      },
     );
   }
 
@@ -589,51 +879,88 @@ class AddDoctorNewScreen extends StatelessWidget {
           _ModernTextField(
             controller: controller.address1Controller,
             label: "Address Line 1 (Auto-filled)",
-            hint: "Auto-filled from Map",
+            hint: "Auto-filled from Pincode",
             icon: Icons.map,
+            isReadOnly: true,
             filledColor: Colors.blue[50],
-            isRequired: false, // Not strictly required as text, but Map pin is required
           ),
           const SizedBox(height: 16),
+
           _ModernTextField(
             controller: controller.address2Controller,
             label: "Address Line 2",
-            hint: "Floor, Unit No, Landmark",
+            hint: "House No, Building, Landmark",
             icon: Icons.edit_location_alt_outlined,
-            isRequired: false,
           ),
           const SizedBox(height: 16),
-          Row(
+
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: _ModernTextField(
-                  controller: controller.stateController,
-                  label: "State",
-                  hint: "State",
-                  isRequired: false,
-                ),
+
+              Row(
+                children: [
+                  Expanded(
+                    child: _ModernTextField(
+                      controller: controller.stateController,
+                      label: "State",
+                      hint: "State",
+                      isReadOnly: true,
+                    ),
+                  ),
+
+                  const SizedBox(width: 12),
+
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: controller.showPincodeDialog,
+                      child: AbsorbPointer(
+                        child: _ModernTextField(
+                          controller: controller.pincodeController,
+                          label: "Pincode",
+                          hint: "XXXXXX",
+                          isReadOnly: true,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _ModernTextField(
-                  controller: controller.pincodeController,
-                  label: "Pincode",
-                  hint: "XXXXXX",
-                  isNumber: true,
-                  isRequired: false,
+
+              const SizedBox(height: 6),
+
+              InkWell(
+                onTap: controller.showPincodeDialog,
+                child: const Row(
+                  children: [
+                    Icon(
+                      Icons.edit_location_alt,
+                      size: 14,
+                      color: Colors.blue,
+                    ),
+                    SizedBox(width: 4),
+                    Text(
+                      "Tap pincode to change location",
+                      style: TextStyle(
+                        color: Colors.blue,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
           const SizedBox(height: 16),
+
           Row(
             children: [
               Expanded(
                 child: _ModernTextField(
                   controller: controller.postOfficeController,
                   label: "Post Office",
-                  hint: "PO Name",
-                  isRequired: false,
+                  hint: "Post Office",
+                  isReadOnly: true,
                 ),
               ),
               const SizedBox(width: 12),
@@ -642,7 +969,7 @@ class AddDoctorNewScreen extends StatelessWidget {
                   controller: controller.countryController,
                   label: "Country",
                   hint: "Country",
-                  isRequired: false,
+                  isReadOnly: true,
                 ),
               ),
             ],
@@ -652,7 +979,8 @@ class AddDoctorNewScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSubmitButton(AddDoctorNewController controller, BuildContext context) {
+  Widget _buildSubmitButton(
+      AddDoctorNewController controller, BuildContext context) {
     return Container(
       width: double.infinity,
       height: 55,
@@ -660,7 +988,9 @@ class AddDoctorNewScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-              color: TColors.primary.withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 8)),
+              color: TColors.primary.withOpacity(0.3),
+              blurRadius: 15,
+              offset: const Offset(0, 8)),
         ],
       ),
       child: ElevatedButton(
@@ -668,15 +998,198 @@ class AddDoctorNewScreen extends StatelessWidget {
         onPressed: () => controller.submit(context),
         style: ElevatedButton.styleFrom(
           backgroundColor: TColors.primary,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           elevation: 0,
         ),
         child: const Text(
           "COMPLETE REGISTRATION",
           style: TextStyle(
-              color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold, letterSpacing: 1.0),
+              color: Colors.white,
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.0),
         ),
       ),
+    );
+  }
+
+  void _showAddAreaDialog(
+      BuildContext context,
+      AddDoctorNewController controller, {
+        String? prefilledAreaName,
+      }) {
+    final areaController = TextEditingController(
+      text: prefilledAreaName ?? '',
+    );
+
+    final pincodeController = TextEditingController(
+      text: controller.pincodeController.text,
+    );
+
+    final postOfficeController = TextEditingController(
+      text: controller.postOfficeController.text,
+    );
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) {
+        return AnimatedPadding(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOut,
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: Container(
+            constraints: const BoxConstraints(
+              maxWidth: 700,
+            ),
+            padding: const EdgeInsets.all(24),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(
+                top: Radius.circular(28),
+              ),
+            ),
+            child: SafeArea(
+              top: false,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: TColors.primary.withOpacity(.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.location_city,
+                            color: TColors.primary,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        const Expanded(
+                          child: Text(
+                            "Create New Area",
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () => Get.back(),
+                          icon: const Icon(Icons.close),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    _ModernTextField(
+                      controller: areaController,
+                      label: "Area Name",
+                      hint: "Enter Area Name",
+                      icon: Icons.location_city_outlined,
+                      isRequired: true,
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _ModernTextField(
+                            controller: pincodeController,
+                            label: "Pincode",
+                            hint: "110001",
+                            icon: Icons.pin_drop_outlined,
+                            isRequired: true,
+                            isReadOnly:
+                            controller.pincodeController.text.isNotEmpty,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _ModernTextField(
+                            controller: postOfficeController,
+                            label: "Post Office",
+                            hint: "Connaught Place",
+                            icon: Icons.local_post_office_outlined,
+                            isRequired: true,
+                            isReadOnly:
+                            controller.postOfficeController.text.isNotEmpty,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 28),
+
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => Get.back(),
+                            child: const Text("Cancel"),
+                          ),
+                        ),
+
+                        const SizedBox(width: 12),
+
+                        Expanded(
+                          flex: 2,
+                          child: ElevatedButton.icon(
+                            icon: const Icon(Icons.add),
+                            label: const Text("Create Area"),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: TColors.primary,
+                              foregroundColor: Colors.white,
+                              minimumSize: const Size(
+                                double.infinity,
+                                52,
+                              ),
+                            ),
+                            onPressed: () async {
+                              if (controller.selectedHeadOfficeId.value == null) {
+                                Get.snackbar(
+                                  "Required",
+                                  "Please select Head Office first",
+                                );
+                                return;
+                              }
+
+                              await controller.createArea(
+                                name: areaController.text.trim(),
+                                pincode: pincodeController.text.trim(),
+                                postOffice: postOfficeController.text.trim(),
+                              );
+
+                              await controller.fetchAreas(); // <-- ADD THIS
+
+                              if (context.mounted) {
+                                Navigator.pop(context);
+                              }
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 12),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
@@ -687,7 +1200,9 @@ class AddDoctorNewScreen extends StatelessWidget {
 
 class _ModernCard extends StatelessWidget {
   final Widget child;
+
   const _ModernCard({required this.child});
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -696,8 +1211,14 @@ class _ModernCard extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(color: Colors.grey.withOpacity(0.06), blurRadius: 20, offset: const Offset(0, 5)),
-          BoxShadow(color: Colors.grey.withOpacity(0.02), blurRadius: 2, offset: const Offset(0, 1)),
+          BoxShadow(
+              color: Colors.grey.withOpacity(0.06),
+              blurRadius: 20,
+              offset: const Offset(0, 5)),
+          BoxShadow(
+              color: Colors.grey.withOpacity(0.02),
+              blurRadius: 2,
+              offset: const Offset(0, 1)),
         ],
       ),
       child: child,
@@ -738,9 +1259,15 @@ class _ModernTextField extends StatelessWidget {
       children: [
         Row(
           children: [
-            Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF636E72))),
-            if(isRequired)
-              const Text(" *", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+            Text(label,
+                style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF636E72))),
+            if (isRequired)
+              const Text(" *",
+                  style: TextStyle(
+                      color: Colors.red, fontWeight: FontWeight.bold)),
           ],
         ),
         const SizedBox(height: 8),
@@ -748,24 +1275,38 @@ class _ModernTextField extends StatelessWidget {
           controller: controller,
           readOnly: isReadOnly,
           onTap: onTap,
-          keyboardType: inputType ?? (isNumber ? TextInputType.number : TextInputType.text),
+          keyboardType: inputType ??
+              (isNumber ? TextInputType.number : TextInputType.text),
           validator: (v) {
             if (isRequired && (v == null || v.trim().isEmpty)) {
               return 'Required';
             }
             return null;
           },
-          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: Color(0xFF2D3436)),
+          style: const TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 14,
+              color: Color(0xFF2D3436)),
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: TextStyle(color: Colors.grey[400], fontSize: 13),
-            prefixIcon: icon != null ? Icon(icon, color: TColors.primary.withOpacity(0.8), size: 18) : null,
+            prefixIcon: icon != null
+                ? Icon(icon, color: TColors.primary.withOpacity(0.8), size: 18)
+                : null,
             filled: true,
             fillColor: filledColor ?? const Color(0xFFFAFAFA),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
-            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
-            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: TColors.primary, width: 1.5)),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey.shade200)),
+            enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey.shade200)),
+            focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide:
+                    const BorderSide(color: TColors.primary, width: 1.5)),
           ),
         ),
       ],

@@ -25,6 +25,13 @@ class ExpenseModel {
   final List<TravelDetail> travelDetails2; // Duplicate field (travelDetails from original JSON)
   final String? dailyAllowanceType2; // Duplicate field (dailyAllowanceType from original JSON)
 
+  final String? endDate;
+  final String? paymentStatus;
+  final String? paymentDate;
+  final String? paymentMonthYear;
+  final String? transactionId;
+  final String? paymentNote;
+
   ExpenseModel({
     required this.id,
     required this.userId,
@@ -48,6 +55,12 @@ class ExpenseModel {
     required this.ratePerKm2,
     required this.travelDetails2,
     this.dailyAllowanceType2,
+    this.endDate,
+    this.paymentStatus,
+    this.paymentDate,
+    this.paymentMonthYear,
+    this.transactionId,
+    this.paymentNote,
   });
 
   factory ExpenseModel.fromJson(Map<String, dynamic> json) {
@@ -84,6 +97,20 @@ class ExpenseModel {
           json['travelDetails'].map((x) => TravelDetail.fromJson(x)))
           : [],
       dailyAllowanceType2: json['dailyAllowanceType'],
+      endDate: json['end_date']?.toString(),
+
+      paymentStatus: json['payment_status']?.toString(),
+
+      paymentDate: json['payment_date']?.toString(),
+
+      paymentMonthYear:
+      json['payment_month_year']?.toString(),
+
+      transactionId:
+      json['transaction_id']?.toString(),
+
+      paymentNote:
+      json['payment_note']?.toString(),
     );
   }
 
@@ -111,6 +138,17 @@ class ExpenseModel {
       'ratePerKm': ratePerKm2,
       'travelDetails': travelDetails2.map((x) => x.toJson()).toList(),
       'dailyAllowanceType': dailyAllowanceType2,
+      'end_date': endDate,
+
+      'payment_status': paymentStatus,
+
+      'payment_date': paymentDate,
+
+      'payment_month_year': paymentMonthYear,
+
+      'transaction_id': transactionId,
+
+      'payment_note': paymentNote,
     };
   }
 }

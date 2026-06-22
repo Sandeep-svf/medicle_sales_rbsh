@@ -23,6 +23,14 @@ class Doctor {
   final bool geoImageStatus;
   final List<dynamic> visitHistory; // Added to support your UI code
 
+  final String? clinicName;
+  final String? clinicAddress;
+  final String? qualification;
+  final dynamic consultationFee;
+  final dynamic availableTimings;
+  final String? areaId;
+  final bool isAssignedToArea;
+
   Doctor({
     required this.id,
     required this.name,
@@ -45,6 +53,14 @@ class Doctor {
     required this.headOffice,
     required this.geoImageStatus,
     this.visitHistory = const [],
+
+    this.clinicName,
+    this.clinicAddress,
+    this.qualification,
+    this.consultationFee,
+    this.availableTimings,
+    this.areaId,
+    this.isAssignedToArea = false,
   });
 
   factory Doctor.fromJson(Map<String, dynamic> json) {
@@ -96,6 +112,14 @@ class Doctor {
       geoImageStatus: json["geo_image_status"] ?? false,
       // Default to empty list as it's missing in JSON but used in UI
       visitHistory: json['visitHistory'] ?? [],
+
+      clinicName: json['clinic_name']?.toString(),
+      clinicAddress: json['clinic_address']?.toString(),
+      qualification: json['qualification']?.toString(),
+      consultationFee: json['consultation_fee'],
+      availableTimings: json['available_timings'],
+      areaId: json['areaId']?.toString(),
+      isAssignedToArea: json['is_assigned_to_area'] ?? false,
     );
   }
 
@@ -120,6 +144,13 @@ class Doctor {
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
       'headOffice': headOffice.toJson(),
+      'clinic_name': clinicName,
+      'clinic_address': clinicAddress,
+      'qualification': qualification,
+      'consultation_fee': consultationFee,
+      'available_timings': availableTimings,
+      'areaId': areaId,
+      'is_assigned_to_area': isAssignedToArea,
     };
   }
 }

@@ -1,16 +1,21 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
-import 'package:intl/intl.dart'; // Import intl for date formatting
+import 'package:intl/intl.dart';
 
 import '../../../../utils/http/http_client.dart';
 import '../../../../utils/local_storage/auth_manager.dart';
 import '../models/visitSalesData.dart';
 
-enum VisitDateFilter { today, last7Days, last15Days, custom }
+enum VisitDateFilter {
+  today,
+  last7Days,
+  last15Days,
+  custom,
+}
 
 class VisitListController with ChangeNotifier {
-  AuthManager authManager = AuthManager();
+  final AuthManager authManager = AuthManager();
 
   List<VisitSalesLogModel> _visitList = [];
   String? userId;
@@ -21,86 +26,155 @@ class VisitListController with ChangeNotifier {
 
   final String fetchApiUrl = THttpHelper.baseUrl;
 
-  // Fetch sales list with dynamic filters
   Future<void> fetchSalesList({
     VisitDateFilter filter = VisitDateFilter.today,
     DateTime? startDate,
     DateTime? endDate,
   }) async {
     _isLoading = true;
-    notifyListeners(); // Notify UI to show loading
+    notifyListeners();
 
     try {
+      debugPrint(
+          "VisitListController: ======================================");
+      debugPrint(
+          "VisitListController: fetchSalesList() started");
+      debugPrint(
+          "VisitListController: Selected Filter = $filter");
+
       userId = await authManager.getUserId();
 
-      if (kDebugMode) {
-        debugPrint("Visit Sales Controller: Fetching sales data for user id: $userId");
-      }
+      debugPrint(
+          "VisitListController: User ID = $userId");
 
-      if (userId == null) {
-        debugPrint("Visit Sales Controller: User ID is null. Cannot fetch sales data.");
+      if (userId == null || userId!.isEmpty) {
+        debugPrint(
+            "VisitListController: User ID is null or empty");
+
+        _visitList = [];
         _isLoading = false;
         notifyListeners();
         return;
       }
 
-      String apiUrl = "$fetchApiUrl/doctor-visits/user/$userId";
+      String apiUrl =
+          "$fetchApiUrl/doctor-visits/user/$userId";
+
       String queryParams = "";
 
-      // Determine Query Parameters based on filter
       switch (filter) {
         case VisitDateFilter.today:
           queryParams = "?range=today";
+          debugPrint(
+              "VisitListController: Applying TODAY filter");
           break;
+
         case VisitDateFilter.last7Days:
           queryParams = "?range=last7days";
+          debugPrint(
+              "VisitListController: Applying LAST 7 DAYS filter");
           break;
+
         case VisitDateFilter.last15Days:
           queryParams = "?range=last15days";
+          debugPrint(
+              "VisitListController: Applying LAST 15 DAYS filter");
           break;
+
         case VisitDateFilter.custom:
-          if (startDate != null && endDate != null) {
-            final DateFormat formatter = DateFormat('yyyy-MM-dd');
-            String start = formatter.format(startDate);
-            String end = formatter.format(endDate);
-            queryParams = "?startDate=$start&endDate=$end";
+          if (startDate != null &&
+              endDate != null) {
+            final formatter =
+            DateFormat('yyyy-MM-dd');
+
+            final start =
+            formatter.format(startDate);
+
+            final end =
+            formatter.format(endDate);
+
+            queryParams =
+            "?startDate=$start&endDate=$end";
+
+            debugPrint(
+                "VisitListController: Applying CUSTOM filter");
+            debugPrint(
+                "VisitListController: Start Date = $start");
+            debugPrint(
+                "VisitListController: End Date = $end");
           } else {
-            // Fallback to today if dates are missing
+            debugPrint(
+                "VisitListController: Custom dates missing. Falling back to TODAY");
+
             queryParams = "?range=today";
           }
           break;
       }
 
-      final String fullUrl = "$apiUrl$queryParams";
+      final fullUrl =
+          "$apiUrl$queryParams";
 
-      if (kDebugMode) {
-        debugPrint("Visit Sales Controller: Fetching data from API: $fullUrl");
-      }
+      debugPrint(
+          "VisitListController: API URL = $fullUrl");
 
-      // Send the HTTP request
-      final response = await http.get(Uri.parse(fullUrl));
+      final response =
+      await http.get(Uri.parse(fullUrl));
 
-      if (kDebugMode) {
-        debugPrint("Visit Sales Controller: Response Status Code: ${response.statusCode}");
-      }
+      debugPrint(
+          "VisitListController: Status Code = ${response.statusCode}");
+
+      debugPrint(
+          "VisitListController: Raw Response = ${response.body}");
 
       if (response.statusCode == 200) {
-        List<dynamic> data = jsonDecode(response.body);
-        _visitList = data.map((item) => VisitSalesLogModel.fromJson(item)).toList();
+        final List<dynamic> data =
+        jsonDecode(response.body);
 
-        if (kDebugMode) {
-          debugPrint("Visit Sales Controller: Mapped sales logs count: ${_visitList.length}");
+        debugPrint(
+            "VisitListController: Records Received = ${data.length}");
+
+        _visitList = data
+            .map(
+              (item) =>
+              VisitSalesLogModel.fromJson(item),
+        )
+            .toList();
+
+        debugPrint(
+            "VisitListController: Records Parsed = ${_visitList.length}");
+
+        if (_visitList.isNotEmpty) {
+          debugPrint(
+              "VisitListController: First Record Loaded Successfully");
         }
       } else {
-        throw Exception("Failed to fetch sales logs. Status Code: ${response.statusCode}");
+        debugPrint(
+            "VisitListController: API Failed");
+
+        throw Exception(
+          "Failed to fetch sales logs. Status Code: ${response.statusCode}",
+        );
       }
-    } catch (e) {
-      if (kDebugMode) {
-        debugPrint("Visit Sales Controller: Error fetching sales data: $e");
-      }
-      _visitList = []; // Clear list on error
+    } catch (e, stackTrace) {
+      debugPrint(
+          "VisitListController: Exception = $e");
+
+      debugPrint(
+          "VisitListController: StackTrace = $stackTrace");
+
+      _visitList = [];
     } finally {
       _isLoading = false;
+
+      debugPrint(
+          "VisitListController: Loading Finished");
+
+      debugPrint(
+          "VisitListController: Final Count = ${_visitList.length}");
+
+      debugPrint(
+          "VisitListController: ======================================");
+
       notifyListeners();
     }
   }

@@ -4,14 +4,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 import 'package:medicle_sales_rbsh/utils/local_storage/auth_manager.dart';
 
 import '../controllers/AllowenceController.dart';
+import '../controllers/other_expense_controller.dart';
 import '../models/DailyAllowenceRequestModel.dart';
 import '../models/TravelAllowenceRequestModel.dart';
 import '../models/TravelDetails.dart';
+import '../models/other_expense_request.dart';
 
 class AddAllowanceScreen extends StatefulWidget {
   final bool isEditMode;
@@ -29,10 +33,19 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
   bool isLoading = false;
   Map<String, dynamic> payload = {};
 
-  final List<String> categories = ['Travel Allowance', 'Daily Allowance'];
+  final List<String> categories = ['Travel Allowance', 'Daily Allowance','Other Expense'];
   String? selectedCategory = 'Travel Allowance';
   String tripType = 'One Way';
+  DateTime? selectedExpenseDate;
 
+  final otherAmountController =
+  TextEditingController();
+
+  final otherDescriptionController =
+  TextEditingController();
+
+  String? billImagePath;
+  String? billImageUrl;
 
   // Travel Allowance
   final fromController = TextEditingController();
@@ -53,6 +66,35 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
   void initState() {
     super.initState();
     _prefillDataIfEditing();
+  }
+
+  Future<void> pickExpenseDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: selectedExpenseDate ?? DateTime.now(),
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now(),
+    );
+
+    if (picked != null) {
+      setState(() {
+        selectedExpenseDate = picked;
+      });
+    }
+  }
+
+  Future<void> pickBillImage() async {
+    final picker = ImagePicker();
+
+    final image = await picker.pickImage(
+      source: ImageSource.gallery,
+    );
+
+    if (image != null) {
+      setState(() {
+        billImagePath = image.path;
+      });
+    }
   }
 
   void _prefillDataIfEditing() {
@@ -273,6 +315,64 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
             daDescriptionController.clear();
           });
           Navigator.pop(context,true);
+        }
+      }else if (selectedCategory == 'Other Expense') {
+
+
+
+
+        if (otherAmountController.text.trim().isEmpty) {
+          Fluttertoast.showToast(
+            msg: "Please enter amount",
+          );
+          return;
+        }
+
+        if (billImagePath == null) {
+          Fluttertoast.showToast(
+            msg: "Please upload bill image",
+          );
+          return;
+        }
+
+        // 1. Upload bill
+        billImageUrl =
+        await OtherExpenseController.uploadBill(
+          billImagePath!,
+        );
+
+        if (billImageUrl == null) {
+          Fluttertoast.showToast(
+            msg: "Bill upload failed",
+          );
+          return;
+        }
+
+        // 2. Create request model
+        final request = OtherExpenseRequest(
+          userId: userId,
+          amount: double.parse(
+            otherAmountController.text.trim(),
+          ),
+          description:
+          otherDescriptionController.text.trim(),
+          bill: billImageUrl!, date: selectedExpenseDate.toString(),
+        );
+
+        // 3. Call API
+        success =
+        await OtherExpenseController
+            .createOtherExpense(request);
+
+        if (success) {
+          Fluttertoast.showToast(
+            msg: "Other Expense Submitted",
+          );
+
+          Navigator.pop(
+            context,
+            true,
+          );
         }
       }
 
@@ -503,7 +603,75 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
                   ),
                 ),
               ),
-            ],
+            ]
+    else if (selectedCategory == 'Other Expense') ...[
+    Card(
+    shape: RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(12),
+    ),
+    elevation: 2,
+    child: Padding(
+    padding: const EdgeInsets.all(12),
+    child: Column(
+    children: [
+
+      InkWell(
+        onTap: pickExpenseDate,
+        child: InputDecorator(
+          decoration: const InputDecoration(
+            labelText: "Expense Date",
+            border: OutlineInputBorder(),
+          ),
+          child: Text(
+            selectedExpenseDate == null
+                ? "Select Date"
+                : DateFormat(
+              'dd MMM yyyy',
+            ).format(
+              selectedExpenseDate!,
+            ),
+          ),
+        ),
+      ),
+
+      const SizedBox(height: 12),
+
+    TextFormField(
+    controller: otherAmountController,
+    keyboardType: TextInputType.number,
+    decoration: const InputDecoration(
+    labelText: "Amount",
+    border: OutlineInputBorder(),
+    ),
+    ),
+
+    const SizedBox(height: 12),
+
+    TextFormField(
+    controller: otherDescriptionController,
+    maxLines: 3,
+    decoration: const InputDecoration(
+    labelText: "Description",
+    border: OutlineInputBorder(),
+    ),
+    ),
+
+    const SizedBox(height: 12),
+
+    ElevatedButton.icon(
+    onPressed: pickBillImage,
+    icon: const Icon(Icons.upload),
+    label: Text(
+    billImagePath == null
+    ? "Upload Bill"
+        : "Bill Selected",
+    ),
+    ),
+    ],
+    ),
+    ),
+    ),
+    ],
             const SizedBox(height: 20),
             SizedBox(
               width: double.infinity,

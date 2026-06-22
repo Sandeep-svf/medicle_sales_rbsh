@@ -442,7 +442,7 @@ class _VisitChemistScreenState extends State<VisitChemistScreen> {
                                                           );
                                                         }
                                                             : () {
-                                                          _confirmVisitLogic(visit);
+                                                          _handleChemistVisitFlow(visit);
                                                         },
                                                         style: ElevatedButton.styleFrom(
                                                           backgroundColor: isConfirmed
@@ -748,4 +748,707 @@ class _VisitChemistScreenState extends State<VisitChemistScreen> {
       ),
     );
   }
+
+  Future<void> _showAssignAreaBottomSheet(
+      ChemistVisitModel chemistVisit,
+      ) async {
+
+    final allAreas =
+    await _visitListController.fetchAreas();
+
+    debugPrint(
+      "TOTAL AREAS => ${allAreas.length}",
+    );
+
+    final RxList<dynamic> filteredAreas =
+        allAreas.obs;
+
+    final TextEditingController searchController =
+    TextEditingController();
+
+    Get.bottomSheet(
+      Container(
+        height: Get.height * .80,
+        padding: const EdgeInsets.all(16),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(20),
+          ),
+        ),
+        child: Column(
+          children: [
+
+            TextField(
+              controller: searchController,
+              decoration: InputDecoration(
+                hintText: "Search Area",
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius:
+                  BorderRadius.circular(12),
+                ),
+              ),
+              onChanged: (value) {
+
+                filteredAreas.assignAll(
+                  allAreas.where(
+                        (e) =>
+                        (e["name"] ?? "")
+                            .toString()
+                            .toLowerCase()
+                            .contains(
+                          value.toLowerCase(),
+                        ),
+                  ),
+                );
+              },
+            ),
+
+            const SizedBox(height: 10),
+
+            Expanded(
+              child: Obx(
+                    () => ListView.builder(
+                  itemCount:
+                  filteredAreas.length,
+                  itemBuilder: (_, index) {
+
+                    final area =
+                    filteredAreas[index];
+
+                    return ListTile(
+                      title: Text(
+                        area["name"] ?? "",
+                      ),
+
+                      subtitle: Text(
+                        "${area["pincode"] ?? ""} • ${area["post_office"] ?? ""}",
+                      ),
+                      onTap: () async {
+
+                        Get.back();
+
+                        await _visitListController
+                            .assignAreaToChemist(
+                          chemistId:
+                          chemistVisit.chemistId,
+                          areaId:
+                          area["id"],
+                        );
+
+                        await _visitListController
+                            .fetchVisitList(
+                          filter:
+                          _selectedFilter,
+                          startDate:
+                          _selectedDateRange
+                              ?.start,
+                          endDate:
+                          _selectedDateRange
+                              ?.end,
+                        );
+
+                        final updatedVisit =
+                        _visitListController
+                            .salesList
+                            .firstWhere(
+                              (e) =>
+                          e.id ==
+                              chemistVisit.id,
+                        );
+
+                        _confirmVisitLogic(
+                          updatedVisit,
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+            ),
+
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                icon: const Icon(Icons.add),
+                label: const Text(
+                  "Area Not Found? Create New",
+                ),
+                onPressed: () {
+
+                  Get.back();
+
+                  _showAddAreaDialog(
+                    chemistVisit.chemist!,
+                    chemistVisit,
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showAreaSelectionSheet(
+      ChemistInfo chemist,
+      String pincode,
+      List offices,
+      ChemistVisitModel chemistVisit,
+      ) {
+
+    int selectedIndex = 0;
+
+    Get.bottomSheet(
+      StatefulBuilder(
+        builder: (context, setState) {
+
+          return Container(
+            padding: const EdgeInsets.all(20),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(
+                top: Radius.circular(24),
+              ),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+
+                const Text(
+                  "Select Area",
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                SizedBox(
+                  height: 300,
+                  child: ListView.builder(
+                    itemCount: offices.length,
+                    itemBuilder: (_, index) {
+
+                      final office =
+                      offices[index];
+
+                      return RadioListTile<int>(
+                        value: index,
+                        groupValue:
+                        selectedIndex,
+                        title: Text(
+                          office['Name'],
+                        ),
+                        subtitle: Text(
+                          office['Block'] ?? '',
+                        ),
+                        onChanged: (value) {
+
+                          setState(() {
+                            selectedIndex =
+                            value!;
+                          });
+                        },
+                      );
+                    },
+                  ),
+                ),
+
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    child: const Text(
+                      "Continue",
+                    ),
+                    onPressed: () {
+
+                      Get.back();
+
+                      final office =
+                      offices[selectedIndex];
+
+                      _showCreateAreaForm(
+                        chemist,
+                        office,
+                        pincode,
+                        chemistVisit,
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _infoRow(
+      IconData icon,
+      String title,
+      String value,
+      ) {
+    return Row(
+      children: [
+        Icon(
+          icon,
+          size: 18,
+          color: TColors.primary,
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            title,
+            style: const TextStyle(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        Text(
+          value,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    );
+  }
+
+
+  void _showAddAreaDialog(
+      ChemistInfo chemist,
+      ChemistVisitModel chemistVisit,
+      ) {
+
+    final pinController =
+    TextEditingController();
+
+    Get.bottomSheet(
+      Container(
+        padding: const EdgeInsets.all(24),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(28),
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+
+              Container(
+                height: 90,
+                width: 90,
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.location_searching,
+                  size: 50,
+                  color: TColors.primary,
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              const Text(
+                "Create New Area",
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+
+              const SizedBox(height: 8),
+
+              Text(
+                "Enter pincode and we'll automatically fetch all available areas and post offices.",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                  height: 1.4,
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              TextField(
+                controller: pinController,
+                keyboardType:
+                TextInputType.number,
+                maxLength: 6,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 5,
+                ),
+                decoration: InputDecoration(
+                  counterText: "",
+                  hintText: "201306",
+                  prefixIcon:
+                  const Icon(Icons.pin_drop),
+                  border: OutlineInputBorder(
+                    borderRadius:
+                    BorderRadius.circular(16),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              SizedBox(
+                width: double.infinity,
+                height: 55,
+                child: ElevatedButton.icon(
+                  icon: const Icon(Icons.search),
+                  label: const Text(
+                    "Verify & Fetch Areas",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  onPressed: () async {
+
+                    final pin =
+                    pinController.text.trim();
+
+                    if (pin.length != 6) {
+                      Get.snackbar(
+                        "Invalid Pincode",
+                        "Please enter valid pincode",
+                      );
+                      return;
+                    }
+
+                    final response =
+                    await http.get(
+                      Uri.parse(
+                        "https://api.postalpincode.in/pincode/$pin",
+                      ),
+                    );
+
+                    final data =
+                    jsonDecode(response.body);
+
+                    if (data.isEmpty ||
+                        data[0]['Status'] !=
+                            'Success' ||
+                        data[0]['PostOffice'] ==
+                            null) {
+
+                      Get.snackbar(
+                        "Error",
+                        "Invalid Pincode",
+                      );
+                      return;
+                    }
+
+                    final offices =
+                    data[0]['PostOffice'];
+
+                    Get.back();
+
+                    _showAreaSelectionSheet(
+                      chemist,
+                      pin,
+                      offices,
+                      chemistVisit,
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      isScrollControlled: true,
+    );
+  }
+
+  void _showCreateAreaForm(
+      ChemistInfo chemist,
+      Map office,
+      String pincode,
+      ChemistVisitModel chemistVisit,
+      ) {
+
+    final areaController =
+    TextEditingController(
+      text: office['Name'],
+    );
+
+    Get.dialog(
+      Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius:
+          BorderRadius.circular(24),
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          constraints: const BoxConstraints(
+            maxWidth: 500,
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize:
+              MainAxisSize.min,
+              children: [
+
+                Container(
+                  height: 90,
+                  width: 90,
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade50,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.location_city,
+                    color: Colors.green,
+                    size: 50,
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                const Text(
+                  "Confirm New Area",
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+
+                const SizedBox(height: 8),
+
+                Text(
+                  "Review the detected area information before creating it.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                TextField(
+                  controller:
+                  areaController,
+                  decoration:
+                  InputDecoration(
+                    labelText:
+                    "Area Name",
+                    prefixIcon:
+                    const Icon(
+                      Icons.edit_location_alt,
+                    ),
+                    border:
+                    OutlineInputBorder(
+                      borderRadius:
+                      BorderRadius.circular(
+                        14,
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                Container(
+                  width: double.infinity,
+                  padding:
+                  const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade50,
+                    borderRadius:
+                    BorderRadius.circular(
+                      16,
+                    ),
+                    border: Border.all(
+                      color:
+                      Colors.grey.shade300,
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+
+                      _infoRow(
+                        Icons.pin_drop,
+                        "Pincode",
+                        pincode,
+                      ),
+
+                      const Divider(),
+
+                      _infoRow(
+                        Icons.local_post_office,
+                        "Post Office",
+                        office['Name'] ?? '',
+                      ),
+
+                      const Divider(),
+
+                      _infoRow(
+                        Icons.location_city,
+                        "Block",
+                        office['Block'] ?? '-',
+                      ),
+
+                      const Divider(),
+
+                      _infoRow(
+                        Icons.map,
+                        "District",
+                        office['District'] ?? '-',
+                      ),
+
+                      const Divider(),
+
+                      _infoRow(
+                        Icons.flag,
+                        "State",
+                        office['State'] ?? '-',
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                Row(
+                  children: [
+
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () =>
+                            Get.back(),
+                        child:
+                        const Text(
+                          "Cancel",
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(width: 12),
+
+                    Expanded(
+                      flex: 2,
+                      child:
+                      ElevatedButton.icon(
+                        icon: const Icon(
+                          Icons.check_circle,
+                        ),
+                        label: const Text(
+                          "Create Area",
+                        ),
+                        onPressed:
+                            () async {
+
+
+                          final createdAreaId =
+                          await _visitListController.createArea(
+                            areaName: areaController.text.trim(),
+                            pincode: pincode,
+                            postOffice: office['Name'] ?? '',
+                            headOfficeId: chemist.headOfficeId ?? '',
+                          );
+
+                          if (createdAreaId ==
+                              null) {
+                            return;
+                          }
+
+                          await _visitListController
+                              .assignAreaToChemist(
+                            chemistId:
+                            chemist.id,
+                            areaId:
+                            createdAreaId,
+                          );
+
+                          Get.back();
+
+                          await Future.delayed(
+                            const Duration(
+                              milliseconds:
+                              300,
+                            ),
+                          );
+
+                          await _visitListController
+                              .fetchVisitList(
+                            filter:
+                            _selectedFilter,
+                            startDate:
+                            _selectedDateRange
+                                ?.start,
+                            endDate:
+                            _selectedDateRange
+                                ?.end,
+                          );
+
+                          final updatedVisit =
+                          _visitListController
+                              .salesList
+                              .firstWhere(
+                                (e) =>
+                            e.id ==
+                                chemistVisit
+                                    .id,
+                          );
+
+                          Future.microtask(
+                                () {
+                              _confirmVisitLogic(
+                                updatedVisit,
+                              );
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _handleChemistVisitFlow(
+      ChemistVisitModel visit,
+      ) async {
+
+    final areaId =
+        visit.chemist?.areaId;
+
+    debugPrint(
+      "Chemist Area Id => $areaId",
+    );
+
+    if (areaId == null ||
+        areaId.trim().isEmpty) {
+
+      await _showAssignAreaBottomSheet(
+        visit,
+      );
+
+      return;
+    }
+
+    _confirmVisitLogic(
+      visit,
+    );
+  }
+
 }

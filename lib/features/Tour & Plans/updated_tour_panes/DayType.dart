@@ -1,0 +1,1 @@
+enum DayType { field, holiday, leave, unassigned, meeting, jointWork }

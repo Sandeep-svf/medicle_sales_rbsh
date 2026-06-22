@@ -74,6 +74,10 @@ class Stockist {
   final HeadOffice? headOffice;
   final String internalId; // Mapping for "_id"
   final bool geoImageStatus;
+  final String? areaId;
+  final bool isAssignedToArea;
+  final Area? area;
+
 
   Stockist({
     required this.id,
@@ -112,6 +116,9 @@ class Stockist {
     this.headOffice,
     required this.internalId,
     required this.geoImageStatus,
+    this.areaId,
+    required this.isAssignedToArea,
+    this.area,
   });
 
   factory Stockist.fromJson(Map<String, dynamic> json) => Stockist(
@@ -169,6 +176,14 @@ class Stockist {
         : HeadOffice.fromJson(json["headOffice"]),
     internalId: json["_id"] ?? "",
     geoImageStatus: json["geo_image_status"] ?? false,
+    areaId: json["area_id"]?.toString(),
+
+    isAssignedToArea:
+    json["is_assigned_to_area"] ?? false,
+
+    area: json["area"] != null
+        ? Area.fromJson(json["area"])
+        : null,
   );
 
   Map<String, dynamic> toJson() => {
@@ -285,6 +300,23 @@ class HeadOffice {
     "id": id,
     "name": name,
   };
+}
+
+class Area {
+  final String id;
+  final String name;
+
+  Area({
+    required this.id,
+    required this.name,
+  });
+
+  factory Area.fromJson(Map<String, dynamic> json) {
+    return Area(
+      id: json['id']?.toString() ?? '',
+      name: json['name']?.toString() ?? '',
+    );
+  }
 }
 
 //old code

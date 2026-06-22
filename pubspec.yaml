@@ -4,8 +4,8 @@ description: "A new Flutter project."
 
 publish_to: 'none'
 
-#version: 1.0.30+31
-version: 1.0.31+32
+#version: 1.0.31+32
+version: 1.0.32+33
 
 environment:
   sdk: ^3.5.3
@@ -22,6 +22,7 @@ dependencies:
   #msal_flutter: ^2.0.1
 
   # Utility Package
+  uuid: ^4.4.0
   http: ^1.4.0
   intl: ^0.18.1
   logger: ^2.1.0
@@ -137,6 +138,8 @@ dependencies:
 
 
 
+  flutter_map: ^6.1.0
+  latlong2: ^0.9.0
 
 
 
@@ -150,10 +153,16 @@ dependencies:
   flutter_local_notifications: ^19.4.2
 
 
+  csv: ^5.0.2
+
+  file_picker: ^10.2.0
 
   webview_flutter: ^4.4.2
   webview_flutter_android: ^3.16.2
   webview_flutter_wkwebview: ^3.13.2
+
+
+  syncfusion_flutter_pdfviewer: ^31.1.17
 
 
 
@@ -203,6 +212,7 @@ flutter:
     - assets/app_icon/
     - assets/images/dummy.jpeg
     - assets/images/pdf.png
+    - assets/upload_queue.csv
 
   #------------- Local fonts-------------------#
 

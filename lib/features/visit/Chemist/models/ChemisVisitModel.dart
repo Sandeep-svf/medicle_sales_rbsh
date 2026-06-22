@@ -147,6 +147,8 @@ class ChemistInfo {
   final String? headOfficeId;
   final DateTime? createdAt;
   final DateTime? updatedAt;
+  final String? areaId;
+
 
   ChemistInfo({
     required this.id,
@@ -166,6 +168,8 @@ class ChemistInfo {
     this.headOfficeId,
     this.createdAt,
     this.updatedAt,
+    this.areaId,
+
   });
 
   factory ChemistInfo.fromJson(Map<String, dynamic>? j) {
@@ -211,6 +215,8 @@ class ChemistInfo {
       headOfficeId: _sn(j['head_office_id']),
       createdAt: _iso(j['created_at']),
       updatedAt: _iso(j['updated_at']),
+      areaId: _sn(j['area_id']),
+
     );
   }
 
@@ -230,6 +236,7 @@ class ChemistInfo {
     "head_office_id": headOfficeId,
     "created_at": createdAt?.toIso8601String(),
     "updated_at": updatedAt?.toIso8601String(),
+    "area_id": areaId,
   };
 }
 

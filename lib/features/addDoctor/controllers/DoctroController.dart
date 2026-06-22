@@ -20,6 +20,136 @@ class DoctorListController extends GetxController {
   AuthManager authManager = AuthManager();
   late String headOffice="";
 
+
+
+  Future<void> assignAreaToDoctor({
+    required String doctorId,
+    required String areaId,
+  }) async {
+    try {
+      final token =
+      await authManager.getAuthToken();
+
+      final response = await http.put(
+        Uri.parse(
+          "$_baseUrl/doctors/$doctorId",
+        ),
+        headers: {
+          "Content-Type":
+          "application/json",
+          "Authorization":
+          "Bearer $token",
+        },
+        body: jsonEncode({
+          "areaId": areaId,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        await fetchDoctorList();
+
+        Get.snackbar(
+          "Success",
+          "Area Assigned",
+        );
+      }
+    } catch (e) {
+      Get.snackbar(
+        "Error",
+        e.toString(),
+      );
+    }
+  }
+
+  // PLACE THIS INSIDE YOUR DoctorListController CLASS
+  Future<String?> createNewArea({
+    required String name,
+    required String pincode,
+    required String postOffice,
+    required String headOfficeId,
+  }) async {
+    try {
+      isLoading.value = true;
+
+      final token =
+      await authManager.getAuthToken();
+
+      final response = await http.post(
+        Uri.parse("$_baseUrl/areas"),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
+        body: jsonEncode({
+          "name": name,
+          "pincode": pincode,
+          "post_office": postOffice,
+          "head_office_id": headOfficeId,
+        }),
+      );
+
+      if (response.statusCode == 201 ||
+          response.statusCode == 200) {
+
+        final jsonResponse =
+        jsonDecode(response.body);
+
+        final String createdAreaId =
+        jsonResponse["data"]["id"];
+
+        Get.snackbar(
+          "Success",
+          "Area created successfully!",
+        );
+
+        return createdAreaId;
+      }
+
+      Get.snackbar(
+        "Error",
+        "Failed creating area",
+      );
+
+      return null;
+
+    } catch (e) {
+
+      Get.snackbar(
+        "Error",
+        e.toString(),
+      );
+
+      return null;
+
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<List<dynamic>> fetchAreas() async {
+    try {
+      final token = await authManager.getAuthToken();
+
+      final response = await http.get(
+        Uri.parse("$_baseUrl/areas"),
+        headers: {
+          "Authorization": "Bearer $token",
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final jsonResponse =
+        jsonDecode(response.body);
+
+        return jsonResponse["data"] ?? [];
+      }
+
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+
   Future<void> fetchDoctorList() async {
     print("Doctors Data: Fetching doctor list...");
     try {

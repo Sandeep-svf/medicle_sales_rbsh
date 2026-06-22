@@ -21,6 +21,10 @@ void locationServiceEntry(ServiceInstance service) async {
   // PHASE-2: BACKGROUND RESTART MARK
   // ===============================
   final appStateDao = AppStateDao();
+
+  final trackingSessionId =
+  await appStateDao.getOrCreateTrackingSessionId();
+
   await appStateDao.set(
     'last_background_start',
     DateTime.now().toUtc().toIso8601String(),
@@ -89,7 +93,7 @@ void locationServiceEntry(ServiceInstance service) async {
       );
 
       //  SINGLE SOURCE OF TRUTH
-      await engine.process(point);
+      await engine.process(point, trackingSessionId);
 
       //  LIVE UPDATE (FOR UI IF OPEN)
       service.invoke('gps_update', {

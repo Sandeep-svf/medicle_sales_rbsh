@@ -1,7 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
+import 'package:http/http.dart' as http;
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import '../controllers/StokistListController.dart';
 import '../widets/AddStokistDialog.dart';
@@ -183,9 +186,90 @@ class _StokistListScreenState extends State<StokistListScreen> {
                                               fontWeight: FontWeight.bold,
                                             ),
                                           ),
+
+
+
+                                          const SizedBox(height: 6),
+
+                                          stockist.areaId == null
+                                              ? GestureDetector(
+                                            onTap: () => _showAssignAreaSheet(stockist),
+                                            child: Container(
+                                              padding: const EdgeInsets.symmetric(
+                                                horizontal: 8,
+                                                vertical: 4,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                color: Colors.amber.withOpacity(0.15),
+                                                borderRadius: BorderRadius.circular(4),
+                                                border: Border.all(
+                                                  color: Colors.amber.shade700.withOpacity(0.4),
+                                                ),
+                                              ),
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Icon(
+                                                    Icons.add_location_alt_outlined,
+                                                    size: 12,
+                                                    color: Colors.amber.shade900,
+                                                  ),
+                                                  const SizedBox(width: 4),
+                                                  Text(
+                                                    "Add Area Missing",
+                                                    style: TextStyle(
+                                                      fontSize: 10,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: Colors.amber.shade900,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          )
+                                              : Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 8,
+                                              vertical: 4,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: Colors.green.withOpacity(0.1),
+                                              borderRadius: BorderRadius.circular(4),
+                                              border: Border.all(
+                                                color: Colors.green.withOpacity(0.3),
+                                              ),
+                                            ),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                const Icon(
+                                                  Icons.pin_drop,
+                                                  size: 12,
+                                                  color: Colors.green,
+                                                ),
+                                                const SizedBox(width: 4),
+                                                Flexible(
+                                                  child: Text(
+                                                    stockist.area?.name ?? "Area Assigned",
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow.ellipsis,
+                                                    style: const TextStyle(
+                                                      fontSize: 10,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: Colors.green,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+
+
                                           const SizedBox(height: 4),
                                           Text(
                                             stockist.contactPerson ?? "No Contact Person",
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
                                             style: TextStyle(
                                               fontSize: 13,
                                               fontWeight: FontWeight.w600,
@@ -258,7 +342,9 @@ class _StokistListScreenState extends State<StokistListScreen> {
                   } else {
                     // Tablet Grid Logic
                     final int crossAxisCount = isTabletPortrait ? 2 : 3;
-                    final double ratio = isTabletPortrait ? 1.3 : 1.2;
+                   // final double ratio = isTabletPortrait ? 1.3 : 1.2;
+
+                    final double ratio = isTabletPortrait ? 1.05 : 1.10;
 
                     return GridView.builder(
                       padding: const EdgeInsets.all(16),
@@ -396,6 +482,645 @@ class _StokistListScreenState extends State<StokistListScreen> {
           const Text("No Stockists Found", style: TextStyle(color: Colors.grey)),
         ],
       ),
+    );
+  }
+
+  void _showAssignAreaSheet(
+      Stockist clinic,
+      ) async {
+
+    final areas =
+    await _stokistController
+        .fetchAreas();
+
+    final searchController =
+    TextEditingController();
+
+    List<dynamic> filteredAreas =
+    List.from(areas);
+
+    Get.bottomSheet(
+      StatefulBuilder(
+        builder: (context, setState) {
+          return Container(
+            height: Get.height * .80,
+            padding:
+            const EdgeInsets.all(16),
+            decoration:
+            const BoxDecoration(
+              color: Colors.white,
+              borderRadius:
+              BorderRadius.vertical(
+                top: Radius.circular(24),
+              ),
+            ),
+            child: Column(
+              children: [
+
+                const Text(
+                  "Assign Area",
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight:
+                    FontWeight.bold,
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                TextField(
+                  controller:
+                  searchController,
+                  decoration:
+                  InputDecoration(
+                    hintText:
+                    "Search Area",
+                    prefixIcon:
+                    const Icon(
+                      Icons.search,
+                    ),
+                    border:
+                    OutlineInputBorder(
+                      borderRadius:
+                      BorderRadius
+                          .circular(
+                        12,
+                      ),
+                    ),
+                  ),
+                  onChanged: (value) {
+                    setState(() {
+                      filteredAreas =
+                          areas
+                              .where(
+                                (area) =>
+                                (area["name"] ??
+                                    "")
+                                    .toString()
+                                    .toLowerCase()
+                                    .contains(
+                                  value
+                                      .toLowerCase(),
+                                ),
+                          )
+                              .toList();
+                    });
+                  },
+                ),
+
+                const SizedBox(height: 16),
+
+                Expanded(
+                  child:
+                  ListView.builder(
+                    itemCount:
+                    filteredAreas.length,
+                    itemBuilder:
+                        (_, index) {
+
+                      final area =
+                      filteredAreas[
+                      index];
+
+                      return ListTile(
+                        leading:
+                        const Icon(
+                          Icons.location_on,
+                        ),
+                        title: Text(
+                          area["name"] ??
+                              "",
+                        ),
+                        subtitle: Text(
+                          area["pincode"] ??
+                              "",
+                        ),
+                        onTap: () async {
+
+                          Get.back();
+
+                          await _stokistController
+                              .assignAreaToStockist(
+                            stockistId: clinic.id,
+                            areaId: area["id"],
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
+
+                SizedBox(
+                  width:
+                  double.infinity,
+                  child:
+                  ElevatedButton.icon(
+                    icon:
+                    const Icon(
+                      Icons.add,
+                    ),
+                    label:
+                    const Text(
+                      "Create New Area",
+                    ),
+                    onPressed: () {
+
+                      Get.back();
+
+                      _showAddAreaDialog(
+                        clinic,
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+      isScrollControlled: true,
+    );
+  }
+
+  void _showAddAreaDialog(
+      Stockist doctor,
+      ){
+    final pinController = TextEditingController();
+
+    Get.bottomSheet(
+      Container(
+        padding: const EdgeInsets.all(24),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(28),
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+
+              Container(
+                height: 90,
+                width: 90,
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.location_searching,
+                  size: 50,
+                  color: TColors.primary,
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              const Text(
+                "Create New Area",
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+
+              const SizedBox(height: 8),
+
+              Text(
+                "Enter pincode and we'll automatically fetch all available areas and post offices.",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                  height: 1.4,
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(
+                      Icons.info_outline,
+                      color: Colors.blue,
+                    ),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        "No need to enter Post Office manually. We will fetch it automatically.",
+                      ),
+                    )
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              TextField(
+                controller: pinController,
+                keyboardType: TextInputType.number,
+                maxLength: 6,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 5,
+                ),
+                decoration: InputDecoration(
+                  counterText: "",
+                  hintText: "201306",
+                  prefixIcon: const Icon(
+                    Icons.pin_drop,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius:
+                    BorderRadius.circular(16),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              SizedBox(
+                width: double.infinity,
+                height: 55,
+                child: ElevatedButton.icon(
+                  icon: const Icon(Icons.search),
+                  label: const Text(
+                    "Verify & Fetch Areas",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  onPressed: () async {
+
+                    final pin =
+                    pinController.text.trim();
+
+                    if (pin.length != 6) {
+                      Get.snackbar(
+                        "Invalid Pincode",
+                        "Please enter a valid 6 digit pincode",
+                      );
+                      return;
+                    }
+
+                    final response = await http.get(
+                      Uri.parse(
+                        "https://api.postalpincode.in/pincode/$pin",
+                      ),
+                    );
+
+                    final data =
+                    jsonDecode(response.body);
+
+                    if (data.isEmpty ||
+                        data[0]['Status'] !=
+                            'Success' ||
+                        data[0]['PostOffice'] ==
+                            null) {
+                      Get.snackbar(
+                        "Error",
+                        "Invalid Pincode",
+                      );
+                      return;
+                    }
+
+                    final offices =
+                    data[0]['PostOffice'];
+
+                    Get.back();
+
+                    _showAreaSelectionSheet(
+                      doctor,
+                      pin,
+                      offices,
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      isScrollControlled: true,
+    );
+  }
+
+  void _showAreaSelectionSheet(
+      Stockist doctor,
+      String pincode,
+      List offices,
+      ) {
+    int selectedIndex = 0;
+
+    Get.bottomSheet(
+      StatefulBuilder(
+        builder: (context, setState) {
+          return Container(
+            padding: const EdgeInsets.all(20),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(
+                top: Radius.circular(24),
+              ),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+
+                const Text(
+                  "Select Area",
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                SizedBox(
+                  height: 300,
+                  child: ListView.builder(
+                    itemCount: offices.length,
+                    itemBuilder: (_, index) {
+                      final office =
+                      offices[index];
+
+                      return RadioListTile<int>(
+                        value: index,
+                        groupValue:
+                        selectedIndex,
+                        title: Text(
+                          office['Name'],
+                        ),
+                        subtitle: Text(
+                          office['Block'] ??
+                              '',
+                        ),
+                        onChanged: (value) {
+                          setState(() {
+                            selectedIndex =
+                            value!;
+                          });
+                        },
+                      );
+                    },
+                  ),
+                ),
+
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    child: const Text(
+                      "Continue",
+                    ),
+                    onPressed: () {
+                      Get.back();
+
+                      final office =
+                      offices[selectedIndex];
+
+                      _showCreateAreaForm(
+                        doctor,
+                        office,
+                        pincode,
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  void _showCreateAreaForm(
+      Stockist doctor,
+      Map office,
+      String pincode,
+      ) {
+    final areaController = TextEditingController(
+      text: office['Name'],
+    );
+
+    Get.dialog(
+      Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          constraints: const BoxConstraints(
+            maxWidth: 500,
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+
+                Container(
+                  height: 90,
+                  width: 90,
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade50,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.location_city,
+                    color: Colors.green,
+                    size: 50,
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                const Text(
+                  "Confirm New Area",
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+
+                const SizedBox(height: 8),
+
+                Text(
+                  "Review the detected area information before creating it.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                TextField(
+                  controller: areaController,
+                  decoration: InputDecoration(
+                    labelText: "Area Name",
+                    prefixIcon:
+                    const Icon(Icons.edit_location_alt),
+                    border: OutlineInputBorder(
+                      borderRadius:
+                      BorderRadius.circular(14),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade50,
+                    borderRadius:
+                    BorderRadius.circular(16),
+                    border: Border.all(
+                      color: Colors.grey.shade300,
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+
+                      _infoRow(
+                        Icons.pin_drop,
+                        "Pincode",
+                        pincode,
+                      ),
+
+                      const Divider(),
+
+                      _infoRow(
+                        Icons.local_post_office,
+                        "Post Office",
+                        office['Name'] ?? '',
+                      ),
+
+                      const Divider(),
+
+                      _infoRow(
+                        Icons.location_city,
+                        "Block",
+                        office['Block'] ?? '-',
+                      ),
+
+                      const Divider(),
+
+                      _infoRow(
+                        Icons.map,
+                        "District",
+                        office['District'] ?? '-',
+                      ),
+
+                      const Divider(),
+
+                      _infoRow(
+                        Icons.flag,
+                        "State",
+                        office['State'] ?? '-',
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                Row(
+                  children: [
+
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Get.back(),
+                        child: const Text(
+                          "Cancel",
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(width: 12),
+
+                    Expanded(
+                      flex: 2,
+                      child: ElevatedButton.icon(
+                        icon: const Icon(
+                          Icons.check_circle,
+                        ),
+                        label: const Text(
+                          "Create Area",
+                        ),
+                        onPressed: () async {
+
+                          final createdAreaId =
+                          await _stokistController
+                              .createNewArea(
+                            name: areaController.text.trim(),
+                            pincode: pincode,
+                            postOffice: office['Name'],
+                            headOfficeId: doctor.headOfficeId,
+                          );
+
+                          if (createdAreaId != null) {
+
+                            await _stokistController
+                                .assignAreaToStockist(
+                              stockistId: doctor.id,
+                              areaId: createdAreaId,
+                            );
+
+                            Get.back();
+                          }
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _infoRow(
+      IconData icon,
+      String title,
+      String value,
+      ) {
+    return Row(
+      children: [
+        Icon(
+          icon,
+          size: 18,
+          color: TColors.primary,
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            title,
+            style: const TextStyle(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        Text(
+          value,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
     );
   }
 }

@@ -1,4 +1,5 @@
 import 'package:sqflite/sqflite.dart';
+import 'package:uuid/uuid.dart';
 
 import 'app_database.dart';
 
@@ -28,4 +29,16 @@ class AppStateDao {
     if (rows.isEmpty) return null;
     return rows.first['value'] as String?;
   }
+
+  Future<String> getOrCreateTrackingSessionId() async {
+    final existing = await get('tracking_session_id');
+    if (existing != null) return existing;
+
+    final sessionId = const Uuid().v4();
+    await set('tracking_session_id', sessionId);
+    return sessionId;
+  }
+
 }
+
+

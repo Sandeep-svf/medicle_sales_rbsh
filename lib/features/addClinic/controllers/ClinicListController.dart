@@ -25,6 +25,144 @@ class ClinicListController extends GetxController {
     super.onInit();
   }
 
+
+  Future<List<dynamic>> fetchAreas() async {
+    try {
+      final token =
+      await authManager.getAuthToken();
+
+      final response = await http.get(
+        Uri.parse("$_baseUrl/areas"),
+        headers: {
+          "Content-Type":
+          "application/json",
+          "Authorization":
+          "Bearer $token",
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final jsonResponse =
+        jsonDecode(response.body);
+
+        return jsonResponse["data"] ?? [];
+      }
+
+      return [];
+    } catch (e) {
+      print(
+        "ClinicListController fetchAreas Error: $e",
+      );
+      return [];
+    }
+  }
+
+
+  Future<void> assignAreaToChemist({
+    required String chemistId,
+    required String areaId,
+  }) async {
+    try {
+      final token =
+      await authManager.getAuthToken();
+
+      final response = await http.put(
+        Uri.parse(
+          "$_baseUrl/chemists/$chemistId",
+        ),
+        headers: {
+          "Content-Type":
+          "application/json",
+          "Authorization":
+          "Bearer $token",
+        },
+        body: jsonEncode({
+          "areaId": areaId,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        await fetchClinicList();
+
+        Get.snackbar(
+          "Success",
+          "Area Assigned",
+        );
+      }
+    } catch (e) {
+      Get.snackbar(
+        "Error",
+        e.toString(),
+      );
+    }
+  }
+
+
+  Future<String?> createNewArea({
+    required String name,
+    required String pincode,
+    required String postOffice,
+    required String headOfficeId,
+  }) async {
+    try {
+      isLoading.value = true;
+
+      final token =
+      await authManager.getAuthToken();
+
+      final response = await http.post(
+        Uri.parse("$_baseUrl/areas"),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
+        body: jsonEncode({
+          "name": name,
+          "pincode": pincode,
+          "post_office": postOffice,
+          "head_office_id": headOfficeId,
+        }),
+      );
+
+      if (response.statusCode == 201 ||
+          response.statusCode == 200) {
+
+        final jsonResponse =
+        jsonDecode(response.body);
+
+        final String createdAreaId =
+        jsonResponse["data"]["id"];
+
+        Get.snackbar(
+          "Success",
+          "Area created successfully!",
+        );
+
+        return createdAreaId;
+      }
+
+      Get.snackbar(
+        "Error",
+        "Failed creating area",
+      );
+
+      return null;
+
+    } catch (e) {
+
+      Get.snackbar(
+        "Error",
+        e.toString(),
+      );
+
+      return null;
+
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+
   Future<void> fetchClinicList() async {
     print("httpChemist: Fetching chemist list...");
 

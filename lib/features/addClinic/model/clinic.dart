@@ -18,6 +18,9 @@ class Clinic {
   final HeadOffice headOffice;
   final List<AnnualTurnover> annualTurnover;
   final bool geoImageStatus;
+  final String? areaId;
+  final bool isAssignedToArea;
+  final Area? area;
 
   Clinic({
     required this.id,
@@ -39,6 +42,9 @@ class Clinic {
     required this.headOffice,
     required this.annualTurnover,
     required this.geoImageStatus,
+    this.areaId,
+    required this.isAssignedToArea,
+    this.area,
   });
 
   factory Clinic.fromJson(Map<String, dynamic> json) {
@@ -78,11 +84,38 @@ class Clinic {
           .toList() ?? [],
 
       geoImageStatus: json['geo_image_status'] ?? false,
+      areaId: json['area_id']?.toString(),
+
+      isAssignedToArea:
+      json['is_assigned_to_area'] ?? false,
+
+      area: json['area'] != null
+          ? Area.fromJson(json['area'])
+          : null,
     );
   }
 }
 
 // --- Nested Models ---
+
+class Area {
+  final String id;
+  final String name;
+
+  Area({
+    required this.id,
+    required this.name,
+  });
+
+  factory Area.fromJson(
+      Map<String, dynamic> json,
+      ) {
+    return Area(
+      id: json['id'] ?? '',
+      name: json['name'] ?? '',
+    );
+  }
+}
 
 class HeadOffice {
   final String id;

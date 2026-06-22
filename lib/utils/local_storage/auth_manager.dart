@@ -11,6 +11,8 @@ class AuthManager {
   static const String tokenKey = "token";
   static const String roleKey = "role";
 
+
+
   ///  Save User Data in SharedPreferences
   Future<void> saveUserData(UserModel user) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();

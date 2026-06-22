@@ -656,6 +656,54 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                           ],
                         ),
 
+
+                        const SizedBox(height: 12),
+
+                        if (e.category == "daily") ...[
+                          Text(
+                            "Allowance Type: ${e.dailyAllowanceType ?? '-'}",
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+
+                        if (e.category == "extra") ...[
+                          const Divider(),
+
+                          const Text(
+                            "Bill",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+
+                          const SizedBox(height: 8),
+
+                          if (e.bill.isNotEmpty)
+                            InkWell(
+                              onTap: () {
+                                showDialog(
+                                  context: context,
+                                  builder: (_) => Dialog(
+                                    child: InteractiveViewer(
+                                      child: Image.network(e.bill),
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: Image.network(
+                                  e.bill,
+                                  height: 150,
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
+                        ],
+
                         /// Travel Breakdown
                         if (e.travelDetails != null && e.travelDetails.isNotEmpty) ...[
                           const SizedBox(height: 14),

@@ -206,6 +206,7 @@ import 'features/SalesChartAnalysis/controller/DashboardController.dart';
 import 'features/addDoctor/models/DoctorOfflineModel.dart';
 import 'features/addDoctor/services/SyncService.dart';
 import 'features/authentication/screens/onboarding/splash.dart';
+import 'features/leaves/controller/LeaveController.dart';
 import 'features/salesActivity/controllers/SalesController.dart';
 import 'app.dart';
 import 'dart:async';
@@ -238,7 +239,9 @@ void main() async{
   final token = await FirebaseMessaging.instance.getToken();
 
 
-
+  Get.put(
+    LeaveController(),
+  );
   initFIAM();
   await PushNotificationService.init();
 
@@ -251,8 +254,6 @@ void main() async{
         ChangeNotifierProvider(create: (_) => SalesController()),
       ],
       child: const App(),  // just your App widget
-
-
 
     ),
   );*/

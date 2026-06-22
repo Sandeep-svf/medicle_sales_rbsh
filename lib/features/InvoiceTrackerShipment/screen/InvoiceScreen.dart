@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:medicle_sales_rbsh/features/InvoiceTrackerShipment/screen/send_email_sheet.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -19,6 +20,7 @@ import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:medicle_sales_rbsh/utils/local_storage/auth_manager.dart';
 import '../../../utils/http/http_client.dart';
 import '../controller/InvoiceController.dart';
+import 'PdfViewerPage.dart';
 import 'WebviewPage.dart';
 // Note: Ensure your Invoice model is imported here if it's in a separate file
 // import 'package:medicle_sales_rbsh/models/invoice_model.dart';
@@ -81,7 +83,19 @@ class _InvoiceScreenState extends State<InvoiceScreen> with TickerProviderStateM
     super.initState();
     _setupAnimations();
     _fetchInitialData();
+
+    _scrollController.addListener(_onScroll);
   }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 300) {
+
+      _dataController.loadMoreInvoices();
+    }
+  }
+
+
 
   void _setupAnimations() {
     // 1. Header Fade In
@@ -174,7 +188,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> with TickerProviderStateM
   }
 
   // --- LOGIC: DOWNLOAD ---
-  Future<void> _handleDownload(String id, String name) async {
+  /*Future<void> _handleDownload(String id, String name) async {
     if (Platform.isAndroid) {
       await Permission.storage.request();
       // Add more specific permission logic for Android 13+ if needed (Photos/Videos)
@@ -188,6 +202,52 @@ class _InvoiceScreenState extends State<InvoiceScreen> with TickerProviderStateM
           borderRadius: BorderRadius.vertical(top: Radius.circular(24))
       ),
     );
+  }*/
+
+  Future<void> _handleView(
+      String invoiceId,
+      String fileName,
+      ) async {
+
+    try {
+
+      final auth = AuthManager();
+      final token =
+      await auth.getAuthToken();
+
+      final response = await _dio.get(
+        '${THttpHelper.baseUrl}/invoice-tracking/$invoiceId/signed-url',
+        options: Options(
+          headers: {
+            'Authorization':
+            'Bearer $token',
+          },
+        ),
+      );
+
+      if (response.statusCode == 200 &&
+          response.data['success']) {
+
+        final pdfUrl =
+        response.data['url'];
+
+        Get.to(
+              () => PdfViewerPage(
+            pdfUrl: pdfUrl,
+            fileName:
+            fileName.isEmpty
+                ? "invoice.pdf"
+                : fileName,
+          ),
+        );
+      }
+    } catch (e) {
+
+      Get.snackbar(
+        "Error",
+        e.toString(),
+      );
+    }
   }
 
   // --- LOGIC: QUICK VIEW ---
@@ -319,7 +379,47 @@ class _InvoiceScreenState extends State<InvoiceScreen> with TickerProviderStateM
                 );
               }),
 
-              const SliverToBoxAdapter(child: SizedBox(height: 100)), // Bottom Padding
+             /* const SliverToBoxAdapter(child: SizedBox(height: 100)), // Bottom Padding
+
+              Obx(() {
+                final list = _filteredInvoices;
+
+                if (_dataController.loading.value || list.isEmpty) {
+                  return const SliverToBoxAdapter(
+                    child: SizedBox(),
+                  );
+                }
+
+                return SliverPadding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppTheme.pagePadding,
+                  ),
+                  sliver: isTablet
+                      ? _buildTabletGrid(list)
+                      : _buildMobileList(list),
+                );
+              }),*/
+
+// ADD THIS BLOCK HERE
+              SliverToBoxAdapter(
+                child: Obx(() {
+
+                  if (!_dataController.isLoadingMore.value) {
+                    return const SizedBox();
+                  }
+
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 20),
+                    child: Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                  );
+                }),
+              ),
+
+              const SliverToBoxAdapter(
+                child: SizedBox(height: 100),
+              ),
             ],
           ),
         ],
@@ -481,10 +581,11 @@ class _InvoiceScreenState extends State<InvoiceScreen> with TickerProviderStateM
             padding: const EdgeInsets.only(bottom: 16),
             child: _DetailedInvoiceCard(
               invoice: inv,
-              onDownload: () => _handleDownload(inv.id, inv.invoiceImagePublicId ?? 'invoice.pdf'),
+              onDownload: () => _handleView(inv.id, inv.invoiceImagePublicId ?? 'invoice.pdf'),
               // FIXED: Uses the dedicated logic handler
               onTrack: () => _handleTrack(inv.trackingLink),
               onTap: () => _showQuickView(inv),
+              onMail: () => _handleMail(inv),
             ),
           );
         },
@@ -501,16 +602,17 @@ class _InvoiceScreenState extends State<InvoiceScreen> with TickerProviderStateM
         crossAxisSpacing: 20,
         // UPDATED: Increased from 280 to 360 to prevent bottom overflow
         // Content calculation: ~350px needed including padding
-        mainAxisExtent: 360,
+        mainAxisExtent: 600,
       ),
       delegate: SliverChildBuilderDelegate(
             (context, index) {
           final inv = list[index];
           return _DetailedInvoiceCard(
             invoice: inv,
-            onDownload: () => _handleDownload(inv.id, ''),
+            onDownload: () => _handleView(inv.id, ''),
             onTrack: () => _handleTrack(inv.trackingLink),
             onTap: () => _showQuickView(inv),
+            onMail: () => _handleMail(inv),
           );
         },
         childCount: list.length,
@@ -608,6 +710,60 @@ class _InvoiceScreenState extends State<InvoiceScreen> with TickerProviderStateM
         ],
       ),
     );
+  }
+
+  Future<void> _handleMail(dynamic invoice) async {
+
+    final email = invoice.stockist?.emailAddress;
+
+    if (email == null ||
+        email.trim().isEmpty ||
+        email == "N/A") {
+
+      Get.snackbar(
+        "Email Missing",
+        "No email provided for this stockist.",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+
+      return;
+    }
+
+    try {
+
+      Get.dialog(
+        const Center(
+          child: CircularProgressIndicator(),
+        ),
+        barrierDismissible: false,
+      );
+
+      await _dataController.sendInvoiceEmail(
+        invoice.id,
+      );
+
+      if (Get.isDialogOpen ?? false) {
+        Get.back();
+      }
+
+      Get.snackbar(
+        "Success",
+        "Invoice email sent successfully",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+
+    } catch (e) {
+
+      if (Get.isDialogOpen ?? false) {
+        Get.back();
+      }
+
+      Get.snackbar(
+        "Error",
+        e.toString(),
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
   }
 }
 
@@ -797,12 +953,14 @@ class _DetailedInvoiceCard extends StatelessWidget {
   final VoidCallback onDownload;
   final VoidCallback onTrack;
   final VoidCallback onTap;
+  final VoidCallback onMail;
 
   const _DetailedInvoiceCard({
     required this.invoice,
     required this.onDownload,
     required this.onTrack,
     required this.onTap,
+    required this.onMail,
   });
 
   // ... (Keep _getStatusColor method same as before) ...
@@ -824,6 +982,18 @@ class _DetailedInvoiceCard extends StatelessWidget {
     final email = invoice.stockist?.emailAddress ?? 'No Email';
     final courier = invoice.courierCompanyName ?? 'Not Assigned';
     final awb = invoice.awbNumber ?? 'Pending';
+
+    final forwarding =
+    invoice.forwardingNotes != null &&
+        invoice.forwardingNotes.isNotEmpty
+        ? invoice.forwardingNotes.first
+        : null;
+
+    final cases =
+        forwarding?.cases?.toString() ?? "-";
+
+    final weight =
+        forwarding?.weight?.toString() ?? "-";
 
     DateTime date;
     try {
@@ -902,20 +1072,49 @@ class _DetailedInvoiceCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 14),
                     Expanded(
-                      child: Column(
+                      child:Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(partyName, style: AppTheme.cardTitle, maxLines: 1, overflow: TextOverflow.ellipsis),
+
+                          Text(
+                            partyName,
+                            style: const TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+
                           const SizedBox(height: 4),
-                          Text('#$invoiceNum', style: const TextStyle(color: AppTheme.textGrey, fontWeight: FontWeight.w600)),
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              const Icon(Icons.email_outlined, size: 12, color: Colors.grey),
-                              const SizedBox(width: 4),
-                              Expanded(child: Text(email, style: const TextStyle(fontSize: 12, color: Colors.grey), maxLines: 1, overflow: TextOverflow.ellipsis)),
-                            ],
-                          )
+
+                          Text(
+                            invoiceNum,
+                            style: TextStyle(
+                              color: Colors.grey.shade600,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+
+                          const SizedBox(height: 12),
+
+                          _infoTile(
+                            Icons.email_outlined,
+                            invoice.stockist?.emailAddress ?? "N/A",
+                          ),
+
+                          const SizedBox(height: 6),
+
+                          _infoTile(
+                            Icons.phone_outlined,
+                            invoice.stockist?.mobileNumber ?? "N/A",
+                          ),
+
+                          const SizedBox(height: 6),
+
+                          _infoTile(
+                            Icons.location_on_outlined,
+                            invoice.stockist?.registeredOfficeAddress ?? "N/A",
+                            maxLines: 2,
+                          ),
                         ],
                       ),
                     ),
@@ -933,29 +1132,55 @@ class _DetailedInvoiceCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: Colors.grey.shade200),
                   ),
-                  child: Row(
+                  child: Column(
                     children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text("Courier", style: TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.w600)),
-                            const SizedBox(height: 2),
-                            Text(courier, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.textDark), maxLines: 1, overflow: TextOverflow.ellipsis),
-                          ],
-                        ),
+
+                      Row(
+                        children: [
+
+                          Expanded(
+                            child: _detailBox(
+                              "Courier",
+                              courier,
+                              Icons.local_shipping,
+                            ),
+                          ),
+
+                          const SizedBox(width: 10),
+
+                          Expanded(
+                            child: _detailBox(
+                              "AWB",
+                              awb,
+                              Icons.confirmation_number_outlined,
+                            ),
+                          ),
+                        ],
                       ),
-                      Container(width: 1, height: 24, color: Colors.grey.shade300),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text("AWB Number", style: TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.w600)),
-                            const SizedBox(height: 2),
-                            Text(awb, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.textDark), maxLines: 1, overflow: TextOverflow.ellipsis),
-                          ],
-                        ),
+
+                      const SizedBox(height: 10),
+
+                      Row(
+                        children: [
+
+                          Expanded(
+                            child: _detailBox(
+                              "Cases",
+                              cases,
+                              Icons.inventory_2_outlined,
+                            ),
+                          ),
+
+                          const SizedBox(width: 10),
+
+                          Expanded(
+                            child: _detailBox(
+                              "Weight",
+                              weight,
+                              Icons.scale_outlined,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -983,6 +1208,26 @@ class _DetailedInvoiceCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 12),
+
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                            foregroundColor: AppTheme.textDark,
+                            side: BorderSide(color: Colors.grey.shade300),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))
+                        ),
+                        onPressed: onMail,
+                        icon: const Icon(Icons.mail, size: 18, color: TColors.secondary),
+                        label: const Text("Mail"),
+                      ),
+                    ),
+
+
+
+                    const SizedBox(width: 12),
+
+
                     Expanded(
                       child: ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(
@@ -993,8 +1238,8 @@ class _DetailedInvoiceCard extends StatelessWidget {
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))
                         ),
                         onPressed: onDownload,
-                        icon: const Icon(Icons.download_rounded, size: 18),
-                        label: const Text("Download"),
+                        icon: const Icon(Icons.visibility_outlined, size: 18),
+                        label: const Text("View"),
                       ),
                     ),
                   ],
@@ -1006,7 +1251,98 @@ class _DetailedInvoiceCard extends StatelessWidget {
       ),
     );
   }
+
+  Widget _infoTile(
+      IconData icon,
+      String value, {
+        int maxLines = 1,
+      }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+
+        Container(
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            color: Colors.grey.shade100,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            icon,
+            size: 14,
+            color: TColors.primary,
+          ),
+        ),
+
+        const SizedBox(width: 8),
+
+        Expanded(
+          child: Text(
+            value,
+            maxLines: maxLines,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppTheme.textGrey,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _detailBox(
+      String label,
+      String value,
+      IconData icon,
+      ) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.grey.shade200,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+
+          Icon(
+            icon,
+            size: 18,
+            color: TColors.primary,
+          ),
+
+          const SizedBox(height: 8),
+
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 11,
+              color: Colors.grey,
+            ),
+          ),
+
+          const SizedBox(height: 2),
+
+          Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
+
+
 
 // --- D. QUICK VIEW BOTTOM SHEET ---
 class _QuickViewSheet extends StatelessWidget {
