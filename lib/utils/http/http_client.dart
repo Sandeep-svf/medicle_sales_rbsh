@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class THttpHelper {
-     static const String baseUrl = 'https://test.gluckscare.com/api'; // API base URL prod
+      static const String baseUrl = 'https://test.gluckscare.com/api'; // API base URL prod
     // static const String baseUrl = 'https://apiv2.gluckscare.com/api'; // API base URL prod
     // static const String baseUrl = 'https://api.gluckscare.com/api'; // API base URL development test
 
@@ -21,7 +21,6 @@ class THttpHelper {
     );
     return _handleResponse(response);
   }
-
   // Helper method to make a PUT request
   static Future<Map<String, dynamic>> put(String endpoint, dynamic data) async {
     final response = await http.put(
