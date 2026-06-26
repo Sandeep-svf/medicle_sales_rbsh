@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:medicle_sales_rbsh/features/expenses/controllers/ExpanseDefaultValueController.dart';
 import 'package:medicle_sales_rbsh/features/expenses/screens/TravelExpenseScreen.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:permission_handler/permission_handler.dart';
@@ -26,6 +27,10 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
   bool _isLoadingExpenses = true;
   bool _isGeneratingPdf = false;
 
+
+
+
+
   final TextEditingController _searchController = TextEditingController();
   DateTime _normalize(DateTime d) => DateTime(d.year, d.month, d.day);
   String _searchQuery = "";
@@ -38,6 +43,8 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
   String? selectedCategory;
   String? userId;
   List<ExpenseModel> _allExpenses = [];
+
+
 
 
   DateTime? fromDate;
@@ -58,6 +65,9 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
     AuthManager authManager = AuthManager();
     userId = await authManager.getUserId();
     final data = await _expenseController.fetchExpenses();
+
+    ScraperSettingsController scraperSettingsController = new ScraperSettingsController();
+    scraperSettingsController.fetchSettings();
     setState(() {
       _allExpenses = data;
       _isLoadingExpenses = false;
@@ -333,17 +343,20 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                           DropdownButtonFormField<String>(
                             decoration: const InputDecoration(labelText: "Select DA Location", border: OutlineInputBorder()),
                             value: selectedDAType,
-                            items: ['Other Headquarter', 'Headquarter']
+                            items: ['EX', 'Headquarter','Out of station']
                                 .map((e) => DropdownMenuItem(value: e, child: Text(e)))
                                 .toList(),
                             onChanged: (val) => setModalState(() {
                               selectedDAType = val!;
-                              if (val == 'X Headquarter') {
+                              if (val == 'EX') {
                                 amountController.text = '175.00';
-                                descriptionController.text = 'DA for X Headquarter';
-                              } else {
+                                descriptionController.text = 'DA for EX';
+                              } else if(val == 'Headquarter'){
                                 amountController.text = '150.00';
                                 descriptionController.text = 'DA for Headquarter';
+                              }else{
+                                amountController.text = '1000.00';
+                                descriptionController.text = 'Out of station';
                               }
                             }),
                             validator: (val) => val == null ? 'Required' : null,
@@ -456,6 +469,13 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
 
   @override
   Widget build(BuildContext context) {
+
+    final size = MediaQuery.of(context).size;
+    final bool isTablet = size.width > 700;
+    final bool isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+
+
     return Scaffold(
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
@@ -558,177 +578,22 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                     ? Colors.orange
                     : Colors.red;
 
-                return Card(
-                  elevation: 4,
-                  margin: const EdgeInsets.symmetric(vertical: 10),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        /// Header Row with Amount, Status, Edit
-                        Row(
-                          children: [
-                            Text(
-                              "₹${e.amount}",
-                              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87),
-                            ),
-                            const Spacer(),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: color.withOpacity(0.15),
-                                borderRadius: BorderRadius.circular(30),
-                              ),
-                              child: Text(
-                                e.status.capitalizeFirst ?? '',
-                                style: TextStyle(color: color, fontWeight: FontWeight.w500),
-                              ),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.edit, color: Colors.blueAccent),
-                              tooltip: "Edit Expense",
-                                onPressed: () async {
-                                  if (e.editCount >= 1) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text("Expense is already edited. You cannot edit it more than once."),
-                                        backgroundColor: Colors.orange,
-                                      ),
-                                    );
-                                    return;
-                                  }
-                                  final Map<String, dynamic> existingData = {
-                                    'userId': userId,
-                                    'category': e.category,
-                                    'description': e.description,
-                                    'bill': '',
-                                    if (e.category == 'travel' && e.travelDetails != null)
-                                      'travelDetails': e.travelDetails.map((t) => {
-                                        'from': t.from,
-                                        'to': t.to,
-                                        'km': t.km,
-                                      }).toList(),
-                                    if (e.category == 'daily')
-                                      'dailyAllowanceType': e.dailyAllowanceType,
-                                  };
-
-                                  final shouldRefresh = await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => AddAllowanceScreen(
-                                        isEditMode: true,
-                                        expenseId: e.id,
-                                        existingData: existingData,
-                                      ),
-                                    ),
-                                  );
-
-                                  if (shouldRefresh == true) {
-                                    _initialize(); // Refresh the list after editing
-                                  }
-                                }
-
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 8),
-
-                        /// Description
-                        Text(
-                          e.description,
-                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                        ),
-
-                        const SizedBox(height: 8),
-
-                        /// Date row
-                        Row(
-                          children: [
-                            const Icon(Icons.calendar_today, size: 16, color: Colors.grey),
-                            const SizedBox(width: 6),
-                            Text(
-                              DateFormat('dd MMM yyyy').format(DateTime.parse(e.date)),
-                              style: const TextStyle(fontSize: 13, color: Colors.grey),
-                            ),
-                          ],
-                        ),
-
-
-                        const SizedBox(height: 12),
-
-                        if (e.category == "daily") ...[
-                          Text(
-                            "Allowance Type: ${e.dailyAllowanceType ?? '-'}",
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-
-                        if (e.category == "extra") ...[
-                          const Divider(),
-
-                          const Text(
-                            "Bill",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-
-                          const SizedBox(height: 8),
-
-                          if (e.bill.isNotEmpty)
-                            InkWell(
-                              onTap: () {
-                                showDialog(
-                                  context: context,
-                                  builder: (_) => Dialog(
-                                    child: InteractiveViewer(
-                                      child: Image.network(e.bill),
-                                    ),
-                                  ),
-                                );
-                              },
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(10),
-                                child: Image.network(
-                                  e.bill,
-                                  height: 150,
-                                  width: double.infinity,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                            ),
-                        ],
-
-                        /// Travel Breakdown
-                        if (e.travelDetails != null && e.travelDetails.isNotEmpty) ...[
-                          const SizedBox(height: 14),
-                          const Divider(thickness: 1),
-                          const Text("Travel Details", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                          const SizedBox(height: 8),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: e.travelDetails.map((trip) {
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: 4),
-                                child: Text("• ${trip.from} → ${trip.to}  |  ${trip.km} km"),
-                              );
-                            }).toList(),
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text("Rate/km: ₹${e.ratePerKm}", style: const TextStyle(fontSize: 13)),
-                              Text("Total Distance: ${e.totalDistanceKm} km", style: const TextStyle(fontSize: 13)),
-                            ],
-                          ),
-                        ]
-                      ],
+                return Container(
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  child: Card(
+                    elevation: 6,
+                    shadowColor: Colors.black12,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(18),
+                      child: isTablet || isLandscape
+                          ? _buildTabletExpenseCard(e, color)
+                          : _buildMobileExpenseCard(e, color),
                     ),
                   ),
                 );
@@ -740,4 +605,462 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
       ),
     );
   }
+
+  Widget _buildMobileExpenseCard(
+      ExpenseModel e,
+      Color color,
+      ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+
+        Row(
+          children: [
+
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: TColors.primary.withOpacity(.08),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: const Icon(
+                Icons.currency_rupee,
+                color: TColors.primary,
+              ),
+            ),
+
+            const SizedBox(width: 12),
+
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+
+                  Text(
+                    "₹${e.amount}",
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                  Text(
+                    e.category.toUpperCase(),
+                    style: const TextStyle(
+                      color: Colors.grey,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+
+                if (e.category != 'extra' && e.editCount < 1)
+                  InkWell(
+                    onTap: () => _editExpense(e),
+                  borderRadius: BorderRadius.circular(30),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: TColors.primary.withOpacity(.10),
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.edit_outlined,
+                          size: 16,
+                          color: TColors.primary,
+                        ),
+                        SizedBox(width: 6),
+                        Text(
+                          "EDIT",
+                          style: TextStyle(
+                            color: TColors.primary,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                const SizedBox(width: 8),
+
+                _statusChip(e.status, color),
+              ],
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 16),
+
+        Text(
+          e.description,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+
+        const SizedBox(height: 12),
+
+        Row(
+          children: [
+            const Icon(Icons.calendar_month,size:16),
+            const SizedBox(width: 8),
+            Text(
+              DateFormat('dd MMM yyyy')
+                  .format(DateTime.parse(e.date)),
+            ),
+          ],
+        ),
+
+        if (e.category == "daily")
+          _buildAllowanceCard(e),
+
+        if (e.category == "extra")
+         // _buildBillCard(e),
+
+        if (e.travelDetails.isNotEmpty)
+          _buildTravelCard(e),
+      ],
+    );
+  }
+
+  Widget _buildTabletExpenseCard(
+      ExpenseModel e,
+      Color color,
+      ) {
+    if (e.category == "extra") {
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+
+          Expanded(
+            flex: 3,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: TColors.primary.withOpacity(.08),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: const Icon(
+                        Icons.receipt_long,
+                        color: TColors.primary,
+                      ),
+                    ),
+
+                    const SizedBox(width: 12),
+
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "₹${e.amount}",
+                            style: const TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const Text(
+                            "EXTRA EXPENSE",
+                            style: TextStyle(
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    _statusChip(e.status, color),
+                  ],
+                ),
+
+                const SizedBox(height: 20),
+
+                Text(
+                  e.description,
+                  style: const TextStyle(
+                    fontSize: 16,
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                Row(
+                  children: [
+                    const Icon(Icons.calendar_month),
+                    const SizedBox(width: 8),
+                    Text(
+                      DateFormat('dd MMM yyyy')
+                          .format(DateTime.parse(e.date)),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(width: 20),
+
+          Expanded(
+            flex: 2,
+            child: _buildBillCard(e),
+          ),
+        ],
+      );
+    }
+
+    return _buildMobileExpenseCard(e, color);
+  }
+
+  Widget _statusChip(
+      String status,
+      Color color,
+      ) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 14,
+        vertical: 8,
+      ),
+      decoration: BoxDecoration(
+        color: color.withOpacity(.12),
+        borderRadius: BorderRadius.circular(30),
+      ),
+      child: Text(
+        status.toUpperCase(),
+        style: TextStyle(
+          color: color,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTravelCard(
+      ExpenseModel e,
+      ) {
+    return Container(
+      margin: const EdgeInsets.only(top: 16),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.blue.shade50,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+
+          const Text(
+            "Travel Details",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+
+          const SizedBox(height: 10),
+
+          ...e.travelDetails.map(
+                (trip) => Padding(
+              padding: const EdgeInsets.only(
+                bottom: 6,
+              ),
+              child: Row(
+                children: [
+
+                  const Icon(
+                    Icons.route,
+                    size: 16,
+                  ),
+
+                  const SizedBox(width: 8),
+
+                  Expanded(
+                    child: Text(
+                      "${trip.from} → ${trip.to}",
+                    ),
+                  ),
+
+                  Text(
+                    "${trip.km} km",
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          const Divider(),
+
+          Row(
+            mainAxisAlignment:
+            MainAxisAlignment.spaceBetween,
+            children: [
+
+              Text(
+                "Rate: ₹${e.ratePerKm}",
+              ),
+
+              Text(
+                "Distance: ${e.totalDistanceKm} km",
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAllowanceCard(
+      ExpenseModel e,
+      ) {
+    return Container(
+      margin: const EdgeInsets.only(top: 14),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.orange.shade50,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+
+          const Icon(Icons.location_city),
+
+          const SizedBox(width: 10),
+
+          Expanded(
+            child: Text(
+              e.dailyAllowanceType ?? "-",
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBillCard(
+      ExpenseModel e,
+      ) {
+    return Container(
+      margin: const EdgeInsets.only(top: 16),
+      child: Card(
+        elevation: 4,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          crossAxisAlignment:
+          CrossAxisAlignment.start,
+          children: [
+
+            Container(
+              padding: const EdgeInsets.all(12),
+              width: double.infinity,
+              color: TColors.primary,
+              child: const Text(
+                "Bill Attachment",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+
+            InkWell(
+              onTap: () {
+                showDialog(
+                  context: context,
+                  builder: (_) => Dialog(
+                    child: InteractiveViewer(
+                      child: Image.network(e.bill),
+                    ),
+                  ),
+                );
+              },
+              child: Hero(
+                tag: e.id,
+                child: Image.network(
+                  e.bill,
+                  height: 220,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _editExpense(ExpenseModel e) async {
+
+    // Extra expense cannot be edited
+    if (e.category == 'extra') {
+      return;
+    }
+
+    // Only one edit allowed
+    if (e.editCount >= 1) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            "This expense has already been edited once.",
+          ),
+        ),
+      );
+      return;
+    }
+
+    final Map<String, dynamic> existingData = {
+      'category': e.category,
+      'description': e.description,
+      'dailyAllowanceType': e.dailyAllowanceType,
+      'travelDetails': e.travelDetails
+          .map(
+            (t) => {
+          'from': t.from,
+          'to': t.to,
+          'km': t.km,
+        },
+      )
+          .toList(),
+    };
+
+    final refreshed = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => AddAllowanceScreen(
+          isEditMode: true,
+          expenseId: e.id,
+          existingData: existingData,
+        ),
+      ),
+    );
+
+    if (refreshed == true) {
+      _initialize();
+    }
+  }
+
+
 }

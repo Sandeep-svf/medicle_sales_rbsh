@@ -12,17 +12,19 @@ import 'package:http_parser/http_parser.dart'; // <--- ADD THIS
 import 'package:medicle_sales_rbsh/utils/http/http_client.dart';
 import 'package:medicle_sales_rbsh/utils/local_storage/auth_manager.dart';
 import '../../../utils/constants/colors.dart';
+import '../controllers/doctor_details_controller.dart';
 import '../models/DoctorModelList.dart';
 
 // --- Geo Overlay Utilities ---
 import '../../../utils/camera/CameraLocationResult.dart';
 import '../../../utils/camera/image_overlay_utils.dart';
 import '../../../utils/loder/CircularLoaderController.dart';
+import '../models/doctor_details_model.dart';
 
 class DoctorDetailsScreen extends StatefulWidget {
-  final Doctor doctor;
+  final String doctorId;
 
-  const DoctorDetailsScreen({super.key, required this.doctor});
+  const DoctorDetailsScreen({super.key, required this.doctorId});
 
   @override
   State<DoctorDetailsScreen> createState() => _DoctorDetailsScreenState();
@@ -31,45 +33,70 @@ class DoctorDetailsScreen extends StatefulWidget {
 class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
   bool _isUploading = false;
   final ImagePicker _picker = ImagePicker();
+  late final DoctorDetailsController controller;
+  DoctorDetailsModel get doctor => controller.doctor.value!;
 
   // Holds the locally captured image before uploading
   File? _localImageFile;
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
-      appBar: AppBar(
-        title: Text(widget.doctor.name, style: const TextStyle(color: Colors.white)),
-        backgroundColor: TColors.primary,
-        iconTheme: const IconThemeData(color: Colors.white),
-        centerTitle: false,
-        elevation: 0,
-      ),
-      body: Stack(
-        children: [
-          LayoutBuilder(
-            builder: (context, constraints) {
-              bool isTablet = constraints.maxWidth > 600;
-              if (isTablet) {
-                return _buildTabletLayout(context, constraints);
-              } else {
-                return _buildMobileLayout(context);
-              }
-            },
-          ),
+  void initState() {
+    super.initState();
 
-          // Loading Overlay
-          if (_isUploading)
-            Container(
-              color: Colors.black54,
-              child: const Center(
-                child: CircularProgressIndicator(color: Colors.white),
-              ),
-            ),
-        ],
-      ),
+    controller = Get.put(
+      DoctorDetailsController(widget.doctorId),
+      tag: widget.doctorId,
     );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      if (controller.isLoading.value || controller.doctor.value == null) {
+        return const Scaffold(
+          body: Center(
+            child: CircularProgressIndicator(),
+          ),
+        );
+      }
+
+      return Scaffold(
+        backgroundColor: const Color(0xFFF5F5F5),
+
+        appBar: AppBar(
+          title: Text(
+            controller.doctor.value?.name ?? "Doctor Details",
+            style: const TextStyle(color: Colors.white),
+          ),
+          backgroundColor: TColors.primary,
+          iconTheme: const IconThemeData(color: Colors.white),
+        ),
+
+        body: Stack(
+          children: [
+            LayoutBuilder(
+              builder: (context, constraints) {
+                if (constraints.maxWidth > 600) {
+                  return _buildTabletLayout(context, constraints);
+                } else {
+                  return _buildMobileLayout(context);
+                }
+              },
+            ),
+
+            if (_isUploading)
+              Container(
+                color: Colors.black54,
+                child: const Center(
+                  child: CircularProgressIndicator(
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      );
+    });
   }
 
   // --- Mobile Layout ---
@@ -189,7 +216,7 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
 
   Widget _buildGeoImageSection(BuildContext context) {
     // 1. Check existing Server Image
-    final String? serverImageUrl = widget.doctor.geoImageUrl;
+    final String? serverImageUrl = doctor.geoImageUrl;
     final bool hasServerImage = serverImageUrl != null && serverImageUrl.isNotEmpty;
 
     // 2. Check local preview Image (User just took a photo)
@@ -487,7 +514,7 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
       final token = await AuthManager().getAuthToken();
 
       // API Endpoint
-      final String url = '${THttpHelper.baseUrl}/doctors/${widget.doctor.id}/geo-image';
+      final String url = '${THttpHelper.baseUrl}/doctors/${widget.doctorId}/geo-image';
 
       // POST Request
       var request = http.MultipartRequest('POST', Uri.parse(url));
@@ -538,52 +565,83 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSectionTitle("Basic Information", Icons.info_outline),
+          _buildSectionTitle(
+            "Basic Information",
+            Icons.info_outline,
+          ),
           const Divider(),
-          _buildInfoRow(Icons.badge_outlined, "Registration", widget.doctor.registrationNumber),
 
           _buildInfoRow(
-              Icons.calendar_today_outlined,
-              "DOB",
-              widget.doctor.dateOfBirth != null
-                  ? DateFormat('dd MMM yyyy').format(widget.doctor.dateOfBirth!)
-                  : "N/A"
+            Icons.badge_outlined,
+            "Registration",
+            doctor.registrationNumber ?? "N/A",
           ),
 
           _buildInfoRow(
-              Icons.cake_outlined,
-              "Anniversary",
-              widget.doctor.anniversary != null
-                  ? DateFormat('dd MMM yyyy').format(widget.doctor.anniversary!)
-                  : 'N/A'
+            Icons.calendar_today_outlined,
+            "DOB",
+            doctor.dateOfBirth != null &&
+                doctor.dateOfBirth!.toString().isNotEmpty
+                ? DateFormat('dd MMM yyyy').format(
+              DateTime.parse(doctor.dateOfBirth!.toString()),
+            )
+                : "N/A",
           ),
 
           _buildInfoRow(
-              Icons.work_history_outlined,
-              "Experience",
-              widget.doctor.yearsOfExperience != null ? "${widget.doctor.yearsOfExperience} Years" : "N/A"
+            Icons.cake_outlined,
+            "Anniversary",
+            doctor.anniversary != null &&
+                doctor.anniversary!.toString().isNotEmpty
+                ? DateFormat('dd MMM yyyy').format(
+              DateTime.parse(doctor.anniversary!.toString()),
+            )
+                : "N/A",
           ),
 
-          _buildInfoRow(Icons.person_outline, "Gender", widget.doctor.gender),
+          _buildInfoRow(
+            Icons.work_history_outlined,
+            "Experience",
+            doctor.yearsOfExperience != null
+                ? "${doctor.yearsOfExperience} Years"
+                : "N/A",
+          ),
+
+          _buildInfoRow(
+            Icons.person_outline,
+            "Gender",
+            doctor.gender ?? "N/A",
+          ),
         ],
       ),
     );
   }
 
   Widget _buildProfileHeader() {
-    String priority = widget.doctor.priority;
+    final priority = doctor.priority;
     Color priorityColor;
     String priorityLabel;
 
-    if (priority.isEmpty || priority.toLowerCase() == 'null') {
+    if (priority!.isEmpty || priority.toLowerCase() == 'null') {
       priorityColor = Colors.grey;
       priorityLabel = "Not added";
     } else {
       switch (priority) {
-        case 'A': priorityColor = Colors.red; priorityLabel = "High Priority"; break;
-        case 'B': priorityColor = Colors.orange; priorityLabel = "Medium Priority"; break;
-        case 'C': priorityColor = Colors.blueGrey; priorityLabel = "Standard Priority"; break;
-        default: priorityColor = Colors.grey; priorityLabel = "Not added"; break;
+        case 'A':
+          priorityColor = Colors.red;
+          priorityLabel = "High Priority";
+          break;
+        case 'B':
+          priorityColor = Colors.orange;
+          priorityLabel = "Medium Priority";
+          break;
+        case 'C':
+          priorityColor = Colors.blueGrey;
+          priorityLabel = "Standard Priority";
+          break;
+        default:
+          priorityColor = Colors.grey;
+          priorityLabel = "Not added";
       }
     }
 
@@ -595,12 +653,19 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
             padding: const EdgeInsets.all(3),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(color: TColors.primary.withOpacity(0.5), width: 2),
+              border: Border.all(
+                color: TColors.primary.withOpacity(0.5),
+                width: 2,
+              ),
             ),
             child: CircleAvatar(
               radius: 35,
               backgroundColor: TColors.primary.withOpacity(0.1),
-              child: const Icon(Icons.person, color: TColors.primary, size: 40),
+              child: const Icon(
+                Icons.person,
+                color: TColors.primary,
+                size: 40,
+              ),
             ),
           ),
           const SizedBox(width: 16),
@@ -613,38 +678,66 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
                   children: [
                     Expanded(
                       child: Text(
-                        widget.doctor.name,
-                        style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black87),
+                        controller.doctor.value?.name ?? "Unknown Doctor",
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 5,
+                      ),
                       decoration: BoxDecoration(
                         color: priorityColor.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: priorityColor.withOpacity(0.3)),
+                        border: Border.all(
+                          color: priorityColor.withOpacity(0.3),
+                        ),
                       ),
                       child: Text(
                         priorityLabel,
-                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: priorityColor),
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: priorityColor,
+                        ),
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  widget.doctor.specialization.isNotEmpty ? widget.doctor.specialization : "N/A",
-                  style: TextStyle(color: Colors.grey.shade600, fontSize: 16, fontWeight: FontWeight.w500),
+                  (doctor.specialization?.isNotEmpty ?? false)
+                      ? doctor.specialization!
+                      : "N/A",
+                  style: TextStyle(
+                    color: Colors.grey.shade600,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    Icon(Icons.location_on, size: 14, color: Colors.grey.shade500),
+                    Icon(
+                      Icons.location_on,
+                      size: 14,
+                      color: Colors.grey.shade500,
+                    ),
                     const SizedBox(width: 4),
                     Expanded(
                       child: Text(
-                        widget.doctor.location.isNotEmpty ? widget.doctor.location : "N/A",
-                        style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                        (doctor.location?.isNotEmpty ?? false)
+                            ? doctor.location!
+                            : "N/A",
+                        style: TextStyle(
+                          color: Colors.grey.shade600,
+                          fontSize: 13,
+                        ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -664,10 +757,27 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSectionTitle("Contact Information", Icons.contact_phone_outlined),
+          _buildSectionTitle(
+            "Contact Information",
+            Icons.contact_phone_outlined,
+          ),
           const Divider(),
-          _buildInfoRow(Icons.email_outlined, "Email", widget.doctor.email),
-          _buildInfoRow(Icons.phone_outlined, "Phone", widget.doctor.phone),
+
+          _buildInfoRow(
+            Icons.email_outlined,
+            "Email",
+            (doctor.email?.isNotEmpty ?? false)
+                ? doctor.email!
+                : "N/A",
+          ),
+
+          _buildInfoRow(
+            Icons.phone_outlined,
+            "Phone",
+            (doctor.phone?.isNotEmpty ?? false)
+                ? doctor.phone!
+                : "N/A",
+          ),
         ],
       ),
     );
@@ -678,35 +788,128 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSectionTitle("Head Office", Icons.business_outlined),
+          _buildSectionTitle(
+            "Head Office",
+            Icons.business_outlined,
+          ),
           const Divider(),
-          _buildInfoRow(Icons.store_mall_directory_outlined, "Office Name", widget.doctor.headOffice.name),
+          _buildInfoRow(
+            Icons.store_mall_directory_outlined,
+            "Office Name",
+            doctor.headOffice?.name ?? "N/A",
+          ),
         ],
       ),
     );
   }
 
   Widget _buildVisitHistory() {
+    final visits = controller.doctor.value?.visitHistory ?? [];
+
     return _buildStyledCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSectionTitle("Visit History", Icons.history_edu_outlined),
+          _buildSectionTitle(
+            "Visit History",
+            Icons.history_edu_outlined,
+          ),
           const Divider(),
-          if (widget.doctor.visitHistory.isEmpty)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16.0),
+
+          if (visits.isEmpty)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 20),
               child: Center(
                 child: Text(
-                  "No visit history available.",
-                  style: TextStyle(color: Colors.grey.shade500, fontStyle: FontStyle.italic),
+                  "No Visit History Found",
+                  style: TextStyle(color: Colors.grey),
                 ),
               ),
             )
           else
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 8),
-              child: Text("History data items..."),
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: visits.length,
+              separatorBuilder: (_, __) => const Divider(height: 24),
+              itemBuilder: (context, index) {
+                final visit = visits[index];
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+
+                    _buildInfoRow(
+                      Icons.calendar_today,
+                      "Visit Date",
+                      visit.date != null
+                          ? DateFormat("dd MMM yyyy")
+                          .format(DateTime.parse(visit.date!.toString()))
+                          : "N/A",
+                    ),
+
+                   /* _buildInfoRow(
+                      Icons.person,
+                      "MR Name",
+                      visit.userName ?? "N/A",
+                    ),*/
+
+                   /* _buildInfoRow(
+                      Icons.email_outlined,
+                      "MR Email",
+                      visit.userEmail ?? "N/A",
+                    ),*/
+
+                   /* _buildInfoRow(
+                      Icons.medication,
+                      "Product",
+                      visit.product?.name ?? "N/A",
+                    ),*/
+
+                  /*  _buildInfoRow(
+                      Icons.note_alt_outlined,
+                      "Notes",
+                      visit.notes ?? "N/A",
+                    ),*/
+
+                   /* _buildInfoRow(
+                      Icons.comment,
+                      "Remark",
+                      visit.remark ?? "N/A",
+                    ),*/
+
+                   /* _buildInfoRow(
+                      visit.confirmed == true
+                          ? Icons.check_circle
+                          : Icons.cancel,
+                      "Confirmed",
+                      visit.confirmed == true ? "Yes" : "No",
+                    ),*/
+
+                   /* _buildInfoRow(
+                      Icons.location_on,
+                      "Location",
+                      "${visit.latitude ?? "-"}, ${visit.longitude ?? "-"}",
+                    ),*/
+
+                   /* _buildInfoRow(
+                      Icons.medical_services,
+                      "Products Detailed",
+                      (visit.productsDetailed?.isNotEmpty ?? false)
+                          ? visit.productsDetailed!.join(", ")
+                          : "N/A",
+                    ),
+
+                    _buildInfoRow(
+                      Icons.card_giftcard,
+                      "Gifts Given",
+                      (visit.giftsGiven?.isNotEmpty ?? false)
+                          ? visit.giftsGiven!.join(", ")
+                          : "None",
+                    ),*/
+                  ],
+                );
+              },
             ),
         ],
       ),
@@ -718,18 +921,39 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSectionTitle("Account Metadata", Icons.manage_accounts_outlined),
+          _buildSectionTitle(
+            "Account Metadata",
+            Icons.manage_accounts_outlined,
+          ),
           const Divider(),
-          _buildInfoRow(Icons.access_time, "Created", DateFormat('dd MMM yyyy, hh:mm a').format(widget.doctor.createdAt)),
-          _buildInfoRow(Icons.update, "Last Updated", DateFormat('dd MMM yyyy, hh:mm a').format(widget.doctor.updatedAt)),
+
+          _buildInfoRow(
+            Icons.access_time,
+            "Created",
+            doctor.createdAt!.toString().isNotEmpty
+                ? DateFormat('dd MMM yyyy, hh:mm a').format(
+              DateTime.parse(doctor.createdAt!.toString()),
+            )
+                : "N/A",
+          ),
+
+          _buildInfoRow(
+            Icons.update,
+            "Last Updated",
+            doctor.updatedAt!.toString().isNotEmpty
+                ? DateFormat('dd MMM yyyy, hh:mm a').format(
+              DateTime.parse(doctor.updatedAt!.toString()),
+            )
+                : "N/A",
+          ),
         ],
       ),
     );
   }
 
   Widget _buildMapSection({double height = 220}) {
-    double? lat = double.tryParse(widget.doctor.latitude);
-    double? lng = double.tryParse(widget.doctor.longitude);
+    double? lat = double.tryParse(doctor.latitude ?? '');
+    double? lng = double.tryParse(doctor.longitude ?? '');
     bool isValidLocation = lat != null && lng != null && lat != 0.0 && lng != 0.0;
 
     return Container(
@@ -758,7 +982,7 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
             child: isValidLocation
                 ? GoogleMap(
               initialCameraPosition: CameraPosition(target: LatLng(lat, lng), zoom: 15),
-              markers: {Marker(markerId: const MarkerId("doctor_location"), position: LatLng(lat, lng), infoWindow: InfoWindow(title: widget.doctor.name))},
+              markers: {Marker(markerId: const MarkerId("doctor_location"), position: LatLng(lat, lng), infoWindow: InfoWindow(title: doctor.name))},
             )
                 : const Center(child: Text("Invalid Location Coordinates")),
           ),

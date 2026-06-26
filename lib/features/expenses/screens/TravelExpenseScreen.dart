@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
@@ -11,6 +13,7 @@ import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 import 'package:medicle_sales_rbsh/utils/local_storage/auth_manager.dart';
 
 import '../controllers/AllowenceController.dart';
+import '../controllers/ExpanseDefaultValueController.dart';
 import '../controllers/other_expense_controller.dart';
 import '../models/DailyAllowenceRequestModel.dart';
 import '../models/TravelAllowenceRequestModel.dart';
@@ -32,6 +35,8 @@ class AddAllowanceScreen extends StatefulWidget {
 class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
   bool isLoading = false;
   Map<String, dynamic> payload = {};
+
+  final ScraperSettingsController settingsController = new ScraperSettingsController();
 
   final List<String> categories = [
     'Travel Allowance',
@@ -66,7 +71,16 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
   @override
   void initState() {
     super.initState();
+    _loadSettingsAndPrefill();
+  }
+
+  Future<void> _loadSettingsAndPrefill() async {
+    await settingsController.fetchSettings();
     _prefillDataIfEditing();
+
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   Future<void> pickExpenseDate() async {
@@ -107,6 +121,7 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
   }
 
   void _prefillDataIfEditing() {
+    final settings = settingsController.scraperSettings.value;
     if (widget.isEditMode && widget.existingData != null) {
       final data = widget.existingData!;
       selectedCategory =
@@ -129,11 +144,33 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
         }).toList();
         remarkController.text = data['description'] ?? '';
       } else if (selectedCategory == 'Daily Allowance') {
-        selectedDAType = data['dailyAllowanceType'] == 'headoffice'
-            ? 'Headquarter'
-            : 'Other Headquarter';
-        daAmountController.text =
-            selectedDAType == 'Headquarter' ? '150.00' : '175.00';
+        switch (data['dailyAllowanceType']) {
+          case 'headoffice':
+            selectedDAType = 'Headquarter';
+            break;
+
+          case 'ex-headquarters':
+            selectedDAType = 'Ex';
+            break;
+
+          case 'outside':
+            selectedDAType = 'Out Of Station';
+            break;
+
+          default:
+            selectedDAType = null;
+        }
+        if (selectedDAType == 'Headquarter') {
+          daAmountController.text =
+              (settings?.headOfficeAmount ?? 0).toStringAsFixed(2);
+        } else if (selectedDAType == 'Ex') {
+          daAmountController.text =
+              (settings?.exHeadquartersAmount ?? 0).toStringAsFixed(2);
+        } else if (selectedDAType == 'Out Of Station') {
+          daAmountController.text =
+              (settings?.outsideHeadOfficeAmount ?? 0).toStringAsFixed(2);
+        }
+
         daDescriptionController.text = data['description'] ?? '';
       }
     }
@@ -304,13 +341,30 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
           return;
         }
 
+        String dailyAllowanceType;
+        switch (selectedDAType) {
+          case 'Headquarter':
+            dailyAllowanceType = 'headoffice';
+            break;
+
+          case 'Ex':
+            dailyAllowanceType = 'ex-headquarters';
+            break;
+
+          case 'Out Of Station':
+            dailyAllowanceType = 'outside';
+            break;
+
+          default:
+            dailyAllowanceType = 'headoffice';
+        }
+
         final payload = {
           'userId': userId,
           'category': 'daily',
           'description': daDescriptionController.text.trim(),
           'bill': '',
-          'dailyAllowanceType':
-              selectedDAType == 'Headquarter' ? 'headoffice' : 'outside',
+          'dailyAllowanceType': dailyAllowanceType,
         };
 
         if (widget.isEditMode && widget.expenseId != null) {
@@ -605,21 +659,30 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
                             labelText: "Select DA Location",
                             border: OutlineInputBorder()),
                         value: selectedDAType,
-                        items: ['Other Headquarter', 'Headquarter']
+                        items: ['Ex', 'Headquarter', 'Out Of Station']
                             .map((e) =>
                                 DropdownMenuItem(value: e, child: Text(e)))
                             .toList(),
                         onChanged: (val) {
                           setState(() {
                             selectedDAType = val;
-                            if (val == 'Other Headquarter') {
-                              daAmountController.text = '175.00';
-                              daDescriptionController.text =
-                                  'DA for Other Headquarter';
+                            final settings = settingsController.scraperSettings.value;
+
+                            if (val == 'Ex') {
+                              daAmountController.text =
+                                  (settings?.exHeadquartersAmount ?? 0).toStringAsFixed(2);
+
+                              daDescriptionController.text = 'DA for Ex';
+                            } else if (val == 'Headquarter') {
+                              daAmountController.text =
+                                  (settings?.headOfficeAmount ?? 0).toStringAsFixed(2);
+
+                              daDescriptionController.text = 'DA for Headquarter';
                             } else {
-                              daAmountController.text = '150.00';
-                              daDescriptionController.text =
-                                  'DA for Headquarter';
+                              daAmountController.text =
+                                  (settings?.outsideHeadOfficeAmount ?? 0).toStringAsFixed(2);
+
+                              daDescriptionController.text = 'DA for Out Of Station';
                             }
                           });
                         },

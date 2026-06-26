@@ -1240,20 +1240,15 @@ class _VisitChemistScreenState extends State<VisitChemistScreen> {
                 const SizedBox(height: 24),
 
                 TextField(
-                  controller:
-                  areaController,
-                  decoration:
-                  InputDecoration(
-                    labelText:
-                    "Area Name",
-                    prefixIcon:
-                    const Icon(
+                  controller: areaController,
+                  readOnly: true,
+                  decoration: InputDecoration(
+                    labelText: "Area Name",
+                    prefixIcon: const Icon(
                       Icons.edit_location_alt,
                     ),
-                    border:
-                    OutlineInputBorder(
-                      borderRadius:
-                      BorderRadius.circular(
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(
                         14,
                       ),
                     ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:medicle_sales_rbsh/utils/local_storage/auth_manager.dart';
 import 'dart:convert';
 import '../../../utils/http/http_client.dart';
@@ -16,11 +17,164 @@ class DoctorListController extends GetxController {
   // NEW: FILTERED LIST (Used specifically for the Search Sheet)
   var filteredDoctors = <Doctor>[].obs;
 
+  var totalDoctors = 0.obs;
+
+  // ================= FILTERS =================
+
+  var selectedFilter = "all".obs; // all | visited | unvisited
+  // all | A | B | C
+  var selectedPriority = "all".obs;
+
+  // Priority Filter (all | A | B | C)
+  var selectedPriorityFilter = "all".obs;
+
+  var fromDate = DateTime.now()
+      .subtract(const Duration(days: 30))
+      .obs;
+
+  var toDate = DateTime.now().obs;
+
+
+
   static const String _baseUrl = THttpHelper.baseUrl;
   AuthManager authManager = AuthManager();
   late String headOffice="";
 
+  Future<void> applyFilter() async {
+    switch (selectedFilter.value) {
+      case "visited":
+        await fetchVisitedDoctors();
+        break;
 
+      case "unvisited":
+        await fetchUnvisitedDoctors();
+        break;
+
+      default:
+        await fetchDoctorList();
+        break;
+    }
+
+    // Apply Priority Filter
+    if (selectedPriority.value != "all") {
+      final filtered = doctorList.where((doctor) {
+        return doctor.priority == selectedPriority.value;
+      }).toList();
+
+      filteredDoctors.assignAll(filtered);
+      totalDoctors.value = filtered.length;
+    } else {
+      filteredDoctors.assignAll(doctorList);
+      totalDoctors.value = doctorList.length;
+    }
+  }
+
+  Future<void> fetchVisitedDoctors() async {
+    try {
+      isLoading.value = true;
+
+      final token = await authManager.getAuthToken();
+
+      final response = await http.post(
+        Uri.parse("$_baseUrl/doctors/visited-in-range"),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
+        body: jsonEncode({
+          "from": DateFormat('yyyy-MM-dd').format(fromDate.value),
+          "to": DateFormat('yyyy-MM-dd').format(toDate.value),
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final jsonResponse = jsonDecode(response.body);
+
+        final List<dynamic> data = jsonResponse["data"] ?? [];
+
+        final doctors =
+        data.map((e) => Doctor.fromJson(e)).toList();
+
+        totalDoctors.value =
+            jsonResponse["count"] ?? doctors.length;
+
+        doctorList.assignAll(doctors);
+        filteredDoctors.assignAll(doctors);
+      } else {
+        Get.snackbar(
+          "Error",
+          "Unable to fetch visited doctors",
+        );
+      }
+    } catch (e) {
+      Get.snackbar(
+        "Error",
+        e.toString(),
+      );
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> fetchUnvisitedDoctors() async {
+    try {
+      isLoading.value = true;
+
+      final token = await authManager.getAuthToken();
+
+      final response = await http.post(
+        Uri.parse("$_baseUrl/doctors/unvisited-in-range"),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
+        body: jsonEncode({
+          "from": DateFormat('yyyy-MM-dd').format(fromDate.value),
+          "to": DateFormat('yyyy-MM-dd').format(toDate.value),
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final jsonResponse = jsonDecode(response.body);
+
+        final List<dynamic> data = jsonResponse["data"] ?? [];
+
+        final doctors =
+        data.map((e) => Doctor.fromJson(e)).toList();
+
+        totalDoctors.value =
+            jsonResponse["count"] ?? doctors.length;
+
+        doctorList.assignAll(doctors);
+        filteredDoctors.assignAll(doctors);
+      } else {
+        Get.snackbar(
+          "Error",
+          "Unable to fetch unvisited doctors",
+        );
+      }
+    } catch (e) {
+      Get.snackbar(
+        "Error",
+        e.toString(),
+      );
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> resetFilters() async {
+    selectedFilter.value = "all";
+    selectedPriority.value = "all";
+
+    fromDate.value = DateTime.now().subtract(
+      const Duration(days: 30),
+    );
+
+    toDate.value = DateTime.now();
+
+    await fetchDoctorList();
+  }
 
   Future<void> assignAreaToDoctor({
     required String doctorId,
@@ -173,19 +327,22 @@ class DoctorListController extends GetxController {
       if (Get.isDialogOpen ?? false) Get.back(); // Close the loading dialog
 
       if (response.statusCode == 200) {
-        List<dynamic> jsonData = jsonDecode(response.body);
+        final Map<String, dynamic> jsonResponse =
+        jsonDecode(response.body);
 
-        // Debugging log to check the API response
+        final List<dynamic> jsonData =
+            jsonResponse['data'] ?? [];
+
         print("Doctors Data: $jsonData");
 
-        List<Doctor> loadedData = jsonData.map((json) => Doctor.fromJson(json)).toList();
+        final List<Doctor> loadedData =
+        jsonData.map((e) => Doctor.fromJson(e)).toList();
 
-        // Update original doctor list (Old screens work same as before)
+        totalDoctors.value =
+            jsonResponse["count"] ?? loadedData.length;
+
         doctorList.assignAll(loadedData);
-
-        // NEW: Also fill the filtered list so it is ready for search
         filteredDoctors.assignAll(loadedData);
-
       } else {
         Get.snackbar("Error", "Failed to load doctors: ${response.statusCode}",
           snackPosition: SnackPosition.BOTTOM,

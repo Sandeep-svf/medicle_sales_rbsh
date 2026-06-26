@@ -966,13 +966,12 @@ class _StokistListScreenState extends State<StokistListScreen> {
 
                 TextField(
                   controller: areaController,
+                  enabled: false,
                   decoration: InputDecoration(
                     labelText: "Area Name",
-                    prefixIcon:
-                    const Icon(Icons.edit_location_alt),
+                    prefixIcon: const Icon(Icons.edit_location_alt),
                     border: OutlineInputBorder(
-                      borderRadius:
-                      BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(14),
                     ),
                   ),
                 ),

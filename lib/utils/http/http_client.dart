@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class THttpHelper {
-      static const String baseUrl = 'https://test.gluckscare.com/api'; // API base URL prod
+    //  static const String baseUrl = 'https://test.gluckscare.com/api'; // API base URL prod
     // static const String baseUrl = 'https://apiv2.gluckscare.com/api'; // API base URL prod
-    // static const String baseUrl = 'https://api.gluckscare.com/api'; // API base URL development test
+      static const String baseUrl = 'https://api.gluckscare.com/api'; // API base URL development test
 
   // Helper method to make a GET request
   static Future<Map<String, dynamic>> get(String endpoint) async {

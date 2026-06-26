@@ -249,4 +249,3 @@ class PdfDb {
     await db.delete(table);
   }
 }
-

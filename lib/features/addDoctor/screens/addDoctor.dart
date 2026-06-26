@@ -41,6 +41,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
   final DoctorListController _doctorListController =
       Get.put(DoctorListController());
   final TextEditingController _searchController = TextEditingController();
+  final RxBool _showFilters = false.obs;
   String _searchQuery = "";
   String? selectedCityId; // Store the selected city ID
   String? selectedCityName; // Store the selected city name
@@ -888,7 +889,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                           context,
                           MaterialPageRoute(
                             builder: (context) =>
-                                DoctorDetailsScreen(doctor: doctor),
+                                DoctorDetailsScreen(doctorId: doctor.id),
                           ),
                         );
                       },
@@ -909,6 +910,16 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
     return Scaffold(
       body: Column(
         children: [
+
+          // ---------------- FILTER CARD ----------------
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+            child: _buildDoctorFilterCard(
+              _doctorListController,
+              context,
+            ),
+          ),
+
           // --- Search Bar ---
           Padding(
             padding: const EdgeInsets.all(16),
@@ -995,8 +1006,8 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
 
                     // Geo Image Logic
                     bool showImageWarning = doctor.geoImageStatus != true;
-                    final double? lat = double.tryParse(doctor.latitude);
-                    final double? lng = double.tryParse(doctor.longitude);
+                    final double? lat = double.tryParse(doctor.latitude ?? '');
+                    final double? lng = double.tryParse(doctor.longitude ?? '');
                     final bool isValidMap = lat != null && lng != null;
 
                     Widget cardContent = Row(
@@ -1117,9 +1128,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                                           // --- DYNAMIC AREA STATUS CONDITION CHECK ---
                                           const SizedBox(height: 6),
 
-                                          if ((doctor.areaId ?? '')
-                                              .trim()
-                                              .isEmpty)
+                                          if ((doctor.area?.id ?? '').trim().isEmpty)
                                             GestureDetector(
                                               onTap: () => _showAssignAreaSheet(
                                                 doctor,
@@ -1168,34 +1177,71 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                                             ),
 
                                           const SizedBox(height: 4),
-                                          Text(doctor.specialization,
-                                              style: TextStyle(
-                                                  fontSize: 13,
-                                                  fontWeight: FontWeight.w600,
-                                                  color: Colors.grey[800])),
+                                          const SizedBox(height: 4),
 
-                                          const SizedBox(height: 4),
-                                          Text(doctor.specialization,
-                                              style: TextStyle(
-                                                  fontSize: 13,
-                                                  fontWeight: FontWeight.w600,
-                                                  color: Colors.grey[800])),
-                                          const SizedBox(height: 4),
-                                          Row(children: [
-                                            Icon(Icons.location_on_rounded,
+                                          Text(
+                                            doctor.specialization?.isNotEmpty == true
+                                                ? doctor.specialization!
+                                                : "N/A",
+                                            style: TextStyle(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w600,
+                                              color: Colors.grey[800],
+                                            ),
+                                          ),
+
+                                          const SizedBox(height: 6),
+
+                                          Row(
+                                            children: [
+                                              Icon(
+                                                Icons.history,
+                                                size: 14,
+                                                color: TColors.primary,
+                                              ),
+                                              const SizedBox(width: 5),
+                                              Expanded(
+                                                child: Text(
+                                                  doctor.lastVisitedDate?.isNotEmpty == true
+                                                      ? "Last Visit: ${doctor.lastVisitedDate}"
+                                                      : "Last Visit: Never",
+                                                  style: TextStyle(
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: doctor.lastVisitedDate?.isNotEmpty == true
+                                                        ? Colors.green.shade700
+                                                        : Colors.red.shade700,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+
+                                          const SizedBox(height: 6),
+
+                                          Row(
+                                            children: [
+                                              Icon(
+                                                Icons.location_on_rounded,
                                                 size: 12,
-                                                color: Colors.grey[600]),
-                                            const SizedBox(width: 4),
-                                            Expanded(
-                                                child: Text(doctor.location,
-                                                    maxLines: 1,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                    style: TextStyle(
-                                                        fontSize: 12,
-                                                        color:
-                                                            Colors.grey[600])))
-                                          ]),
+                                                color: Colors.grey[600],
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Expanded(
+                                                child: Text(
+                                                  doctor.location?.isNotEmpty == true
+                                                      ? doctor.location!
+                                                      : "N/A",
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
+                                                  style: TextStyle(
+                                                    fontSize: 12,
+                                                    color: Colors.grey[600],
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                         ],
                                       ),
                                     ),
@@ -1301,7 +1347,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
               ),
             ),
             const Spacer(),
-            if (doctor.gender.isNotEmpty)
+            if (doctor.gender?.isNotEmpty == true)
               Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -1310,7 +1356,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  doctor.gender,
+                  doctor.gender!,
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
@@ -1333,7 +1379,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => DoctorDetailsScreen(doctor: doctor),
+                  builder: (_) => DoctorDetailsScreen(doctorId: doctor.id),
                 ),
               );
             },
@@ -1360,7 +1406,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => DoctorDetailsScreen(doctor: doctor),
+                    builder: (_) => DoctorDetailsScreen(doctorId: doctor.id),
                   ),
                 );
               },
@@ -1555,7 +1601,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                 ),
               ),
               const Spacer(),
-              if (doctor.gender.isNotEmpty)
+              if (doctor.gender?.isNotEmpty == true)
                 Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -1564,7 +1610,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    doctor.gender,
+                    doctor.gender!,
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
@@ -1586,7 +1632,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => DoctorDetailsScreen(doctor: doctor),
+                    builder: (_) => DoctorDetailsScreen(doctorId: doctor.id),
                   ),
                 );
               },
@@ -1613,7 +1659,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => DoctorDetailsScreen(doctor: doctor),
+                      builder: (_) => DoctorDetailsScreen(doctorId: doctor.id),
                     ),
                   );
                 },
@@ -1774,6 +1820,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                 const SizedBox(height: 24),
                 TextField(
                   controller: areaController,
+                  enabled: false,
                   decoration: InputDecoration(
                     labelText: "Area Name",
                     prefixIcon: const Icon(Icons.edit_location_alt),
@@ -1854,7 +1901,8 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                             name: areaController.text.trim(),
                             pincode: pincode,
                             postOffice: office['Name'],
-                            headOfficeId: doctor.headOfficeId,
+                                headOfficeId: doctor.headOffice
+                                    !.id! ?? doctor.headOffice?.id ?? '',
                           );
 
                           if (createdAreaId != null) {
@@ -1872,6 +1920,271 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                 ),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDoctorFilterCard(
+      DoctorListController controller,
+      BuildContext context,
+      ) {
+    return Obx(
+          () => Card(
+        elevation: 1,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+
+              // HEADER
+              InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: () {
+                  _showFilters.toggle();
+                },
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.filter_alt_rounded,
+                      color: TColors.primary,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            "Doctors",
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: .3,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: TColors.primary.withOpacity(.08),
+                              borderRadius: BorderRadius.circular(30),
+                              border: Border.all(
+                                color: TColors.primary.withOpacity(.20),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.people_alt_rounded,
+                                  color: TColors.primary,
+                                  size: 16,
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  "${controller.totalDoctors.value}",
+                                  style: const TextStyle(
+                                    color: TColors.primary,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                const Text(
+                                  "Doctors",
+                                  style: TextStyle(
+                                    color: TColors.primary,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    AnimatedRotation(
+                      turns: _showFilters.value ? .5 : 0,
+                      duration: const Duration(milliseconds: 250),
+                      child: const Icon(Icons.keyboard_arrow_down),
+                    ),
+                  ],
+                ),
+              ),
+
+              if (_showFilters.value) ...[
+                const SizedBox(height: 18),
+
+                Row(
+                  children: [
+
+                    // STATUS
+                    Expanded(
+                      child: DropdownButtonFormField<String>(
+                        value: controller.selectedFilter.value,
+                        decoration: InputDecoration(
+                          labelText: "Status",
+                          isDense: true,
+                          prefixIcon: const Icon(Icons.people_outline),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        items: const [
+                          DropdownMenuItem(
+                            value: "all",
+                            child: Text("All"),
+                          ),
+                          DropdownMenuItem(
+                            value: "visited",
+                            child: Text("Visited"),
+                          ),
+                          DropdownMenuItem(
+                            value: "unvisited",
+                            child: Text("Unvisited"),
+                          ),
+                        ],
+                        onChanged: (v) {
+                          controller.selectedFilter.value = v!;
+                        },
+                      ),
+                    ),
+
+                    const SizedBox(width: 12),
+
+                    // PRIORITY
+                    Expanded(
+                      child: DropdownButtonFormField<String>(
+                        value: controller.selectedPriorityFilter.value,
+                        decoration: InputDecoration(
+                          labelText: "Priority",
+                          isDense: true,
+                          prefixIcon: const Icon(Icons.flag_outlined),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        items: const [
+                          DropdownMenuItem(
+                            value: "all",
+                            child: Text("All"),
+                          ),
+                          DropdownMenuItem(
+                            value: "A",
+                            child: Text("A"),
+                          ),
+                          DropdownMenuItem(
+                            value: "B",
+                            child: Text("B"),
+                          ),
+                          DropdownMenuItem(
+                            value: "C",
+                            child: Text("C"),
+                          ),
+                        ],
+                        onChanged: (v) {
+                          controller.selectedPriorityFilter.value = v!;
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 14),
+
+                Row(
+                  children: [
+
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        icon: const Icon(Icons.calendar_month),
+                        label: Text(
+                          DateFormat("dd MMM").format(
+                            controller.fromDate.value,
+                          ),
+                        ),
+                        onPressed: () async {
+                          final date = await showDatePicker(
+                            context: context,
+                            initialDate: controller.fromDate.value,
+                            firstDate: DateTime(2023),
+                            lastDate: DateTime.now(),
+                          );
+
+                          if (date != null) {
+                            controller.fromDate.value = date;
+                          }
+                        },
+                      ),
+                    ),
+
+                    const SizedBox(width: 10),
+
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        icon: const Icon(Icons.calendar_month),
+                        label: Text(
+                          DateFormat("dd MMM").format(
+                            controller.toDate.value,
+                          ),
+                        ),
+                        onPressed: () async {
+                          final date = await showDatePicker(
+                            context: context,
+                            initialDate: controller.toDate.value,
+                            firstDate: DateTime(2023),
+                            lastDate: DateTime.now(),
+                          );
+
+                          if (date != null) {
+                            controller.toDate.value = date;
+                          }
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 18),
+
+                Row(
+                  children: [
+
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        icon: const Icon(Icons.refresh),
+                        label: const Text("Reset"),
+                        onPressed: () {
+                          controller.resetFilters();
+                          _showFilters.value = false;
+                        },
+                      ),
+                    ),
+
+                    const SizedBox(width: 12),
+
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        icon: const Icon(Icons.search),
+                        label: const Text("Apply"),
+                        onPressed: () async {
+                          await controller.applyFilter();
+                          _showFilters.value = false;
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ]
+            ],
           ),
         ),
       ),
@@ -2021,6 +2334,104 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
         },
       ),
       isScrollControlled: true,
+    );
+  }
+
+  Widget _filterChip(
+      DoctorListController controller,
+      String value,
+      String title,
+      IconData icon,
+      ) {
+    final selected = controller.selectedFilter.value == value;
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(30),
+      onTap: () => controller.selectedFilter.value = value,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(
+          horizontal: 18,
+          vertical: 12,
+        ),
+        decoration: BoxDecoration(
+          color: selected
+              ? TColors.primary
+              : Colors.grey.shade100,
+          borderRadius: BorderRadius.circular(30),
+          border: Border.all(
+            color: selected
+                ? TColors.primary
+                : Colors.grey.shade300,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 18,
+              color: selected
+                  ? Colors.white
+                  : Colors.grey.shade700,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              title,
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: selected
+                    ? Colors.white
+                    : Colors.black87,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _priorityChip(
+      DoctorListController controller,
+      String value,
+      String title,
+      ) {
+    final selected = controller.selectedPriority.value == value;
+
+    Color chipColor = TColors.primary;
+
+    if (value == "A") {
+      chipColor = Colors.red;
+    } else if (value == "B") {
+      chipColor = Colors.orange;
+    } else if (value == "C") {
+      chipColor = Colors.blueGrey;
+    }
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(30),
+      onTap: () => controller.selectedPriority.value = value,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(
+          horizontal: 18,
+          vertical: 12,
+        ),
+        decoration: BoxDecoration(
+          color: selected ? chipColor : Colors.grey.shade100,
+          borderRadius: BorderRadius.circular(30),
+          border: Border.all(
+            color: selected ? chipColor : Colors.grey.shade300,
+          ),
+        ),
+        child: Text(
+          title,
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            color: selected ? Colors.white : Colors.black87,
+          ),
+        ),
+      ),
     );
   }
 }

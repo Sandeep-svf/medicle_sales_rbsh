@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../utils/helpers/upper_text_formator.dart';
 import '../controllers/add_doctor_new_controller.dart';
 import '../../../utils/constants/colors.dart';
 
@@ -173,19 +174,82 @@ class AddDoctorNewScreen extends StatelessWidget {
                               const SizedBox(height: 30),
 
 // 05 Area Assignment
+                              // 05 Area Assignment
                               _buildSectionHeader(
                                 number: "05",
                                 title: "Area Assignment",
-                                subtitle: "Select Coverage Area",
+                                subtitle: "Auto Assigned",
                               ),
                               const SizedBox(height: 15),
 
-                              _buildAreaSelector(
-                                context,
-                                controller,
-                              ),
+                              Obx(() {
+                                final area = controller.areas.firstWhereOrNull(
+                                      (e) => e['id'] == controller.selectedAreaId.value,
+                                );
+
+                                return Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: Colors.green.shade50,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: Colors.green.shade300,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.location_city,
+                                        color: Colors.green,
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            const Text(
+                                              "Assigned Area",
+                                              style: TextStyle(
+                                                fontSize: 11,
+                                                color: Colors.grey,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              area?['name'] ?? "Detecting area...",
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 15,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      if (controller.selectedAreaId.value != null)
+                                        const Icon(
+                                          Icons.check_circle,
+                                          color: Colors.green,
+                                        )
+                                      else
+                                        const SizedBox(
+                                          height: 18,
+                                          width: 18,
+                                          child: CircularProgressIndicator(strokeWidth: 2),
+                                        ),
+                                    ],
+                                  ),
+                                );
+                              }),
 
                               const SizedBox(height: 40),
+
+                             /* _buildAreaSelector(
+                                context,
+                                controller,
+                              ),*/
+
+                           //   const SizedBox(height: 40),
 
                               // Submit Button
                               Center(
@@ -297,12 +361,12 @@ class AddDoctorNewScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(Icons.add_a_photo,
-                      size: 36, color: TColors.primary.withOpacity(0.6)),
+                      size: 36, color: TColors.primary),
                   const SizedBox(height: 8),
                   Text("Capture\nPhoto *",
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                          color: Colors.grey[600],
+                          color: Colors.black,
                           fontSize: 13,
                           fontWeight: FontWeight.bold)),
                 ],
@@ -369,10 +433,10 @@ class AddDoctorNewScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                  color: TColors.primary.withOpacity(0.1),
+                  color: TColors.primary,
                   shape: BoxShape.circle),
               child: const Icon(Icons.location_on,
-                  color: TColors.primary, size: 28),
+                  color: TColors.white, size: 28),
             ),
             const SizedBox(height: 10),
             const Text("Set Doctor\nLocation *",
@@ -449,10 +513,11 @@ class AddDoctorNewScreen extends StatelessWidget {
         children: [
           _ModernTextField(
             controller: controller.nameController,
-            label: "Full Name *",
-            hint: "Dr. John Doe",
+            label: "Full Name",
+            hint: "John Doe",
             icon: Icons.person_outline_rounded,
             isRequired: true,
+            prefixText: "DR.",
           ),
           const SizedBox(height: 16),
           Container(
@@ -468,24 +533,80 @@ class AddDoctorNewScreen extends StatelessWidget {
                     color: Colors.grey[600], size: 20),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Obx(() => DropdownButtonHideUnderline(
-                        child: DropdownButton<String>(
-                          value: controller.selectedGender.value,
-                          isExpanded: true,
-                          hint: Text("Select Gender",
-                              style: TextStyle(
-                                  fontSize: 14, color: Colors.grey[400])),
-                          icon: const Icon(Icons.keyboard_arrow_down_rounded),
-                          items: controller.genders.map((String value) {
-                            return DropdownMenuItem<String>(
-                                value: value,
-                                child: Text(value,
-                                    style: const TextStyle(fontSize: 14)));
-                          }).toList(),
-                          onChanged: (newValue) =>
-                              controller.selectedGender.value = newValue!,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+
+                      const Row(
+                        children: [
+                          Text(
+                            "Gender",
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF636E72),
+                            ),
+                          ),
+                          Text(
+                            " *",
+                            style: TextStyle(
+                              color: Colors.red,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 10),
+
+                      Obx(
+                            () => Row(
+                          children: [
+
+                            Expanded(
+                              child: _genderButton(
+                                title: "Male",
+                                icon: Icons.male,
+                                color: Colors.blue,
+                                selected:
+                                controller.selectedGender.value == "Male",
+                                onTap: () =>
+                                controller.selectedGender.value = "Male",
+                              ),
+                            ),
+
+                            const SizedBox(width: 10),
+
+                            Expanded(
+                              child: _genderButton(
+                                title: "Female",
+                                icon: Icons.female,
+                                color: Colors.pink,
+                                selected:
+                                controller.selectedGender.value == "Female",
+                                onTap: () =>
+                                controller.selectedGender.value = "Female",
+                              ),
+                            ),
+
+                            const SizedBox(width: 10),
+
+                            Expanded(
+                              child: _genderButton(
+                                title: "Other",
+                                icon: Icons.transgender,
+                                color: Colors.deepPurple,
+                                selected:
+                                controller.selectedGender.value == "Other",
+                                onTap: () =>
+                                controller.selectedGender.value = "Other",
+                              ),
+                            ),
+                          ],
                         ),
-                      )),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -532,7 +653,7 @@ class AddDoctorNewScreen extends StatelessWidget {
             label: "Specialization",
             hint: "e.g. Cardiologist",
             icon: Icons.medical_services_outlined,
-            isRequired: false,
+            isRequired: true,
           ),
           const SizedBox(height: 16),
           Row(
@@ -553,7 +674,7 @@ class AddDoctorNewScreen extends StatelessWidget {
                   controller: controller.experienceController,
                   label: "Exp (Yrs)",
                   isNumber: true,
-                  isRequired: false, // OPTIONAL
+                  isRequired: true, // OPTIONAL
                 ),
               ),
             ],
@@ -585,45 +706,132 @@ class AddDoctorNewScreen extends StatelessWidget {
                         fontWeight: FontWeight.w600,
                         color: Color(0xFF636E72))),
                 const SizedBox(height: 8),
-                DropdownButtonFormField<String>(
-                  value: controller.selectedHeadOfficeId.value,
-                  isExpanded: true,
-                  hint: Text("Select Head Office",
-                      style: TextStyle(fontSize: 14, color: Colors.grey[400])),
-                  icon: const Icon(Icons.keyboard_arrow_down_rounded),
-                  style: const TextStyle(
+                const SizedBox(height: 8),
+
+                if (controller.headOffices.length == 1) ...[
+                  Builder(
+                    builder: (_) {
+                      final office = controller.headOffices.first;
+
+                      // Auto select the only head office
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (controller.selectedHeadOfficeId.value == null) {
+                          controller.selectedHeadOfficeId.value = office['id'];
+                        }
+                      });
+
+                      return Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
+                        decoration: BoxDecoration(
+                          color: TColors.primary.withOpacity(.08),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: TColors.primary.withOpacity(.35),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.domain,
+                              color: TColors.primary,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    "Assigned Head Office",
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    office['name'] ?? '',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 15,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const Icon(
+                              Icons.check_circle,
+                              color: Colors.green,
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ] else ...[
+                  DropdownButtonFormField<String>(
+                    value: controller.selectedHeadOfficeId.value,
+                    isExpanded: true,
+                    hint: Text(
+                      "Select Head Office",
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[400],
+                      ),
+                    ),
+                    icon: const Icon(Icons.keyboard_arrow_down_rounded),
+                    style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF2D3436)),
-                  decoration: InputDecoration(
-                    prefixIcon: Icon(Icons.domain,
-                        color: TColors.primary.withOpacity(0.8), size: 18),
-                    filled: true,
-                    fillColor: const Color(0xFFFAFAFA),
-                    contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 14),
-                    border: OutlineInputBorder(
+                      color: Color(0xFF2D3436),
+                    ),
+                    decoration: InputDecoration(
+                      prefixIcon: Icon(
+                        Icons.domain,
+                        color: TColors.primary.withOpacity(0.8),
+                        size: 18,
+                      ),
+                      filled: true,
+                      fillColor: const Color(0xFFFAFAFA),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 14,
+                      ),
+                      border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.grey.shade200)),
-                    enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Colors.grey.shade200,
+                        ),
+                      ),
+                      enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.grey.shade200)),
-                    focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Colors.grey.shade200,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: const BorderSide(
-                            color: TColors.primary, width: 1.5)),
+                          color: TColors.primary,
+                          width: 1.5,
+                        ),
+                      ),
+                    ),
+                    items: controller.headOffices.map((item) {
+                      return DropdownMenuItem<String>(
+                        value: item['id'],
+                        child: Text(item['name'] ?? "Unknown"),
+                      );
+                    }).toList(),
+                    onChanged: (val) {
+                      controller.selectedHeadOfficeId.value = val;
+                    },
+                    validator: (v) => v == null ? "Required" : null,
                   ),
-                  items: controller.headOffices.toList().map((item) {
-                    return DropdownMenuItem<String>(
-                      value: item['id'],
-                      child: Text(item['name'] ?? "Unknown"),
-                    );
-                  }).toList(),
-                  onChanged: (val) {
-                    controller.selectedHeadOfficeId.value = val;
-                  },
-                  validator: (v) => v == null ? "Required" : null,
-                ),
+                ],
 
                 const SizedBox(height: 16),
 
@@ -638,40 +846,72 @@ class AddDoctorNewScreen extends StatelessWidget {
           const SizedBox(height: 16),
 
           // --- PRIORITY DROPDOWN (Optional) ---
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey.shade200),
-              borderRadius: BorderRadius.circular(12),
-              color: const Color(0xFFFAFAFA),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.star_outline_rounded,
-                    color: TColors.primary.withOpacity(0.8), size: 20),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Obx(() => DropdownButtonHideUnderline(
-                        child: DropdownButton<String>(
-                          value: controller.selectedPriority.value,
-                          isExpanded: true,
-                          hint: Text("Priority (Optional)",
-                              style: TextStyle(
-                                  fontSize: 14, color: Colors.grey[400])),
-                          icon: const Icon(Icons.keyboard_arrow_down_rounded),
-                          items: controller.priorities.map((String value) {
-                            return DropdownMenuItem<String>(
-                                value: value,
-                                child: Text("Priority $value",
-                                    style: const TextStyle(fontSize: 14)));
-                          }).toList(),
-                          onChanged: (newValue) =>
-                              controller.selectedPriority.value = newValue!,
-                        ),
-                      )),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Row(
+                children: [
+                  Text(
+                    "Priority",
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF636E72),
+                    ),
+                  ),
+                  Text(
+                    " *",
+                    style: TextStyle(
+                      color: Colors.red,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+
+              Obx(
+                    () => Row(
+                  children: [
+                    Expanded(
+                      child: _priorityButton(
+                        label: "A",
+                        title: "High",
+                        color:Color(0xFF2E7D32),
+                        selected:
+                        controller.selectedPriority.value == "A",
+                        onTap: () =>
+                        controller.selectedPriority.value = "A",
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _priorityButton(
+                        label: "B",
+                        title: "Medium",
+                        color: Colors.orange,
+                        selected:
+                        controller.selectedPriority.value == "B",
+                        onTap: () =>
+                        controller.selectedPriority.value = "B",
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _priorityButton(
+                        label: "C",
+                        title: "Low",
+                        color: Colors.blue,
+                        selected:
+                        controller.selectedPriority.value == "C",
+                        onTap: () =>
+                        controller.selectedPriority.value = "C",
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ],
       ),
@@ -878,18 +1118,25 @@ class AddDoctorNewScreen extends StatelessWidget {
         children: [
           _ModernTextField(
             controller: controller.address1Controller,
-            label: "Address Line 1 (Auto-filled)",
-            hint: "Auto-filled from Pincode",
-            icon: Icons.map,
-            isReadOnly: true,
-            filledColor: Colors.blue[50],
+            label: "Address Line 1 (Required full address)",
+            hint: "Please fill address in details",
+            icon: Icons.place_outlined,
+            isRequired: true,
           ),
           const SizedBox(height: 16),
 
           _ModernTextField(
             controller: controller.address2Controller,
             label: "Address Line 2",
-            hint: "House No, Building, Landmark",
+            hint: "House No, Building",
+            icon: Icons.edit_location_alt_outlined,
+          ),
+          const SizedBox(height: 16),
+
+          _ModernTextField(
+            controller: controller.address2Controller,
+            label: "Landmark",
+            hint: "Near Indian Oil Petrol Pump.",
             icon: Icons.edit_location_alt_outlined,
           ),
           const SizedBox(height: 16),
@@ -897,6 +1144,38 @@ class AddDoctorNewScreen extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+
+              const SizedBox(height: 16),
+
+              Row(
+                children: [
+                  Expanded(
+                    child: _ModernTextField(
+                      controller: controller.blockController,
+                      label: "Block",
+                      isReadOnly: true,
+                    ),
+                  ),
+
+                  const SizedBox(width: 12),
+
+                  Expanded(
+                    child: _ModernTextField(
+                      controller: controller.districtController,
+                      label: "District",
+                      isReadOnly: true,
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 16),
+
+              _ModernTextField(
+                controller: controller.divisionController,
+                label: "Division",
+                isReadOnly: true,
+              ),
 
               Row(
                 children: [
@@ -956,12 +1235,45 @@ class AddDoctorNewScreen extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: _ModernTextField(
-                  controller: controller.postOfficeController,
-                  label: "Post Office",
-                  hint: "Post Office",
-                  isReadOnly: true,
-                ),
+                child: Obx(
+                      () => DropdownButtonFormField<String>(
+                    isExpanded: true,
+
+                    value: controller.postOfficeList.any(
+                          (e) => e['Name'] == controller.selectedPostOffice.value,
+                    )
+                        ? controller.selectedPostOffice.value
+                        : null,
+
+                    decoration: InputDecoration(
+                      labelText: "Post Office",
+                      filled: true,
+                      fillColor: const Color(0xFFFAFAFA),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+
+                    items: controller.postOfficeList.map((office) {
+                      return DropdownMenuItem<String>(
+                        value: office['Name'],
+                        child: Text(office['Name']),
+                      );
+                    }).toList(),
+
+                    onChanged: (value) {
+
+                      final office = controller.postOfficeList.firstWhere(
+                            (e) => e['Name'] == value,
+                      );
+
+                      controller.fillAddress(
+                        office,
+                        controller.pincodeController.text,
+                      );
+                    },
+                  ),
+                )
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -1013,6 +1325,8 @@ class AddDoctorNewScreen extends StatelessWidget {
       ),
     );
   }
+
+
 
   void _showAddAreaDialog(
       BuildContext context,
@@ -1192,6 +1506,111 @@ class AddDoctorNewScreen extends StatelessWidget {
       },
     );
   }
+
+
+
+  Widget _priorityButton({
+    required String label,
+    required String title,
+    required Color color,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        decoration: BoxDecoration(
+          color: selected ? color.withOpacity(.12) : Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: selected ? color : Colors.grey.shade300,
+            width: selected ? 2 : 1,
+          ),
+        ),
+        child: Column(
+          children: [
+            CircleAvatar(
+              radius: 16,
+              backgroundColor: color,
+              child: Text(
+                label,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              title,
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: selected ? color : Colors.black87,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _genderButton({
+    required String title,
+    required IconData icon,
+    required Color color,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(
+          vertical: 14,
+        ),
+        decoration: BoxDecoration(
+          color: selected
+              ? color.withOpacity(.12)
+              : Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: selected
+                ? color
+                : Colors.grey.shade300,
+            width: selected ? 2 : 1,
+          ),
+        ),
+        child: Column(
+          children: [
+
+            Icon(
+              icon,
+              size: 28,
+              color: selected
+                  ? color
+                  : Colors.grey,
+            ),
+
+            const SizedBox(height: 8),
+
+            Text(
+              title,
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: selected
+                    ? color
+                    : Colors.black87,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 // ===========================================================================
@@ -1237,6 +1656,7 @@ class _ModernTextField extends StatelessWidget {
   final Color? filledColor;
   final TextInputType? inputType;
   final bool isRequired;
+  final String? prefixText;
 
   const _ModernTextField({
     Key? key,
@@ -1250,6 +1670,7 @@ class _ModernTextField extends StatelessWidget {
     this.filledColor,
     this.inputType,
     this.isRequired = false,
+    this.prefixText,
   }) : super(key: key);
 
   @override
@@ -1275,6 +1696,10 @@ class _ModernTextField extends StatelessWidget {
           controller: controller,
           readOnly: isReadOnly,
           onTap: onTap,
+          textCapitalization: TextCapitalization.characters,
+          inputFormatters: [
+            UpperCaseTextFormatter(),
+          ],
           keyboardType: inputType ??
               (isNumber ? TextInputType.number : TextInputType.text),
           validator: (v) {
@@ -1289,24 +1714,45 @@ class _ModernTextField extends StatelessWidget {
               color: Color(0xFF2D3436)),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: TextStyle(color: Colors.grey[400], fontSize: 13),
+            hintStyle: TextStyle(
+              color: Colors.grey[400],
+              fontSize: 13,
+            ),
+
+            prefixText: prefixText != null ? '$prefixText ' : null,
+            prefixStyle: const TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+              fontSize: 14,
+            ),
+
             prefixIcon: icon != null
-                ? Icon(icon, color: TColors.primary.withOpacity(0.8), size: 18)
+                ? Icon(
+              icon,
+              color: TColors.primary.withOpacity(0.8),
+              size: 18,
+            )
                 : null,
+
             filled: true,
             fillColor: filledColor ?? const Color(0xFFFAFAFA),
             contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Colors.grey.shade200)),
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey.shade200),
+            ),
             enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Colors.grey.shade200)),
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey.shade200),
+            ),
             focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide:
-                    const BorderSide(color: TColors.primary, width: 1.5)),
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(
+                color: TColors.primary,
+                width: 1.5,
+              ),
+            ),
           ),
         ),
       ],

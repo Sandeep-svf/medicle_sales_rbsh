@@ -1910,13 +1910,12 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
 
                 TextField(
                   controller: areaController,
+                  readOnly: true,
                   decoration: InputDecoration(
                     labelText: "Area Name",
-                    prefixIcon:
-                    const Icon(Icons.edit_location_alt),
+                    prefixIcon: const Icon(Icons.edit_location_alt),
                     border: OutlineInputBorder(
-                      borderRadius:
-                      BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(14),
                     ),
                   ),
                 ),

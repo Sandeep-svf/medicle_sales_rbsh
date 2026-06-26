@@ -65,6 +65,30 @@ class TColors {
   static const Color lightGrey = Color(0xFFF9F9F9);
   static const Color white = Color(0xFFFFFFFF);
 
+
+  // Card Colors
+  static const Color cardBackground = Color(0xFFFFFFFF);
+  static const Color cardBorder = Color(0xFFF0D7E0);
+
+// Soft backgrounds
+  static const Color cardPink = Color(0xFFFDE8EE);
+  static const Color cardPinkLight = Color(0xFFFFF5F8);
+
+// Status Colors
+  static const Color successBg = Color(0xFFE8F5E9);
+  static const Color warningBg = Color(0xFFFFF3E0);
+  static const Color errorBg = Color(0xFFFFEBEE);
+
+// Travel & Allowance
+  static const Color travelBg = Color(0xFFFDE8EE);
+  static const Color allowanceBg = Color(0xFFFFF5E8);
+
+// Icon Containers
+  static const Color iconBg = Color(0xFFFDE8EE);
+
+// Amount Text
+  static const Color amountText = Color(0xFF8A1035);
+
 }
 
 

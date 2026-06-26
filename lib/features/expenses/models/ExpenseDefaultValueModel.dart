@@ -1,39 +1,39 @@
 class ExpenseDefaultValueModel {
-  final String? id;
   final double? ratePerKm;
-  final int? headOfficeAmount;
-  final int? outsideHeadOfficeAmount;
-  final DateTime? createdAt;
-  final DateTime? updatedAt;
+  final double? headOfficeAmount;
+  final double? exHeadquartersAmount;
+  final double? outsideHeadOfficeAmount;
+  final DateTime? effectiveDate;
 
   ExpenseDefaultValueModel({
-    this.id,
     this.ratePerKm,
     this.headOfficeAmount,
+    this.exHeadquartersAmount,
     this.outsideHeadOfficeAmount,
-    this.createdAt,
-    this.updatedAt,
+    this.effectiveDate,
   });
 
   factory ExpenseDefaultValueModel.fromJson(Map<String, dynamic> json) {
     return ExpenseDefaultValueModel(
-      id: json['_id'] as String?,
-      ratePerKm: (json['ratePerKm'] as num?)?.toDouble(),
-      headOfficeAmount: json['headOfficeAmount'] as int?,
-      outsideHeadOfficeAmount: json['outsideHeadOfficeAmount'] as int?,
-      createdAt: json['createdAt'] != null ? DateTime.tryParse(json['createdAt']) : null,
-      updatedAt: json['updatedAt'] != null ? DateTime.tryParse(json['updatedAt']) : null,
+      ratePerKm: double.tryParse(json['ratePerKm']?.toString() ?? ''),
+      headOfficeAmount: double.tryParse(json['headOfficeAmount']?.toString() ?? ''),
+      exHeadquartersAmount: double.tryParse(json['exHeadquartersAmount']?.toString() ?? ''),
+      outsideHeadOfficeAmount: double.tryParse(
+        json['outsideHeadOfficeAmount']?.toString() ?? '',
+      ),
+      effectiveDate: json['effectiveDate'] != null
+          ? DateTime.tryParse(json['effectiveDate'].toString())
+          : null,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      '_id': id,
       'ratePerKm': ratePerKm,
       'headOfficeAmount': headOfficeAmount,
+      'exHeadquartersAmount': exHeadquartersAmount,
       'outsideHeadOfficeAmount': outsideHeadOfficeAmount,
-      'createdAt': createdAt?.toIso8601String(),
-      'updatedAt': updatedAt?.toIso8601String(),
+      'effectiveDate': effectiveDate?.toIso8601String(),
     };
   }
 }

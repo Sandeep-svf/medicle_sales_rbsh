@@ -35,14 +35,25 @@ class AddDoctorNewController extends GetxController {
   final countryController = TextEditingController();
   final postOfficeController = TextEditingController();
 
+  final blockController = TextEditingController();
+  final districtController = TextEditingController();
+  final divisionController = TextEditingController();
+
   // --- Observables ---
-  var selectedGender = 'Male'.obs;
+  final RxnString selectedGender = RxnString();
   var headOffices = <Map<String, String>>[].obs;
   var isLoadingHeadOffices = false.obs;
   var selectedHeadOfficeId = Rxn<String>();
   var areas = <Map<String, dynamic>>[].obs;
   var isLoadingAreas = false.obs;
   var selectedAreaId = Rxn<String>();
+
+  /// Stores all post offices for currently selected pincode
+  final RxList<Map<String, dynamic>> postOfficeList =
+      <Map<String, dynamic>>[].obs;
+
+  /// Current selected post office
+  final RxnString selectedPostOffice = RxnString();
 
   // --- Priority Observable ---
   var selectedPriority = 'A'.obs;
@@ -55,6 +66,7 @@ class AddDoctorNewController extends GetxController {
   var doctorImage = Rxn<File>();
   var imageCapturedAt = Rxn<DateTime>();
   var isImageProcessing = false.obs;
+
 
   final List<String> genders = ['Male', 'Female', 'Other'];
 
@@ -137,6 +149,10 @@ class AddDoctorNewController extends GetxController {
 
       final List offices = data[0]['PostOffice'];
 
+      postOfficeList.assignAll(
+        offices.map((e) => Map<String, dynamic>.from(e)).toList(),
+      );
+
       if (offices.length == 1) {
         fillAddress(
           Map<String, dynamic>.from(offices.first),
@@ -160,55 +176,103 @@ class AddDoctorNewController extends GetxController {
   }
 
   void fillAddress(
+
       Map<String, dynamic> office,
       String pincode,
       ) {
-    stateController.text =
-        office['State'] ?? '';
+    selectedPostOffice.value = office['Name'];
 
-    countryController.text =
-        office['Country'] ?? '';
+    postOfficeController.text = office['Name'] ?? '';
 
-    postOfficeController.text =
-        office['Name'] ?? '';
+    blockController.text = office['Block'] ?? '';
+
+    districtController.text = office['District'] ?? '';
+
+    divisionController.text = office['Division'] ?? '';
+
+    stateController.text = office['State'] ?? '';
+
+    countryController.text = office['Country'] ?? '';
 
     pincodeController.text =
         pincode;
 
-    address1Controller.text =
+   /* address1Controller.text =
     "${office['Name']}, "
         "${office['Block'] ?? ''}, "
         "${office['District'] ?? ''}, "
         "${office['State'] ?? ''}, "
         "${office['Country'] ?? ''} - "
-        "$pincode";
+        "$pincode";*/
+
+    autoSelectOrCreateArea(
+      postOffice: office['Name'] ?? '',
+      pincode: pincode,
+    );
   }
 
-  Future<void> showPostOfficeSelection(
+ /* Future<void> showPostOfficeSelection(
       List offices,
       String pincode,
       ) async {
     int selectedIndex = 0;
+    String search = "";
 
     await Get.bottomSheet(
       StatefulBuilder(
         builder: (context, setState) {
-          return Container(
-            padding: const EdgeInsets.all(20),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.vertical(
-                top: Radius.circular(24),
+          final filtered = offices.where((e) {
+            final name = (e['Name'] ?? "")
+                .toString()
+                .toLowerCase();
+
+            final block = (e['Block'] ?? "")
+                .toString()
+                .toLowerCase();
+
+            final district = (e['District'] ?? "")
+                .toString()
+                .toLowerCase();
+
+            return name.contains(search.toLowerCase()) ||
+                block.contains(search.toLowerCase()) ||
+                district.contains(search.toLowerCase());
+          }).toList();
+
+          if (selectedIndex >= filtered.length) {
+            selectedIndex = 0;
+          }
+
+          return SafeArea(
+            child: Container(
+              height: Get.height * .75,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(
+                  top: Radius.circular(28),
+                ),
               ),
-            ),
-            child: SafeArea(
               child: Column(
-                mainAxisSize: MainAxisSize.min,
                 children: [
+
+                  const SizedBox(height: 10),
+
+                  // Drag Handle
+                  Container(
+                    width: 60,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+
+                  const SizedBox(height: 18),
+
                   const Text(
                     "Select Doctor Area",
                     style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 22,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -216,61 +280,167 @@ class AddDoctorNewController extends GetxController {
                   const SizedBox(height: 8),
 
                   Text(
-                    "$pincode has multiple areas. Select one.",
-                    textAlign: TextAlign.center,
+                    "${offices.length} Post Offices Found",
                     style: TextStyle(
-                      color: Colors.grey,
+                      color: Colors.green.shade700,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+
+                  const SizedBox(height: 6),
+
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Text(
+                      "Choose the correct Post Office for PIN $pincode",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.grey.shade600,
+                      ),
                     ),
                   ),
 
                   const SizedBox(height: 20),
 
-                  SizedBox(
-                    height: 300,
-                    child: ListView.builder(
-                      itemCount: offices.length,
-                      itemBuilder: (_, index) {
-                        final office = offices[index];
-
-                        return RadioListTile<int>(
-                          value: index,
-                          groupValue: selectedIndex,
-                          title: Text(
-                            office['Name'] ?? '',
-                          ),
-                          subtitle: Text(
-                            office['Block'] ??
-                                office['District'] ??
-                                '',
-                          ),
-                          onChanged: (value) {
-                            setState(() {
-                              selectedIndex = value!;
-                            });
-                          },
-                        );
+                  Padding(
+                    padding:
+                    const EdgeInsets.symmetric(horizontal: 18),
+                    child: TextField(
+                      decoration: InputDecoration(
+                        hintText: "Search Area",
+                        prefixIcon: const Icon(Icons.search),
+                        filled: true,
+                        fillColor: Colors.grey.shade100,
+                        border: OutlineInputBorder(
+                          borderRadius:
+                          BorderRadius.circular(14),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                      onChanged: (v) {
+                        setState(() {
+                          search = v;
+                        });
                       },
                     ),
                   ),
 
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 16),
 
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        fillAddress(
-                          Map<String, dynamic>.from(
-                            offices[selectedIndex],
+                  Expanded(
+                    child: Stack(
+                      children: [
+
+                        Scrollbar(
+                          thumbVisibility: true,
+                          child: ListView.builder(
+                            padding:
+                            const EdgeInsets.only(bottom: 90),
+                            itemCount: filtered.length,
+                            itemBuilder: (_, index) {
+                              final office = filtered[index];
+
+                              return RadioListTile<int>(
+                                value: index,
+                                groupValue: selectedIndex,
+                                activeColor: TColors.primary,
+                                title: Text(
+                                  office['Name'] ?? '',
+                                  style: const TextStyle(
+                                    fontWeight:
+                                    FontWeight.w600,
+                                  ),
+                                ),
+                                subtitle: Text(
+                                  "${office['Block'] ?? ''}, ${office['District'] ?? ''}",
+                                ),
+                                onChanged: (v) {
+                                  setState(() {
+                                    selectedIndex = v!;
+                                  });
+                                },
+                              );
+                            },
                           ),
-                          pincode,
-                        );
+                        ),
 
-                        Get.back();
-                      },
-                      child: const Text(
-                        "Continue",
-                      ),
+                        // Bottom fade
+                        Align(
+                          alignment: Alignment.bottomCenter,
+                          child: IgnorePointer(
+                            child: Container(
+                              height: 35,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end:
+                                  Alignment.bottomCenter,
+                                  colors: [
+                                    Colors.white.withOpacity(0),
+                                    Colors.white,
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  Container(
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                          color:
+                          Colors.black.withOpacity(.08),
+                          blurRadius: 15,
+                          offset: const Offset(0, -5),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => Get.back(),
+                            child: const Text("Cancel"),
+                          ),
+                        ),
+
+                        const SizedBox(width: 15),
+
+                        Expanded(
+                          flex: 2,
+                          child: ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                              TColors.primary,
+                              foregroundColor:
+                              Colors.white,
+                              minimumSize:
+                              const Size.fromHeight(52),
+                            ),
+                            icon: const Icon(
+                                Icons.check_circle),
+                            label:
+                            const Text("Continue"),
+                            onPressed: () {
+                              fillAddress(
+                                Map<String, dynamic>.from(
+                                    filtered[
+                                    selectedIndex]),
+                                pincode,
+                              );
+
+                              Get.back();
+                            },
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -280,8 +450,389 @@ class AddDoctorNewController extends GetxController {
         },
       ),
       isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+    );
+  }*/
+
+
+  Future<void> showPostOfficeSelection(
+      List offices,
+      String pincode,
+      ) async {
+    int selectedIndex = 0;
+    String search = "";
+
+    await Get.bottomSheet(
+      StatefulBuilder(
+        builder: (context, setState) {
+          final filtered = offices.where((office) {
+            final text =
+            "${office['Name']} ${office['Block']} ${office['District']}"
+                .toLowerCase();
+
+            return text.contains(search.toLowerCase());
+          }).toList();
+
+          if (filtered.isEmpty) {
+            selectedIndex = 0;
+          } else if (selectedIndex >= filtered.length) {
+            selectedIndex = 0;
+          }
+
+          return SafeArea(
+            child: Container(
+              height: Get.height * .82,
+              decoration: const BoxDecoration(
+                color: Color(0xffF6F7FB),
+                borderRadius: BorderRadius.vertical(
+                  top: Radius.circular(30),
+                ),
+              ),
+              child: Column(
+                children: [
+
+                  const SizedBox(height: 12),
+
+                  Container(
+                    width: 70,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade400,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+
+                  const SizedBox(height: 22),
+
+                  Container(
+                    height: 70,
+                    width: 70,
+                    decoration: BoxDecoration(
+                      color: TColors.primary.withOpacity(.12),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.location_city,
+                      size: 36,
+                      color: TColors.primary,
+                    ),
+                  ),
+
+                  const SizedBox(height: 18),
+
+                  const Text(
+                    "Select Post Office",
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  Text(
+                    "Choose the correct Post Office",
+                    style: TextStyle(
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+
+                  const SizedBox(height: 18),
+
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.green.shade50,
+                      borderRadius: BorderRadius.circular(40),
+                      border: Border.all(
+                        color: Colors.green.shade200,
+                      ),
+                    ),
+                    child: Text(
+                      "${offices.length} Post Offices Available",
+                      style: TextStyle(
+                        color: Colors.green.shade800,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  Padding(
+                    padding:
+                    const EdgeInsets.symmetric(horizontal: 18),
+                    child: TextField(
+                      decoration: InputDecoration(
+                        hintText: "Search Post Office...",
+                        prefixIcon: const Icon(Icons.search),
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide.none,
+                          borderRadius:
+                          BorderRadius.circular(18),
+                        ),
+                      ),
+                      onChanged: (v) {
+                        setState(() {
+                          search = v;
+                        });
+                      },
+                    ),
+                  ),
+
+                  const SizedBox(height: 15),
+
+                  Expanded(
+                    child: Scrollbar(
+                      thumbVisibility: true,
+                      child: ListView.builder(
+                        padding: const EdgeInsets.only(
+                          left: 18,
+                          right: 18,
+                          bottom: 100,
+                        ),
+                        itemCount: filtered.length,
+                        itemBuilder: (_, index) {
+                          final office = filtered[index];
+
+                          final selected =
+                              selectedIndex == index;
+
+                          return AnimatedContainer(
+                            duration: const Duration(
+                              milliseconds: 250,
+                            ),
+                            margin:
+                            const EdgeInsets.only(bottom: 12),
+                            decoration: BoxDecoration(
+                              color: selected
+                                  ? TColors.primary
+                                  .withOpacity(.08)
+                                  : Colors.white,
+                              borderRadius:
+                              BorderRadius.circular(18),
+                              border: Border.all(
+                                color: selected
+                                    ? TColors.primary
+                                    : Colors.grey.shade200,
+                                width: selected ? 2 : 1,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black
+                                      .withOpacity(.04),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 3),
+                                )
+                              ],
+                            ),
+                            child: InkWell(
+                              borderRadius:
+                              BorderRadius.circular(18),
+                              onTap: () {
+                                setState(() {
+                                  selectedIndex = index;
+                                });
+                              },
+                              child: Padding(
+                                padding:
+                                const EdgeInsets.all(16),
+                                child: Row(
+                                  children: [
+
+                                    AnimatedContainer(
+                                      duration:
+                                      const Duration(
+                                        milliseconds: 200,
+                                      ),
+                                      height: 28,
+                                      width: 28,
+                                      decoration: BoxDecoration(
+                                        color: selected
+                                            ? Colors.green
+                                            : Colors.white,
+                                        shape:
+                                        BoxShape.circle,
+                                        border: Border.all(
+                                          color: selected
+                                              ? Colors.green
+                                              : Colors.grey,
+                                        ),
+                                      ),
+                                      child: selected
+                                          ? const Icon(
+                                        Icons.check,
+                                        color: Colors
+                                            .white,
+                                        size: 18,
+                                      )
+                                          : null,
+                                    ),
+
+                                    const SizedBox(width: 16),
+
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                        CrossAxisAlignment
+                                            .start,
+                                        children: [
+
+                                          Text(
+                                            office['Name'],
+                                            style:
+                                            const TextStyle(
+                                              fontWeight:
+                                              FontWeight
+                                                  .bold,
+                                              fontSize: 16,
+                                            ),
+                                          ),
+
+                                         /* const SizedBox(
+                                              height: 4),
+
+                                          Text(
+                                            office['BranchType'] ??
+                                                '',
+                                            style:
+                                            TextStyle(
+                                              color: Colors
+                                                  .grey
+                                                  .shade700,
+                                            ),
+                                          ),*/
+
+                                          const SizedBox(
+                                              height: 6),
+
+                                          Row(
+                                            children: [
+                                              const Icon(
+                                                Icons
+                                                    .location_on,
+                                                size: 15,
+                                                color:
+                                                Colors.red,
+                                              ),
+                                              const SizedBox(
+                                                  width: 4),
+                                              Expanded(
+                                                child: Text(
+                                                  "${office['Block']} • ${office['District']}",
+                                                  style:
+                                                  TextStyle(
+                                                    color: Colors
+                                                        .grey
+                                                        .shade600,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+
+                                          const SizedBox(
+                                              height: 6),
+
+
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+
+                  Container(
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(.08),
+                          blurRadius: 20,
+                          offset: const Offset(0, -5),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+
+                        Expanded(
+                          child: OutlinedButton(
+                            style: OutlinedButton.styleFrom(
+                              minimumSize:
+                              const Size.fromHeight(55),
+                              shape:
+                              RoundedRectangleBorder(
+                                borderRadius:
+                                BorderRadius.circular(16),
+                              ),
+                            ),
+                            onPressed: Get.back,
+                            child: const Text("Cancel"),
+                          ),
+                        ),
+
+                        const SizedBox(width: 14),
+
+                        Expanded(
+                          flex: 2,
+                          child: ElevatedButton.icon(
+                            style:
+                            ElevatedButton.styleFrom(
+                              backgroundColor:
+                              TColors.primary,
+                              foregroundColor:
+                              Colors.white,
+                              minimumSize:
+                              const Size.fromHeight(55),
+                              shape:
+                              RoundedRectangleBorder(
+                                borderRadius:
+                                BorderRadius.circular(16),
+                              ),
+                            ),
+                            icon: const Icon(Icons.arrow_forward),
+                            label:
+                            const Text("Continue"),
+                            onPressed: () {
+
+                              fillAddress(
+                                Map<String, dynamic>.from(
+                                  filtered[selectedIndex],
+                                ),
+                                pincode,
+                              );
+
+                              Get.back();
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
     );
   }
+
 
   Future<void> createArea({
     required String name,
@@ -433,6 +984,16 @@ class AddDoctorNewController extends GetxController {
       return;
     }
 
+    if (selectedGender.value == null) {
+      Get.snackbar(
+        "Required",
+        "Please select gender",
+        backgroundColor: Colors.orange,
+        colorText: Colors.white,
+      );
+      return;
+    }
+
     if (selectedAreaId.value == null) {
       Get.snackbar(
         "Missing Info",
@@ -478,7 +1039,7 @@ class AddDoctorNewController extends GetxController {
       request.fields['areaId'] = selectedAreaId.value!;
       request.fields['latitude'] = latitude.value.toString();
       request.fields['longitude'] = longitude.value.toString();
-      request.fields['gender'] = selectedGender.value;
+      request.fields['gender'] = selectedGender.value!;
       request.fields['priority'] = selectedPriority.value;
 
       // OPTIONAL: INT TYPES (Send "0" if empty)
@@ -612,7 +1173,7 @@ class AddDoctorNewController extends GetxController {
     if (result != null && result is Map<String, dynamic>) {
       latitude.value = result['latitude'] ?? 0.0;
       longitude.value = result['longitude'] ?? 0.0;
-      address1Controller.text = result['address'] ?? '';
+     // address1Controller.text = result['address'] ?? '';
 
       if (result.containsKey('state')) stateController.text = result['state'] ?? '';
       if (result.containsKey('pincode')) pincodeController.text = result['pincode'] ?? '';
@@ -622,6 +1183,39 @@ class AddDoctorNewController extends GetxController {
       isLocationSet.value = true;
       Get.snackbar("Location Fetched", "Coordinates set.", backgroundColor: Colors.green.withOpacity(0.9), colorText: Colors.white);
     }
+  }
+
+  Future<void> autoSelectOrCreateArea({
+    required String postOffice,
+    required String pincode,
+  }) async {
+    // Wait if areas are still loading
+    if (isLoadingAreas.value) {
+      while (isLoadingAreas.value) {
+        await Future.delayed(const Duration(milliseconds: 100));
+      }
+    }
+
+    final existingArea = areas.firstWhereOrNull(
+          (e) =>
+      (e['name'] ?? '')
+          .toString()
+          .trim()
+          .toLowerCase() ==
+          postOffice.trim().toLowerCase(),
+    );
+
+    if (existingArea != null) {
+      selectedAreaId.value = existingArea['id'];
+      return;
+    }
+
+    // Area doesn't exist -> create it
+    await createArea(
+      name: postOffice,
+      pincode: pincode,
+      postOffice: postOffice,
+    );
   }
 
   @override
@@ -657,7 +1251,40 @@ class AddDoctorNewController extends GetxController {
                 mainAxisSize: MainAxisSize.min,
                 children: [
 
-                  // Illustration
+                  /// HEADER
+                  Row(
+                    children: [
+                      const Expanded(
+                        child: Text(
+                          "Doctor Location Setup",
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+
+                      InkWell(
+                        onTap: () => Get.back(),
+                        borderRadius: BorderRadius.circular(30),
+                        child: Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade200,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.close,
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  /// Illustration
                   Container(
                     height: 90,
                     width: 90,
@@ -673,16 +1300,6 @@ class AddDoctorNewController extends GetxController {
                   ),
 
                   const SizedBox(height: 20),
-
-                  const Text(
-                    "Doctor Location Setup",
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-
-                  const SizedBox(height: 8),
 
                   Text(
                     "Enter doctor's area pincode. We will automatically fetch State, Post Office, Country and Address details.",
@@ -735,6 +1352,12 @@ class AddDoctorNewController extends GetxController {
                     ),
                     decoration: InputDecoration(
                       hintText: "201306",
+                      hintStyle: TextStyle(
+                        color: Colors.grey.shade400,
+                        fontSize: 18,
+                        letterSpacing: 2,
+                        fontWeight: FontWeight.w500,
+                      ),
                       counterText: "",
                       prefixIcon: const Icon(Icons.pin_drop),
                       errorText: errorText.value.isEmpty
@@ -761,8 +1384,7 @@ class AddDoctorNewController extends GetxController {
                       onPressed: isLoading.value
                           ? null
                           : () async {
-                        final pin =
-                        pinController.text.trim();
+                        final pin = pinController.text.trim();
 
                         errorText.value = '';
 
@@ -775,9 +1397,7 @@ class AddDoctorNewController extends GetxController {
                         isLoading.value = true;
 
                         final success =
-                        await fetchAddressByPincode(
-                          pin,
-                        );
+                        await fetchAddressByPincode(pin);
 
                         isLoading.value = false;
 
@@ -799,8 +1419,7 @@ class AddDoctorNewController extends GetxController {
                           ? const SizedBox(
                         height: 22,
                         width: 22,
-                        child:
-                        CircularProgressIndicator(
+                        child: CircularProgressIndicator(
                           strokeWidth: 2,
                           color: Colors.white,
                         ),
