@@ -1579,13 +1579,13 @@ class _SplashScreenState extends State<SplashScreen> {
         title: const Text(TTexts.updateAvailable),
         content: const Text(TTexts.updateAvailableContent),
         actions: [
-          TextButton(
+         /* TextButton(
             onPressed: () {
               Navigator.pop(context);
               _navigateAfterDelay();
             },
             child: const Text(TTexts.skip),
-          ),
+          ),*/
           TextButton(
             onPressed: () async {
               Navigator.pop(context);

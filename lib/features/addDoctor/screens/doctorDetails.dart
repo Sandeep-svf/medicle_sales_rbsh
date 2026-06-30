@@ -119,9 +119,13 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
           const SizedBox(height: 16),
           _buildHeadOfficeInfo(),
           const SizedBox(height: 16),
-          _buildVisitHistory(),
-          const SizedBox(height: 16),
+
+
           _buildAccountInfo(),
+          const SizedBox(height: 16),
+          _buildVisitHistory(),
+
+
           const SizedBox(height: 20),
         ],
       ),
@@ -156,32 +160,64 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
                   ),
                 ),
                 const SizedBox(width: 24),
-                Expanded(
-                  flex: 7,
-                  child: Column(
-                    children: [
-                      _buildMapSection(height: 300),
-                      const SizedBox(height: 24),
-                      _buildGeoImageSection(context),
-                      const SizedBox(height: 24),
-                      _buildHeadOfficeInfo(),
-                      const SizedBox(height: 24),
-                      _buildVisitHistory(),
-                    ],
-                  ),
-                ),
+                Column(
+                  children: [
+
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+
+                        Expanded(
+                          flex: 5,
+                          child: Column(
+                            children: [
+                              _buildContactInfo(),
+                              const SizedBox(height: 24),
+                              _buildBasicInfo(),
+                              const SizedBox(height: 24),
+                              _buildAccountInfo(),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(width: 24),
+
+                        Expanded(
+                          flex: 7,
+                          child: Column(
+                            children: [
+                              _buildMapSection(height: 300),
+                              const SizedBox(height: 24),
+                              _buildGeoImageSection(context),
+                              const SizedBox(height: 24),
+                              _buildHeadOfficeInfo(),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    _buildVisitHistory(), // <-- FULL WIDTH
+                  ],
+                )
               ],
             )
           else
             Column(
               children: [
+
                 _buildMapSection(height: 300),
                 const SizedBox(height: 24),
+
                 _buildGeoImageSection(context),
                 const SizedBox(height: 24),
+
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+
                     Expanded(
                       child: Column(
                         children: [
@@ -191,13 +227,13 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
                         ],
                       ),
                     ),
+
                     const SizedBox(width: 24),
+
                     Expanded(
                       child: Column(
                         children: [
                           _buildHeadOfficeInfo(),
-                          const SizedBox(height: 24),
-                          _buildVisitHistory(),
                           const SizedBox(height: 24),
                           _buildAccountInfo(),
                         ],
@@ -205,6 +241,10 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
                     ),
                   ],
                 ),
+
+                const SizedBox(height: 24),
+
+                _buildVisitHistory(), // <-- FULL WIDTH
               ],
             ),
         ],
@@ -804,7 +844,7 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
   }
 
   Widget _buildVisitHistory() {
-    final visits = controller.doctor.value?.visitHistory ?? [];
+    final visits = doctor.visitHistory ?? [];
 
     return _buildStyledCard(
       child: Column(
@@ -818,103 +858,316 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
 
           if (visits.isEmpty)
             const Padding(
-              padding: EdgeInsets.symmetric(vertical: 20),
+              padding: EdgeInsets.symmetric(vertical: 30),
               child: Center(
                 child: Text(
-                  "No Visit History Found",
+                  "No Visit History",
                   style: TextStyle(color: Colors.grey),
                 ),
               ),
             )
           else
-            ListView.separated(
+            ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: visits.length,
-              separatorBuilder: (_, __) => const Divider(height: 24),
-              itemBuilder: (context, index) {
+              itemBuilder: (_, index) {
                 final visit = visits[index];
 
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-
-                    _buildInfoRow(
-                      Icons.calendar_today,
-                      "Visit Date",
-                      visit.date != null
-                          ? DateFormat("dd MMM yyyy")
-                          .format(DateTime.parse(visit.date!.toString()))
-                          : "N/A",
-                    ),
-
-                   /* _buildInfoRow(
-                      Icons.person,
-                      "MR Name",
-                      visit.userName ?? "N/A",
-                    ),*/
-
-                   /* _buildInfoRow(
-                      Icons.email_outlined,
-                      "MR Email",
-                      visit.userEmail ?? "N/A",
-                    ),*/
-
-                   /* _buildInfoRow(
-                      Icons.medication,
-                      "Product",
-                      visit.product?.name ?? "N/A",
-                    ),*/
-
-                  /*  _buildInfoRow(
-                      Icons.note_alt_outlined,
-                      "Notes",
-                      visit.notes ?? "N/A",
-                    ),*/
-
-                   /* _buildInfoRow(
-                      Icons.comment,
-                      "Remark",
-                      visit.remark ?? "N/A",
-                    ),*/
-
-                   /* _buildInfoRow(
-                      visit.confirmed == true
-                          ? Icons.check_circle
-                          : Icons.cancel,
-                      "Confirmed",
-                      visit.confirmed == true ? "Yes" : "No",
-                    ),*/
-
-                   /* _buildInfoRow(
-                      Icons.location_on,
-                      "Location",
-                      "${visit.latitude ?? "-"}, ${visit.longitude ?? "-"}",
-                    ),*/
-
-                   /* _buildInfoRow(
-                      Icons.medical_services,
-                      "Products Detailed",
-                      (visit.productsDetailed?.isNotEmpty ?? false)
-                          ? visit.productsDetailed!.join(", ")
-                          : "N/A",
-                    ),
-
-                    _buildInfoRow(
-                      Icons.card_giftcard,
-                      "Gifts Given",
-                      (visit.giftsGiven?.isNotEmpty ?? false)
-                          ? visit.giftsGiven!.join(", ")
-                          : "None",
-                    ),*/
-                  ],
-                );
+                return _buildVisitCard(visit);
               },
             ),
         ],
       ),
     );
   }
+
+  Widget _buildVisitCard(VisitHistory visit) {
+    final confirmed = visit.confirmed ?? false;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 18),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: confirmed
+              ? Colors.green.shade200
+              : Colors.orange.shade200,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+
+          /// Header
+          Row(
+            children: [
+
+              CircleAvatar(
+                radius: 22,
+                backgroundColor: confirmed
+                    ? Colors.green.shade100
+                    : Colors.orange.shade100,
+                child: Icon(
+                  confirmed
+                      ? Icons.check
+                      : Icons.schedule,
+                  color: confirmed
+                      ? Colors.green
+                      : Colors.orange,
+                ),
+              ),
+
+              const SizedBox(width: 14),
+
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+
+                    Text(
+                      visit.date != null
+                          ? DateFormat("dd MMM yyyy")
+                          .format(visit.date!)
+                          : "N/A",
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 17,
+                      ),
+                    ),
+
+                    const SizedBox(height: 3),
+
+                    Text(
+                      visit.userName ?? "Unknown MR",
+                      style: TextStyle(
+                        color: Colors.grey.shade700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: confirmed
+                      ? Colors.green.shade100
+                      : Colors.orange.shade100,
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                child: Text(
+                  confirmed
+                      ? "Confirmed"
+                      : "Pending",
+                  style: TextStyle(
+                    color: confirmed
+                        ? Colors.green.shade900
+                        : Colors.orange.shade900,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              )
+            ],
+          ),
+
+          const SizedBox(height: 16),
+
+          LayoutBuilder(
+            builder: (context, constraints) {
+
+              final isTablet = constraints.maxWidth > 700;
+
+              return Wrap(
+                spacing: 16,
+                runSpacing: 16,
+                children: [
+
+                  SizedBox(
+                    width: isTablet
+                        ? (constraints.maxWidth - 32) / 3
+                        : (constraints.maxWidth - 16) / 2,
+                    child: _miniInfo(
+                      Icons.person,
+                      "MR Name",
+                      visit.userName ?? "-",
+                    ),
+                  ),
+
+                  SizedBox(
+                    width: isTablet
+                        ? (constraints.maxWidth - 32) / 3
+                        : (constraints.maxWidth - 16) / 2,
+                    child: _miniInfo(
+                      Icons.email,
+                      "Email",
+                      visit.userEmail ?? "-",
+                    ),
+                  ),
+
+                  SizedBox(
+                    width: isTablet
+                        ? (constraints.maxWidth - 32) / 3
+                        : (constraints.maxWidth - 16) / 2,
+                    child: _miniInfo(
+                      Icons.medication,
+                      "Product",
+                      visit.product?.name ?? "-",
+                    ),
+                  ),
+
+                  SizedBox(
+                    width: isTablet
+                        ? (constraints.maxWidth - 32) / 3
+                        : (constraints.maxWidth - 16) / 2,
+                    child: _miniInfo(
+                      Icons.location_on,
+                      "Location",
+                      "${visit.latitude ?? "-"}, ${visit.longitude ?? "-"}",
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+
+          if ((visit.notes ?? "").isNotEmpty) ...[
+            const SizedBox(height: 16),
+
+            const Text(
+              "Notes",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+
+            const SizedBox(height: 6),
+
+            Text(visit.notes!),
+          ],
+
+          if ((visit.remark ?? "").isNotEmpty) ...[
+            const SizedBox(height: 16),
+
+            const Text(
+              "Remark",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+
+            const SizedBox(height: 6),
+
+            Text(visit.remark!),
+          ],
+
+          if ((visit.productsDetailed ?? []).isNotEmpty) ...[
+            const SizedBox(height: 18),
+
+            const Text(
+              "Products Detailed",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+
+            const SizedBox(height: 8),
+
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: visit.productsDetailed!
+                  .map(
+                    (e) => Chip(
+                  avatar: const Icon(
+                    Icons.medication,
+                    size: 18,
+                  ),
+                  label: Text(e),
+                ),
+              )
+                  .toList(),
+            ),
+          ],
+
+          if ((visit.giftsGiven ?? []).isNotEmpty) ...[
+            const SizedBox(height: 18),
+
+            const Text(
+              "Gifts Given",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+
+            const SizedBox(height: 8),
+
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: visit.giftsGiven!
+                  .map(
+                    (e) => Chip(
+                  backgroundColor: Colors.orange.shade50,
+                  avatar: const Icon(
+                    Icons.card_giftcard,
+                    size: 18,
+                  ),
+                  label: Text(e),
+                ),
+              )
+                  .toList(),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+  Widget _miniInfo(
+      IconData icon,
+      String title,
+      String value,
+      ) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(
+          icon,
+          size: 18,
+          color: TColors.primary,
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                  fontSize: 12,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+
 
   Widget _buildAccountInfo() {
     return _buildStyledCard(

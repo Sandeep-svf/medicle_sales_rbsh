@@ -23,11 +23,13 @@ import '../../Blog/screen/blog.dart';
 import '../../Holiday/screen/HolidayScreen.dart';
 import '../../Inbox/Screen/InboxScreen.dart';
 
+import '../../Investment_Management/screen/investment_list_screen.dart';
 import '../../InvoiceTrackerShipment/screen/InvoiceScreen.dart';
 import '../../PtsPtrCalculator/PtsPtrCalculator.dart';
 import '../../SalesChartAnalysis/Screen/salesChartHome2.dart';
 import '../../Tour & Plans/Screen/tour_plane_doctor_screen.dart';
 
+import '../../Tour & Plans/TeritoryModule/screen/territory_map_screen.dart';
 import '../../Tour & Plans/updated_tour_panes/Screen/StpScreen.dart';
 import '../../addStokist/screen/StokistList.dart';
 import '../../authentication/models/UserModel.dart';
@@ -118,6 +120,27 @@ class _CustomDrawerState extends State<CustomDrawer> {
                     isSelected: widget.currentScreen == TTexts.appointments,
                   ),
 
+
+
+                  _buildDrawerItem(
+                    icon: Icons.attach_money_outlined,
+                    text: TTexts.investment,
+                    onTap: () =>
+                        widget.onMenuSelected(
+                            InvestmentListScreen(), TTexts.investment),
+                    isSelected: widget.currentScreen == TTexts.investment,
+                  ),
+
+
+
+                  _buildDrawerItem(
+                    icon: Icons.map_outlined,
+                    text: TTexts.beatManagement,
+                    onTap: () =>
+                        widget.onMenuSelected(
+                            TerritoryMapScreen(), TTexts.beatManagement),
+                    isSelected: widget.currentScreen == TTexts.beatManagement,
+                  ),
                  /* _buildDrawerItem(
                     icon: Icons.report,
                     text: TTexts.dailyCallReport,
