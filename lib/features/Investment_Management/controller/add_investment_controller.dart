@@ -1,33 +1,62 @@
+import 'dart:async';
+import 'dart:convert';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
 
+
+import '../../../utils/http/http_client.dart';
+import '../../../utils/local_storage/auth_manager.dart';
 import '../enum.dart';
 import '../model/investment_request.dart';
-
-
+import '../model/investment_request_model.dart';
+import 'investment_request_controller.dart';
 
 class AddInvestmentController extends GetxController {
 
-  /// Selected Investment Mode
-  final selectedMode = InvestmentMode.cash.obs;
+  ///=========================================================
+  /// FORM
+  ///=========================================================
 
-  /// Draft Model
-  final request = InvestmentRequestModel().obs;
-
-  /// Form Key
   final formKey = GlobalKey<FormState>();
 
-  /// Doctor
+  ///=========================================================
+  /// LOADING
+  ///=========================================================
 
-  final doctorController = TextEditingController();
+  final RxBool isLoading = false.obs;
 
-  /// Cash
+  ///=========================================================
+  /// PAYMENT MODE
+  ///=========================================================
+
+  final selectedMode = InvestmentMode.cash.obs;
+
+  ///=========================================================
+  /// DOCTOR
+  ///=========================================================
+
+  /// Doctor Id will come from Doctor API screen later
+  final selectedDoctorId = "".obs;
+
+  final selectedDoctorName = "".obs;
+
+  /// Optional Doctor Name (UI only)
+  final doctorNameController = TextEditingController();
+
+  ///=========================================================
+  /// CASH / COMMON
+  ///=========================================================
 
   final amountController = TextEditingController();
 
   final purposeController = TextEditingController();
 
+  ///=========================================================
   /// NEFT
+  ///=========================================================
 
   final accountHolderController = TextEditingController();
 
@@ -37,147 +66,147 @@ class AddInvestmentController extends GetxController {
 
   final bankController = TextEditingController();
 
+  ///=========================================================
   /// UPI
+  ///=========================================================
 
   final upiController = TextEditingController();
 
-  /// Gift
+  ///=========================================================
+  /// GIFT
+  ///=========================================================
 
-  final itemController = TextEditingController();
+  final justificationController = TextEditingController();
+
+  final itemNameController = TextEditingController();
 
   final quantityController =
   TextEditingController(text: "1");
 
-  final itemValueController =
+  final valueController =
   TextEditingController();
 
-  /// Dummy Doctors
+  final RxList<GiftItem> giftItems =
+      <GiftItem>[].obs;
 
-  final doctors = <String>[
+  ///=========================================================
+  /// PAYMENT PROOF
+  ///=========================================================
 
-    "Dr. Meenakshi Rao",
+  /// Store Base64 String
+  String? paymentProof;
 
-    "Dr. Sharma",
+  ///=========================================================
+  /// AUTH
+  ///=========================================================
 
-    "Dr. Khan",
+  final AuthManager _authManager =
+  AuthManager();
 
-    "Dr. Tyagi",
+  ///=========================================================
+  /// API
+  ///=========================================================
 
-    "Dr. Amit",
+  final String apiUrl =
+      "${THttpHelper.baseUrl}/investment-requests";
 
-  ].obs;
-
-  final selectedDoctor = RxnString();
-
-  @override
-  void onInit() {
-    super.onInit();
-
-    selectedDoctor.value = doctors.first;
-
-    doctorController.text = doctors.first;
-  }
+  ///=========================================================
+  /// CHANGE MODE
+  ///=========================================================
 
   void changeMode(InvestmentMode mode) {
-
     selectedMode.value = mode;
-
-    request.update((value) {
-
-      value?.mode = mode;
-
-    });
-
   }
 
-  void selectDoctor(String? doctor) {
+  ///=========================================================
+  /// SET DOCTOR
+  ///=========================================================
 
-    if (doctor == null) return;
-
-    selectedDoctor.value = doctor;
-
-    doctorController.text = doctor;
-
-    request.update((value) {
-
-      value?.doctorName = doctor;
-
-    });
-
+  void setDoctor({
+    required String id,
+    required String name,
+  }) {
+    selectedDoctorId.value = id;
+    selectedDoctorName.value = name;
   }
 
-  void saveDraft() {
+  ///=========================================================
+  /// PAYMENT PROOF
+  ///=========================================================
 
-    Get.snackbar(
+  void setPaymentProof(String base64) {
+    paymentProof = base64;
+  }
 
-      "Saved",
+  ///=========================================================
+  /// GIFT ITEMS
+  ///=========================================================
 
-      "Draft saved successfully.",
+  void addGiftItem() {
+    giftItems.add(
 
-      snackPosition: SnackPosition.BOTTOM,
+      GiftItem(
+
+        itemName: itemNameController.text.trim(),
+
+        quantity:
+        int.tryParse(quantityController.text) ??
+            1,
+
+        value:
+        double.tryParse(valueController.text) ??
+            0,
+
+      ),
 
     );
 
+    itemNameController.clear();
+
+    quantityController.text = "1";
+
+    valueController.clear();
   }
 
-  void submit() {
+  void removeGiftItem(int index) {
+    giftItems.removeAt(index);
+  }
 
-    if (!formKey.currentState!.validate()) {
-      return;
-    }
+  ///=========================================================
+  /// CLEAR FORM
+  ///=========================================================
 
-    request.update((value) {
+  void clearForm() {
+    amountController.clear();
 
-      value?.doctorName = selectedDoctor.value;
+    purposeController.clear();
 
-      value?.amount =
-          double.tryParse(amountController.text) ?? 0;
+    accountHolderController.clear();
 
-      value?.purpose =
-          purposeController.text;
+    accountNumberController.clear();
 
-      value?.accountHolder =
-          accountHolderController.text;
+    ifscController.clear();
 
-      value?.accountNumber =
-          accountNumberController.text;
+    bankController.clear();
 
-      value?.ifsc =
-          ifscController.text;
+    upiController.clear();
 
-      value?.bankName =
-          bankController.text;
+    justificationController.clear();
 
-      value?.upiId =
-          upiController.text;
+    itemNameController.clear();
 
-      value?.itemName =
-          itemController.text;
+    quantityController.text = "1";
 
-      value?.quantity =
-          int.tryParse(quantityController.text) ?? 1;
+    valueController.clear();
 
-      value?.itemValue =
-          double.tryParse(itemValueController.text) ?? 0;
+    paymentProof = null;
 
-    });
-
-    Get.snackbar(
-
-      "Success",
-
-      "Investment Request Submitted",
-
-      snackPosition: SnackPosition.BOTTOM,
-
-    );
-
+    giftItems.clear();
   }
 
   @override
   void onClose() {
-
-    doctorController.dispose();
+    doctorNameController.dispose();
 
     amountController.dispose();
 
@@ -193,14 +222,251 @@ class AddInvestmentController extends GetxController {
 
     upiController.dispose();
 
-    itemController.dispose();
+    justificationController.dispose();
+
+    itemNameController.dispose();
 
     quantityController.dispose();
 
-    itemValueController.dispose();
+    valueController.dispose();
 
     super.onClose();
-
   }
 
+
+  ///=========================================================
+  /// SUBMIT REQUEST
+  ///=========================================================
+
+  Future<void> submitInvestment() async {
+    if (!formKey.currentState!.validate()) {
+      return;
+    }
+
+    if (selectedDoctorId.value.isEmpty) {
+      Get.snackbar(
+        "Doctor",
+        "Please select doctor.",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+
+    try {
+      isLoading(true);
+
+      final token = await _authManager.getAuthToken();
+
+      if (token == null || token.isEmpty) {
+        Get.snackbar(
+          "Authentication",
+          "Token not found. Please login again.",
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        return;
+      }
+
+      final InvestmentRequestModel request =
+      _buildInvestmentRequest();
+
+      final payload = request.toJson();
+
+      debugPrint("");
+      debugPrint(
+          "============= INVESTMENT REQUEST =============");
+      debugPrint("URL : $apiUrl");
+      debugPrint("METHOD : POST");
+      debugPrint("TOKEN : Bearer $token");
+      debugPrint("PAYLOAD :");
+      debugPrint(
+        const JsonEncoder.withIndent("  ")
+            .convert(payload),
+      );
+      debugPrint(
+          "==============================================");
+
+      final response = await http
+          .post(
+        Uri.parse(apiUrl),
+        headers: {
+          "Authorization": "Bearer $token",
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+        body: jsonEncode(payload),
+      )
+          .timeout(
+        const Duration(seconds: 30),
+      );
+
+      debugPrint("");
+      debugPrint(
+          "============= INVESTMENT RESPONSE ============");
+      debugPrint(
+          "STATUS CODE : ${response.statusCode}");
+      debugPrint("BODY :");
+      debugPrint(response.body);
+      debugPrint(
+          "==============================================");
+
+      if (response.statusCode == 200 ||
+          response.statusCode == 201) {
+
+        Get.snackbar(
+          "Success",
+          "Investment Request Submitted",
+          snackPosition: SnackPosition.BOTTOM,
+        );
+
+        clearForm();
+
+        // Refresh investment list if it already exists
+        if (Get.isRegistered<InvestmentRequestController>()) {
+          Get.find<InvestmentRequestController>()
+              .fetchInvestmentRequests(showLoader: false);
+        }
+
+        Get.back(); // Return to Investment List
+
+        return;
+      }
+
+      String message = "Something went wrong.";
+
+      try {
+        final body = jsonDecode(response.body);
+
+        if (body["message"] != null) {
+          message = body["message"];
+        }
+      } catch (_) {}
+
+      Get.snackbar(
+        "Failed",
+        message,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } on TimeoutException {
+      Get.snackbar(
+        "Timeout",
+        "Server timeout.",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } catch (e, stack) {
+      debugPrint("Investment Exception");
+      debugPrint(e.toString());
+      debugPrint(stack.toString());
+
+      Get.snackbar(
+        "Error",
+        e.toString(),
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } finally {
+      isLoading(false);
+    }
+  }
+
+
+
+  bool validateDoctor() {
+    if (selectedDoctorId.value.isEmpty) {
+      Get.snackbar(
+        "Doctor",
+        "Please select doctor.",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return false;
+    }
+
+    return true;
+  }
+
+  bool validateGiftItems() {
+    if (selectedMode.value == InvestmentMode.gift &&
+        giftItems.isEmpty) {
+      Get.snackbar(
+        "Gift Items",
+        "Please add at least one gift item.",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+
+      return false;
+    }
+
+    return true;
+  }
+
+  ///=========================================================
+  /// BUILD REQUEST MODEL
+  ///=========================================================
+
+  InvestmentRequestModel _buildInvestmentRequest() {
+    final request = InvestmentRequestModel();
+
+    request.doctorId = selectedDoctorId.value;
+
+    request.mode = selectedMode.value;
+
+    request.status = "Pending";
+
+    switch (selectedMode.value) {
+      case InvestmentMode.cash:
+        request.amount =
+            double.tryParse(amountController.text);
+
+        request.purpose =
+            purposeController.text.trim();
+        break;
+
+      case InvestmentMode.neft:
+        request.amount =
+            double.tryParse(amountController.text);
+
+        request.purpose =
+            purposeController.text.trim();
+
+        request.accountHolder =
+            accountHolderController.text.trim();
+
+        request.accountNumber =
+            accountNumberController.text.trim();
+
+        request.ifsc =
+            ifscController.text.trim();
+
+        request.bankName =
+            bankController.text.trim();
+
+        request.paymentProof =
+            paymentProof;
+
+        break;
+
+      case InvestmentMode.upi:
+        request.amount =
+            double.tryParse(amountController.text);
+
+        request.purpose =
+            purposeController.text.trim();
+
+        request.upiId =
+            upiController.text.trim();
+
+        request.paymentProof =
+            paymentProof;
+
+        break;
+
+      case InvestmentMode.gift:
+        request.justification =
+            justificationController.text.trim();
+
+        request.items = giftItems;
+
+        break;
+    }
+
+    return request;
+  }
 }

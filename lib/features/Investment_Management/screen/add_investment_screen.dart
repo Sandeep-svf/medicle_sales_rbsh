@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../utils/constants/colors.dart';
-import '../controller/add_investment_controller.dart';
+import '../../addDoctor/controllers/DoctroController.dart';
 
+
+import '../controller/add_investment_controller.dart';
 import '../enum.dart';
 import '../wigets/create_request/add_request_header.dart';
 import '../wigets/create_request/approval_routing.dart';
@@ -19,7 +21,12 @@ import '../wigets/create_request/upi_form.dart';
 class AddInvestmentScreen extends StatelessWidget {
   AddInvestmentScreen({super.key});
 
-  final controller = Get.put(AddInvestmentController());
+ // final investmentController = Get.put(AddInvestmentController());
+  final investmentController = Get.put(AddInvestmentController());
+
+  final doctorController = Get.put(DoctorListController())
+    ..fetchDoctorList();
+
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +51,7 @@ class AddInvestmentScreen extends StatelessWidget {
 
       body: SafeArea(
         child: Form(
-          key: controller.formKey,
+          key: investmentController.formKey,
 
           child: LayoutBuilder(
             builder: (context, constraints) {
@@ -164,7 +171,7 @@ class AddInvestmentScreen extends StatelessWidget {
   }
 
   Widget _buildForm() {
-    switch (controller.selectedMode.value) {
+    switch (investmentController.selectedMode.value) {
 
       case InvestmentMode.cash:
         return const CashForm(

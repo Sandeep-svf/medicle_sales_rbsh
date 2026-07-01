@@ -1,44 +1,114 @@
-
-
 import '../enum.dart';
 
 class InvestmentRequestModel {
   String? doctorId;
   String? doctorName;
 
-  InvestmentMode mode;
+  InvestmentMode mode = InvestmentMode.cash;
 
-  double amount;
+  String status = "Pending";
 
-  String purpose;
+  double? amount;
+  String? purpose;
 
   /// NEFT
-  String accountHolder;
-  String accountNumber;
-  String ifsc;
-  String bankName;
+  String? accountHolder;
+  String? accountNumber;
+  String? ifsc;
+  String? bankName;
 
   /// UPI
-  String upiId;
+  String? upiId;
+
+  /// Common Proof
+  String? paymentProof;
 
   /// Gift
+  String? justification;
+  List<GiftItem> items = [];
+
+  InvestmentRequestModel();
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> json = {};
+
+    json["doctorId"] = doctorId;
+    json["status"] = status;
+
+    switch (mode) {
+      case InvestmentMode.cash:
+        json["paymentMode"] = "Cash";
+        json["amount"] = amount;
+        json["purpose"] = purpose;
+        break;
+
+      case InvestmentMode.neft:
+        json["paymentMode"] = "NEFT";
+        json["amount"] = amount;
+        json["purpose"] = purpose;
+
+        json["bankDetails"] =
+        "$accountHolder | "
+            "$bankName | "
+            "A/C: $accountNumber | "
+            "IFSC: $ifsc";
+
+        if (paymentProof != null &&
+            paymentProof!.isNotEmpty) {
+          json["paymentProof"] = paymentProof;
+        }
+
+        break;
+
+      case InvestmentMode.upi:
+        json["paymentMode"] = "UPI";
+        json["amount"] = amount;
+        json["purpose"] = purpose;
+        json["upiId"] = upiId;
+
+        if (paymentProof != null &&
+            paymentProof!.isNotEmpty) {
+          json["paymentProof"] = paymentProof;
+        }
+
+        break;
+
+      case InvestmentMode.gift:
+        json["paymentMode"] = "Items/Gift";
+        json["justification"] = justification;
+
+        json["items"] =
+            items.map((e) => e.toJson()).toList();
+
+        break;
+    }
+
+    json.removeWhere(
+          (key, value) =>
+      value == null ||
+          (value is String && value.trim().isEmpty),
+    );
+
+    return json;
+  }
+}
+
+class GiftItem {
   String itemName;
   int quantity;
-  double itemValue;
+  double value;
 
-  InvestmentRequestModel({
-    this.doctorId,
-    this.doctorName,
-    this.mode = InvestmentMode.cash,
-    this.amount = 0,
-    this.purpose = "",
-    this.accountHolder = "",
-    this.accountNumber = "",
-    this.ifsc = "",
-    this.bankName = "",
-    this.upiId = "",
-    this.itemName = "",
-    this.quantity = 1,
-    this.itemValue = 0,
+  GiftItem({
+    required this.itemName,
+    required this.quantity,
+    required this.value,
   });
+
+  Map<String, dynamic> toJson() {
+    return {
+      "itemName": itemName,
+      "quantity": quantity,
+      "value": value,
+    };
+  }
 }

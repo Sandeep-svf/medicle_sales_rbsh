@@ -97,7 +97,7 @@ class InvoiceController extends GetxController {
       final token = await authManager.getAuthToken();
 
       final response = await _dio.get(
-        '${THttpHelper.baseUrl}/invoice-tracking',
+        '${THttpHelper.baseUrl}/invoice-tracking/user',
         queryParameters: {'page': page},
         options: dio.Options(
           headers: {
