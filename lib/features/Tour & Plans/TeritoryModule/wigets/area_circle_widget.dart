@@ -38,9 +38,12 @@ class AreaCircleWidget extends GetView<TerritoryController> {
           milliseconds: 250,
         ),
 
-        width: 110,
+        width: 90,
 
-        padding: const EdgeInsets.all(8),
+        padding: const EdgeInsets.symmetric(
+          horizontal: 8,
+          vertical: 6,
+        ),
 
         decoration: BoxDecoration(
 
@@ -73,23 +76,32 @@ class AreaCircleWidget extends GetView<TerritoryController> {
 
         ),
 
-        child: Column(
+    child: SizedBox(
+    height: 90,
+    child: FittedBox(
+    fit: BoxFit.scaleDown,
+    child: Column(
+    mainAxisSize: MainAxisSize.min,
+    children: [
 
-          mainAxisSize: MainAxisSize.min,
-
-          children: [
-
-            Icon(
-
-              Icons.location_city,
-
-              size: 22,
-
+          CircleAvatar(
+          radius: 16,
+          backgroundColor: selected
+              ? Colors.white
+              : TColors.primary,
+          child: Text(
+            area.doctorCount.toString(),
+            style: TextStyle(
               color: selected
-                  ? Colors.white
-                  : TColors.primary,
-
+                  ? TColors.primary
+                  : Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 12,
             ),
+          ),
+        ),
+
+
 
             const SizedBox(height: 6),
 
@@ -121,43 +133,24 @@ class AreaCircleWidget extends GetView<TerritoryController> {
             const SizedBox(height: 4),
 
             Text(
-
-              "${area.doctorCount} Doctors",
-
+              "PIN ${area.pincode}",
               style: TextStyle(
-
-                fontSize: 11,
-
-                color: selected
-                    ? Colors.white70
-                    : Colors.grey,
-
-              ),
-
-            ),
-
-            Text(
-
-              area.pincode,
-
-              style: TextStyle(
-
                 fontSize: 10,
-
                 color: selected
                     ? Colors.white70
                     : Colors.grey,
-
               ),
-
             ),
+
+
 
           ],
 
         ),
 
       ),
-
+          ),
+      ),
     );
 
   }

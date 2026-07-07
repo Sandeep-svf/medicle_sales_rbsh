@@ -110,6 +110,32 @@ class TerritoryController extends GetxController {
     loadData();
   }
 
+  /// old one for beat edge
+  /*LatLng beatCenter(List<AreaModel> areas) {
+    if (areas.isEmpty) {
+      return currentCenter.value;
+    }
+
+    double lat = 0;
+    double lng = 0;
+
+    for (final area in areas) {
+      lat += area.latitude;
+      lng += area.longitude;
+    }
+
+    return LatLng(
+      lat / areas.length,
+      lng / areas.length,
+    );
+  }*/
+
+  bool isAreaInSelectedHeadquarter(AreaModel area) {
+    if (selectedHeadquarter.value == null) return false;
+
+    return area.headquarterId == selectedHeadquarter.value!.id;
+  }
+
   void onMapReady() {
 
     _mapReady = true;
@@ -203,8 +229,11 @@ class TerritoryController extends GetxController {
     );
 
     if (headquarters.isNotEmpty) {
-      changeHeadquarter(
-        headquarters.first,
+      selectedHeadquarter.value = null;
+
+      moveCamera(
+        const LatLng(28.60, 77.25), // between Noida & Delhi
+        10.5,
       );
     }
 
@@ -282,35 +311,42 @@ class TerritoryController extends GetxController {
   /// AREA
   /////////////////////////////////////////////////////////////////////////////
 
-  void selectArea(
-      AreaModel area) {
+  void selectArea(AreaModel area) {
 
     selectedArea.value = area;
 
-    if (mapMode.value != TerritoryMapMode.createBeat) {
-      return;
-    }
-
-    if (selectedAreas.contains(area)) {
-      selectedAreas.remove(area);
+    if (selectedAreas.any((e) => e.id == area.id)) {
+      selectedAreas.removeWhere((e) => e.id == area.id);
     } else {
       selectedAreas.add(area);
     }
 
+    if (selectedAreas.isEmpty) return;
+
+    double minLat = selectedAreas.first.latitude;
+    double maxLat = selectedAreas.first.latitude;
+    double minLng = selectedAreas.first.longitude;
+    double maxLng = selectedAreas.first.longitude;
+
+    for (final area in selectedAreas) {
+
+      minLat = area.latitude < minLat ? area.latitude : minLat;
+      maxLat = area.latitude > maxLat ? area.latitude : maxLat;
+
+      minLng = area.longitude < minLng ? area.longitude : minLng;
+      maxLng = area.longitude > maxLng ? area.longitude : maxLng;
+
+    }
+
     moveCamera(
-
       LatLng(
-
-        area.latitude,
-
-        area.longitude,
-
+        (minLat + maxLat) / 2,
+        (minLng + maxLng) / 2,
       ),
-
-      15,
-
+      currentZoom.value < 12 ? 12 : currentZoom.value,
     );
 
+    update();
   }
 
   /////////////////////////////////////////////////////////////////////////////
@@ -335,6 +371,64 @@ class TerritoryController extends GetxController {
 
   }
 
+
+  void zoomToAreas(List<AreaModel> areas) {
+    if (areas.isEmpty) return;
+
+    double minLat = areas.first.latitude;
+    double maxLat = areas.first.latitude;
+    double minLng = areas.first.longitude;
+    double maxLng = areas.first.longitude;
+
+    for (final area in areas) {
+      if (area.latitude < minLat) minLat = area.latitude;
+      if (area.latitude > maxLat) maxLat = area.latitude;
+
+      if (area.longitude < minLng) minLng = area.longitude;
+      if (area.longitude > maxLng) maxLng = area.longitude;
+    }
+
+    final center = LatLng(
+      (minLat + maxLat) / 2,
+      (minLng + maxLng) / 2,
+    );
+
+    moveCamera(center, 11.8);
+  }
+
+  int beatCountOfArea(String areaId) {
+    return beatAreas
+        .where((e) => e.areaId == areaId)
+        .length;
+  }
+
+
+  final Distance distance = const Distance();
+
+  AreaModel? areaFromPoint(LatLng point) {
+
+    for (final area in visibleAreas) {
+
+      final meter = distance.as(
+        LengthUnit.Meter,
+        point,
+        LatLng(
+          area.latitude,
+          area.longitude,
+        ),
+      );
+
+      if (meter <= area.radius) {
+        return area;
+      }
+
+    }
+
+    return null;
+  }
+
+
+
   /////////////////////////////////////////////////////////////////////////////
   /// BEAT
   /////////////////////////////////////////////////////////////////////////////
@@ -348,18 +442,7 @@ class TerritoryController extends GetxController {
     selectedAreas.assignAll(areas);
 
     if (areas.isNotEmpty) {
-
-      moveCamera(
-
-        LatLng(
-          areas.first.latitude,
-          areas.first.longitude,
-        ),
-
-        13.5,
-
-      );
-
+      zoomToAreas(areas);
     }
 
     if (Get.isBottomSheetOpen ?? false) {
@@ -374,18 +457,33 @@ class TerritoryController extends GetxController {
 
   void startBeatCreation() {
 
-    selectedAreas.clear();
+    editingBeat.value = null;
+
+    selectedBeat.value = null;
+
+    selectedArea.value = null;
+
+    selectedDoctor.value = null;
+
+    // DON'T clear selectedAreas here.
+    // User has already selected Areas on the map.
 
     resetBeatForm();
 
-    mapMode.value =
-        TerritoryMapMode.createBeat;
+    mapMode.value = TerritoryMapMode.createBeat;
 
+    Get.bottomSheet(
+      const CreateBeatBottomSheet(),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+    );
   }
 
   void cancelBeatCreation() {
 
-    selectedAreas.clear();
+    if (editingBeat.value == null) {
+      selectedAreas.clear();
+    }
 
     beatNameController.clear();
 
@@ -424,7 +522,9 @@ class TerritoryController extends GetxController {
 
   }
 
-  List<AreaModel> get visibleAreas {
+
+  /// old
+  /*List<AreaModel> get visibleAreas {
 
     if (selectedHeadquarter.value == null) {
       return [];
@@ -438,9 +538,13 @@ class TerritoryController extends GetxController {
     )
         .toList();
 
-  }
+  }*/
 
-  List<DoctorLocationModel> get visibleDoctors {
+  /// new
+  List<AreaModel> get visibleAreas => areas;
+
+  ///old
+ /* List<DoctorLocationModel> get visibleDoctors {
 
     if (selectedHeadquarter.value == null) {
       return [];
@@ -454,9 +558,13 @@ class TerritoryController extends GetxController {
     )
         .toList();
 
-  }
+  }*/
 
-  List<BeatModel> get visibleBeats {
+  ///new
+  List<DoctorLocationModel> get visibleDoctors => doctors;
+
+  ///old
+  /*List<BeatModel> get visibleBeats {
 
     if (selectedHeadquarter.value == null) {
       return [];
@@ -470,7 +578,10 @@ class TerritoryController extends GetxController {
     )
         .toList();
 
-  }
+  }*/
+
+  /// new
+  List<BeatModel> get visibleBeats => beats;
 
   List<AreaModel> beatAreasOf(
       BeatModel beat) {
@@ -616,6 +727,49 @@ class TerritoryController extends GetxController {
 
   }
 
+  // new one for beat circle
+  LatLng beatCenter(List<AreaModel> areas) {
+
+    final lat = areas
+        .map((e) => e.latitude)
+        .reduce((a, b) => a + b) /
+        areas.length;
+
+    final lng = areas
+        .map((e) => e.longitude)
+        .reduce((a, b) => a + b) /
+        areas.length;
+
+    return LatLng(lat, lng);
+  }
+
+  double beatRadius(List<AreaModel> areas) {
+
+    final center = beatCenter(areas);
+
+    final distance = const Distance();
+
+    double radius = 0;
+
+    for (final area in areas) {
+
+      final d = distance.as(
+        LengthUnit.Meter,
+        center,
+        LatLng(
+          area.latitude,
+          area.longitude,
+        ),
+      );
+
+      if (d + area.radius > radius) {
+        radius = d + area.radius;
+      }
+    }
+
+    return radius;
+  }
+
   ///////////////////////////////////////////////////////////////////////////////
   /// BEAT CREATION
 ///////////////////////////////////////////////////////////////////////////////
@@ -674,8 +828,7 @@ class TerritoryController extends GetxController {
 
       id: beatId,
 
-      headquarterId:
-      selectedHeadquarter.value!.id,
+        headquarterId: "MULTI",
 
       beatName:
       beatNameController.text.trim(),
@@ -696,6 +849,7 @@ class TerritoryController extends GetxController {
     );
 
     beats.add(beat);
+    selectedBeat.value = beat;
 
     //////////////////////////////////////////////////////
     /// CREATE BEAT AREA
@@ -717,6 +871,8 @@ class TerritoryController extends GetxController {
 
     }
 
+    zoomToAreas(selectedAreas);
+
     Get.snackbar(
 
       "Success",
@@ -727,7 +883,12 @@ class TerritoryController extends GetxController {
 
     );
 
-    cancelBeatCreation();
+    Future.delayed(
+      const Duration(milliseconds: 300),
+          () {
+        cancelBeatCreation();
+      },
+    );
 
     update();
 
@@ -797,7 +958,12 @@ class TerritoryController extends GetxController {
       "Beat Updated Successfully",
     );
 
-    cancelBeatCreation();
+    Future.delayed(
+      const Duration(milliseconds: 300),
+          () {
+        cancelBeatCreation();
+      },
+    );
 
   }
 

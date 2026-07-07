@@ -25,6 +25,8 @@ class TerritoryGoogleMap extends GetView<TerritoryController> {
 
         options: MapOptions(
 
+
+
           initialCenter: controller.currentCenter.value,
 
           initialZoom: controller.currentZoom.value,
@@ -46,11 +48,23 @@ class TerritoryGoogleMap extends GetView<TerritoryController> {
 
           onTap: (_, point) {
 
-            controller.selectedArea.value = null;
+            print("TerritoryController ===== MAP TAP =====");
 
-            controller.selectedDoctor.value = null;
+            final area = controller.areaFromPoint(point);
 
+            print("TerritoryController Area : ${area?.postOffice}");
+
+            if (area != null) {
+              print("TerritoryController Selecting Area");
+              controller.selectArea(area);
+            } else {
+              print("TerritoryController No Area Found");
+            }
           },
+
+          onSecondaryTap: (_, __) {},
+
+          onLongPress: (_, __) {},
 
         ),
 
@@ -78,7 +92,13 @@ class TerritoryGoogleMap extends GetView<TerritoryController> {
 
             if (controller.showBeats.value)
 
-              PolygonLayer(
+              /// old one for beat edge
+
+             /* PolygonLayer(
+
+
+
+
 
                 polygons: controller.visibleBeats.map((beat) {
 
@@ -88,7 +108,30 @@ class TerritoryGoogleMap extends GetView<TerritoryController> {
                     return Polygon(points: []);
                   }
 
+                  final points = [...areas]
+                    ..sort((a, b) {
+                      final lat = a.latitude.compareTo(b.latitude);
+                      if (lat != 0) return lat;
+                      return a.longitude.compareTo(b.longitude);
+                    });
+
                   return Polygon(
+                    hitValue: beat,
+                    points: points
+                        .map(
+                          (e) => LatLng(
+                        e.latitude,
+                        e.longitude,
+                      ),
+                    )
+                        .toList(),
+                    color: controller.beatColor(beat).withOpacity(.18),
+                    borderColor: controller.beatColor(beat),
+                    borderStrokeWidth: 3,
+                  );
+
+                  // this is old one.
+                 *//* return Polygon(
 
                     points: areas.map((e) {
 
@@ -108,88 +151,127 @@ class TerritoryGoogleMap extends GetView<TerritoryController> {
 
                     borderStrokeWidth: 3,
 
-                  );
+                  );*//*
 
                 }).toList(),
 
-              ),
+              ),*/
+
+              /// new one for beat circle
+              if (controller.showBeats.value)
+                CircleLayer(
+                  circles: controller.visibleBeats.map((beat) {
+
+                    final areas = controller.beatAreasOf(beat);
+
+                    if (areas.isEmpty) {
+                      return CircleMarker(
+                        point: controller.currentCenter.value,
+                        radius: 0,
+                      );
+                    }
+
+                    return CircleMarker(
+
+                      point: controller.beatCenter(areas),
+
+                      radius: controller.beatRadius(areas),
+
+                      useRadiusInMeter: true,
+
+                      color: controller
+                          .beatColor(beat)
+                          .withOpacity(.15),
+
+                      borderColor: controller.beatColor(beat),
+
+                      borderStrokeWidth: 3,
+
+                    );
+
+                  }).toList(),
+                ),
+
 
           MarkerLayer(
-
-            markers: controller.visibleBeats.map((beat){
+            markers: controller.visibleBeats.map((beat) {
 
               final areas = controller.beatAreasOf(beat);
 
               if (areas.isEmpty) {
-
                 return Marker(
-
                   point: controller.currentCenter.value,
-
+                  width: 1,
+                  height: 1,
                   child: const SizedBox(),
-
                 );
-
               }
 
-              final first = areas.first;
+              final center = controller.beatCenter(areas);
 
               return Marker(
-
-                point: LatLng(
-                  first.latitude,
-                  first.longitude,
-                ),
-
-                width: 140,
-
-                height: 44,
-
-                child: Container(
-
-                  alignment: Alignment.center,
-
-                  decoration: BoxDecoration(
-
-                    color: controller.beatColor(beat),
-
-                    borderRadius:
-                    BorderRadius.circular(30),
-
-                    boxShadow: const [
-
-                      BoxShadow(
-
-                        blurRadius: 8,
-
-                        color: Colors.black26,
-
-                      )
-
-                    ],
-
-                  ),
-
-                  child: Text(
-
-                    beat.beatName,
-
-                    style: const TextStyle(
-
-                      color: Colors.white,
-
-                      fontWeight: FontWeight.bold,
-
+                point: center,
+                width: 120,
+                height: 40,
+                child: GestureDetector(
+                  onTap: () => controller.selectBeat(beat),
+                  child: Container(
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: controller.beatColor(beat),
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Colors.black26,
+                          blurRadius: 6,
+                        ),
+                      ],
                     ),
-
+                    child: Text(
+                      beat.beatName,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
-
                 ),
-
               );
-
             }).toList(),
+          ),
 
+          /// HEADQUARTER MARKERS
+          MarkerLayer(
+            markers: controller.headquarters.map((hq) {
+              return Marker(
+                point: LatLng(
+                  hq.latitude,
+                  hq.longitude,
+                ),
+                width: 46,
+                height: 46,
+                child: GestureDetector(
+                  onTap: () => controller.changeHeadquarter(hq),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: controller.selectedHeadquarter.value?.id == hq.id
+                          ? Colors.red
+                          : Colors.orange,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.white,
+                        width: 3,
+                      ),
+                    ),
+                    child: const Icon(
+                      Icons.location_city,
+                      color: Colors.white,
+                      size: 22,
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
           ),
 
             CircleLayer(
@@ -214,15 +296,19 @@ class TerritoryGoogleMap extends GetView<TerritoryController> {
 
 
 
-                color: selected
-                ? TColors.primary.withOpacity(.35)
-                    : Colors.blue.withOpacity(.15),
+                  color: selected
+                      ? TColors.primary.withOpacity(.45)
+                      : controller.isAreaInSelectedHeadquarter(area)
+                      ? Colors.blue.withOpacity(.22)
+                      : Colors.grey.withOpacity(.08),
 
-                borderColor: selected
-                ? TColors.primary
-                    : Colors.blue,
+                  borderColor: selected
+                      ? TColors.primary
+                      : controller.isAreaInSelectedHeadquarter(area)
+                      ? Colors.blue
+                      : Colors.grey,
 
-                  borderStrokeWidth: 2,
+                  borderStrokeWidth: selected ? 4 : 2,
 
                 );
 
@@ -230,8 +316,22 @@ class TerritoryGoogleMap extends GetView<TerritoryController> {
 
             ),
 
-
-
+          if (controller.showAreaLabels)
+          MarkerLayer(
+            markers: controller.visibleAreas.map((area) {
+              return Marker(
+                point: LatLng(
+                  area.latitude,
+                  area.longitude,
+                ),
+                width: 110,
+                height: 55,
+                child: AreaCircleWidget(
+                  area: area,
+                ),
+              );
+            }).toList(),
+          ),
 
 
           /////////////////////////////////////////////////////
