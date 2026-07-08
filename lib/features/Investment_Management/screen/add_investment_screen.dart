@@ -12,6 +12,7 @@ import '../wigets/create_request/approval_routing.dart';
 import '../wigets/create_request/cash_form.dart';
 import '../wigets/create_request/compliance_card.dart';
 import '../wigets/create_request/doctor_section.dart';
+import '../wigets/create_request/emi_form.dart';
 import '../wigets/create_request/investment_mode_selector.dart';
 import '../wigets/create_request/item_gift_form.dart';
 import '../wigets/create_request/neft_form.dart';
@@ -191,6 +192,11 @@ class AddInvestmentScreen extends StatelessWidget {
       case InvestmentMode.gift:
         return const GiftForm(
           key: ValueKey("gift_form"),
+        );
+
+      case InvestmentMode.emi:
+        return const EmiForm(
+          key: ValueKey("emi_form"),
         );
     }
   }

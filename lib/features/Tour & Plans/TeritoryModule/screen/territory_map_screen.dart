@@ -4,11 +4,10 @@ import 'package:get/get.dart';
 import '../controller/territory_controller.dart';
 import '../wigets/beat_creation_panel.dart';
 import '../wigets/headquarter_selector.dart';
+import '../wigets/offline_map_toggle.dart';
 import '../wigets/territory_bottom_panel.dart';
 import '../wigets/territory_google_map.dart';
 import '../wigets/territory_top_bar.dart';
-
-
 
 class TerritoryMapScreen extends GetView<TerritoryController> {
   const TerritoryMapScreen({super.key});
@@ -46,6 +45,19 @@ class TerritoryMapScreen extends GetView<TerritoryController> {
               left: 12,
               right: 12,
               child: HeadquarterSelector(),
+            ),
+
+            /// offline map toggle
+            const Positioned(
+
+              top: 80,
+
+              left: 12,
+
+              right: 12,
+
+              child: OfflineMapToggle(),
+
             ),
 
             /// BOTTOM PANEL

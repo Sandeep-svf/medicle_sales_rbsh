@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -5,6 +7,8 @@ import 'package:get/get.dart';
 import 'package:latlong2/latlong.dart';
 
 
+import '../../../../utils/local_storage/auth_manager.dart';
+import '../../../addClinic/model/clinic.dart';
 import '../model/area_model.dart';
 import '../model/beat_area_model.dart';
 import '../model/beat_model.dart';
@@ -16,6 +20,20 @@ import '../wigets/area_details_bottom_sheet.dart';
 import '../wigets/create_beat_bottom_sheet.dart';
 
 class TerritoryController extends GetxController {
+
+
+  final authManager = AuthManager();
+
+  final assignedHeadOffices = <HeadOffice>[].obs;
+
+  /// offline map support
+  final isOfflineMode = false.obs;
+
+  final offlineMapDownloaded = false.obs;
+
+  final downloadProgress = 0.0.obs;
+
+  final downloading = false.obs;
 
   ///////////////////////////////////////////////////////////////////////////
   /// FORM
@@ -107,8 +125,51 @@ class TerritoryController extends GetxController {
   void onInit() {
     super.onInit();
 
+    loadAssignedHeadOffices();
+
     loadData();
   }
+
+
+  Future<void> loadAssignedHeadOffices() async {
+
+    final user = await authManager.getUserData();
+
+    assignedHeadOffices.assignAll(
+
+      List<HeadOffice>.from(
+        user?.user?.headOffices ?? const <HeadOffice>[],
+      ),
+
+    );
+
+  }
+
+  Future<void> toggleOfflineMode(bool value) async {
+
+    isOfflineMode.value = value;
+
+    if (!value) {
+      return;
+    }
+
+    await checkOfflineAvailability();
+
+  }
+
+  Future<void> checkOfflineAvailability() async{
+
+  }
+
+  Future<void> downloadOfflineMap() async{
+
+  }
+
+  Future<void> deleteOfflineMap() async{
+
+  }
+
+
 
   /// old one for beat edge
   /*LatLng beatCenter(List<AreaModel> areas) {
@@ -892,6 +953,45 @@ class TerritoryController extends GetxController {
 
     update();
 
+  }
+
+  List<LatLng> beatTerritoryPoints(BeatModel beat) {
+
+    final areas = beatAreasOf(beat);
+
+    if (areas.length < 3) {
+      return [];
+    }
+
+    final points = areas
+        .map(
+          (e) => LatLng(
+        e.latitude,
+        e.longitude,
+      ),
+    )
+        .toList();
+
+    // Sort clockwise around center
+    final center = beatCenter(areas);
+
+    points.sort((a, b) {
+
+      final angleA = atan2(
+        a.latitude - center.latitude,
+        a.longitude - center.longitude,
+      );
+
+      final angleB = atan2(
+        b.latitude - center.latitude,
+        b.longitude - center.longitude,
+      );
+
+      return angleA.compareTo(angleB);
+
+    });
+
+    return points;
   }
 
   void resetBeatForm() {

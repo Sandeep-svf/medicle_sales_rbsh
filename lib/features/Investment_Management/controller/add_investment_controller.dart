@@ -16,6 +16,42 @@ import 'investment_request_controller.dart';
 
 class AddInvestmentController extends GetxController {
 
+
+  /// EMI Doctor Details
+
+  final areaHQController = TextEditingController();
+
+  final qualificationController = TextEditingController();
+
+  final productSuggestedController = TextEditingController();
+
+  final monthlyExpectedSalesController =
+  TextEditingController();
+
+
+
+  /// EMI Investment
+
+  final emiAmountController = TextEditingController();
+
+  final emiDateController = TextEditingController();
+
+  final emiMonthsController = TextEditingController();
+
+  final emiRemarksController = TextEditingController();
+
+
+  /// EMI Bank Details
+
+  final emiAccountNumberController =
+  TextEditingController();
+
+  final emiIfscController =
+  TextEditingController();
+
+  final emiAccountHolderController =
+  TextEditingController();
+
   ///=========================================================
   /// FORM
   ///=========================================================
@@ -229,6 +265,21 @@ class AddInvestmentController extends GetxController {
     quantityController.dispose();
 
     valueController.dispose();
+
+    areaHQController.dispose();
+    qualificationController.dispose();
+    productSuggestedController.dispose();
+    monthlyExpectedSalesController.dispose();
+
+    emiAmountController.dispose();
+    emiDateController.dispose();
+    emiMonthsController.dispose();
+    emiRemarksController.dispose();
+
+
+    emiAccountNumberController.dispose();
+    emiIfscController.dispose();
+    emiAccountHolderController.dispose();
 
     super.onClose();
   }
@@ -465,7 +516,36 @@ class AddInvestmentController extends GetxController {
         request.items = giftItems;
 
         break;
+
+
+
+      case InvestmentMode.emi:
+      // Temporary mapping until backend supports EMI
+        request.amount = double.tryParse(emiAmountController.text);
+
+        request.purpose = emiRemarksController.text.trim();
+
+        request.accountHolder =
+            emiAccountHolderController.text.trim();
+
+        request.accountNumber =
+            emiAccountNumberController.text.trim();
+
+        request.ifsc =
+            emiIfscController.text.trim();
+
+        break;
+
+      case InvestmentMode.gift:
+        request.justification =
+            justificationController.text.trim();
+
+        request.items = giftItems;
+        break;
     }
+
+
+
 
     return request;
   }

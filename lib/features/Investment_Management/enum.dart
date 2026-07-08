@@ -10,4 +10,5 @@ enum InvestmentMode {
   neft,
   upi,
   gift,
+  emi,
 }

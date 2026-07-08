@@ -57,6 +57,18 @@ class InvestmentModeSelector extends GetView<AddInvestmentController> {
 
             Expanded(
               child: InvestmentModeCard(
+                selected: controller.selectedMode.value == InvestmentMode.emi,
+                title: "EMI",
+                subtitle: "",
+                icon: Icons.calendar_month_outlined,
+                onTap: () => controller.changeMode(InvestmentMode.emi),
+              ),
+            ),
+
+            const SizedBox(width: 10),
+
+            Expanded(
+              child: InvestmentModeCard(
                 selected: controller.selectedMode.value == InvestmentMode.gift,
                 title: "Gift",
                 subtitle: "",
@@ -64,7 +76,6 @@ class InvestmentModeSelector extends GetView<AddInvestmentController> {
                 onTap: () => controller.changeMode(InvestmentMode.gift),
               ),
             ),
-
           ],
         );
       }),

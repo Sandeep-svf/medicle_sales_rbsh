@@ -74,15 +74,25 @@ class TerritoryGoogleMap extends GetView<TerritoryController> {
           /// MAP
           /////////////////////////////////////////////////////
 
-          TileLayer(
+          Obx(() {
 
-            urlTemplate:
-            "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+            if (!controller.isOfflineMode.value) {
 
-            userAgentPackageName:
-            "com.medicle.sales",
+              return TileLayer(
 
-          ),
+                urlTemplate:
+                "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+
+                userAgentPackageName:
+                "com.medicle.sales",
+
+              );
+
+            }
+
+            return const SizedBox();
+
+          }),
 
           /////////////////////////////////////////////////////
           /// AREA CIRCLE

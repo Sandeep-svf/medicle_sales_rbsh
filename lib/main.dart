@@ -235,8 +235,16 @@ void main() async{
 
   FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(true);
 
-  await FirebaseMessaging.instance.requestPermission();
-  final token = await FirebaseMessaging.instance.getToken();
+  try {
+    await FirebaseMessaging.instance.requestPermission();
+
+    final token = await FirebaseMessaging.instance.getToken();
+
+    debugPrint("FCM Token : $token");
+  } catch (e, s) {
+    debugPrint("FCM Error : $e");
+    debugPrint("$s");
+  }
 
 
   Get.put(

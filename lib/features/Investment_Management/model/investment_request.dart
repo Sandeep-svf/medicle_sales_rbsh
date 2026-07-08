@@ -73,6 +73,26 @@ class InvestmentRequestModel {
 
         break;
 
+
+      case InvestmentMode.emi:
+        json["paymentMode"] = "EMI";
+
+        json["amount"] = amount;
+
+        json["purpose"] = purpose;
+
+        json["bankDetails"] =
+        "$accountHolder | "
+            "A/C: $accountNumber | "
+            "IFSC: $ifsc";
+
+        if (paymentProof != null &&
+            paymentProof!.isNotEmpty) {
+          json["paymentProof"] = paymentProof;
+        }
+
+        break;
+
       case InvestmentMode.gift:
         json["paymentMode"] = "Items/Gift";
         json["justification"] = justification;
