@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../controller/territory_controller.dart';
 import '../wigets/beat_creation_panel.dart';
+import '../wigets/beat_legend.dart';
 import '../wigets/headquarter_selector.dart';
 import '../wigets/offline_map_toggle.dart';
 import '../wigets/territory_bottom_panel.dart';
@@ -37,6 +38,13 @@ class TerritoryMapScreen extends GetView<TerritoryController> {
               left: 12,
               right: 12,
               child: TerritoryTopBar(),
+            ),
+
+
+            const Positioned(
+              top: 150,
+              right: 12,
+              child: BeatLegend(),
             ),
 
             /// HQ SELECTOR

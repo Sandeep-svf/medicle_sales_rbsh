@@ -169,7 +169,7 @@ class TerritoryGoogleMap extends GetView<TerritoryController> {
 
               /// new one for beat circle
               if (controller.showBeats.value)
-                CircleLayer(
+               /* CircleLayer(
                   circles: controller.visibleBeats.map((beat) {
 
                     final areas = controller.beatAreasOf(beat);
@@ -200,10 +200,10 @@ class TerritoryGoogleMap extends GetView<TerritoryController> {
                     );
 
                   }).toList(),
-                ),
+                ),*/
 
 
-          MarkerLayer(
+         /* MarkerLayer(
             markers: controller.visibleBeats.map((beat) {
 
               final areas = controller.beatAreasOf(beat);
@@ -248,7 +248,7 @@ class TerritoryGoogleMap extends GetView<TerritoryController> {
                 ),
               );
             }).toList(),
-          ),
+          ),*/
 
           /// HEADQUARTER MARKERS
           MarkerLayer(
@@ -284,9 +284,7 @@ class TerritoryGoogleMap extends GetView<TerritoryController> {
             }).toList(),
           ),
 
-            CircleLayer(
-
-
+         /*   CircleLayer(
 
               circles: controller.visibleAreas.map((area){
                 final selected = controller.selectedAreas.any(
@@ -308,15 +306,11 @@ class TerritoryGoogleMap extends GetView<TerritoryController> {
 
                   color: selected
                       ? TColors.primary.withOpacity(.45)
-                      : controller.isAreaInSelectedHeadquarter(area)
-                      ? Colors.blue.withOpacity(.22)
-                      : Colors.grey.withOpacity(.08),
+                      : controller.areaFillColor(area),
 
                   borderColor: selected
                       ? TColors.primary
-                      : controller.isAreaInSelectedHeadquarter(area)
-                      ? Colors.blue
-                      : Colors.grey,
+                      : controller.areaBorderColor(area),
 
                   borderStrokeWidth: selected ? 4 : 2,
 
@@ -324,7 +318,11 @@ class TerritoryGoogleMap extends GetView<TerritoryController> {
 
               }).toList(),
 
-            ),
+            ),*/
+
+          PolygonLayer(
+            polygons: controller.buildAreaPolygons(),
+          ),
 
           if (controller.showAreaLabels)
           MarkerLayer(

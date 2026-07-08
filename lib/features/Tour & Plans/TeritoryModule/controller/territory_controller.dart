@@ -15,6 +15,7 @@ import '../model/beat_model.dart';
 import '../model/doctor_location_model.dart';
 import '../model/headquarter_model.dart';
 import '../repository/territory_repository.dart';
+import '../service/area_polygon_builder.dart';
 import '../utils/enumsclass.dart';
 import '../wigets/area_details_bottom_sheet.dart';
 import '../wigets/create_beat_bottom_sheet.dart';
@@ -932,6 +933,10 @@ class TerritoryController extends GetxController {
 
     }
 
+    beats.refresh();
+    beatAreas.refresh();
+    selectedAreas.refresh();
+
     zoomToAreas(selectedAreas);
 
     Get.snackbar(
@@ -954,6 +959,9 @@ class TerritoryController extends GetxController {
     update();
 
   }
+
+
+
 
   List<LatLng> beatTerritoryPoints(BeatModel beat) {
 
@@ -1004,6 +1012,55 @@ class TerritoryController extends GetxController {
         BeatColor.blue;
 
   }
+
+  bool areaBelongsToSelectedBeat(String areaId) {
+    if (selectedBeat.value == null) {
+      return false;
+    }
+
+    return beatAreas.any(
+          (e) =>
+      e.areaId == areaId &&
+          e.beatId == selectedBeat.value!.id,
+    );
+  }
+
+  Color? selectedBeatColorForArea(String areaId) {
+    if (selectedBeat.value == null) {
+      return null;
+    }
+
+    if (!areaBelongsToSelectedBeat(areaId)) {
+      return null;
+    }
+
+    return beatColor(selectedBeat.value!);
+  }
+
+  String beatNamesForArea(String areaId) {
+    final list = beatsForArea(areaId);
+
+    if (list.isEmpty) {
+      return "";
+    }
+
+    return list
+        .map((e) => e.beatName)
+        .join(" | ");
+  }
+
+  bool hasBeat(String areaId) {
+    return beatsForArea(areaId).isNotEmpty;
+  }
+
+  List<Color> colorsForArea(String areaId) {
+
+    return beatsForArea(areaId)
+        .map((beat) => beatColor(beat))
+        .toList();
+
+  }
+
 
   Future<void> updateBeat() async {
 
@@ -1071,6 +1128,93 @@ class TerritoryController extends GetxController {
     return selectedAreas.any(
           (area) => area.id == areaId,
     );
+  }
+
+
+  List<Polygon> buildAreaPolygons() {
+    final List<Polygon> polygons = [];
+
+    for (final area in visibleAreas) {
+      final beatList = beatsForArea(area.id);
+
+      final colors = beatList
+          .map((e) => beatColor(e))
+          .toList();
+
+      polygons.addAll(
+        AreaPolygonBuilder.build(
+          center: LatLng(
+            area.latitude,
+            area.longitude,
+          ),
+          radius: area.radius,
+          colors: colors,
+        ),
+      );
+    }
+
+    return polygons;
+  }
+
+  List<LatLng> _createCircle(
+      LatLng center,
+      double radiusMeters,
+      ) {
+    const earthRadius = 6378137.0;
+
+    final List<LatLng> points = [];
+
+    for (int i = 0; i <= 72; i++) {
+      final angle = 2 * pi * i / 72;
+
+      final dx = radiusMeters * cos(angle);
+      final dy = radiusMeters * sin(angle);
+
+      final lat =
+          center.latitude +
+              (dy / earthRadius) * 180 / pi;
+
+      final lng =
+          center.longitude +
+              (dx /
+                  (earthRadius *
+                      cos(center.latitude * pi / 180))) *
+                  180 /
+                  pi;
+
+      points.add(
+        LatLng(lat, lng),
+      );
+    }
+
+    return points;
+  }
+
+
+
+
+  Color areaFillColor(AreaModel area) {
+    final beatList = beatsForArea(area.id);
+
+    if (beatList.isEmpty) {
+      return isAreaInSelectedHeadquarter(area)
+          ? Colors.blue.withOpacity(.22)
+          : Colors.grey.withOpacity(.08);
+    }
+
+    return beatColor(beatList.first).withOpacity(.25);
+  }
+
+  Color areaBorderColor(AreaModel area) {
+    final beatList = beatsForArea(area.id);
+
+    if (beatList.isEmpty) {
+      return isAreaInSelectedHeadquarter(area)
+          ? Colors.blue
+          : Colors.grey;
+    }
+
+    return beatColor(beatList.first);
   }
 
 

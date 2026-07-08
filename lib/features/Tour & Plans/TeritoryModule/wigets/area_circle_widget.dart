@@ -6,6 +6,7 @@ import '../../../../utils/constants/colors.dart';
 import '../../../../utils/constants/sizes.dart';
 import '../controller/territory_controller.dart';
 import '../model/area_model.dart';
+import 'beat_area_avatar.dart';
 
 class AreaCircleWidget extends GetView<TerritoryController> {
 
@@ -17,14 +18,14 @@ class AreaCircleWidget extends GetView<TerritoryController> {
   });
 
   @override
+  @override
   Widget build(BuildContext context) {
 
-    final selected = controller.isAreaSelected(area.id);
+    return Obx(() {
 
-    final selectedBeat =
-        controller.selectedBeat.value;
+      final selected = controller.isAreaSelected(area.id);
 
-    return GestureDetector(
+      return GestureDetector(
 
       onTap: (){
 
@@ -38,7 +39,7 @@ class AreaCircleWidget extends GetView<TerritoryController> {
           milliseconds: 250,
         ),
 
-        width: 90,
+        width: 100,
 
         padding: const EdgeInsets.symmetric(
           horizontal: 8,
@@ -84,22 +85,15 @@ class AreaCircleWidget extends GetView<TerritoryController> {
     mainAxisSize: MainAxisSize.min,
     children: [
 
-          CircleAvatar(
-          radius: 16,
-          backgroundColor: selected
-              ? Colors.white
-              : TColors.primary,
-          child: Text(
-            area.doctorCount.toString(),
-            style: TextStyle(
-              color: selected
-                  ? TColors.primary
-                  : Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 12,
-            ),
-          ),
-        ),
+      BeatAreaAvatar(
+        colors: controller.selectedBeat.value == null
+            ? controller.colorsForArea(area.id)
+            : [
+          if (controller.selectedBeatColorForArea(area.id) != null)
+            controller.selectedBeatColorForArea(area.id)!,
+        ],
+        doctorCount: area.doctorCount,
+      ),
 
 
 
@@ -131,16 +125,21 @@ class AreaCircleWidget extends GetView<TerritoryController> {
             ),
 
             const SizedBox(height: 4),
-
-            Text(
-              "PIN ${area.pincode}",
-              style: TextStyle(
-                fontSize: 10,
-                color: selected
-                    ? Colors.white70
-                    : Colors.grey,
-              ),
-            ),
+      Text(
+        controller.beatNamesForArea(area.id).isEmpty
+            ? "No Beat"
+            : controller.beatNamesForArea(area.id),
+        textAlign: TextAlign.center,
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.w600,
+          color: selected
+              ? Colors.white70
+              : Colors.grey.shade700,
+        ),
+      ),
 
 
 
@@ -151,7 +150,9 @@ class AreaCircleWidget extends GetView<TerritoryController> {
       ),
           ),
       ),
-    );
+      );
+
+    });
 
   }
 
