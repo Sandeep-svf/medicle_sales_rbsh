@@ -1,10 +1,89 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
+import '../local_storage/auth_manager.dart';
+
 class THttpHelper {
      // static const String baseUrl = 'https://test.gluckscare.com/api'; // API base URL prod
     // static const String baseUrl = 'https://apiv2.gluckscare.com/api'; // API base URL prod
       static const String baseUrl = 'https://api.gluckscare.com/api'; // API base URL development test
+
+
+      // newly added for pass auth token as well
+      static Future<Map<String, dynamic>> authGet(
+          String endpoint,
+          ) async {
+
+        final token = await AuthManager().getAuthToken();
+
+        final response = await http.get(
+          Uri.parse('$baseUrl/$endpoint'),
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+          },
+        );
+
+        return _handleResponse(response);
+      }
+
+
+      static Future<Map<String, dynamic>> authPost(
+          String endpoint,
+          dynamic data,
+          ) async {
+
+        final token = await AuthManager().getAuthToken();
+
+        final response = await http.post(
+          Uri.parse('$baseUrl/$endpoint'),
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+          },
+          body: json.encode(data),
+        );
+
+        return _handleResponse(response);
+      }
+
+      static Future<Map<String, dynamic>> authPut(
+          String endpoint,
+          dynamic data,
+          ) async {
+
+        final token = await AuthManager().getAuthToken();
+
+        final response = await http.put(
+          Uri.parse('$baseUrl/$endpoint'),
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+          },
+          body: json.encode(data),
+        );
+
+        return _handleResponse(response);
+      }
+
+      static Future<Map<String, dynamic>> authDelete(
+          String endpoint,
+          ) async {
+
+        final token = await AuthManager().getAuthToken();
+
+        final response = await http.delete(
+          Uri.parse('$baseUrl/$endpoint'),
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+          },
+        );
+
+        return _handleResponse(response);
+      }
+
+
 
   // Helper method to make a GET request
   static Future<Map<String, dynamic>> get(String endpoint) async {
