@@ -14,6 +14,14 @@ class AreaModel extends Equatable {
 
   final int doctorCount;
 
+  final int chemistCount;
+
+  final int stockistCount;
+
+  /// Backend already sends the colors for this area.
+  final List<String> colors;
+
+  /// Keep for compatibility with existing UI.
   final List<String> beatIds;
 
   final bool selected;
@@ -28,6 +36,9 @@ class AreaModel extends Equatable {
     required this.longitude,
     this.radius = 700,
     this.doctorCount = 0,
+    this.chemistCount = 0,
+    this.stockistCount = 0,
+    this.colors = const [],
     this.beatIds = const [],
     this.selected = false,
     this.visible = true,
@@ -42,6 +53,9 @@ class AreaModel extends Equatable {
     double? longitude,
     double? radius,
     int? doctorCount,
+    int? chemistCount,
+    int? stockistCount,
+    List<String>? colors,
     List<String>? beatIds,
     bool? selected,
     bool? visible,
@@ -55,6 +69,9 @@ class AreaModel extends Equatable {
       longitude: longitude ?? this.longitude,
       radius: radius ?? this.radius,
       doctorCount: doctorCount ?? this.doctorCount,
+      chemistCount: chemistCount ?? this.chemistCount,
+      stockistCount: stockistCount ?? this.stockistCount,
+      colors: colors ?? this.colors,
       beatIds: beatIds ?? this.beatIds,
       selected: selected ?? this.selected,
       visible: visible ?? this.visible,
@@ -63,14 +80,17 @@ class AreaModel extends Equatable {
 
   factory AreaModel.fromJson(Map<String, dynamic> json) {
     return AreaModel(
-      id: json["id"],
-      headquarterId: json["headquarterId"],
-      postOffice: json["postOffice"],
-      pincode: json["pincode"],
-      latitude: (json["latitude"] as num).toDouble(),
-      longitude: (json["longitude"] as num).toDouble(),
-      radius: (json["radius"] ?? 700).toDouble(),
+      id: json["id"] ?? "",
+      headquarterId: json["headquarterId"] ?? "",
+      postOffice: json["postOffice"] ?? "",
+      pincode: json["pincode"] ?? "",
+      latitude: (json["latitude"] as num?)?.toDouble() ?? 0,
+      longitude: (json["longitude"] as num?)?.toDouble() ?? 0,
+      radius: (json["radius"] as num?)?.toDouble() ?? 700,
       doctorCount: json["doctorCount"] ?? 0,
+      chemistCount: json["chemistCount"] ?? 0,
+      stockistCount: json["stockistCount"] ?? 0,
+      colors: List<String>.from(json["colors"] ?? []),
       beatIds: List<String>.from(json["beatIds"] ?? []),
       selected: json["selected"] ?? false,
       visible: json["visible"] ?? true,
@@ -86,6 +106,9 @@ class AreaModel extends Equatable {
     "longitude": longitude,
     "radius": radius,
     "doctorCount": doctorCount,
+    "chemistCount": chemistCount,
+    "stockistCount": stockistCount,
+    "colors": colors,
     "beatIds": beatIds,
     "selected": selected,
     "visible": visible,
@@ -101,6 +124,9 @@ class AreaModel extends Equatable {
     longitude,
     radius,
     doctorCount,
+    chemistCount,
+    stockistCount,
+    colors,
     beatIds,
     selected,
     visible,

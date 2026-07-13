@@ -22,15 +22,15 @@ class BeatAreaModel extends Equatable {
 
   factory BeatAreaModel.fromJson(Map<String, dynamic> json) {
     return BeatAreaModel(
-      beatId: json["beatId"],
-      areaId: json["areaId"],
+      beatId: json["beat_id"] ?? "",
+      areaId: json["area_id"] ?? "",
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      "beatId": beatId,
-      "areaId": areaId,
+      "beat_id": beatId,
+      "area_id": areaId,
     };
   }
 

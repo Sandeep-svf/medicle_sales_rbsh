@@ -1,9 +1,5 @@
 import 'package:equatable/equatable.dart';
 
-import '../utils/enumsclass.dart';
-
-
-
 class BeatModel extends Equatable {
   final String id;
 
@@ -11,7 +7,8 @@ class BeatModel extends Equatable {
 
   final String beatName;
 
-  final BeatColor color;
+  /// Hex color from API (Example: #FF5733)
+  final String color;
 
   final int doctorCount;
 
@@ -39,7 +36,7 @@ class BeatModel extends Equatable {
     String? id,
     String? headquarterId,
     String? beatName,
-    BeatColor? color,
+    String? color,
     int? doctorCount,
     int? areaCount,
     DateTime? createdAt,
@@ -61,16 +58,24 @@ class BeatModel extends Equatable {
 
   factory BeatModel.fromJson(Map<String, dynamic> json) {
     return BeatModel(
-      id: json["id"],
-      headquarterId: json["headquarterId"],
-      beatName: json["beatName"],
-      color: BeatColor.values.firstWhere(
-            (e) => e.name == json["color"],
-      ),
+      id: json["id"] ?? "",
+
+      headquarterId: json["headquarterId"] ?? "",
+
+      beatName: json["beatName"] ?? "",
+
+      color: json["color"] ?? "#FF0000",
+
       doctorCount: json["doctorCount"] ?? 0,
+
       areaCount: json["areaCount"] ?? 0,
-      createdAt: DateTime.parse(json["createdAt"]),
-      createdBy: json["createdBy"],
+
+      createdAt: json["createdAt"] != null
+          ? DateTime.parse(json["createdAt"])
+          : DateTime.now(),
+
+      createdBy: json["createdBy"] ?? "",
+
       active: json["active"] ?? true,
     );
   }
@@ -80,7 +85,7 @@ class BeatModel extends Equatable {
       "id": id,
       "headquarterId": headquarterId,
       "beatName": beatName,
-      "color": color.name,
+      "color": color,
       "doctorCount": doctorCount,
       "areaCount": areaCount,
       "createdAt": createdAt.toIso8601String(),
@@ -88,6 +93,8 @@ class BeatModel extends Equatable {
       "active": active,
     };
   }
+
+
 
   @override
   List<Object?> get props => [

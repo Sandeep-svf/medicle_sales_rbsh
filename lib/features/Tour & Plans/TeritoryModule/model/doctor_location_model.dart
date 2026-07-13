@@ -2,22 +2,25 @@ import 'package:equatable/equatable.dart';
 
 import '../utils/enumsclass.dart';
 
-
-
 class DoctorLocationModel extends Equatable {
   final String id;
+
   final String doctorCode;
+
   final String doctorName;
 
   final String areaId;
+
   final String headquarterId;
 
   final String clinicName;
+
   final String speciality;
 
   final DoctorCategory category;
 
   final double latitude;
+
   final double longitude;
 
   final VisitStatus visitStatus;
@@ -69,24 +72,39 @@ class DoctorLocationModel extends Equatable {
     );
   }
 
-  factory DoctorLocationModel.fromJson(Map<String, dynamic> json) {
+  factory DoctorLocationModel.fromJson(
+      Map<String, dynamic> json,
+      ) {
     return DoctorLocationModel(
-      id: json["id"],
-      doctorCode: json["doctorCode"],
-      doctorName: json["doctorName"],
-      areaId: json["areaId"],
-      headquarterId: json["headquarterId"],
-      clinicName: json["clinicName"],
-      speciality: json["speciality"],
+      id: json["id"] ?? "",
+
+      doctorCode: json["doctorCode"] ?? "",
+
+      doctorName: json["doctorName"] ?? "",
+
+      areaId: json["areaId"] ?? "",
+
+      headquarterId: json["headquarterId"] ?? "",
+
+      clinicName: json["clinicName"] ?? "",
+
+      speciality: json["speciality"] ?? "",
+
       category: DoctorCategory.values.firstWhere(
-            (e) => e.name == json["category"],
+            (e) => e.name.toUpperCase() == (json["category"] ?? "").toString().toUpperCase(),
+        orElse: () => DoctorCategory.c,
       ),
-      latitude: (json["latitude"] as num).toDouble(),
-      longitude: (json["longitude"] as num).toDouble(),
+
+      latitude: (json["latitude"] as num?)?.toDouble() ?? 0,
+
+      longitude: (json["longitude"] as num?)?.toDouble() ?? 0,
+
       visitStatus: VisitStatus.values.firstWhere(
-            (e) => e.name == json["visitStatus"],
+            (e) => e.name.toLowerCase() ==
+            (json["visitStatus"] ?? "").toString().toLowerCase(),
         orElse: () => VisitStatus.pending,
       ),
+
       active: json["active"] ?? true,
     );
   }

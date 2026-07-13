@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:medicle_sales_rbsh/features/Tour%20&%20Plans/TeritoryModule/utils/color_extension.dart';
 
 
 import '../../../../utils/constants/colors.dart';
@@ -38,7 +39,7 @@ class BeatCard extends GetView<TerritoryController> {
                   width: 16,
                   height: 60,
                   decoration: BoxDecoration(
-                    color: _beatColor(),
+                    color: beat.color.toColor(),
                     borderRadius: BorderRadius.circular(20),
                   ),
                 ),
@@ -91,6 +92,7 @@ class BeatCard extends GetView<TerritoryController> {
                         break;
 
                       case "delete":
+                        controller.deleteBeat(beat);
                         break;
 
                     }
@@ -195,25 +197,5 @@ class BeatCard extends GetView<TerritoryController> {
     );
   }
 
-  Color _beatColor() {
-    switch (beat.color) {
-      case BeatColor.blue:
-        return Colors.blue;
 
-      case BeatColor.green:
-        return Colors.green;
-
-      case BeatColor.orange:
-        return Colors.orange;
-
-      case BeatColor.purple:
-        return Colors.purple;
-
-      case BeatColor.red:
-        return Colors.red;
-
-      case BeatColor.cyan:
-        return Colors.cyan;
-    }
-  }
 }

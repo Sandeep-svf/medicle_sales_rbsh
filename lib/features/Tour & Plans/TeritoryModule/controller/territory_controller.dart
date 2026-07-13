@@ -50,7 +50,7 @@ class TerritoryController extends GetxController {
   final remarkController = TextEditingController();
 
   final selectedBeatColor =
-      BeatColor.blue.obs;
+      "#FF0000".obs;
 
   final repository = TerritoryRepository.instance;
 
@@ -126,9 +126,7 @@ class TerritoryController extends GetxController {
   void onInit() {
     super.onInit();
 
-    loadAssignedHeadOffices();
-
-    loadData();
+    Future.microtask(loadData);
   }
 
 
@@ -268,37 +266,70 @@ class TerritoryController extends GetxController {
   /// LOAD
   /////////////////////////////////////////////////////////////////////////////
 
-  void loadData() {
+  Future<void> loadData() async {
+
+    //////////////////////////////////////////////////////
+    /// LOAD HEAD OFFICES FROM LOGIN
+    //////////////////////////////////////////////////////
+
+    final user = await AuthManager().getUserData();
 
     headquarters.assignAll(
-      repository.getHeadquarters(),
+      (user?.user?.headOffices ?? []).map(
+            (e) => HeadquarterModel(
+          id: e.id ?? "",
+          code: "",
+          name: e.name ?? "",
+          state: "",
+          latitude: 0,
+          longitude: 0,
+          zoom: 10,
+        ),
+      ).toList(),
     );
 
+    //////////////////////////////////////////////////////
+    /// LOAD TERRITORY FROM API
+    //////////////////////////////////////////////////////
+
+    final territory = await repository.loadTerritory();
+
     areas.assignAll(
-      repository.getAreas(),
+      territory.areas,
     );
 
     doctors.assignAll(
-      repository.getDoctors(),
+      territory.doctors,
     );
 
     beats.assignAll(
-      repository.getBeats(),
+      territory.beats,
     );
 
     beatAreas.assignAll(
-      repository.getBeatAreas(),
+      territory.beatAreas,
     );
 
-    if (headquarters.isNotEmpty) {
-      selectedHeadquarter.value = null;
+    //////////////////////////////////////////////////////
+    /// INITIAL MAP POSITION
+    //////////////////////////////////////////////////////
+
+    if (areas.isNotEmpty) {
 
       moveCamera(
-        const LatLng(28.60, 77.25), // between Noida & Delhi
-        10.5,
+
+        LatLng(
+          areas.first.latitude,
+          areas.first.longitude,
+        ),
+
+        11,
+
       );
+
     }
 
+    update();
   }
 
   /////////////////////////////////////////////////////////////////////////////
@@ -695,31 +726,16 @@ class TerritoryController extends GetxController {
 
   }
 
-  Color beatColor(
-      BeatModel beat) {
-
-    switch (beat.color) {
-
-      case BeatColor.blue:
-        return Colors.blue;
-
-      case BeatColor.green:
-        return Colors.green;
-
-      case BeatColor.orange:
-        return Colors.orange;
-
-      case BeatColor.purple:
-        return Colors.purple;
-
-      case BeatColor.red:
-        return Colors.red;
-
-      case BeatColor.cyan:
-        return Colors.cyan;
-
+  Color beatColor(BeatModel beat) {
+    try {
+      return Color(
+        int.parse(
+          beat.color.replaceFirst("#", "0xFF"),
+        ),
+      );
+    } catch (_) {
+      return Colors.grey;
     }
-
   }
 
   List<AreaModel> get beatCreationAreas {
@@ -758,6 +774,8 @@ class TerritoryController extends GetxController {
     return currentZoom.value >= 14;
 
   }
+
+  //temp chnage
 
   bool get showAreaLabels {
 
@@ -866,7 +884,7 @@ class TerritoryController extends GetxController {
 
   }
 
-  Future<void> createBeat() async {
+  /*Future<void> createBeat() async {
 
     if (beatNameController.text.trim().isEmpty) {
 
@@ -958,6 +976,94 @@ class TerritoryController extends GetxController {
 
     update();
 
+  }*/
+
+  Future<void> deleteBeat(BeatModel beat) async {
+    final confirm = await Get.dialog<bool>(
+      AlertDialog(
+        title: const Text("Delete Beat"),
+        content: Text(
+          "Are you sure you want to delete '${beat.beatName}'?",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(result: false),
+            child: const Text("Cancel"),
+          ),
+          ElevatedButton(
+            onPressed: () => Get.back(result: true),
+            child: const Text("Delete"),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) {
+      return;
+    }
+
+    try {
+      await repository.deleteBeat(beat.id);
+
+      await loadData();
+
+      if (selectedBeat.value?.id == beat.id) {
+        selectedBeat.value = null;
+      }
+
+      Get.snackbar(
+        "Success",
+        "Beat deleted successfully.",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } catch (e) {
+      Get.snackbar(
+        "Error",
+        e.toString(),
+      );
+    }
+  }
+
+  /// updated one for apis
+  Future<void> createBeat() async {
+    if (beatNameController.text.trim().isEmpty) {
+      Get.snackbar(
+        "Beat Name",
+        "Please enter beat name.",
+      );
+      return;
+    }
+
+    if (selectedAreas.isEmpty) {
+      Get.snackbar(
+        "Areas",
+        "Please select at least one area.",
+      );
+      return;
+    }
+
+    try {
+      await repository.createBeat(
+        name: beatNameController.text.trim(),
+        areaIds: selectedAreas.map((e) => e.id).toList(),
+        color: selectedBeatColor.value,
+      );
+
+      await loadData();
+
+      Get.snackbar(
+        "Success",
+        "Beat created successfully.",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+
+      cancelBeatCreation();
+    } catch (e) {
+      Get.snackbar(
+        "Error",
+        e.toString(),
+      );
+    }
   }
 
 
@@ -1009,7 +1115,7 @@ class TerritoryController extends GetxController {
     remarkController.clear();
 
     selectedBeatColor.value =
-        BeatColor.blue;
+    "#FF0000";
 
   }
 
@@ -1030,11 +1136,15 @@ class TerritoryController extends GetxController {
       return null;
     }
 
-    if (!areaBelongsToSelectedBeat(areaId)) {
-      return null;
+    try {
+      return Color(
+        int.parse(
+          selectedBeat.value!.color.replaceFirst("#", "0xFF"),
+        ),
+      );
+    } catch (_) {
+      return Colors.grey;
     }
-
-    return beatColor(selectedBeat.value!);
   }
 
   String beatNamesForArea(String areaId) {
@@ -1054,74 +1164,74 @@ class TerritoryController extends GetxController {
   }
 
   List<Color> colorsForArea(String areaId) {
+    final area = areas.firstWhereOrNull(
+          (e) => e.id == areaId,
+    );
 
-    return beatsForArea(areaId)
-        .map((beat) => beatColor(beat))
-        .toList();
+    if (area == null) {
+      return [];
+    }
 
+    return area.colors.map((hex) {
+      try {
+        return Color(
+          int.parse(
+            hex.replaceFirst("#", "0xFF"),
+          ),
+        );
+      } catch (_) {
+        return Colors.grey;
+      }
+    }).toList();
   }
 
 
   Future<void> updateBeat() async {
-
-    if (editingBeat.value == null) return;
-
-    final beat = editingBeat.value!;
-
-    final index = beats.indexWhere(
-          (e) => e.id == beat.id,
-    );
-
-    if (index == -1) return;
-
-    beats[index] = beat.copyWith(
-
-      beatName: beatNameController.text.trim(),
-
-      color: selectedBeatColor.value,
-
-      areaCount: selectedAreaCount,
-
-      doctorCount: selectedDoctorCount,
-
-    );
-
-    beatAreas.removeWhere(
-          (e) => e.beatId == beat.id,
-    );
-
-    for (final area in selectedAreas) {
-
-      beatAreas.add(
-
-        BeatAreaModel(
-
-          beatId: beat.id,
-
-          areaId: area.id,
-
-        ),
-
-      );
-
+    if (editingBeat.value == null) {
+      return;
     }
 
-    editingBeat.value = null;
+    if (beatNameController.text.trim().isEmpty) {
+      Get.snackbar(
+        "Beat Name",
+        "Please enter beat name.",
+      );
+      return;
+    }
 
-    update();
+    if (selectedAreas.isEmpty) {
+      Get.snackbar(
+        "Areas",
+        "Please select at least one area.",
+      );
+      return;
+    }
 
-    Get.snackbar(
-      "Success",
-      "Beat Updated Successfully",
-    );
+    try {
+      await repository.updateBeat(
+        beatId: editingBeat.value!.id,
+        name: beatNameController.text.trim(),
+        areaIds: selectedAreas.map((e) => e.id).toList(),
+        color: selectedBeatColor.value,
+      );
 
-    Future.delayed(
-      const Duration(milliseconds: 300),
-          () {
-        cancelBeatCreation();
-      },
-    );
+      await loadData();
 
+      editingBeat.value = null;
+
+      Get.snackbar(
+        "Success",
+        "Beat updated successfully.",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+
+      cancelBeatCreation();
+    } catch (e) {
+      Get.snackbar(
+        "Error",
+        e.toString(),
+      );
+    }
   }
 
   bool isAreaSelected(String areaId) {
@@ -1135,11 +1245,17 @@ class TerritoryController extends GetxController {
     final List<Polygon> polygons = [];
 
     for (final area in visibleAreas) {
-      final beatList = beatsForArea(area.id);
-
-      final colors = beatList
-          .map((e) => beatColor(e))
-          .toList();
+      final colors = area.colors.map((hex) {
+        try {
+          return Color(
+            int.parse(
+              hex.replaceFirst("#", "0xFF"),
+            ),
+          );
+        } catch (_) {
+          return Colors.grey;
+        }
+      }).toList();
 
       polygons.addAll(
         AreaPolygonBuilder.build(

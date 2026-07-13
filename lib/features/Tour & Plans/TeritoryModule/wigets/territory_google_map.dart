@@ -346,10 +346,16 @@ class TerritoryGoogleMap extends GetView<TerritoryController> {
           /// DOCTOR MARKERS
           /////////////////////////////////////////////////////
 
+
+
+
           if (controller.showDoctors.value &&
               controller.showDoctorMarkers)
 
+
+
             MarkerClusterLayerWidget(
+
 
               options: MarkerClusterLayerOptions(
 

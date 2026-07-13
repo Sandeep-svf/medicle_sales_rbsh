@@ -11,8 +11,34 @@ import '../utils/enumsclass.dart';
 class CreateBeatBottomSheet extends GetView<TerritoryController> {
   const CreateBeatBottomSheet({super.key});
 
+
+
   @override
   Widget build(BuildContext context) {
+
+    final List<String> beatColors = [
+      "#FF0000",
+      "#0000FF",
+      "#00AA00",
+      "#FFFF00",
+      "#FF8000",
+      "#800080",
+      "#00FFFF",
+      "#FF00FF",
+      "#8B4513",
+      "#000000",
+      "#808080",
+      "#008080",
+      "#800000",
+      "#808000",
+      "#000080",
+      "#008000",
+      "#FF1493",
+      "#4B0082",
+      "#40E0D0",
+      "#B8860B",
+    ];
+
     return Obx(() {
 
       if (controller.mapMode.value != TerritoryMapMode.createBeat &&
@@ -189,7 +215,7 @@ class CreateBeatBottomSheet extends GetView<TerritoryController> {
                 Obx(() {
                   return Wrap(
                     spacing: 10,
-                    children: BeatColor.values.map((color) {
+                    children: beatColors.map((color) {
 
                       final selected =
                           controller.selectedBeatColor.value ==
@@ -209,7 +235,11 @@ class CreateBeatBottomSheet extends GetView<TerritoryController> {
                           width: 42,
                           height: 42,
                           decoration: BoxDecoration(
-                            color: _color(color),
+                            color: Color(
+                              int.parse(
+                                color.replaceFirst('#', '0xFF'),
+                              ),
+                            ),
                             shape: BoxShape.circle,
                             border: Border.all(
                               color: selected
