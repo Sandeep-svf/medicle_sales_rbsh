@@ -17,6 +17,15 @@ class CalendarCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    debugPrint("========== CalendarCell ==========");
+    debugPrint("CalendarCell Date       : ${day.date}");
+    debugPrint("CalendarCell DayType    : ${day.type}");
+    debugPrint("CalendarCell ApiType    : ${day.apiDayType}");
+    debugPrint("CalendarCell BeatName   : ${day.beatName}");
+    debugPrint("CalendarCell Holiday    : ${day.holidayName}");
+    debugPrint("==================================");
+
     Color bgColor = TColors.white;
     Color borderColor = TColors.borderPrimary;
 
@@ -75,19 +84,43 @@ class CalendarCell extends StatelessWidget {
   }
 
   Widget _buildCellContent() {
-    switch (day.type) {
-      case DayType.field:
-        return Text(day.beatName ?? "Field", maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: TColors.primary));
-      case DayType.jointWork:
-        return Text("w/ ${day.jointWorkUserName ?? 'Joint'}", maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: TColors.textPrimary));
-      case DayType.holiday:
-        return Text(day.holidayName ?? "Holiday", maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 11, color: TColors.textSecondary));
-      case DayType.unassigned:
-        return const Text("Needs Beat", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: TColors.error));
-      case DayType.meeting:
-        return const Text("Meeting", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: TColors.info));
-      case DayType.leave:
-        return const Text("Leave", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: TColors.warning));
+    // 1. Field day -> Show Beat Name
+    if (day.type == DayType.field) {
+      return Text(
+        (day.beatName?.trim().isNotEmpty ?? false)
+            ? day.beatName!
+            : "NO BEAT",
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: const TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+        ),
+      );
     }
+
+    // 2. Other planned day -> Show API Day Type
+    if (day.apiDayType != null && day.apiDayType!.trim().isNotEmpty) {
+      return Text(
+        day.apiDayType!,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: const TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w500,
+        ),
+      );
+    }
+
+    // 3. Nothing assigned
+    return const Text(
+      "NOT ASSIGNED",
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: TextStyle(
+        fontSize: 11,
+        color: Colors.grey,
+      ),
+    );
   }
 }

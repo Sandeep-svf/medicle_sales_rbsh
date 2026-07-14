@@ -1,184 +1,1090 @@
+import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
+
 import '../../../../utils/constants/colors.dart';
+
+import '../../../../utils/http/http_client.dart';
 import '../../../Holiday/controller/HolidayController.dart';
 import '../../../Holiday/models/Holiday.dart';
+
 import '../DayType.dart';
 import '../model/TourDay.dart';
-import '../model/beat_model.dart';
 import '../model/available_user_model.dart';
+import '../model/beat_model.dart';
+import '../model/tour_plan_model.dart';
 import '../service/TourPlanService.dart';
-// SYNC FIXED: Importing your real Holiday models and controller configurations
+
 
 
 class TourPlanController extends GetxController {
-  final TourPlanService service = TourPlanService();
 
-  final RxBool isLoading = false.obs;
-  final RxBool isSavingDraft = false.obs;
-  final RxBool isSubmitting = false.obs;
+  final TourPlanService service =
+  TourPlanService();
 
-  final RxList<TourDay> monthDays = <TourDay>[].obs;
-  final RxList<BeatModel> beats = <BeatModel>[].obs;
-  final RxList<AvailableUserModel> availableUsers = <AvailableUserModel>[].obs;
-  final Rx<TourDay?> selectedDay = Rx<TourDay?>(null);
+  final RxString currentStatus = "Draft".obs;
 
-  String? draftId;
+  bool get readOnly =>
+      currentStatus.value == "Submitted" ||
+          currentStatus.value == "Approved";
 
-  DateTime get planningMonth {
+  bool get canSubmit =>
+      currentStatus.value == "Draft" ||
+          currentStatus.value == "Returned";
+
+
+
+  /// -------------------------------------------------------
+  /// Loading States
+  /// -------------------------------------------------------
+
+  final RxBool isLoading =
+      false.obs;
+
+  final RxBool isSavingDraft =
+      false.obs;
+
+  final RxBool isSubmitting =
+      false.obs;
+
+  final RxBool isReadOnly =
+      false.obs;
+
+  /// -------------------------------------------------------
+  /// Tour Plan
+  /// -------------------------------------------------------
+
+  final Rx<TourPlanModel?> tourPlan =
+  Rx<TourPlanModel?>(null);
+
+  final RxString draftId =
+      ''.obs;
+
+  /// -------------------------------------------------------
+  /// Calendar
+  /// -------------------------------------------------------
+
+  final RxList<TourDay> monthDays =
+      <TourDay>[].obs;
+
+  final Rx<TourDay?> selectedDay =
+  Rx<TourDay?>(null);
+
+  /// Currently opened tour plan
+  final Rxn<TourPlanModel> currentPlan =
+  Rxn<TourPlanModel>();
+
+  /// Remarks from ASM
+  final RxString remarks = "".obs;
+
+
+
+  /// -------------------------------------------------------
+  /// Masters
+  /// -------------------------------------------------------
+
+  final RxList<String> dayTypes =
+      <String>[].obs;
+
+  final RxList<String>
+  collaborationStatus =
+      <String>[].obs;
+
+  final RxList<BeatModel> beats =
+      <BeatModel>[].obs;
+
+  final RxList<AvailableUserModel>
+  availableUsers =
+      <AvailableUserModel>[].obs;
+
+  /// -------------------------------------------------------
+  /// Month
+  /// -------------------------------------------------------
+
+  final Rx<DateTime> selectedMonth =
+      _defaultPlanningMonth().obs;
+
+  static DateTime
+  _defaultPlanningMonth() {
     final now = DateTime.now();
+
     if (now.month == 12) {
-      return DateTime(now.year + 1, 1, 1);
+      return DateTime(
+        now.year + 1,
+        1,
+      );
     }
-    return DateTime(now.year, now.month + 1, 1);
+
+    return DateTime(
+      now.year,
+      now.month + 1,
+    );
   }
 
   String get monthTitle {
-    const months = ['', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-    return "${months[planningMonth.month]} ${planningMonth.year}";
+    const months = [
+
+      '',
+
+      'January',
+
+      'February',
+
+      'March',
+
+      'April',
+
+      'May',
+
+      'June',
+
+      'July',
+
+      'August',
+
+      'September',
+
+      'October',
+
+      'November',
+
+      'December'
+
+    ];
+
+    return
+
+      "${months[selectedMonth.value.month]} "
+          "${selectedMonth.value.year}";
   }
+
+  /// -------------------------------------------------------
+  /// Status
+  /// -------------------------------------------------------
+
+  bool get isDraft =>
+      tourPlan.value?.status == "Draft";
+
+  bool get isSubmitted =>
+      tourPlan.value?.status ==
+          "Submitted";
+
+  bool get isApproved =>
+      tourPlan.value?.status ==
+          "Approved";
+
+  bool get isReturned =>
+      tourPlan.value?.status ==
+          "Returned";
+
+  bool get canEdit {
+    if (tourPlan.value == null) {
+      return true;
+    }
+
+    return
+
+      isDraft ||
+
+          isReturned;
+  }
+
+
+  ///--------------------------------------------------------------
+  /// Change Planning Month
+  ///--------------------------------------------------------------
+  Future<void> changePlanningMonth() async {
+
+    // TODO:
+    // This will be implemented after integrating
+    // the Tour Plan list API and month picker.
+
+    Get.snackbar(
+      "Coming Soon",
+      "Month selection will be available shortly.",
+      snackPosition: SnackPosition.BOTTOM,
+    );
+  }
+
+  /// -------------------------------------------------------
+  /// Init
+  /// -------------------------------------------------------
 
   @override
   void onInit() {
     super.onInit();
-    initializeData();
+
+
   }
 
-  Future<void> initializeData() async {
+  Future<void> initialize({
+    bool createNew = true,
+  }) async {
     isLoading.value = true;
+
     try {
-      await loadBeats();
-      generateCalendar();
+      await Future.wait([
+        loadBeats(),
+        loadMasterEnums(),
+      ]);
+
+      if (createNew) {
+        generateCalendar();
+      }
     } finally {
       isLoading.value = false;
     }
   }
 
   Future<void> loadBeats() async {
-    final fetchedBeats = await service.getBeats();
-    beats.assignAll(fetchedBeats);
+    final result =
+    await service.getBeats();
+
+    beats.assignAll(result);
   }
 
-  Future<void> loadAvailableUsers(DateTime date) async {
-    final fetchedUsers = await service.getAvailableUsers(date);
-    availableUsers.assignAll(fetchedUsers.where((user) => user.available).toList());
+  Future<void> loadAvailableUsers(DateTime date,) async {
+    final result =
+    await service
+        .getAvailableUsers(date);
+
+    availableUsers.assignAll(
+      result.where(
+            (e) => e.available,
+      ),
+    );
   }
 
-  /// Generates the planning calendar matrix matching Sundays and Holiday Controller indices
-  /// Generates the planning calendar matrix matching Sundays and Holiday Controller indices
-  void generateCalendar() {
-    // FIX: Checks if registered; if not, instantiates it dynamically on the fly
-    final holidayController = Get.isRegistered<HolidayController>()
-        ? Get.find<HolidayController>()
-        : Get.put(HolidayController());
+  Future<void> loadMasterEnums() async {
+    try {
+      final response =
+      await THttpHelper.authGet(
+        "master/enums",
+      );
+
+      if (response["success"] == true) {
+        final data = response["data"];
+
+        dayTypes.assignAll(
+
+          List<String>.from(
+
+            data["TourPlanDay"]["day_type"],
+
+          ),
+
+        );
+
+        collaborationStatus.assignAll(
+
+          List<String>.from(
+
+            data["TourPlanDay"]
+            ["collaboration_status"],
+
+          ),
+
+        );
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Future<void> loadTourPlan(String tourPlanId) async {
+
+    debugPrint("========== TourPlanController ==========");
+    debugPrint("TourPlanController loadTourPlan()");
+    debugPrint("TourPlanController Plan Id : $tourPlanId");
+    debugPrint("========================================");
+
+    isLoading.value = true;
+
+    try {
+
+      selectedDay.value = null;
+      monthDays.clear();
+
+      debugPrint("========== TourPlanController ==========");
+      debugPrint("TourPlanController Calling Details API...");
+      debugPrint("========================================");
+
+      final response = await service.getTourPlanDetails(
+        tourPlanId,
+      );
+
+      debugPrint("========== TourPlanController ==========");
+      debugPrint("TourPlanController Response Month : ${response?.month}");
+      debugPrint("TourPlanController Response Year  : ${response?.year}");
+
+      selectedMonth.value = DateTime(
+        response!.year,
+        response.month,
+      );
+
+      debugPrint("TourPlanController Selected Month : ${selectedMonth.value.month}");
+      debugPrint("TourPlanController Selected Year  : ${selectedMonth.value.year}");
+      debugPrint("=================================");
+
+
+      if (response == null) {
+
+        debugPrint("========== TourPlanController ==========");
+        debugPrint("TourPlanController API Response : NULL");
+        debugPrint("========================================");
+
+        return;
+      }
+
+      debugPrint("========== TourPlanController ==========");
+      debugPrint("TourPlanController API Success");
+      debugPrint("TourPlanController TourPlan Id : ${response.id}");
+      debugPrint("TourPlanController Status      : ${response.status}");
+      debugPrint("TourPlanController Month       : ${response.month}");
+      debugPrint("TourPlanController Year        : ${response.year}");
+      debugPrint("TourPlanController Days Count  : ${response.days.length}");
+      debugPrint("========================================");
+
+      tourPlan.value = response;
+
+      currentStatus.value = response.status;
+
+      draftId.value = response.id;
+
+      selectedMonth.value = DateTime(
+        response.year,
+        response.month,
+      );
+
+      isReadOnly.value =
+          response.status == "Submitted" ||
+              response.status == "Approved";
+
+      debugPrint("========== TourPlanController ==========");
+      debugPrint("TourPlanController Generating Calendar...");
+      debugPrint("========================================");
+
+      generateCalendar();
+
+      debugPrint("========== TourPlanController ==========");
+      debugPrint("TourPlanController Month Days Before Populate : ${monthDays.length}");
+      debugPrint("========================================");
+
+      populateExistingDays();
+
+      debugPrint("========== TourPlanController ==========");
+      debugPrint("TourPlanController Month Days After Populate : ${monthDays.length}");
+      debugPrint("========================================");
+
+    } catch (e, stack) {
+
+      debugPrint("========== TourPlanController ==========");
+      debugPrint("TourPlanController ERROR");
+      debugPrint(e.toString());
+      debugPrint(stack.toString());
+      debugPrint("========================================");
+
+    } finally {
+
+      isLoading.value = false;
+
+      debugPrint("========== TourPlanController ==========");
+      debugPrint("TourPlanController Loading Finished");
+      debugPrint("========================================");
+    }
+  }
+
+
+
+  Future<void> createNewTourPlan() async {
+    tourPlan.value = null;
+
+    draftId.value = "";
+
+    isReadOnly.value = false;
+
+    selectedDay.value = null;
 
     monthDays.clear();
 
-    final totalDays = DateTime(planningMonth.year, planningMonth.month + 1, 0).day;
+    generateCalendar();
+  }
 
-    for (int day = 1; day <= totalDays; day++) {
-      final date = DateTime(planningMonth.year, planningMonth.month, day);
+  void changeMonth(DateTime month,) {
+    if (!canEdit) {
+      return;
+    }
 
-      // Sundays are absolute read-only blocks
-      if (date.weekday == DateTime.sunday) {
-        monthDays.add(TourDay(
-          date: date,
-          type: DayType.holiday,
-          holidayName: "Weekly Off",
-          notes: "Sunday Off",
-        ));
-        continue;
-      }
+    selectedMonth.value = month;
 
-      // Cross-verifying target dates against fetched holiday objects
-      final Holiday? activeHoliday = holidayController.holidays.firstWhereOrNull(
-            (h) => h.date.year == date.year && h.date.month == date.month && h.date.day == date.day,
+    selectedDay.value = null;
+
+    generateCalendar();
+  }
+
+  void generateCalendar() {
+
+    debugPrint("========== TourPlanController ==========");
+    debugPrint("TourPlanController generateCalendar()");
+    debugPrint("TourPlanController Calendar Month : ${selectedMonth.value.month}");
+    debugPrint("TourPlanController Calendar Year  : ${selectedMonth.value.year}");
+    debugPrint("=================================");
+    final holidayController =
+
+    Get.isRegistered<HolidayController>()
+
+        ? Get.find<HolidayController>()
+
+        : Get.put(
+      HolidayController(),
+    );
+
+    monthDays.clear();
+
+    final totalDays = DateTime(
+      selectedMonth.value.year,
+      selectedMonth.value.month + 1,
+      0,
+    ).day;
+
+    for (
+    int day = 1;
+    day <= totalDays;
+    day++
+    ) {
+      final date = DateTime(
+        selectedMonth.value.year,
+        selectedMonth.value.month,
+        day,
       );
 
-      if (activeHoliday != null) {
-        monthDays.add(TourDay(
-          date: date,
-          type: DayType.holiday,
-          holidayName: activeHoliday.title,
-          notes: activeHoliday.description.isNotEmpty ? activeHoliday.description : activeHoliday.title,
-        ));
+      /// Weekly Off
+
+      if (date.weekday == DateTime.sunday) {
+        monthDays.add(
+
+          TourDay(
+
+            date: date,
+
+            type: DayType.holiday,
+
+            holidayName: "Weekly Off",
+
+            notes: "Sunday Off",
+
+          ),
+
+        );
+
         continue;
       }
 
-      // Default editable state
-      monthDays.add(TourDay(
-        date: date,
-        type: DayType.unassigned,
-      ));
+      /// Holiday
+
+      final Holiday? holiday =
+
+      holidayController.holidays
+
+          .firstWhereOrNull(
+
+            (e) =>
+
+        e.date.year == date.year &&
+
+            e.date.month == date.month &&
+
+            e.date.day == date.day,
+
+      );
+
+      if (holiday != null) {
+        monthDays.add(
+
+          TourDay(
+
+            date: date,
+
+            type: DayType.holiday,
+
+            holidayName: holiday.title,
+
+            notes: holiday.title,
+
+          ),
+
+        );
+
+        continue;
+      }
+
+      monthDays.add(
+
+        TourDay(
+
+          date: date,
+
+          type: DayType.unassigned,
+
+        ),
+
+      );
     }
   }
 
-  void selectDay(TourDay day) {
-    selectedDay.value = day;
-    if (day.type == DayType.jointWork) {
-      loadAvailableUsers(day.date);
-    }
-  }
+  void populateExistingDays() {
 
-  void updateDay(TourDay updatedDay) {
-    final index = monthDays.indexWhere(
-          (e) => e.date.year == updatedDay.date.year && e.date.month == updatedDay.date.month && e.date.day == updatedDay.date.day,
+    debugPrint("========== TourPlanController ==========");
+    debugPrint("TourPlanController populateExistingDays()");
+    debugPrint("========================================");
+
+    if (tourPlan.value == null) {
+      debugPrint("TourPlanController tourPlan is NULL");
+      return;
+    }
+
+    debugPrint(
+      "TourPlanController API Days : ${tourPlan.value!.days.length}",
     );
-    if (index == -1) return;
-    monthDays[index] = updatedDay;
+
+    for (final apiDay in tourPlan.value!.days) {
+
+      final index = monthDays.indexWhere(
+            (e) =>
+        e.date.year == apiDay.date.year &&
+            e.date.month == apiDay.date.month &&
+            e.date.day == apiDay.date.day,
+      );
+
+      debugPrint("----------------------------------------");
+      debugPrint("TourPlanController API Date     : ${apiDay.date}");
+      debugPrint("TourPlanController Calendar Idx : $index");
+      debugPrint("TourPlanController API Type     : ${apiDay.dayType}");
+      debugPrint("TourPlanController Beat Id      : ${apiDay.beatId1}");
+      debugPrint("TourPlanController Beat Name    : ${apiDay.beat1?["beat_name"]}");
+      debugPrint("TourPlanController Notes        : ${apiDay.notes}");
+
+      if (index == -1) {
+
+        debugPrint(
+          "TourPlanController >>> DATE NOT FOUND",
+        );
+
+        continue;
+      }
+
+      monthDays[index] = monthDays[index].copyWith(
+        type: mapApiDayType(apiDay.dayType),
+
+        apiDayType: apiDay.dayType,
+
+        beatId: apiDay.beatId1,
+
+        beatName: apiDay.dayType == "Field"
+            ? (apiDay.beat1?["name"] as String?)
+            : null,
+
+        jointWorkUserId: apiDay.jointWorkWithUserId,
+
+        jointWorkUserName: apiDay.jointWorkWith?["name"],
+
+        notes: apiDay.notes,
+
+      );
+
+      debugPrint(
+          "TourPlanController Updated Type = ${monthDays[index].type}"
+      );
+
+      debugPrint(
+          "TourPlanController Updated Beat = ${monthDays[index].beatName}"
+      );
+
+      debugPrint(
+        "TourPlanController UPDATED : ${monthDays[index]}",
+      );
+    }
+
+    debugPrint("TourPlanController ========== FINAL CALENDAR ==========");
+
+    for (final day in monthDays) {
+      debugPrint(day.toString());
+    }
+
+    debugPrint("===================================");
+
     monthDays.refresh();
-    selectedDay.value = updatedDay;
   }
 
-  String _mapEnumToApiType(DayType type) {
-    switch (type) {
-      case DayType.field: return "Field";
-      case DayType.meeting: return "Meeting";
-      case DayType.jointWork: return "Joint Work";
-      case DayType.leave: return "Leave";
-      case DayType.holiday: return "Holiday";
-      case DayType.unassigned: return "Unassigned";
+  void selectDay(TourDay day,) {
+    if (isReadOnly.value) {
+      return;
+    }
+
+    if (
+
+    day.holidayName == "Weekly Off" ||
+
+        day.type == DayType.holiday
+
+    ) {
+      return;
+    }
+
+    selectedDay.value = day;
+
+    if (
+
+    day.type == DayType.jointWork
+
+    ) {
+      loadAvailableUsers(
+        day.date,
+      );
     }
   }
+
+  void updateDay(TourDay updatedDay,) {
+    if (isReadOnly.value) {
+      return;
+    }
+
+    final index = monthDays.indexWhere(
+
+          (e) =>
+
+      e.date.year == updatedDay.date.year &&
+
+          e.date.month == updatedDay.date.month &&
+
+          e.date.day == updatedDay.date.day,
+
+    );
+
+    if (index == -1) {
+      return;
+    }
+
+    monthDays[index] = updatedDay;
+
+    selectedDay.value = updatedDay;
+
+    monthDays.refresh();
+  }
+
+  ///------------------------------------------------------------
+  /// Validate Single Day
+  ///------------------------------------------------------------
+
+  String? validateDay(TourDay day) {
+
+    /// Weekly Off / Holiday
+
+    if (!day.isEditable) {
+      return null;
+    }
+
+    /// Field
+
+    if (day.type == DayType.field) {
+      if (!day.hasBeat) {
+        return "Please select Beat.";
+      }
+    }
+
+    /// Joint Work
+
+    if (day.type == DayType.jointWork) {
+      if (!day.hasBeat) {
+        return "Please select Beat.";
+      }
+
+      if (!day.hasJointUser) {
+        return "Please select Joint Work user.";
+      }
+    }
+
+    /// Meeting
+
+    if (day.type == DayType.meeting) {
+      if ((day.notes ?? "")
+          .trim()
+          .isEmpty) {
+        return "Meeting remarks are required.";
+      }
+    }
+
+    /// Office
+
+    if (day.apiDayType == "Office") {
+      if ((day.notes ?? "")
+          .trim()
+          .isEmpty) {
+        return "Office remarks are required.";
+      }
+    }
+
+    /// Transit
+
+    if (day.apiDayType == "Transit") {
+      if ((day.notes ?? "")
+          .trim()
+          .isEmpty) {
+        return "Transit remarks are required.";
+      }
+    }
+
+    return null;
+  }
+
+  ///------------------------------------------------------------
+  /// Validate Tour Plan
+  ///------------------------------------------------------------
+
+  bool validateTourPlan() {
+    for (final day in monthDays) {
+      final validation = validateDay(day);
+
+      if (validation != null) {
+        Get.snackbar(
+          "Validation",
+          "${day.date.day}-${day.date.month}-${day.date.year}\n$validation",
+          backgroundColor: TColors.warning.withOpacity(.15),
+        );
+
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  ///------------------------------------------------------------
+  /// UI Enum -> API
+  ///------------------------------------------------------------
+
+  String mapDayType(TourDay day) {
+    if (
+
+    day.apiDayType != null &&
+
+        day.apiDayType!.isNotEmpty
+
+    ) {
+      return day.apiDayType!;
+    }
+
+    switch (day.type) {
+      case DayType.field:
+        return "Field";
+
+      case DayType.jointWork:
+        return "Joint work";
+
+      case DayType.meeting:
+        return "Meeting";
+
+      case DayType.leave:
+        return "Leave";
+
+      case DayType.holiday:
+        if (day.isWeeklyOff) {
+          return "Weekly off";
+        }
+
+        return "Holiday";
+
+      case DayType.unassigned:
+        return "Field";
+    }
+  }
+
+  ///------------------------------------------------------------
+  /// Draft Body
+  ///------------------------------------------------------------
+
+  Map<String, dynamic> buildDraftBody() {
+    return {
+
+      "month": selectedMonth.value.month,
+
+      "year": selectedMonth.value.year,
+
+      "days":
+
+      monthDays.map(
+
+            (day) {
+          return {
+
+            "date":
+
+            day.date
+                .toIso8601String()
+                .split("T")
+                .first,
+
+            "day_type":
+
+            mapDayType(day),
+
+            "beat_id_1":
+
+            day.beatId,
+
+            "beat_id_2":
+
+            day.beatId2,
+
+            "joint_work_with_user_id":
+
+            day.jointWorkUserId,
+
+            "notes":
+
+            day.notes ?? "",
+          };
+        },
+      ).toList(),
+    };
+  }
+
+  ///------------------------------------------------------------
+  /// Find Day
+  ///------------------------------------------------------------
+
+  TourDay? findDay(DateTime date,) {
+    try {
+      return monthDays.firstWhere(
+
+            (e) =>
+
+        e.date.year == date.year &&
+
+            e.date.month == date.month &&
+
+            e.date.day == date.day,
+
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
+  ///------------------------------------------------------------
+  /// Clear Selection
+  ///------------------------------------------------------------
+
+  void clearSelection() {
+    selectedDay.value = null;
+  }
+
+  ///------------------------------------------------------------
+  /// Reset Calendar
+  ///------------------------------------------------------------
+
+  void resetCalendar() {
+    selectedDay.value = null;
+
+    monthDays.clear();
+
+    generateCalendar();
+  }
+
+  ///------------------------------------------------------------
+  /// Save Draft
+  ///------------------------------------------------------------
 
   Future<void> saveDraft() async {
+    if (!validateTourPlan()) {
+      return;
+    }
+
     isSavingDraft.value = true;
+
     try {
-      final body = {
-        "month": planningMonth.month,
-        "year": planningMonth.year,
-        "days": monthDays.map((day) => {
-          "date": day.date.toIso8601String().split("T").first,
-          "day_type": _mapEnumToApiType(day.type),
-          "beat_id_1": day.beatId,
-          "notes": day.notes ?? "",
-        }).toList(),
-      };
+      final body = buildDraftBody();
 
       final id = await service.saveDraft(body);
-      if (id != null) {
-        draftId = id;
-        Get.snackbar("Success", "Draft saved successfully", backgroundColor: TColors.success.withOpacity(0.2));
+
+      if (id == null || id.isEmpty) {
+        Get.snackbar(
+          "Error",
+          "Unable to save draft.",
+          backgroundColor: TColors.error.withOpacity(.15),
+        );
+
+        return;
       }
+
+      draftId.value = id;
+
+      /// New Draft
+
+      if (tourPlan.value == null) {
+        tourPlan.value = TourPlanModel(
+          id: id,
+          userId: "",
+          month: selectedMonth.value.month,
+          year: selectedMonth.value.year,
+          status: "Draft",
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          days: const [],
+        );
+      }
+
+      Get.snackbar(
+        "Success",
+        "Draft saved successfully.",
+        backgroundColor: TColors.success.withOpacity(.15),
+      );
+
+      /// Refresh latest server data
+
+      await refreshTourPlan();
+    } catch (e) {
+      Get.snackbar(
+        "Error",
+        e.toString(),
+        backgroundColor: TColors.error.withOpacity(.15),
+      );
     } finally {
       isSavingDraft.value = false;
     }
   }
 
+  ///------------------------------------------------------------
+  /// Submit Plan
+  ///------------------------------------------------------------
+
   Future<void> submitPlan() async {
-    if (draftId == null) {
-      Get.snackbar("Error", "Please save draft before submitting.", backgroundColor: TColors.error.withOpacity(0.2));
+    if (!validateTourPlan()) {
       return;
     }
+
+    if (draftId.value.isEmpty) {
+      Get.snackbar(
+        "Draft Missing",
+        "Please save draft before submitting.",
+        backgroundColor: TColors.warning.withOpacity(.15),
+      );
+
+      return;
+    }
+
     isSubmitting.value = true;
+
     try {
-      final success = await service.submitDraft(draftId!);
-      if (success) {
-        Get.snackbar("Success", "Plan submitted successfully for approval", backgroundColor: TColors.success.withOpacity(0.2));
+      final success =
+      await service.submitDraft(
+        draftId.value,
+      );
+
+      if (!success) {
+        Get.snackbar(
+          "Failed",
+          "Unable to submit plan.",
+        );
+
+        return;
       }
+
+      if (tourPlan.value != null) {
+        tourPlan.value =
+            tourPlan.value!.copyWith(
+              status: "Submitted",
+              updatedAt: DateTime.now(),
+            );
+      }
+
+      isReadOnly.value = true;
+
+      Get.snackbar(
+        "Success",
+        "Tour Plan submitted successfully.",
+        backgroundColor:
+        TColors.success.withOpacity(.15),
+      );
     } catch (e) {
-      Get.snackbar("Error", "Submission failed.", backgroundColor: TColors.error.withOpacity(0.2));
+      Get.snackbar(
+        "Error",
+        e.toString(),
+      );
     } finally {
       isSubmitting.value = false;
     }
+  }
+
+  ///------------------------------------------------------------
+  /// Refresh Current Tour Plan
+  ///------------------------------------------------------------
+
+  Future<void> refreshTourPlan() async {
+    if (draftId.value.isEmpty) {
+      return;
+    }
+
+    final result =
+    await service.getTourPlanDetails(
+      draftId.value,
+    );
+
+    if (result == null) {
+      return;
+    }
+
+    tourPlan.value = result;
+
+    populateExistingDays();
+  }
+
+  ///------------------------------------------------------------
+  /// Reload Calendar
+  ///------------------------------------------------------------
+
+  Future<void> reloadCalendar() async {
+    generateCalendar();
+
+    if (tourPlan.value != null) {
+      populateExistingDays();
+    }
+  }
+
+  ///------------------------------------------------------------
+  /// Reset Controller
+  ///------------------------------------------------------------
+
+  void resetController() {
+    draftId.value = "";
+
+    selectedDay.value = null;
+
+    monthDays.clear();
+
+    beats.clear();
+
+    availableUsers.clear();
+
+    collaborationStatus.clear();
+
+    dayTypes.clear();
+
+    tourPlan.value = null;
+
+    isReadOnly.value = false;
+
+    selectedMonth.value =
+        _defaultPlanningMonth();
+
+    generateCalendar();
+  }
+
+  @override
+  void onClose() {
+
+    debugPrint("TourPlanController disposed");
+
+
+    super.onClose();
   }
 }
