@@ -34,22 +34,37 @@ class CalendarCell extends StatelessWidget {
         bgColor = TColors.white;
         borderColor = TColors.primary;
         break;
+
       case DayType.jointWork:
         bgColor = TColors.primary_shade50;
         borderColor = TColors.primary;
         break;
+
       case DayType.meeting:
         bgColor = TColors.info.withOpacity(0.08);
         borderColor = TColors.info;
         break;
-      case DayType.holiday:
-        bgColor = TColors.softGrey;
-        borderColor = TColors.borderSecondary;
+
+      case DayType.office:
+        bgColor = Colors.indigo.withOpacity(.08);
+        borderColor = Colors.indigo;
         break;
+
+      case DayType.transit:
+        bgColor = Colors.orange.withOpacity(.08);
+        borderColor = Colors.orange;
+        break;
+
       case DayType.leave:
         bgColor = TColors.warning.withOpacity(0.08);
         borderColor = TColors.warning;
         break;
+
+      case DayType.holiday:
+        bgColor = TColors.softGrey;
+        borderColor = TColors.borderSecondary;
+        break;
+
       case DayType.unassigned:
         bgColor = TColors.error.withOpacity(0.05);
         borderColor = TColors.error;
@@ -84,7 +99,36 @@ class CalendarCell extends StatelessWidget {
   }
 
   Widget _buildCellContent() {
-    // 1. Field day -> Show Beat Name
+
+    // Weekly Off (Sunday)
+    if (day.isWeeklyOff) {
+      return const Text(
+        "Weekly Off",
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          color: Colors.red,
+        ),
+      );
+    }
+
+    // Holiday
+    if (day.type == DayType.holiday &&
+        !day.isWeeklyOff) {
+      return Text(
+        day.holidayName ?? "Holiday",
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: const TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+        ),
+      );
+    }
+
+    // Field
     if (day.type == DayType.field) {
       return Text(
         (day.beatName?.trim().isNotEmpty ?? false)
@@ -99,8 +143,9 @@ class CalendarCell extends StatelessWidget {
       );
     }
 
-    // 2. Other planned day -> Show API Day Type
-    if (day.apiDayType != null && day.apiDayType!.trim().isNotEmpty) {
+    // Other day types
+    if (day.apiDayType != null &&
+        day.apiDayType!.trim().isNotEmpty) {
       return Text(
         day.apiDayType!,
         maxLines: 1,
@@ -112,7 +157,7 @@ class CalendarCell extends StatelessWidget {
       );
     }
 
-    // 3. Nothing assigned
+    // Default
     return const Text(
       "NOT ASSIGNED",
       maxLines: 1,

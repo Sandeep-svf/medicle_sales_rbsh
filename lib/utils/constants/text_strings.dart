@@ -145,6 +145,7 @@ class TTexts {
  static const String leave = "Leave";
  static const String inbox = "Inbox";
  static const String tourPlans = "Tour & Plans";
+ static const String approval = "Approval";
  static const String appointments = "Appointments";
  static const String investment = "Investmanet Management";
  static const String beatManagement = "Beat Management";

@@ -88,6 +88,26 @@ class TourPlanDayModel {
     );
   }
 
+
+  Map<String, dynamic> toJson() {
+    return {
+      "id": id,
+      "tour_plan_id": tourPlanId,
+      "date": date.toIso8601String(),
+      "day_type": dayType,
+      "collaboration_status": collaborationStatus,
+      "joint_work_with_user_id": jointWorkWithUserId,
+      "beat_id_1": beatId1,
+      "beat_id_2": beatId2,
+      "notes": notes,
+      "created_at": createdAt.toIso8601String(),
+      "updated_at": updatedAt.toIso8601String(),
+      "beat1": beat1,
+      "beat2": beat2,
+      "jointWorkWith": jointWorkWith,
+    };
+  }
+
   TourPlanDayModel copyWith({
     String? dayType,
     String? collaborationStatus,

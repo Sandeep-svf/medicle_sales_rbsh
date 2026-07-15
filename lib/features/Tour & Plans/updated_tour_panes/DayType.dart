@@ -1,11 +1,16 @@
-enum DayType { field, holiday, leave, unassigned, meeting, jointWork }
+enum DayType {
+  field,
+  jointWork,
+  meeting,
+  office,
+  transit,
+  leave,
+  holiday,
+  unassigned,
+}
 
-DayType mapApiDayType(
-    String value,
-    ) {
-
+DayType mapApiDayType(String value) {
   switch (value) {
-
     case "Field":
       return DayType.field;
 
@@ -15,16 +20,21 @@ DayType mapApiDayType(
     case "Meeting":
       return DayType.meeting;
 
+    case "Office":
+      return DayType.office;
+
+    case "Transit":
+      return DayType.transit;
+
     case "Leave":
       return DayType.leave;
 
     case "Holiday":
-      return DayType.holiday;
-
     case "Weekly off":
       return DayType.holiday;
 
     default:
       return DayType.unassigned;
   }
+
 }

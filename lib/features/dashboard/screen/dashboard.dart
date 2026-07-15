@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_in_app_messaging/firebase_in_app_messaging.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:medicle_sales_rbsh/features/addDoctor/screens/add_doctro_new_screen.dart';
 import 'package:medicle_sales_rbsh/features/visit/Doctor/screens/ScheduleVisit.dart';
 import 'package:medicle_sales_rbsh/features/visit/Doctor/screens/ScheduleVisitScreen.dart';
@@ -27,6 +29,7 @@ import '../../addDoctor/screens/addDoctor.dart';
 import '../../marketing/screen/MarketingScreen.dart';
 import '../../marketing/screen/marketing.dart';
 import '../../notification/screen/NotificatinScreen.dart';
+import '../attendance/controller/attendance_controller.dart';
 import '../widgets/custrom_drawer.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -46,13 +49,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
   String? playStoreVersion="0.0.0";
   Map<String, String>? deviceInfo;
 
+  late final AttendanceController attendanceController;
+
   @override
   void initState() {
     super.initState();
+
+    attendanceController = Get.put(AttendanceController());
+
     fetchVersionInfo(); // Call the function to fetch version details
     fetchUserRole();
     _navigateToSalesChartHome();
     updateFCMToken();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      attendanceController.checkTodayStatus();
+    });
   }
 
   Future<void> updateFCMToken() async {

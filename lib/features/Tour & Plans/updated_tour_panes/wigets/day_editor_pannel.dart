@@ -34,6 +34,34 @@ class _DayEditorPanelState extends State<DayEditorPanel> {
     _resetFormState();
   }
 
+  String _mapDayTypeToApi(DayType type) {
+    switch (type) {
+      case DayType.field:
+        return "Field";
+
+      case DayType.jointWork:
+        return "Joint work";
+
+      case DayType.meeting:
+        return "Meeting";
+
+      case DayType.office:
+        return "Office";
+
+      case DayType.transit:
+        return "Transit";
+
+      case DayType.leave:
+        return "Leave";
+
+      case DayType.holiday:
+        return "Holiday";
+
+      case DayType.unassigned:
+        return "";
+    }
+  }
+
   @override
   void didUpdateWidget(covariant DayEditorPanel oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -44,8 +72,7 @@ class _DayEditorPanelState extends State<DayEditorPanel> {
 
   void _resetFormState() {
     if (widget.day.type == DayType.unassigned ||
-        widget.day.type == DayType.holiday ||
-        widget.day.type == DayType.leave) {
+        widget.day.type == DayType.holiday) {
       selectedType = DayType.field;
     } else {
       selectedType = widget.day.type;
@@ -62,18 +89,104 @@ class _DayEditorPanelState extends State<DayEditorPanel> {
   }
 
   void _dispatchChanges() {
-    // FIXED: Correctly matching and extraction of the raw String parameters
-    final matchedBeat = controller.beats.firstWhereOrNull((b) => b.id == selectedBeatId);
-    final matchedUser = controller.availableUsers.firstWhereOrNull((u) => u.id == selectedUserId);
+
+    //------------------------------------------------------------
+    // Validation - Field
+    //------------------------------------------------------------
+
+    if (selectedType == DayType.field &&
+        (selectedBeatId == null || selectedBeatId!.isEmpty)) {
+      Get.snackbar(
+        "Validation",
+        "Please select a Beat.",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+
+    //------------------------------------------------------------
+    // Validation - Joint Work
+    //------------------------------------------------------------
+
+    if (selectedType == DayType.jointWork) {
+
+      if (selectedBeatId == null || selectedBeatId!.isEmpty) {
+        Get.snackbar(
+          "Validation",
+          "Please select a Beat.",
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        return;
+      }
+
+      if (selectedUserId == null || selectedUserId!.isEmpty) {
+        Get.snackbar(
+          "Validation",
+          "Please select Joint Work User.",
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        return;
+      }
+    }
+
+    //------------------------------------------------------------
+    // Validation - Remarks Required
+    //------------------------------------------------------------
+
+    if ((selectedType == DayType.meeting ||
+        selectedType == DayType.office ||
+        selectedType == DayType.transit ||
+        selectedType == DayType.leave) &&
+        notesController.text.trim().isEmpty) {
+
+      Get.snackbar(
+        "Validation",
+        "Remarks are required.",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+
+      return;
+    }
+
+    //------------------------------------------------------------
+    // Existing Logic (UNCHANGED)
+    //------------------------------------------------------------
+
+    final matchedBeat = controller.beats.firstWhereOrNull(
+          (b) => b.id == selectedBeatId,
+    );
+
+    final matchedUser = controller.availableUsers.firstWhereOrNull(
+          (u) => u.id == selectedUserId,
+    );
 
     widget.onDayUpdated(
       widget.day.copyWith(
         type: selectedType,
-        beatId: selectedType == DayType.field ? selectedBeatId : null,
-        beatName: selectedType == DayType.field ? matchedBeat?.name : null, // Fixed: Passing real name string
-        jointWorkUserId: selectedType == DayType.jointWork ? selectedUserId : null,
-        jointWorkUserName: selectedType == DayType.jointWork ? matchedUser?.name : null, // Fixed: Passing real user name string
-        notes: notesController.text,
+
+        apiDayType: _mapDayTypeToApi(selectedType),
+
+        beatId: (selectedType == DayType.field ||
+            selectedType == DayType.jointWork)
+            ? selectedBeatId
+            : null,
+
+        beatName: (selectedType == DayType.field ||
+            selectedType == DayType.jointWork)
+            ? matchedBeat?.name
+            : null,
+
+        jointWorkUserId:
+        selectedType == DayType.jointWork
+            ? selectedUserId
+            : null,
+
+        jointWorkUserName:
+        selectedType == DayType.jointWork
+            ? matchedUser?.name
+            : null,
+
+        notes: notesController.text.trim(),
       ),
     );
   }
@@ -133,11 +246,10 @@ class _DayEditorPanelState extends State<DayEditorPanel> {
               children: [
                 const Text("SELECT OPERATION TYPE", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: TColors.textSecondary, letterSpacing: 1.2)),
                 const SizedBox(height: 12),
-                _buildTypeCard(DayType.field, "Field Operations", Icons.directions_run, TColors.primary),
-                _buildTypeCard(DayType.jointWork, "Joint Sync Visit", Icons.people_outline, TColors.info),
-                _buildTypeCard(DayType.meeting, "Organizational Sync", Icons.business_center_outlined, TColors.darkerGrey),
+                _buildDayTypeList(),
 
-                if (selectedType == DayType.field) ...[
+                if (selectedType == DayType.field ||
+                    selectedType == DayType.jointWork) ...[
                   const SizedBox(height: 24),
                   const Text("TARGET VISITATION BEAT", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: TColors.textSecondary, letterSpacing: 1.2)),
                   const SizedBox(height: 10),
@@ -163,19 +275,37 @@ class _DayEditorPanelState extends State<DayEditorPanel> {
                   )),
                 ],
 
-                const SizedBox(height: 24),
-                const Text("FIELD STRATEGY NOTES", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: TColors.textSecondary, letterSpacing: 1.2)),
-                const SizedBox(height: 10),
-                TextFormField(
-                  controller: notesController,
-                  maxLines: 4,
-                  decoration: InputDecoration(
-                    hintText: "Input target focus indicators or tracking coordinates...",
-                    filled: true,
-                    fillColor: TColors.light,
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                if (selectedType != DayType.field &&
+                    selectedType != DayType.jointWork) ...[
+
+                  const SizedBox(height: 24),
+
+                  const Text(
+                    "REMARKS",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 11,
+                      color: TColors.textSecondary,
+                      letterSpacing: 1.2,
+                    ),
                   ),
-                ),
+
+                  const SizedBox(height: 10),
+
+                  TextFormField(
+                    controller: notesController,
+                    maxLines: 4,
+                    decoration: InputDecoration(
+                      hintText: "Enter remarks...",
+                      filled: true,
+                      fillColor: TColors.light,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                ]
               ],
             ),
           ),
@@ -208,10 +338,18 @@ class _DayEditorPanelState extends State<DayEditorPanel> {
       onTap: () async {
         setState(() {
           selectedType = type;
-          selectedBeatId = null;
-          selectedUserId = null;
+
+          if (type != DayType.field &&
+              type != DayType.jointWork) {
+            selectedBeatId = null;
+          }
+
+          if (type != DayType.jointWork) {
+            selectedUserId = null;
+          }
         });
-        if (type == DayType.jointWork) {
+        if (type == DayType.jointWork &&
+            controller.availableUsers.isEmpty) {
           await controller.loadAvailableUsers(widget.day.date);
         }
       },
@@ -235,4 +373,68 @@ class _DayEditorPanelState extends State<DayEditorPanel> {
       ),
     );
   }
+
+  Widget _buildDayTypeList() {
+    return Obx(() {
+      return Column(
+        children: controller.dayTypes
+            .where((e) =>
+        e != "Holiday" &&
+            e != "Weekly off")
+            .map((type) {
+
+          final dayType = mapApiDayType(type);
+
+          IconData icon;
+          Color color;
+
+          switch (dayType) {
+            case DayType.field:
+              icon = Icons.location_on_outlined;
+              color = TColors.primary;
+              break;
+
+            case DayType.jointWork:
+              icon = Icons.people_outline;
+              color = TColors.info;
+              break;
+
+            case DayType.meeting:
+              icon = Icons.groups_outlined;
+              color = TColors.success;
+              break;
+
+            case DayType.office:
+              icon = Icons.business_center_outlined;
+              color = Colors.indigo;
+              break;
+
+            case DayType.transit:
+              icon = Icons.route_outlined;
+              color = Colors.orange;
+              break;
+
+            case DayType.leave:
+              icon = Icons.event_busy_outlined;
+              color = TColors.warning;
+              break;
+
+            case DayType.holiday:
+            case DayType.unassigned:
+              return const SizedBox.shrink();
+          }
+
+          return _buildTypeCard(
+            dayType,
+            type,
+            icon,
+            color,
+          );
+
+        }).toList(),
+      );
+    });
+  }
+
+  
 }

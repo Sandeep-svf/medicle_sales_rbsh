@@ -287,7 +287,7 @@ class TourPlanListController extends GetxController {
   /// Navigation
   ///------------------------------------------------------------
 
-  void openDetails(TourPlanModel plan) {
+  Future<void> openDetails(TourPlanModel plan) async {
 
     debugPrint("========== TourPlanListController ==========");
     debugPrint("TourPlanListController Action      : Open Details");
@@ -298,17 +298,26 @@ class TourPlanListController extends GetxController {
     debugPrint("TourPlanListController Days Count  : ${plan.days.length}");
     debugPrint("===========================================");
 
-    Get.to(
+    final shouldRefresh = await Get.to<bool>(
           () => TourPlanDetailsScreen(
         planId: plan.id,
       ),
     );
+
+    if (shouldRefresh == true) {
+
+      debugPrint("Refreshing Tour Plan List...");
+
+      await refreshList();
+    }
   }
 
   void createTourPlan() {
 
-    Get.toNamed(
-      "/tour-plan/editor",
+    debugPrint("Create Tour Plan Clicked");
+
+    Get.to(
+          () => const TourPlanDetailsScreen(),
     );
   }
 

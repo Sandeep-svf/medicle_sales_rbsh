@@ -20,27 +20,46 @@ class CustomCalendarGrid extends StatelessWidget {
     final double screenWidth = MediaQuery.of(context).size.width;
     final bool isPortrait = screenWidth < 1000;
 
-    const List<String> weekDays = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+    const List<String> weekDays = [
+      'SUN',
+      'MON',
+      'TUE',
+      'WED',
+      'THU',
+      'FRI',
+      'SAT',
+    ];
+
+    // Empty cells before first day of month
+    final int startIndex =
+    days.isEmpty ? 0 : days.first.date.weekday % 7;
 
     return Column(
       children: [
-        // FIXED: Added structured Weekday Header row
+        //------------------------------------------------------
+        // Week Header
+        //------------------------------------------------------
         Container(
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+          padding: const EdgeInsets.symmetric(
+            vertical: 12,
+            horizontal: 16,
+          ),
           color: TColors.white,
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: weekDays.map((day) {
-              final isSunday = day == 'SUN';
+            children: weekDays.map((dayName) {
+              final bool isSunday = dayName == "SUN";
+
               return Expanded(
                 child: Center(
                   child: Text(
-                    day,
+                    dayName,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 12,
                       letterSpacing: 1.1,
-                      color: isSunday ? TColors.error : TColors.textSecondary,
+                      color: isSunday
+                          ? TColors.error
+                          : TColors.textSecondary,
                     ),
                   ),
                 ),
@@ -48,25 +67,49 @@ class CustomCalendarGrid extends StatelessWidget {
             }).toList(),
           ),
         ),
-        const Divider(height: 1, color: TColors.borderSecondary),
 
-        // Calendar Core
+        const Divider(
+          height: 1,
+          color: TColors.borderSecondary,
+        ),
+
+        //------------------------------------------------------
+        // Calendar
+        //------------------------------------------------------
         Expanded(
           child: GridView.builder(
             physics: const BouncingScrollPhysics(),
             padding: const EdgeInsets.all(16),
-            itemCount: days.length,
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+
+            // Total cells = blank cells + actual dates
+            itemCount: startIndex + days.length,
+
+            gridDelegate:
+            SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 7,
               crossAxisSpacing: 10,
               mainAxisSpacing: 10,
-              childAspectRatio: isPortrait ? 0.90 : 1.20,
+              childAspectRatio:
+              isPortrait ? 0.90 : 1.20,
             ),
+
             itemBuilder: (context, index) {
-              final day = days[index];
+              //--------------------------------------------------
+              // Empty Cells
+              //--------------------------------------------------
+              if (index < startIndex) {
+                return const SizedBox.shrink();
+              }
+
+              //--------------------------------------------------
+              // Actual Day
+              //--------------------------------------------------
+              final day = days[index - startIndex];
+
               return CalendarCell(
                 day: day,
-                isSelected: selectedDay?.date == day.date,
+                isSelected:
+                selectedDay?.date == day.date,
                 onTap: () => onDaySelected(day),
               );
             },

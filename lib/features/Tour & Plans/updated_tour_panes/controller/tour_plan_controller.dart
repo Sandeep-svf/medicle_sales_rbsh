@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../utils/constants/colors.dart';
@@ -13,6 +14,7 @@ import '../model/available_user_model.dart';
 import '../model/beat_model.dart';
 import '../model/tour_plan_model.dart';
 import '../service/TourPlanService.dart';
+import '../wigets/draft_saved_dialog.dart';
 
 
 
@@ -189,20 +191,71 @@ class TourPlanController extends GetxController {
   }
 
 
+
+  /// =======================================================
+  /// New Flow Helpers (Safe - Doesn't affect existing code)
+  /// =======================================================
+
+  /// Creating a brand new Tour Plan
+  bool get isNewTourPlan =>
+      tourPlan.value == null;
+
+  /// Existing Returned plan
+  bool get isReturnedTourPlan =>
+      currentStatus.value == "Returned";
+
+  /// Existing Submitted plan
+  bool get isSubmittedTourPlan =>
+      currentStatus.value == "Submitted";
+
+  /// Existing Approved plan
+  bool get isApprovedTourPlan =>
+      currentStatus.value == "Approved";
+
+  /// Existing Draft from List
+  bool get isDraftTourPlan =>
+      currentStatus.value == "Draft";
+
+  /// Only New + Returned are editable
+  bool get canEditCurrentPlan =>
+      isNewTourPlan || isReturnedTourPlan;
+
+  /// Read only plans
+  bool get isViewMode =>
+      isSubmittedTourPlan ||
+          isApprovedTourPlan ||
+          isDraftTourPlan;
+
+
+
+
+
+
   ///--------------------------------------------------------------
   /// Change Planning Month
   ///--------------------------------------------------------------
-  Future<void> changePlanningMonth() async {
+  Future<void> changePlanningMonth(BuildContext context) async {
+    if (!isNewTourPlan) return;
 
-    // TODO:
-    // This will be implemented after integrating
-    // the Tour Plan list API and month picker.
-
-    Get.snackbar(
-      "Coming Soon",
-      "Month selection will be available shortly.",
-      snackPosition: SnackPosition.BOTTOM,
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: selectedMonth.value,
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2035),
+      helpText: "Select Planning Month",
+      initialDatePickerMode: DatePickerMode.year,
     );
+
+    if (picked == null) return;
+
+    selectedMonth.value = DateTime(
+      picked.year,
+      picked.month,
+    );
+
+    selectedDay.value = null;
+
+    generateCalendar();
   }
 
   /// -------------------------------------------------------
@@ -374,6 +427,17 @@ class TourPlanController extends GetxController {
       debugPrint("========== TourPlanController ==========");
       debugPrint("TourPlanController Month Days After Populate : ${monthDays.length}");
       debugPrint("========================================");
+
+
+
+      debugPrint("========== PLAN MODE ==========");
+      debugPrint("TourPlanController New        : $isNewTourPlan");
+      debugPrint("TourPlanController Returned   : $isReturnedTourPlan");
+      debugPrint("TourPlanController Draft      : $isDraftTourPlan");
+      debugPrint("TourPlanController Submitted  : $isSubmittedTourPlan");
+      debugPrint("TourPlanController Approved   : $isApprovedTourPlan");
+      debugPrint("TourPlanController Editable   : $canEditCurrentPlan");
+      debugPrint("===============================");
 
     } catch (e, stack) {
 
@@ -643,6 +707,33 @@ class TourPlanController extends GetxController {
     }
   }
 
+  void selectEditableDay(TourDay day) {
+
+    debugPrint("========== selectEditableDay ==========");
+    debugPrint("Status : ${currentStatus.value}");
+    debugPrint("Editable : $canEditCurrentPlan");
+    debugPrint("=======================================");
+
+    if (!canEditCurrentPlan) {
+      Get.snackbar(
+        "Read Only",
+        "This Tour Plan cannot be edited.",
+      );
+      return;
+    }
+
+    if (day.holidayName == "Weekly Off" ||
+        day.type == DayType.holiday) {
+      return;
+    }
+
+    selectedDay.value = day;
+
+    if (day.type == DayType.jointWork) {
+      loadAvailableUsers(day.date);
+    }
+  }
+
   void updateDay(TourDay updatedDay,) {
     if (isReadOnly.value) {
       return;
@@ -758,6 +849,38 @@ class TourPlanController extends GetxController {
     return true;
   }
 
+  //------------------------------------------------------------
+  /// Day Summary
+//------------------------------------------------------------
+
+  int get fieldCount =>
+      monthDays.where((e) => e.apiDayType == "Field").length;
+
+  int get jointWorkCount =>
+      monthDays.where((e) => e.apiDayType == "Joint work").length;
+
+  int get meetingCount =>
+      monthDays.where((e) => e.apiDayType == "Meeting").length;
+
+  int get officeCount =>
+      monthDays.where((e) => e.apiDayType == "Office").length;
+
+  int get transitCount =>
+      monthDays.where((e) => e.apiDayType == "Transit").length;
+
+  int get leaveCount =>
+      monthDays.where((e) => e.apiDayType == "Leave").length;
+
+  int get holidayCount =>
+      monthDays.where(
+            (e) =>
+        e.apiDayType == "Holiday" &&
+            !e.isWeeklyOff,
+      ).length;
+
+  int get weeklyOffCount =>
+      monthDays.where((e) => e.isWeeklyOff).length;
+
   ///------------------------------------------------------------
   /// UI Enum -> API
   ///------------------------------------------------------------
@@ -774,6 +897,7 @@ class TourPlanController extends GetxController {
     }
 
     switch (day.type) {
+
       case DayType.field:
         return "Field";
 
@@ -783,10 +907,17 @@ class TourPlanController extends GetxController {
       case DayType.meeting:
         return "Meeting";
 
+      case DayType.office:
+        return "Office";
+
+      case DayType.transit:
+        return "Transit";
+
       case DayType.leave:
         return "Leave";
 
       case DayType.holiday:
+
         if (day.isWeeklyOff) {
           return "Weekly off";
         }
@@ -797,6 +928,22 @@ class TourPlanController extends GetxController {
         return "Field";
     }
   }
+
+
+  int get plannedDaysCount =>
+      monthDays.where((e) =>
+      e.type != DayType.unassigned &&
+          e.type != DayType.holiday).length;
+
+  int get workingDaysCount =>
+      monthDays.where((e) =>
+      e.type == DayType.field ||
+          e.type == DayType.jointWork ||
+          e.type == DayType.meeting ||
+          e.type == DayType.office ||
+          e.type == DayType.transit).length;
+
+
 
   ///------------------------------------------------------------
   /// Draft Body
@@ -933,15 +1080,16 @@ class TourPlanController extends GetxController {
         );
       }
 
-      Get.snackbar(
-        "Success",
-        "Draft saved successfully.",
-        backgroundColor: TColors.success.withOpacity(.15),
+      await refreshTourPlan();
+
+      Get.dialog(
+        const DraftSavedDialog(),
+        barrierDismissible: false,
       );
 
       /// Refresh latest server data
 
-      await refreshTourPlan();
+
     } catch (e) {
       Get.snackbar(
         "Error",
@@ -953,13 +1101,96 @@ class TourPlanController extends GetxController {
     }
   }
 
+  /// =======================================================
+  /// New Flow : Save Draft (New + Returned)
+  /// =======================================================
+  Future<bool> saveCurrentPlanDraft() async {
+
+    if (!canEditCurrentPlan) {
+      Get.snackbar(
+        "Read Only",
+        "This Tour Plan cannot be edited.",
+      );
+      return false;
+    }
+
+    if (!validateTourPlan()) {
+      return false;
+    }
+
+    isSavingDraft.value = true;
+
+    try {
+
+      final body = buildDraftBody();
+
+      final id = await service.saveDraft(body);
+
+      if (id == null || id.isEmpty) {
+
+        Get.snackbar(
+          "Error",
+          "Unable to save draft.",
+        );
+
+        return false;
+      }
+
+      draftId.value = id;
+
+      await refreshTourPlan();
+
+      Get.snackbar(
+        "Success",
+        "Draft saved successfully.",
+      );
+
+      return true;
+
+    } catch (e) {
+
+      Get.snackbar(
+        "Error",
+        e.toString(),
+      );
+
+      return false;
+
+    } finally {
+
+      isSavingDraft.value = false;
+    }
+  }
+
+
+  /// =======================================================
+  /// New Flow : Save + Submit
+  /// =======================================================
+  Future<void> submitCurrentPlan() async {
+
+    if (!canEditCurrentPlan) {
+      Get.snackbar(
+        "Read Only",
+        "This Tour Plan cannot be edited.",
+      );
+      return;
+    }
+
+    final saved = await saveCurrentPlanDraft();
+
+    if (!saved) return;
+
+    await submitPlan();
+  }
+
   ///------------------------------------------------------------
   /// Submit Plan
   ///------------------------------------------------------------
 
-  Future<void> submitPlan() async {
+  Future<bool> submitPlan() async {
+
     if (!validateTourPlan()) {
-      return;
+      return false;
     }
 
     if (draftId.value.isEmpty) {
@@ -968,33 +1199,28 @@ class TourPlanController extends GetxController {
         "Please save draft before submitting.",
         backgroundColor: TColors.warning.withOpacity(.15),
       );
-
-      return;
+      return false;
     }
 
     isSubmitting.value = true;
 
     try {
-      final success =
-      await service.submitDraft(
-        draftId.value,
-      );
+
+      final success = await service.submitDraft(draftId.value);
 
       if (!success) {
         Get.snackbar(
           "Failed",
           "Unable to submit plan.",
         );
-
-        return;
+        return false;
       }
 
       if (tourPlan.value != null) {
-        tourPlan.value =
-            tourPlan.value!.copyWith(
-              status: "Submitted",
-              updatedAt: DateTime.now(),
-            );
+        tourPlan.value = tourPlan.value!.copyWith(
+          status: "Submitted",
+          updatedAt: DateTime.now(),
+        );
       }
 
       isReadOnly.value = true;
@@ -1002,15 +1228,22 @@ class TourPlanController extends GetxController {
       Get.snackbar(
         "Success",
         "Tour Plan submitted successfully.",
-        backgroundColor:
-        TColors.success.withOpacity(.15),
+        backgroundColor: TColors.success.withOpacity(.15),
       );
+
+      return true;
+
     } catch (e) {
+
       Get.snackbar(
         "Error",
         e.toString(),
       );
+
+      return false;
+
     } finally {
+
       isSubmitting.value = false;
     }
   }

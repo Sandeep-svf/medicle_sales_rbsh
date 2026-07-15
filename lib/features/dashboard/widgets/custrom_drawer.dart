@@ -7,6 +7,7 @@ import 'package:medicle_sales_rbsh/features/addClinic/screen/ClinicList.dart';
 
 import 'package:medicle_sales_rbsh/features/addDoctor/screens/addDoctor.dart';
 import 'package:medicle_sales_rbsh/features/addProduct/screens/addProduct.dart';
+import 'package:medicle_sales_rbsh/features/approval_management/screen/approval_management_screen.dart';
 import 'package:medicle_sales_rbsh/features/expenses/screens/expenses.dart';
 import 'package:medicle_sales_rbsh/features/order/screens/order.dart';
 import 'package:medicle_sales_rbsh/features/report/screens/report.dart';
@@ -111,6 +112,15 @@ class _CustomDrawerState extends State<CustomDrawer> {
                         widget.onMenuSelected(TourPlanListScreen(), TTexts.tourPlans),
                     isSelected: widget.currentScreen == TTexts.tourPlans,
                   ),
+
+                  _buildDrawerItem(
+                    icon: Icons.approval,
+                    text: TTexts.approval,
+                    onTap: () =>
+                        widget.onMenuSelected(ApprovalManagementScreen(), TTexts.approval),
+                    isSelected: widget.currentScreen == TTexts.approval,
+                  ),
+
 
                   _buildDrawerItem(
                     icon: Icons.meeting_room,
