@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:medicle_sales_rbsh/utils/http/http_client.dart';
 import '../models/TravelAllowenceRequestModel.dart';
@@ -24,7 +25,24 @@ class AllowanceController {
       debugPrint('$_logPrefix: Response Status: ${response.statusCode}');
       debugPrint('$_logPrefix: Response Body: ${response.body}');
 
-      return response.statusCode == 201;
+      if (response.statusCode == 201) {
+        return true;
+      }
+
+      if (response.statusCode == 400) {
+        try {
+          final body = jsonDecode(response.body);
+          Fluttertoast.showToast(
+            msg: body['message'] ?? "Invalid request",
+          );
+        } catch (_) {
+          Fluttertoast.showToast(
+            msg: "Invalid request",
+          );
+        }
+      }
+
+      return false;
     } catch (e) {
       debugPrint('$_logPrefix: Exception occurred - $e');
       return false;
@@ -44,7 +62,24 @@ class AllowanceController {
       debugPrint('$_logPrefix: Response Status: ${response.statusCode}');
       debugPrint('$_logPrefix: Response Body: ${response.body}');
 
-      return response.statusCode == 201;
+      if (response.statusCode == 201) {
+        return true;
+      }
+
+      if (response.statusCode == 400) {
+        try {
+          final body = jsonDecode(response.body);
+          Fluttertoast.showToast(
+            msg: body['message'] ?? "Invalid request",
+          );
+        } catch (_) {
+          Fluttertoast.showToast(
+            msg: "Invalid request",
+          );
+        }
+      }
+
+      return false;
     } catch (e) {
       debugPrint('$_logPrefix: Exception occurred - $e');
       return false;

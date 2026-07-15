@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:medicle_sales_rbsh/features/approval_management/screen/wigets/approve_dialog.dart';
-import 'package:medicle_sales_rbsh/features/approval_management/screen/wigets/collaboration_request_card.dart';
-import 'package:medicle_sales_rbsh/features/approval_management/screen/wigets/pending_approval_card.dart';
-import 'package:medicle_sales_rbsh/features/approval_management/screen/wigets/return_dialog.dart';
+import 'package:medicle_sales_rbsh/features/approval_management/screen/wigets/empty_state.dart';
+import 'package:medicle_sales_rbsh/features/approval_management/screen/wigets/loading_view.dart';
 
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+
+import '../../../utils/constants/colors.dart';
 import '../controller/approval_management_controller.dart';
-
-
-// import your existing details screen
-// import '../../tour_plan_details/tour_plan_details_screen.dart';
+import 'wigets/approve_dialog.dart';
+import 'wigets/collaboration_request_card.dart';
+import 'wigets/pending_approval_card.dart';
+import 'wigets/return_dialog.dart';
 
 class ApprovalManagementScreen extends StatelessWidget {
   ApprovalManagementScreen({super.key});
@@ -20,53 +21,68 @@ class ApprovalManagementScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-
       if (controller.isLoading.value) {
         return const Scaffold(
-          body: Center(
-            child: CircularProgressIndicator(),
+          body: LoadingView(
+            message: "Loading approvals...",
           ),
         );
       }
 
-      /// USER
       if (controller.isUser) {
         return Scaffold(
+          backgroundColor: TColors.light,
           appBar: AppBar(
+            elevation: 0,
+            centerTitle: false,
+            backgroundColor: Colors.white,
+            surfaceTintColor: Colors.transparent,
             title: const Text("Collaboration Requests"),
-            centerTitle: true,
           ),
           body: RefreshIndicator(
             onRefresh: controller.refreshData,
-            child: _buildCollaborationList(),
+            child: _ResponsiveContainer(
+              child: _buildCollaborationList(),
+            ),
           ),
         );
       }
 
-      /// MANAGER
       return DefaultTabController(
         length: 2,
         child: Scaffold(
+          backgroundColor: TColors.light,
           appBar: AppBar(
-            title: const Text("Approval Management"),
-            centerTitle: true,
-            bottom: const TabBar(
+            elevation: 0,
+            centerTitle: false,
+            backgroundColor: Colors.white,
+            surfaceTintColor: Colors.transparent,
+           // title: const Text("Approval Management"),
+            bottom: TabBar(
+              indicatorColor: TColors.primary,
+              labelColor: TColors.primary,
+              unselectedLabelColor: TColors.textSecondary,
               tabs: [
-                Tab(text: "Pending"),
-                Tab(text: "Collaboration"),
+                Tab(
+                  text:
+                  "Pending (${controller.pendingApprovals.length})",
+                ),
+                Tab(
+                  text:
+                  "Collaboration (${controller.collaborations.length})",
+                ),
               ],
             ),
           ),
           body: RefreshIndicator(
             onRefresh: controller.refreshData,
-            child: TabBarView(
-              children: [
-
-                _buildPendingList(),
-
-                _buildCollaborationList(),
-
-              ],
+            child: _ResponsiveContainer(
+              child: TabBarView(
+                children: [
+                  _buildPendingList(),
+                  _buildCollaborationList(),
+                ],
+              ),
             ),
           ),
         ),
@@ -76,151 +92,137 @@ class ApprovalManagementScreen extends StatelessWidget {
 
   Widget _buildPendingList() {
     return Obx(() {
-
       if (controller.pendingApprovals.isEmpty) {
-        return const Center(
-          child: Text("No Pending Approvals"),
+        return const EmptyState(
+          icon: Icons.assignment_outlined,
+          title: "No Pending Approvals",
+          subtitle: "There are no pending approvals at the moment.",
         );
       }
 
-      return ListView.builder(
-        physics: const AlwaysScrollableScrollPhysics(),
-        itemCount: controller.pendingApprovals.length,
-        itemBuilder: (_, index) {
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          final isWide = constraints.maxWidth >= 900;
 
-          final plan = controller.pendingApprovals[index];
+          return SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(TSizes.lg),
+            child: Wrap(
+              spacing: TSizes.lg,
+              runSpacing: TSizes.lg,
+              children: controller.pendingApprovals.map((plan) {
+                return SizedBox(
+                  width: isWide
+                      ? (constraints.maxWidth - TSizes.lg) / 2
+                      : constraints.maxWidth,
+                  child: PendingApprovalCard(
+                    plan: plan,
+                    loading: controller.isApproving.value ||
+                        controller.isReturning.value,
+                    onView: () {},
 
-          return PendingApprovalCard(
+                    onApprove: () {
+                      Get.dialog(
+                        ApproveDialog(
+                          onApprove: (comments) {
+                            controller.approveTour(
+                              plan: plan,
+                              comments: comments,
+                            );
+                          },
+                        ),
+                      );
+                    },
 
-            plan: plan,
-
-            loading:
-            controller.isApproving.value ||
-                controller.isReturning.value,
-
-            onView: () {
-
-              /// Open your existing details screen
-
-              // Get.to(
-              //   ()=>TourPlanDetailsScreen(
-              //      plan: plan,
-              //   ),
-              // );
-
-            },
-
-            onApprove: () {
-
-              Get.dialog(
-
-                ApproveDialog(
-
-                  onApprove: (comments) {
-
-                    controller.approveTour(
-                      plan: plan,
-                      comments: comments,
-                    );
-
-                  },
-
-                ),
-
-              );
-
-            },
-
-            onReturn: () {
-
-              Get.dialog(
-
-                ReturnDialog(
-
-                  onReturn: (comments) {
-
-                    controller.returnTour(
-                      plan: plan,
-                      comments: comments,
-                    );
-
-                  },
-
-                ),
-
-              );
-
-            },
-
+                    onReturn: () {
+                      Get.dialog(
+                        ReturnDialog(
+                          onReturn: (comments) {
+                            controller.returnTour(
+                              plan: plan,
+                              comments: comments,
+                            );
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                );
+              }).toList(),
+            ),
           );
-
         },
       );
     });
   }
 
   Widget _buildCollaborationList() {
-
     return Obx(() {
-
       if (controller.collaborations.isEmpty) {
-
-        return const Center(
-          child: Text(
-            "No Collaboration Requests",
-          ),
+        return const EmptyState(
+          icon: Icons.handshake_outlined,
+          title: "No Collaboration Requests",
+          subtitle: "There are no collaboration requests available.",
         );
-
       }
 
-      return ListView.builder(
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          final isWide = constraints.maxWidth >= 900;
 
-        physics: const AlwaysScrollableScrollPhysics(),
-
-        itemCount: controller.collaborations.length,
-
-        itemBuilder: (_, index) {
-
-          final request =
-          controller.collaborations[index];
-
-          return CollaborationRequestCard(
-
-            request: request,
-
-            loading: controller.isResponding.value,
-
-            onAccept: () {
-
-              controller.respondCollaboration(
-
-                request: request,
-
-                accept: true,
-
-              );
-
-            },
-
-            onReject: () {
-
-              controller.respondCollaboration(
-
-                request: request,
-
-                accept: false,
-
-              );
-
-            },
-
+          return SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(TSizes.lg),
+            child: Wrap(
+              spacing: TSizes.lg,
+              runSpacing: TSizes.lg,
+              children: controller.collaborations.map((request) {
+                return SizedBox(
+                  width: isWide
+                      ? (constraints.maxWidth - TSizes.lg) / 2
+                      : constraints.maxWidth,
+                  child: CollaborationRequestCard(
+                    request: request,
+                    loading: controller.isResponding.value,
+                    onAccept: () {
+                      controller.respondCollaboration(
+                        request: request,
+                        accept: true,
+                      );
+                    },
+                    onReject: () {
+                      controller.respondCollaboration(
+                        request: request,
+                        accept: false,
+                      );
+                    },
+                  ),
+                );
+              }).toList(),
+            ),
           );
-
         },
-
       );
-
     });
+  }
+}
 
+class _ResponsiveContainer extends StatelessWidget {
+  const _ResponsiveContainer({
+    required this.child,
+  });
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(
+          maxWidth: 1200,
+        ),
+        child: child,
+      ),
+    );
   }
 }

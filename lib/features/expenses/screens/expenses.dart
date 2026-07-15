@@ -340,6 +340,9 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                           ),
                           const SizedBox(height: 12),
                         ] else if (selectedCategory == 'Daily Allowance') ...[
+
+
+
                           DropdownButtonFormField<String>(
                             decoration: const InputDecoration(labelText: "Select DA Location", border: OutlineInputBorder()),
                             value: selectedDAType,

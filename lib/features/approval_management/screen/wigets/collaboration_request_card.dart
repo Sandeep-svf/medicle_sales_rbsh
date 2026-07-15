@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../utils/constants/colors.dart';
+import '../../../../utils/constants/sizes.dart';
 import '../../model/collaboration_request_model.dart';
 
-
-
-class CollaborationRequestCard
-    extends StatelessWidget {
+class CollaborationRequestCard extends StatelessWidget {
   const CollaborationRequestCard({
     super.key,
     required this.request,
@@ -16,7 +15,6 @@ class CollaborationRequestCard
   });
 
   final CollaborationRequestModel request;
-
   final bool loading;
 
   final VoidCallback onAccept;
@@ -27,64 +25,223 @@ class CollaborationRequestCard
     final user = request.tourPlan.user;
 
     return Card(
-      margin: const EdgeInsets.symmetric(
-        horizontal: 16,
-        vertical: 8,
+      elevation: TSizes.cardElevation,
+      surfaceTintColor: Colors.transparent,
+      color: TColors.cardBackground,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(TSizes.cardRadiusLg),
+        side: const BorderSide(
+          color: TColors.cardBorder,
+        ),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(TSizes.lg),
         child: Column(
-          crossAxisAlignment:
-          CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
 
-            Text(
-              user?.name ?? "-",
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-              ),
+            /// HEADER
+            Row(
+              children: [
+
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment:
+                    CrossAxisAlignment.start,
+                    children: [
+
+                      Text(
+                        user?.name ?? "-",
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+
+                      const SizedBox(height: TSizes.xs),
+
+                      Text(
+                        user?.employeeCode ?? "-",
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodyMedium
+                            ?.copyWith(
+                          color:
+                          TColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                _StatusChip(
+                  status:
+                  request.collaborationStatus,
+                ),
+              ],
             ),
 
-            const SizedBox(height: 8),
+            const SizedBox(height: TSizes.lg),
 
-            Text(
-              "Employee Code : ${user?.employeeCode ?? '-'}",
+            const Divider(),
+
+            const SizedBox(height: TSizes.md),
+
+            _InfoRow(
+              title: "Visit Date",
+              value: DateFormat("dd MMM yyyy")
+                  .format(request.date),
             ),
 
-            Text(
-              "Date : ${DateFormat('dd MMM yyyy').format(request.date)}",
+            const SizedBox(
+              height: TSizes.spaceBtwItems,
             ),
 
-            Text(
-              "Day Type : ${request.dayType}",
+            _InfoRow(
+              title: "Day Type",
+              value: request.dayType,
             ),
 
-            Text(
-              "Status : ${request.collaborationStatus}",
-            ),
+            const Spacer(),
 
-            const SizedBox(height: 16),
+            const Divider(),
+
+            const SizedBox(height: TSizes.md),
 
             Row(
               children: [
 
-                ElevatedButton(
-                  onPressed:
-                  loading ? null : onAccept,
-                  child: const Text("Accept"),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed:
+                    loading ? null : onReject,
+                    icon: const Icon(Icons.close),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor:
+                      TColors.error,
+                    ),
+                    label: const Text("Reject"),
+                  ),
                 ),
 
-                const SizedBox(width: 12),
+                const SizedBox(
+                  width: TSizes.md,
+                ),
 
-                ElevatedButton(
-                  onPressed:
-                  loading ? null : onReject,
-                  child: const Text("Reject"),
+                Expanded(
+                  child: FilledButton.icon(
+                    onPressed:
+                    loading ? null : onAccept,
+                    style: FilledButton.styleFrom(
+                      backgroundColor:
+                      TColors.primary,
+                    ),
+                    icon: const Icon(Icons.check),
+                    label: const Text("Accept"),
+                  ),
                 ),
               ],
-            )
+            ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _InfoRow extends StatelessWidget {
+  const _InfoRow({
+    required this.title,
+    required this.value,
+  });
+
+  final String title;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+
+        Expanded(
+          child: Text(
+            title,
+            style: Theme.of(context)
+                .textTheme
+                .bodyMedium
+                ?.copyWith(
+              color: TColors.textSecondary,
+            ),
+          ),
+        ),
+
+        Expanded(
+          child: Text(
+            value,
+            textAlign: TextAlign.end,
+            style: Theme.of(context)
+                .textTheme
+                .bodyMedium
+                ?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _StatusChip extends StatelessWidget {
+  const _StatusChip({
+    required this.status,
+  });
+
+  final String status;
+
+  @override
+  Widget build(BuildContext context) {
+    Color bg = TColors.primary_shade50;
+    Color fg = TColors.primary;
+
+    switch (status.toLowerCase()) {
+      case "accepted":
+        bg = TColors.successBg;
+        fg = TColors.success;
+        break;
+
+      case "rejected":
+        bg = TColors.errorBg;
+        fg = TColors.error;
+        break;
+
+      case "pending":
+        bg = TColors.warningBg;
+        fg = TColors.warning;
+        break;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: TSizes.md,
+        vertical: TSizes.sm,
+      ),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(
+          TSizes.cardRadiusLg,
+        ),
+      ),
+      child: Text(
+        status,
+        style: TextStyle(
+          color: fg,
+          fontWeight: FontWeight.w600,
+          fontSize: TSizes.fontSizeSm,
         ),
       ),
     );

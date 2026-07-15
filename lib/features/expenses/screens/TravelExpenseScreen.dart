@@ -71,6 +71,7 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
   @override
   void initState() {
     super.initState();
+    selectedExpenseDate = DateTime.now();
     _loadSettingsAndPrefill();
   }
 
@@ -195,8 +196,12 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
       return;
     }
 
+    final ratePerKm =
+        settingsController.scraperSettings.value?.ratePerKm ?? 0.0;
+
     final multiplier = tripType == 'Round Trip' ? 2 : 1;
-    final fare = km * farePerKm * multiplier;
+
+    final fare = km * ratePerKm * multiplier;
 
     final trip = {
       'from': from,
@@ -292,6 +297,8 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
               ? "$tripType: Travel Allowance submission"
               : "$tripType: ${remarkController.text.trim()}",
           'bill': '',
+          'date': DateFormat('yyyy-MM-dd')
+              .format(selectedExpenseDate ?? DateTime.now()),
           'travelDetails': travelDetails,
         };
 
@@ -307,6 +314,9 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
             category: "travel",
             //added
             bill: "",
+            date: DateFormat('yyyy-MM-dd')
+                .format(selectedExpenseDate ?? DateTime.now()),
+
             //added
             travelDetails: travelDetails
                 .map((t) => TravelDetail(
@@ -365,6 +375,8 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
           'description': daDescriptionController.text.trim(),
           'bill': '',
           'dailyAllowanceType': dailyAllowanceType,
+          'date': DateFormat('yyyy-MM-dd')
+              .format(selectedExpenseDate ?? DateTime.now()),
         };
 
         if (widget.isEditMode && widget.expenseId != null) {
@@ -378,6 +390,8 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
             description: (payload['description'] as String?) ?? '',
             dailyAllowanceType:
                 (payload['dailyAllowanceType'] as String?) ?? 'headoffice',
+            date: DateFormat('yyyy-MM-dd')
+                .format(selectedExpenseDate ?? DateTime.now()),
           );
           success = await AllowanceController.submitDailyAllowance(daRequest);
         }
@@ -507,6 +521,23 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
                   padding: const EdgeInsets.all(12.0),
                   child: Column(
                     children: [
+
+                      InkWell(
+                        onTap: pickExpenseDate,
+                        child: InputDecorator(
+                          decoration: const InputDecoration(
+                            labelText: "Travel Date",
+                            border: OutlineInputBorder(),
+                          ),
+                          child: Text(
+                            DateFormat('dd MMM yyyy').format(
+                              selectedExpenseDate ?? DateTime.now(),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
                       DropdownButtonFormField<String>(
                         value: tripType,
                         decoration: const InputDecoration(
@@ -654,6 +685,25 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
                   padding: const EdgeInsets.all(12.0),
                   child: Column(
                     children: [
+
+                      InkWell(
+                        onTap: pickExpenseDate,
+                        child: InputDecorator(
+                          decoration: const InputDecoration(
+                            labelText: "Allowance Date",
+                            border: OutlineInputBorder(),
+                          ),
+                          child: Text(
+                            DateFormat('dd MMM yyyy').format(
+                              selectedExpenseDate ?? DateTime.now(),
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 12),
+
+
                       DropdownButtonFormField<String>(
                         decoration: const InputDecoration(
                             labelText: "Select DA Location",

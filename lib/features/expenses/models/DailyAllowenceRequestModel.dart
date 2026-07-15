@@ -4,6 +4,7 @@ class DailyAllowanceRequest {
   final String description;
   final String bill;
   final String dailyAllowanceType;
+  final String date;
 
   DailyAllowanceRequest({
     required this.userId,
@@ -11,6 +12,7 @@ class DailyAllowanceRequest {
     required this.dailyAllowanceType,
     this.category = "daily",
     this.bill = "",
+    required this.date,
   });
 
   Map<String, dynamic> toJson() => {
@@ -19,5 +21,6 @@ class DailyAllowanceRequest {
     "description": description,
     "bill": bill,
     "dailyAllowanceType": dailyAllowanceType,
+    "date": date,
   };
 }
