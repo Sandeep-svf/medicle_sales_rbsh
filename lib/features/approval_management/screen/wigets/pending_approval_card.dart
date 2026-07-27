@@ -23,6 +23,10 @@ class PendingApprovalCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint(
+      "[PendingApprovalCard] id=${plan.id}, status=${plan.status}",
+    );
+
     return Card(
       elevation: TSizes.cardElevation,
       color: TColors.cardBackground,
@@ -37,21 +41,18 @@ class PendingApprovalCard extends StatelessWidget {
         padding: const EdgeInsets.all(TSizes.lg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
-
             /// Header
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-
                 Expanded(
                   child: Column(
-                    crossAxisAlignment:
-                    CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-
                       Text(
-                        plan.user.name,
+                        plan.user.name.isNotEmpty ? plan.user.name : "-",
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: Theme.of(context)
@@ -62,13 +63,11 @@ class PendingApprovalCard extends StatelessWidget {
                           color: TColors.textPrimary,
                         ),
                       ),
-
-                      const SizedBox(
-                        height: TSizes.xs,
-                      ),
-
+                      const SizedBox(height: TSizes.xs),
                       Text(
-                        plan.user.employeeCode ?? "-",
+                        (plan.user.employeeCode ?? "").isNotEmpty
+                            ? plan.user.employeeCode!
+                            : "-",
                         style: Theme.of(context)
                             .textTheme
                             .bodyMedium
@@ -79,20 +78,15 @@ class PendingApprovalCard extends StatelessWidget {
                     ],
                   ),
                 ),
-
                 _StatusChip(status: plan.status),
               ],
             ),
 
-            const SizedBox(
-              height: TSizes.lg,
-            ),
+            const SizedBox(height: TSizes.lg),
 
             const Divider(),
 
-            const SizedBox(
-              height: TSizes.md,
-            ),
+            const SizedBox(height: TSizes.md),
 
             _InfoRow(
               title: "Planning Month",
@@ -100,27 +94,21 @@ class PendingApprovalCard extends StatelessWidget {
               "${DateFormat.MMMM().format(DateTime(plan.year, plan.month))} ${plan.year}",
             ),
 
-            const SizedBox(
-              height: TSizes.spaceBtwItems,
-            ),
+            const SizedBox(height: TSizes.spaceBtwItems),
 
             _InfoRow(
               title: "Submitted On",
-              value: DateFormat("dd MMM yyyy")
-                  .format(plan.createdAt),
+              value: DateFormat("dd MMM yyyy").format(plan.createdAt),
             ),
 
-            const Spacer(),
+            const SizedBox(height: TSizes.lg),
 
             const Divider(),
 
-            const SizedBox(
-              height: TSizes.md,
-            ),
+            const SizedBox(height: TSizes.md),
 
             Row(
               children: [
-
                 OutlinedButton.icon(
                   onPressed: onView,
                   icon: const Icon(Icons.visibility_outlined),
@@ -130,24 +118,19 @@ class PendingApprovalCard extends StatelessWidget {
                 const Spacer(),
 
                 OutlinedButton(
-                  onPressed:
-                  loading ? null : onReturn,
+                  onPressed: loading ? null : onReturn,
                   style: OutlinedButton.styleFrom(
                     foregroundColor: TColors.warning,
                   ),
                   child: const Text("Return"),
                 ),
 
-                const SizedBox(
-                  width: TSizes.sm,
-                ),
+                const SizedBox(width: TSizes.sm),
 
                 FilledButton(
-                  onPressed:
-                  loading ? null : onApprove,
+                  onPressed: loading ? null : onApprove,
                   style: FilledButton.styleFrom(
-                    backgroundColor:
-                    TColors.primary,
+                    backgroundColor: TColors.primary,
                   ),
                   child: const Text("Approve"),
                 ),
@@ -173,27 +156,19 @@ class _InfoRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-
         Expanded(
           child: Text(
             title,
-            style: Theme.of(context)
-                .textTheme
-                .bodyMedium
-                ?.copyWith(
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: TColors.textSecondary,
             ),
           ),
         ),
-
         Expanded(
           child: Text(
             value,
             textAlign: TextAlign.end,
-            style: Theme.of(context)
-                .textTheme
-                .bodyMedium
-                ?.copyWith(
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -212,12 +187,10 @@ class _StatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     Color background = TColors.primary_shade50;
     Color text = TColors.primary;
 
     switch (status.toLowerCase()) {
-
       case "approved":
         background = TColors.successBg;
         text = TColors.success;
@@ -246,9 +219,7 @@ class _StatusChip extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: background,
-        borderRadius: BorderRadius.circular(
-          TSizes.cardRadiusLg,
-        ),
+        borderRadius: BorderRadius.circular(TSizes.cardRadiusLg),
       ),
       child: Text(
         status,

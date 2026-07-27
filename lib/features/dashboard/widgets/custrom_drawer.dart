@@ -177,7 +177,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                   ),
 
                   // Other drawer items
-                  _buildDrawerItem(
+                 /* _buildDrawerItem(
                     icon: Icons.money,
                     text: TTexts.marketingMaterial,
                     onTap: () =>
@@ -186,7 +186,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                             TTexts.marketingMaterial),
                     isSelected: widget.currentScreen ==
                         TTexts.marketingMaterial,
-                  ),
+                  ),*/
                   _buildDrawerItem(
                     icon: Icons.picture_as_pdf,
                     text: TTexts.filesAndPdfs,
@@ -228,15 +228,15 @@ class _CustomDrawerState extends State<CustomDrawer> {
                     isSelected: widget.currentScreen == TTexts.ptsptrcalculator,
                   ),
 
-                  _buildDrawerItem(
+                 /* _buildDrawerItem(
                     icon: Icons.money,
                     text: TTexts.salesActivity,
                     onTap: () =>
                         widget.onMenuSelected(
                             SalesactivityScreen(), TTexts.salesActivity),
                     isSelected: widget.currentScreen == TTexts.salesActivity,
-                  ),
-                  _buildDrawerItem(
+                  ),*/
+                 /* _buildDrawerItem(
                     icon: Icons.add,
                     text: TTexts.addProduct,
                     onTap: () =>
@@ -250,7 +250,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                     onTap: () =>
                         widget.onMenuSelected(OrderScreen(), TTexts.order),
                     isSelected: widget.currentScreen == TTexts.order,
-                  ),
+                  ),*/
                   _buildDrawerItem(
                     icon: Icons.inventory,
                     text: TTexts.invoiceScreen,
@@ -269,13 +269,13 @@ class _CustomDrawerState extends State<CustomDrawer> {
                         ExpensesScreen(), TTexts.expenses),
                     isSelected: widget.currentScreen == TTexts.expenses,
                   ),
-                  _buildDrawerItem(
+                  /*_buildDrawerItem(
                     icon: Icons.post_add,
                     text: TTexts.blog,
                     onTap: () =>
                         widget.onMenuSelected(Blogscreen(), TTexts.blog),
                     isSelected: widget.currentScreen == TTexts.blog,
-                  ),
+                  ),*/
 
 
                   _buildDrawerItem(
@@ -303,13 +303,13 @@ class _CustomDrawerState extends State<CustomDrawer> {
                         widget.onMenuSelected(TicketScreen(), TTexts.support),
                     isSelected: widget.currentScreen == TTexts.support,
                   ),
-                  _buildDrawerItem(
+                 /* _buildDrawerItem(
                     icon: Icons.report,
                     text: TTexts.report,
                     onTap: () =>
                         widget.onMenuSelected(ReportScreen(), TTexts.report),
                     isSelected: widget.currentScreen == TTexts.report,
-                  ),
+                  ),*/
                   _buildDrawerItem(
                     icon: Icons.logout,
                     text: TTexts.logout,

@@ -1231,6 +1231,13 @@ class TourPlanController extends GetxController {
         backgroundColor: TColors.success.withOpacity(.15),
       );
 
+
+      if (Get.isDialogOpen ?? false) {
+        Get.back();
+      }
+
+// Return to previous screen
+      Get.back(result: true);
       return true;
 
     } catch (e) {

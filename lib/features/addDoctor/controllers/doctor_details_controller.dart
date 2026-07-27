@@ -30,9 +30,6 @@ class DoctorDetailsController extends GetxController {
     fetchDoctor();
   }
 
-
-
-
   Future<void> fetchDoctor() async {
     try {
       isLoading.value = true;

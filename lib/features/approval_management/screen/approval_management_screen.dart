@@ -6,6 +6,7 @@ import 'package:medicle_sales_rbsh/features/approval_management/screen/wigets/lo
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 import '../../../utils/constants/colors.dart';
+import '../../Tour & Plans/updated_tour_panes/Screen/tour_plan_details_screen.dart';
 import '../controller/approval_management_controller.dart';
 import 'wigets/approve_dialog.dart';
 import 'wigets/collaboration_request_card.dart';
@@ -119,7 +120,13 @@ class ApprovalManagementScreen extends StatelessWidget {
                     plan: plan,
                     loading: controller.isApproving.value ||
                         controller.isReturning.value,
-                    onView: () {},
+                    onView: () {
+                      Get.to(
+                            () => TourPlanDetailsScreen(
+                          planId: plan.id,
+                        ),
+                      );
+                    },
 
                     onApprove: () {
                       Get.dialog(

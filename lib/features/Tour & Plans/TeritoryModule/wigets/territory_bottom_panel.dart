@@ -29,32 +29,55 @@ class TerritoryBottomPanel extends GetView<TerritoryController> {
         ),
         child: SafeArea(
           top: false,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: const [
+          child: Obx(
+                () => Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
 
-              /// Handle
-              SizedBox(
-                width: 55,
-                child: Divider(
-                  thickness: 5,
-                ),
-              ),
+                    /// Expand / Collapse
+                    InkWell(
+                      onTap: () => controller.showTools.toggle(),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            controller.showTools.value
+                                ? "Hide Details"
+                                : "Show Details",
+                          ),
+                          Icon(
+                            controller.showTools.value
+                                ? Icons.keyboard_arrow_down
+                                : Icons.keyboard_arrow_up,
+                          ),
+                        ],
+                      ),
+                    ),
 
-              SizedBox(height: 14),
+                    /// Hidden widgets
+                    Obx(
+                          () => AnimatedCrossFade(
+                        duration: const Duration(milliseconds: 250),
+                        crossFadeState: controller.showTools.value
+                            ? CrossFadeState.showFirst
+                            : CrossFadeState.showSecond,
+                        firstChild: Column(
+                          children: const [
+                            TerritoryStatistics(),
+                            SizedBox(height: 18),
+                            TerritoryLayerChips(),
+                            SizedBox(height: 18),
+                          ],
+                        ),
+                        secondChild: const SizedBox.shrink(),
+                      ),
+                    ),
 
-              TerritoryStatistics(),
-
-              SizedBox(height: 18),
-
-              TerritoryLayerChips(),
-
-              SizedBox(height: 18),
-
-              TerritoryQuickActions(),
-
-            ],
-          ),
+                    /// Always visible
+                    const TerritoryQuickActions(),
+                  ],
+                )
+          )
         ),
       ),
     );

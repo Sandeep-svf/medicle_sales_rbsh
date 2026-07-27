@@ -1,11 +1,13 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:get/get_rx/src/rx_types/rx_types.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 
 import '../../../../utils/http/http_client.dart';
 import '../../../../utils/local_storage/auth_manager.dart';
 import '../models/visitSalesData.dart';
+import '../repository/pending_visit_repository.dart';
 
 enum VisitDateFilter {
   today,
@@ -16,6 +18,12 @@ enum VisitDateFilter {
 
 class VisitListController with ChangeNotifier {
   final AuthManager authManager = AuthManager();
+  final PendingVisitRepository _pendingRepository =
+  PendingVisitRepository();
+
+  final RxSet<String> pendingVisits = <String>{}.obs;
+
+
 
   List<VisitSalesLogModel> _visitList = [];
   String? userId;
@@ -25,6 +33,16 @@ class VisitListController with ChangeNotifier {
   bool get isLoading => _isLoading;
 
   final String fetchApiUrl = THttpHelper.baseUrl;
+
+  Future<void> loadPendingVisits() async {
+    final visits = await _pendingRepository.getPendingVisits();
+
+    pendingVisits.clear();
+
+    pendingVisits.addAll(
+      visits.map((e) => e.visitId),
+    );
+  }
 
   Future<void> fetchSalesList({
     VisitDateFilter filter = VisitDateFilter.today,
@@ -140,6 +158,8 @@ class VisitListController with ChangeNotifier {
         )
             .toList();
 
+        await loadPendingVisits();
+
         debugPrint(
             "VisitListController: Records Parsed = ${_visitList.length}");
 
@@ -178,4 +198,6 @@ class VisitListController with ChangeNotifier {
       notifyListeners();
     }
   }
+
+
 }

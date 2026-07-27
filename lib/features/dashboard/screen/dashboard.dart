@@ -29,6 +29,7 @@ import '../../addDoctor/screens/addDoctor.dart';
 import '../../marketing/screen/MarketingScreen.dart';
 import '../../marketing/screen/marketing.dart';
 import '../../notification/screen/NotificatinScreen.dart';
+import '../../visit/Doctor/services/pending_visit_sync_service.dart';
 import '../attendance/controller/attendance_controller.dart';
 import '../widgets/custrom_drawer.dart';
 
@@ -38,6 +39,7 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
+  final PendingVisitSyncService _syncService = PendingVisitSyncService();
   Widget _currentScreen = SalesChartHomeScreen(); // Default screen
   PageController controller = PageController(initialPage: 0);
   int selectedIndex = 0;
@@ -54,6 +56,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   void initState() {
     super.initState();
+
+
+    _syncService.startListening();
 
     attendanceController = Get.put(AttendanceController());
 
@@ -138,6 +143,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   void dispose() {
     controller.dispose();
+    _syncService.dispose();
     super.dispose();
   }
 

@@ -1,16 +1,18 @@
-import 'dart:convert';
-
-
 class UserModel {
   final String? token;
   final User? user;
 
-  UserModel({this.token, this.user});
+  UserModel({
+    this.token,
+    this.user,
+  });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
       token: json['token'],
-      user: json['user'] != null ? User.fromJson(json['user']) : null,
+      user: json['user'] != null
+          ? User.fromJson(json['user'])
+          : null,
     );
   }
 
@@ -28,7 +30,8 @@ class User {
   final String email;
   final String role;
   final bool emailVerified;
-  final List<HeadOffice>? headOffices;
+  final String? phone;
+  final List<HeadOffice> headOffices;
 
   User({
     required this.id,
@@ -36,18 +39,20 @@ class User {
     required this.email,
     required this.role,
     required this.emailVerified,
-    this.headOffices,
+    this.phone,
+    required this.headOffices,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      id: json['id'],
-      name: json['name'],
-      email: json['email'],
-      role: json['role'],
+      id: json['id'] ?? '',
+      name: json['name'] ?? '',
+      email: json['email'] ?? '',
+      role: json['role'] ?? '',
       emailVerified: json['emailVerified'] ?? false,
-      headOffices: (json['headOffices'] as List?)
-          ?.map((e) => HeadOffice.fromJson(e))
+      phone: json['phone'],
+      headOffices: (json['headOffices'] as List<dynamic>? ?? [])
+          .map((e) => HeadOffice.fromJson(e))
           .toList(),
     );
   }
@@ -59,31 +64,40 @@ class User {
       'email': email,
       'role': role,
       'emailVerified': emailVerified,
-      'headOffices': headOffices?.map((e) => e.toJson()).toList(),
+      'phone': phone,
+      'headOffices': headOffices.map((e) => e.toJson()).toList(),
     };
   }
 }
 
 class HeadOffice {
-  final String? id;
-  final String? name;
+  final String id;
+  final String name;
+  final double latitude;
+  final double longitude;
 
-  HeadOffice({this.id, this.name});
+  HeadOffice({
+    required this.id,
+    required this.name,
+    required this.latitude,
+    required this.longitude,
+  });
 
   factory HeadOffice.fromJson(Map<String, dynamic> json) {
     return HeadOffice(
-      id: json['_id'],
-      name: json['name'],
+      id: json['id'] ?? '',
+      name: json['name'] ?? '',
+      latitude: (json['latitude'] ?? 0).toDouble(),
+      longitude: (json['longitude'] ?? 0).toDouble(),
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      '_id': id,
+      'id': id,
       'name': name,
+      'latitude': latitude,
+      'longitude': longitude,
     };
   }
 }
-
-
-

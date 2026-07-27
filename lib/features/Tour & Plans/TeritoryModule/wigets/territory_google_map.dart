@@ -31,6 +31,10 @@ class TerritoryGoogleMap extends GetView<TerritoryController> {
 
           initialZoom: controller.currentZoom.value,
 
+          onMapReady: () {
+            controller.onMapReady();
+          },
+
           minZoom: 5,
 
           maxZoom: 18,

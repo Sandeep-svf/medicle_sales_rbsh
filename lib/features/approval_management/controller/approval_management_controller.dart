@@ -6,9 +6,9 @@ import '../model/collaboration_request_model.dart';
 import '../model/pending_approval_model.dart';
 import '../service/approval_management_service.dart';
 
-
-
 class ApprovalManagementController extends GetxController {
+  static const String _tag = "[ApprovalManagementController]";
+
   final ApprovalManagementService _service = ApprovalManagementService();
 
   /// Loading
@@ -38,6 +38,7 @@ class ApprovalManagementController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    debugPrint("$_tag onInit()");
     loadData();
   }
 
@@ -47,16 +48,30 @@ class ApprovalManagementController extends GetxController {
 
   Future<void> loadData() async {
     try {
+      debugPrint("$_tag ===============================");
+      debugPrint("$_tag loadData() Started");
+
       isLoading.value = true;
 
       userRole.value = await AuthManager().getUserRole() ?? "";
+
+      debugPrint("$_tag User Role : ${userRole.value}");
+      debugPrint("$_tag isUser : $isUser");
 
       if (!isUser) {
         await fetchPendingApprovals();
       }
 
       await fetchCollaborationRequests();
-    } catch (e) {
+
+      debugPrint(
+        "$_tag Load Completed -> Pending=${pendingApprovals.length}, Collaboration=${collaborations.length}",
+      );
+    } catch (e, s) {
+      debugPrint("$_tag ERROR in loadData()");
+      debugPrint("$_tag $e");
+      debugPrint("$s");
+
       Get.snackbar(
         "Error",
         e.toString(),
@@ -64,6 +79,8 @@ class ApprovalManagementController extends GetxController {
       );
     } finally {
       isLoading.value = false;
+      debugPrint("$_tag isLoading = false");
+      debugPrint("$_tag ===============================");
     }
   }
 
@@ -72,6 +89,8 @@ class ApprovalManagementController extends GetxController {
   /// ------------------------------
 
   Future<void> refreshData() async {
+    debugPrint("$_tag Refresh Requested");
+
     pendingApprovals.clear();
     collaborations.clear();
 
@@ -83,8 +102,26 @@ class ApprovalManagementController extends GetxController {
   /// ------------------------------
 
   Future<void> fetchPendingApprovals() async {
-    pendingApprovals.value =
-    await _service.fetchPendingApprovals();
+    debugPrint("$_tag fetchPendingApprovals()");
+
+    final data = await _service.fetchPendingApprovals();
+
+    debugPrint("$_tag API returned ${data.length} pending approvals");
+
+    for (final item in data) {
+      debugPrint(
+        "$_tag Pending -> "
+            "id=${item.id}, "
+            "status=${item.status}, "
+            "employee=${item.approvedByName}",
+      );
+    }
+
+    pendingApprovals.assignAll(data);
+
+    debugPrint(
+      "$_tag pendingApprovals updated. Count=${pendingApprovals.length}",
+    );
   }
 
   /// ------------------------------
@@ -92,8 +129,25 @@ class ApprovalManagementController extends GetxController {
   /// ------------------------------
 
   Future<void> fetchCollaborationRequests() async {
-    collaborations.value =
-    await _service.fetchIncomingCollaborations();
+    debugPrint("$_tag fetchCollaborationRequests()");
+
+    final data = await _service.fetchIncomingCollaborations();
+
+    debugPrint("$_tag API returned ${data.length} collaboration requests");
+
+    for (final item in data) {
+      debugPrint(
+        "$_tag Collaboration -> "
+            "id=${item.id}, "
+            "status=${item.collaborationStatus}",
+      );
+    }
+
+    collaborations.assignAll(data);
+
+    debugPrint(
+      "$_tag collaborations updated. Count=${collaborations.length}",
+    );
   }
 
   /// ------------------------------
@@ -105,6 +159,8 @@ class ApprovalManagementController extends GetxController {
     required String comments,
   }) async {
     try {
+      debugPrint("$_tag Approving Tour -> ${plan.id}");
+
       isApproving.value = true;
 
       await _service.approveTourPlan(
@@ -116,12 +172,20 @@ class ApprovalManagementController extends GetxController {
             (e) => e.id == plan.id,
       );
 
+      debugPrint(
+        "$_tag Tour Approved. Remaining Pending=${pendingApprovals.length}",
+      );
+
       Get.snackbar(
         "Success",
         "Tour Plan Approved Successfully",
         snackPosition: SnackPosition.BOTTOM,
       );
-    } catch (e) {
+    } catch (e, s) {
+      debugPrint("$_tag ERROR Approving Tour");
+      debugPrint("$_tag $e");
+      debugPrint("$s");
+
       Get.snackbar(
         "Error",
         e.toString(),
@@ -141,6 +205,8 @@ class ApprovalManagementController extends GetxController {
     required String comments,
   }) async {
     try {
+      debugPrint("$_tag Returning Tour -> ${plan.id}");
+
       isReturning.value = true;
 
       await _service.returnTourPlan(
@@ -152,12 +218,20 @@ class ApprovalManagementController extends GetxController {
             (e) => e.id == plan.id,
       );
 
+      debugPrint(
+        "$_tag Tour Returned. Remaining Pending=${pendingApprovals.length}",
+      );
+
       Get.snackbar(
         "Success",
         "Tour Plan Returned Successfully",
         snackPosition: SnackPosition.BOTTOM,
       );
-    } catch (e) {
+    } catch (e, s) {
+      debugPrint("$_tag ERROR Returning Tour");
+      debugPrint("$_tag $e");
+      debugPrint("$s");
+
       Get.snackbar(
         "Error",
         e.toString(),
@@ -177,6 +251,10 @@ class ApprovalManagementController extends GetxController {
     required bool accept,
   }) async {
     try {
+      debugPrint(
+        "$_tag Respond Collaboration -> id=${request.id}, accept=$accept",
+      );
+
       isResponding.value = true;
 
       await _service.respondCollaboration(
@@ -188,6 +266,10 @@ class ApprovalManagementController extends GetxController {
             (e) => e.id == request.id,
       );
 
+      debugPrint(
+        "$_tag Collaboration Updated. Remaining=${collaborations.length}",
+      );
+
       Get.snackbar(
         "Success",
         accept
@@ -195,7 +277,11 @@ class ApprovalManagementController extends GetxController {
             : "Collaboration Rejected",
         snackPosition: SnackPosition.BOTTOM,
       );
-    } catch (e) {
+    } catch (e, s) {
+      debugPrint("$_tag ERROR Responding Collaboration");
+      debugPrint("$_tag $e");
+      debugPrint("$s");
+
       Get.snackbar(
         "Error",
         e.toString(),

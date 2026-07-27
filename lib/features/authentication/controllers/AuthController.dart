@@ -16,7 +16,7 @@ class AuthController extends GetxController {
 
   static const String _baseUrl = THttpHelper.baseUrl;
 
-  Future<void> login(String email, String password) async {
+  Future<void> login(String email, String password, String deviceID) async {
     if (email.isEmpty || password.isEmpty) {
       Get.snackbar("Error", "Email and Password cannot be empty");
       return;
@@ -76,7 +76,7 @@ class AuthController extends GetxController {
       final response = await http.post(
         Uri.parse("$_baseUrl/auth/login"),
         headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"email": email, "password": password}),
+        body: jsonEncode({"email": email, "password": password, "deviceId" : deviceID}),
       );
 
       final data = jsonDecode(response.body);

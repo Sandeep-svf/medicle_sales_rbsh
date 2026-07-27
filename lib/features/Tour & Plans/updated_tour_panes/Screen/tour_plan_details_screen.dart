@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 import '../../../../utils/constants/colors.dart';
@@ -29,6 +30,14 @@ class _TourPlanDetailsScreenState extends State<TourPlanDetailsScreen> {
   void initState() {
     super.initState();
 
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: TColors.primary,
+        statusBarIconBrightness: Brightness.light,
+        statusBarBrightness: Brightness.dark,
+      ),
+    );
+
     controller = Get.put(TourPlanController());
 
     if (widget.planId != null) {
@@ -44,40 +53,52 @@ class _TourPlanDetailsScreenState extends State<TourPlanDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: TColors.light,
-      body: SafeArea(
-        child: Obx(() {
-          if (controller.isLoading.value) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: const SystemUiOverlayStyle(
+        statusBarColor: TColors.primary,
+        statusBarIconBrightness: Brightness.light,
+        statusBarBrightness: Brightness.dark, // iOS
+      ),
+      child: Scaffold(
+        backgroundColor: TColors.light,
+        body: Column(
+          children: [
+            Container(
+              color: TColors.primary,
+              child: SafeArea(
+                bottom: false,
+                child: _buildHeader(controller),
+              ),
+            ),
+            Expanded(
+              child: Obx(() {
+                if (controller.isLoading.value) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
 
-          return LayoutBuilder(
-            builder: (context, constraints) {
-              final isLandscape = constraints.maxWidth >= 950;
+                return LayoutBuilder(
+                  builder: (context, constraints) {
+                    final isLandscape = constraints.maxWidth >= 950;
 
-              return Column(
-                children: [
-                  _buildHeader(controller),
-                  _buildSummary(controller),
-                  Expanded(
-                    child: isLandscape
-                        ? _buildLandscape(controller)
-                        : _buildPortrait(
-                            context,
-                            controller,
-                          ),
-                  ),
-                  _buildBottomActionBar(
-                    controller,
-                  ),
-                ],
-              );
-            },
-          );
-        }),
+                    return Column(
+                      children: [
+                        Obx(() => _buildSummary(controller)),
+                        Expanded(
+                          child: isLandscape
+                              ? _buildLandscape(controller)
+                              : _buildPortrait(context, controller),
+                        ),
+                        _buildBottomActionBar(controller),
+                      ],
+                    );
+                  },
+                );
+              }),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -91,19 +112,20 @@ class _TourPlanDetailsScreenState extends State<TourPlanDetailsScreen> {
         horizontal: TSizes.lg,
         vertical: TSizes.md,
       ),
-      color: TColors.white,
+      color: TColors.primary,
       child: Row(
         children: [
           IconButton(
             onPressed: () => Get.back(),
             icon: const Icon(
               Icons.arrow_back_ios_new,
+              color: Colors.white,
             ),
           ),
           const SizedBox(width: 10),
           const Icon(
             Icons.event_note,
-            color: TColors.primary,
+            color: TColors.white,
             size: 28,
           ),
           const SizedBox(width: 12),
@@ -116,12 +138,13 @@ class _TourPlanDetailsScreenState extends State<TourPlanDetailsScreen> {
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
+                    color: Colors.white
                   ),
                 ),
                 Text(
                   controller.monthTitle,
                   style: const TextStyle(
-                    color: TColors.textSecondary,
+                    color: TColors.white,
                   ),
                 ),
               ],
@@ -133,9 +156,13 @@ class _TourPlanDetailsScreenState extends State<TourPlanDetailsScreen> {
                 : null,
             icon: const Icon(
               Icons.calendar_month,
+              color: Colors.white,
             ),
             label: Text(
               controller.monthTitle,
+              style: TextStyle(
+                color: Colors.white
+              ),
             ),
           ),
         ],
@@ -203,10 +230,10 @@ class _TourPlanDetailsScreenState extends State<TourPlanDetailsScreen> {
   }
 
   Widget _summaryTile(
-    String title,
-    String value,
-    IconData icon,
-  ) {
+      String title,
+      String value,
+      IconData icon,
+      ) {
     return Row(
       children: [
         CircleAvatar(
@@ -218,24 +245,32 @@ class _TourPlanDetailsScreenState extends State<TourPlanDetailsScreen> {
           ),
         ),
         const SizedBox(width: 12),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: const TextStyle(
-                color: TColors.textSecondary,
+
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: TColors.textSecondary,
+                ),
               ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              value,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 17,
+              const SizedBox(height: 4),
+              Text(
+                value,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 17,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ],
     );
@@ -396,7 +431,7 @@ class _TourPlanDetailsScreenState extends State<TourPlanDetailsScreen> {
                     SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        "This Tour Plan is read only.",
+                        "Save your changes as a draft before submitting the tour plan.",
                         style: TextStyle(
                           fontWeight: FontWeight.w600,
                         ),
@@ -427,7 +462,7 @@ class _TourPlanDetailsScreenState extends State<TourPlanDetailsScreen> {
               ),
             ),
             const SizedBox(width: TSizes.md),
-            ElevatedButton.icon(
+            /*ElevatedButton.icon(
               onPressed: () {
                 /// Validation Dialog
                 showDialog(
@@ -471,7 +506,7 @@ class _TourPlanDetailsScreenState extends State<TourPlanDetailsScreen> {
                     ? "Submit Again"
                     : "Submit",
               ),
-            ),
+            ),*/
           ],
         ],
       ),

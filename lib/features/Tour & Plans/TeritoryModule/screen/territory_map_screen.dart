@@ -56,7 +56,7 @@ class TerritoryMapScreen extends GetView<TerritoryController> {
             ),
 
             /// offline map toggle
-            const Positioned(
+           /* const Positioned(
 
               top: 80,
 
@@ -66,7 +66,7 @@ class TerritoryMapScreen extends GetView<TerritoryController> {
 
               child: OfflineMapToggle(),
 
-            ),
+            ),*/
 
             /// BOTTOM PANEL
             const Align(

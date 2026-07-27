@@ -28,6 +28,7 @@ import '../../../product/controller/ProductController.dart';
 import '../../GeoVerificationScreen.dart';
 import '../controllers/visitListController.dart';
 import '../models/visitSalesData.dart';
+import '../services/visit_confirmation_service.dart';
 import 'ScheduleVisitScreen.dart';
 
 
@@ -268,14 +269,32 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
                                     : "?";
 
                                 // Status Helpers
-                                final isConfirmed = doctorVisit.confirmed;
-                                final statusColor = isConfirmed ? TColors
-                                    .success : TColors.primary;
-                                final statusText = isConfirmed
+                                final isPendingSync =
+                                _visitListController.pendingVisits.contains(doctorVisit.id);
+
+                                final isConfirmed =
+                                    doctorVisit.confirmed == true || isPendingSync;
+
+                                final statusColor =
+                                doctorVisit.confirmed == true
+                                    ? TColors.success
+                                    : isPendingSync
+                                    ? Colors.orange
+                                    : TColors.primary;
+
+                                final statusText =
+                                doctorVisit.confirmed == true
                                     ? "Completed"
+                                    : isPendingSync
+                                    ? "Pending Sync"
                                     : "Action Needed";
-                                final statusIcon = isConfirmed ? Icons
-                                    .check_circle : Icons.pending;
+
+                                final statusIcon =
+                                doctorVisit.confirmed == true
+                                    ? Icons.check_circle
+                                    : isPendingSync
+                                    ? Icons.sync
+                                    : Icons.pending;
 
                                 // Priority Logic (Placeholder)
                                 const String priority = "C";
@@ -609,68 +628,73 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
                                                     SizedBox(
                                                       width: double.infinity,
                                                       child: ElevatedButton(
-                                                        onPressed: isConfirmed
+                                                        onPressed: doctorVisit.confirmed == true
                                                             ? () {
-                                                          ScaffoldMessenger
-                                                              .of(
-                                                              context)
-                                                              .showSnackBar(
+                                                          ScaffoldMessenger.of(context).showSnackBar(
                                                             const SnackBar(
-                                                                content: Text(
-                                                                    'You have already marked this visit confirmed.'),
-                                                                backgroundColor: Colors
-                                                                    .orange),
+                                                              content: Text('Visit already confirmed.'),
+                                                              backgroundColor: Colors.green,
+                                                            ),
+                                                          );
+                                                        }
+                                                            : isPendingSync
+                                                            ? () {
+                                                          ScaffoldMessenger.of(context).showSnackBar(
+                                                            const SnackBar(
+                                                              content: Text(
+                                                                'This visit has been saved offline and is waiting to sync.',
+                                                              ),
+                                                              backgroundColor: Colors.orange,
+                                                            ),
                                                           );
                                                         }
                                                             : () {
-                                                          // CALL THE NEW FLOW
                                                           _handleVisitConfirmationFlow(
-                                                              context,
-                                                              doctorVisit);
+                                                            context,
+                                                            doctorVisit,
+                                                          );
                                                         },
-                                                        style: ElevatedButton
-                                                            .styleFrom(
-                                                          backgroundColor: isConfirmed
+                                                        style: ElevatedButton.styleFrom(
+                                                          backgroundColor: doctorVisit.confirmed == true
                                                               ? TColors.success
+                                                              : isPendingSync
+                                                              ? Colors.orange
                                                               : TColors.primary,
-                                                          foregroundColor: Colors
-                                                              .white,
-                                                          elevation: isConfirmed
-                                                              ? 0
-                                                              : 2,
-                                                          shadowColor: (isConfirmed
+                                                          foregroundColor: Colors.white,
+                                                          elevation: doctorVisit.confirmed == true ? 0 : 2,
+                                                          shadowColor: (doctorVisit.confirmed == true
                                                               ? TColors.success
+                                                              : isPendingSync
+                                                              ? Colors.orange
                                                               : TColors.primary)
                                                               .withOpacity(0.4),
                                                           shape: RoundedRectangleBorder(
-                                                              borderRadius: BorderRadius
-                                                                  .circular(
-                                                                  12)),
-                                                          minimumSize: const Size(
-                                                              double.infinity,
-                                                              44),
+                                                            borderRadius: BorderRadius.circular(12),
+                                                          ),
+                                                          minimumSize: const Size(double.infinity, 44),
                                                         ),
                                                         child: Row(
-                                                          mainAxisAlignment: MainAxisAlignment
-                                                              .center,
+                                                          mainAxisAlignment: MainAxisAlignment.center,
                                                           children: [
-                                                            Icon(isConfirmed
-                                                                ? Icons.verified
-                                                                : Icons
-                                                                .touch_app_rounded,
-                                                                size: 20),
-                                                            const SizedBox(
-                                                                width: 8),
+                                                            Icon(
+                                                              doctorVisit.confirmed == true
+                                                                  ? Icons.verified
+                                                                  : isPendingSync
+                                                                  ? Icons.sync
+                                                                  : Icons.touch_app_rounded,
+                                                              size: 20,
+                                                            ),
+                                                            const SizedBox(width: 8),
                                                             Text(
-                                                              isConfirmed
-                                                                  ? TTexts
-                                                                  .visitConfirmed
-                                                                  : TTexts
-                                                                  .confirmVisit,
+                                                              doctorVisit.confirmed == true
+                                                                  ? TTexts.visitConfirmed
+                                                                  : isPendingSync
+                                                                  ? "Pending Sync"
+                                                                  : TTexts.confirmVisit,
                                                               style: const TextStyle(
-                                                                  fontSize: 15,
-                                                                  fontWeight: FontWeight
-                                                                      .bold),
+                                                                fontSize: 15,
+                                                                fontWeight: FontWeight.bold,
+                                                              ),
                                                             ),
                                                           ],
                                                         ),
@@ -1371,7 +1395,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
           "VisitConfirmationController: Current Longitude = ${pos.longitude}");
 
       final uri = Uri.parse(
-        '${THttpHelper.baseUrl}/doctor-visits/$visitId/confirm',
+        '${THttpHelper.baseUrl}/doctor-visits/bulk-confirm',
       );
 
       debugPrint(
@@ -1387,12 +1411,10 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
       debugPrint(
           "VisitConfirmationController: Request Body = ${jsonEncode(requestBody)}");
 
-      final response = await http.put(
-        uri,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode(requestBody),
+      final response = await VisitConfirmationService().confirmVisit(
+        visitId: visitId,
+        position: pos,
+        productIds: selectedProducts,
       );
 
       Navigator.of(
@@ -1413,20 +1435,21 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
             "VisitConfirmationController: Parsed Response = $body");
 
         if (body['status'] == true) {
-          debugPrint(
-              "VisitConfirmationController: Visit Confirmed Successfully");
+
+          final bool isOffline = body['offline'] == true;
 
           Get.snackbar(
-            "Success",
-            "Visit Confirmed!",
-            backgroundColor: TColors.success,
+            isOffline ? "Saved Offline" : "Success",
+            body['message'] ??
+                (isOffline
+                    ? "Visit saved offline."
+                    : "Visit Confirmed!"),
+            backgroundColor:
+            isOffline ? Colors.orange : TColors.success,
             colorText: Colors.white,
           );
 
-          debugPrint(
-              "VisitConfirmationController: Refreshing Visit List");
-
-          _visitListController.fetchSalesList(
+          await _visitListController.fetchSalesList(
             filter: _selectedFilter,
             startDate: _selectedDateRange?.start,
             endDate: _selectedDateRange?.end,

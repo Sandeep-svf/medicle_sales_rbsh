@@ -22,7 +22,8 @@ import '../wigets/create_beat_bottom_sheet.dart';
 
 class TerritoryController extends GetxController {
 
-
+  final RxBool showBottomTools = false.obs;
+  final RxBool showTools = false.obs;
   final authManager = AuthManager();
 
   final assignedHeadOffices = <HeadOffice>[].obs;
@@ -120,13 +121,50 @@ class TerritoryController extends GetxController {
   final currentZoom = 13.0.obs;
 
   final currentCenter =
-      const LatLng(28.5706, 77.3272).obs;
+      const LatLng(25.5941, 85.1376).obs; // Patna, Bihar
 
   @override
   void onInit() {
     super.onInit();
-
+    _setHeadOfficeLocation();
     Future.microtask(loadData);
+  }
+
+  Future<void> _setHeadOfficeLocation() async {
+    final userModel = await AuthManager().getUserData();
+
+    debugPrint(
+      "[TerritoryController] UserModel: ${userModel?.user?.headOffices}",
+    );
+
+    if (userModel == null ||
+        userModel.user == null ||
+        userModel.user!.headOffices.isEmpty) {
+      debugPrint(
+        "[TerritoryController] No head office found for logged in user.",
+      );
+      return;
+    }
+
+    final headOffice = userModel.user!.headOffices[0];
+
+    debugPrint(
+      "[TerritoryController] HeadOffice -> "
+          "Name: ${headOffice.name}, "
+          "Lat: ${headOffice.latitude}, "
+          "Lng: ${headOffice.longitude}",
+    );
+
+    currentCenter.value = LatLng(
+      headOffice.latitude.toDouble(),
+      headOffice.longitude.toDouble(),
+    );
+
+    debugPrint(
+      "[TerritoryController] currentCenter -> "
+          "${currentCenter.value.latitude}, "
+          "${currentCenter.value.longitude}",
+    );
   }
 
 
@@ -748,20 +786,20 @@ class TerritoryController extends GetxController {
       LatLng center,
       double zoom,
       ) {
+    debugPrint("[TerritoryController] ===== moveCamera =====");
+    debugPrint("[TerritoryController] Center: ${center.latitude}, ${center.longitude}");
+    debugPrint("[TerritoryController] Zoom: $zoom");
+    debugPrint("[TerritoryController] _mapReady: $_mapReady");
 
     currentCenter.value = center;
-
     currentZoom.value = zoom;
 
     if (_mapReady) {
-
-      mapController.move(
-        center,
-        zoom,
-      );
-
+      debugPrint("[TerritoryController] Calling mapController.move()");
+      mapController.move(center, zoom);
+    } else {
+      debugPrint("[TerritoryController] Map is NOT ready");
     }
-
   }
 
 
@@ -1241,6 +1279,7 @@ class TerritoryController extends GetxController {
   }
 
 
+  // draw circle
   List<Polygon> buildAreaPolygons() {
     final List<Polygon> polygons = [];
 
@@ -1263,7 +1302,8 @@ class TerritoryController extends GetxController {
             area.latitude,
             area.longitude,
           ),
-          radius: area.radius,
+          radius: area.radius, // getting from api dynamic value.
+        //  radius: 700, // this is for test
           colors: colors,
         ),
       );
@@ -1271,6 +1311,40 @@ class TerritoryController extends GetxController {
 
     return polygons;
   }
+
+  // draw territory
+
+  /*List<Polygon> buildAreaPolygons() {
+    final List<Polygon> polygons = [];
+
+    for (final area in visibleAreas) {
+      final doctorsOfArea = visibleDoctors
+          .where((d) => d.areaId == area.id)
+          .toList();
+
+      if (doctorsOfArea.length < 3) {
+        continue;
+      }
+
+      final points = doctorsOfArea
+          .map((d) => LatLng(d.latitude, d.longitude))
+          .toList();
+
+      final hull = buildDoctorHull(points);
+
+      polygons.add(
+        Polygon(
+          points: hull,
+          color: Colors.blue.withOpacity(0.20),
+          borderColor: Colors.blue,
+          borderStrokeWidth: 3,
+        ),
+      );
+    }
+
+    return polygons;
+  }*/
+
 
   List<LatLng> _createCircle(
       LatLng center,
@@ -1331,6 +1405,52 @@ class TerritoryController extends GetxController {
     }
 
     return beatColor(beatList.first);
+  }
+
+
+
+  List<LatLng> buildDoctorHull(List<LatLng> points) {
+    if (points.length < 3) {
+      return List.from(points);
+    }
+
+    final pts = List<LatLng>.from(points);
+
+    pts.sort((a, b) {
+      final cmpLng = a.longitude.compareTo(b.longitude);
+      if (cmpLng != 0) return cmpLng;
+      return a.latitude.compareTo(b.latitude);
+    });
+
+    double cross(LatLng o, LatLng a, LatLng b) {
+      return (a.longitude - o.longitude) * (b.latitude - o.latitude) -
+          (a.latitude - o.latitude) * (b.longitude - o.longitude);
+    }
+
+    final List<LatLng> lower = [];
+
+    for (final p in pts) {
+      while (lower.length >= 2 &&
+          cross(lower[lower.length - 2], lower[lower.length - 1], p) <= 0) {
+        lower.removeLast();
+      }
+      lower.add(p);
+    }
+
+    final List<LatLng> upper = [];
+
+    for (final p in pts.reversed) {
+      while (upper.length >= 2 &&
+          cross(upper[upper.length - 2], upper[upper.length - 1], p) <= 0) {
+        upper.removeLast();
+      }
+      upper.add(p);
+    }
+
+    lower.removeLast();
+    upper.removeLast();
+
+    return [...lower, ...upper];
   }
 
 

@@ -1,0 +1,137 @@
+import 'dart:convert';
+
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:http/http.dart' as http;
+
+import '../../../../utils/local_storage/auth_manager.dart';
+import '../models/pending_visit_model.dart';
+import '../repository/pending_visit_repository.dart';
+import '../../../../utils/http/http_client.dart';
+
+class VisitConfirmationService {
+  final PendingVisitRepository _repository = PendingVisitRepository();
+  final AuthManager _authManager = AuthManager();
+
+  Future<http.Response> confirmVisit({
+    required String visitId,
+    required Position position,
+    required List<String> productIds,
+    String notes = "",
+  }) async {
+    final connectivity = await Connectivity().checkConnectivity();
+    final token = await _authManager.getAuthToken();
+
+    debugPrint(
+        "VisitConfirmationService: ======================================");
+    debugPrint(
+        "VisitConfirmationService: confirmVisit() started");
+    debugPrint(
+        "VisitConfirmationService: Visit ID = $visitId");
+    debugPrint(
+        "VisitConfirmationService: Connectivity = $connectivity");
+
+    debugPrint("VisitConfirmationService: Value = $connectivity");
+    debugPrint("VisitConfirmationService: Comparison = ${connectivity != ConnectivityResult.none}");
+    debugPrint(
+        "VisitConfirmationService: Latitude = ${position.latitude}");
+    debugPrint(
+        "VisitConfirmationService: Longitude = ${position.longitude}");
+    debugPrint(
+        "VisitConfirmationService: Selected Products = $productIds");
+
+    // ============================
+    // ONLINE
+    // ============================
+    if (!connectivity.contains(ConnectivityResult.none)) {
+      final uri =
+      Uri.parse('${THttpHelper.baseUrl}/doctor-visits/bulk-confirm');
+
+      final requestBody = {
+        "visits": [
+          {
+            "id": visitId,
+            "userLatitude": position.latitude,
+            "userLongitude": position.longitude,
+            "notes": notes,
+            "productIds": productIds,
+          }
+        ]
+      };
+
+      debugPrint("VisitConfirmationService: ONLINE MODE");
+      debugPrint("VisitConfirmationService: URL = $uri");
+      debugPrint(
+          "VisitConfirmationService: Request JSON = ${const JsonEncoder.withIndent('  ').convert(requestBody)}");
+
+      final response = await http.put(
+        uri,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode(requestBody),
+      );
+
+      debugPrint(
+          "VisitConfirmationService: Response Status = ${response.statusCode}");
+
+      try {
+        final pretty =
+        const JsonEncoder.withIndent('  ').convert(jsonDecode(response.body));
+        debugPrint(
+            "VisitConfirmationService: Response JSON =\n$pretty");
+      } catch (_) {
+        debugPrint(
+            "VisitConfirmationService: Raw Response = ${response.body}");
+      }
+
+      debugPrint(
+          "VisitConfirmationService: ======================================");
+
+      return response;
+    }
+
+    // ============================
+    // OFFLINE
+    // ============================
+
+    debugPrint("VisitConfirmationService: OFFLINE MODE");
+    debugPrint(
+        "VisitConfirmationService: Saving visit into SQLite...");
+
+    final pendingVisit = PendingVisitModel(
+      visitId: visitId,
+      userLatitude: position.latitude,
+      userLongitude: position.longitude,
+      notes: notes,
+      productIds: productIds,
+      createdAt: DateTime.now(),
+    );
+
+    await _repository.insertVisit(pendingVisit);
+
+    debugPrint(
+        "VisitConfirmationService: Visit saved locally");
+    debugPrint(
+        "VisitConfirmationService: Visit ID = $visitId");
+
+    final offlineResponse = {
+      "status": true,
+      "message": "Visit saved offline successfully.",
+      "offline": true,
+    };
+
+    debugPrint(
+        "VisitConfirmationService: Offline Response = ${const JsonEncoder.withIndent('  ').convert(offlineResponse)}");
+
+    debugPrint(
+        "VisitConfirmationService: ======================================");
+
+    return http.Response(
+      jsonEncode(offlineResponse),
+      200,
+    );
+  }
+}

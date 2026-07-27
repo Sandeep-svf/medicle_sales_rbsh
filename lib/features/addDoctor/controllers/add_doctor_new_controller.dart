@@ -1034,7 +1034,7 @@ class AddDoctorNewController extends GetxController {
       // --- ADD FIELDS ---
 
       // REQUIRED FIELDS
-      request.fields['name'] = nameController.text.trim();
+      request.fields['name'] = "DR. ${nameController.text.trim()}";
       request.fields['headOfficeId'] = selectedHeadOfficeId.value!;
       request.fields['areaId'] = selectedAreaId.value!;
       request.fields['latitude'] = latitude.value.toString();

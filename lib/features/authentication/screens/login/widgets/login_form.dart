@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
@@ -17,6 +20,23 @@ class LoginForm extends StatelessWidget {
 
     // 1. Add a ValueNotifier to track the hidden state
     final ValueNotifier<bool> hidePassword = ValueNotifier<bool>(true);
+
+
+    Future<String> _getDeviceId() async {
+      final deviceInfo = DeviceInfoPlugin();
+
+      if (Platform.isAndroid) {
+        final android = await deviceInfo.androidInfo;
+        return android.id; // or android.serial if available
+      }
+
+      if (Platform.isIOS) {
+        final ios = await deviceInfo.iosInfo;
+        return ios.identifierForVendor ?? "";
+      }
+
+      return "";
+    }
 
     return Form(
       child: Padding(
@@ -62,10 +82,11 @@ class LoginForm extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {
+                onPressed: () async{
                   String email = emailController.text.trim();
                   String password = passwordController.text.trim();
-                  authController.login(email, password);
+                  final deviceId = await _getDeviceId();
+                  authController.login(email, password, deviceId);
                 },
                 child: const Text(TTexts.logIn),
               ),

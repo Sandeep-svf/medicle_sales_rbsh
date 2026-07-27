@@ -42,6 +42,7 @@ class _DebugScreenState extends State<DebugScreen> {
 
   bool serviceRunning = false;
   Timer? _refreshTimer;
+  Timer? _drainTimer;
 
   String get lastLatLng {
     final p = TrackingDebugState.lastPoint;
@@ -89,6 +90,7 @@ class _DebugScreenState extends State<DebugScreen> {
   @override
   void dispose() {
     _refreshTimer?.cancel();
+    _drainTimer?.cancel();
     super.dispose();
   }
 
@@ -102,9 +104,12 @@ class _DebugScreenState extends State<DebugScreen> {
     await _load();
 
     // Drain every 10 seconds
-    Timer.periodic(
+    _drainTimer = Timer.periodic(
       const Duration(seconds: 10),
-          (_) => _drainer.drainOnce(),
+          (_) async {
+        debugPrint("[DRAIN] Timer fired");
+        await _drainer.drainOnce();
+      },
     );
 
     _refreshTimer = Timer.periodic(
