@@ -537,25 +537,45 @@ class TerritoryController extends GetxController {
   final Distance distance = const Distance();
 
   AreaModel? areaFromPoint(LatLng point) {
-
     for (final area in visibleAreas) {
+      if (area.outerBoundary.length < 3) continue;
 
-      final meter = distance.as(
-        LengthUnit.Meter,
-        point,
-        LatLng(
-          area.latitude,
-          area.longitude,
-        ),
-      );
+      final polygon = area.outerBoundary
+          .map((e) => LatLng(e.latitude, e.longitude))
+          .toList();
 
-      if (meter <= area.radius) {
+      if (_isPointInPolygon(point, polygon)) {
         return area;
       }
-
     }
 
     return null;
+  }
+
+  bool _isPointInPolygon(LatLng point, List<LatLng> polygon) {
+    bool inside = false;
+
+    for (int i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+      final xi = polygon[i].longitude;
+      final yi = polygon[i].latitude;
+
+      final xj = polygon[j].longitude;
+      final yj = polygon[j].latitude;
+
+      final intersect =
+          ((yi > point.latitude) != (yj > point.latitude)) &&
+              (point.longitude <
+                  (xj - xi) *
+                      (point.latitude - yi) /
+                      (yj - yi) +
+                      xi);
+
+      if (intersect) {
+        inside = !inside;
+      }
+    }
+
+    return inside;
   }
 
 
@@ -1280,7 +1300,7 @@ class TerritoryController extends GetxController {
 
 
   // draw circle
-  List<Polygon> buildAreaPolygons() {
+  /*List<Polygon> buildAreaPolygons() {
     final List<Polygon> polygons = [];
 
     for (final area in visibleAreas) {
@@ -1304,6 +1324,34 @@ class TerritoryController extends GetxController {
           ),
           radius: area.radius, // getting from api dynamic value.
         //  radius: 700, // this is for test
+          colors: colors,
+        ),
+      );
+    }
+
+    return polygons;
+  }*/
+
+  /// draw polygon
+  List<Polygon> buildAreaPolygons() {
+    final List<Polygon> polygons = [];
+
+    for (final area in visibleAreas) {
+      final colors = area.colors.map((hex) {
+        try {
+          return Color(
+            int.parse(
+              hex.replaceFirst("#", "0xFF"),
+            ),
+          );
+        } catch (_) {
+          return Colors.grey;
+        }
+      }).toList();
+
+      polygons.addAll(
+        AreaPolygonBuilder.build(
+          area: area,
           colors: colors,
         ),
       );

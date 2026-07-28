@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 
+import 'BoundaryPoint.dart';
+
 class AreaModel extends Equatable {
   final String id;
   final String headquarterId;
@@ -27,6 +29,10 @@ class AreaModel extends Equatable {
   final bool selected;
   final bool visible;
 
+  final List<BoundaryPoint> outerBoundary;
+
+
+
   const AreaModel({
     required this.id,
     required this.headquarterId,
@@ -42,6 +48,8 @@ class AreaModel extends Equatable {
     this.beatIds = const [],
     this.selected = false,
     this.visible = true,
+    this.outerBoundary = const [],
+
   });
 
   AreaModel copyWith({
@@ -59,6 +67,7 @@ class AreaModel extends Equatable {
     List<String>? beatIds,
     bool? selected,
     bool? visible,
+    List<BoundaryPoint>? outerBoundary,
   }) {
     return AreaModel(
       id: id ?? this.id,
@@ -75,6 +84,7 @@ class AreaModel extends Equatable {
       beatIds: beatIds ?? this.beatIds,
       selected: selected ?? this.selected,
       visible: visible ?? this.visible,
+      outerBoundary: outerBoundary ?? this.outerBoundary,
     );
   }
 
@@ -94,6 +104,9 @@ class AreaModel extends Equatable {
       beatIds: List<String>.from(json["beatIds"] ?? []),
       selected: json["selected"] ?? false,
       visible: json["visible"] ?? true,
+      outerBoundary: (json["outerBoundary"] as List? ?? [])
+          .map((e) => BoundaryPoint.fromJson(e))
+          .toList(),
     );
   }
 
@@ -112,6 +125,7 @@ class AreaModel extends Equatable {
     "beatIds": beatIds,
     "selected": selected,
     "visible": visible,
+    "outerBoundary": outerBoundary.map((e) => e.toJson()).toList(),
   };
 
   @override
@@ -130,5 +144,6 @@ class AreaModel extends Equatable {
     beatIds,
     selected,
     visible,
+    outerBoundary,
   ];
 }
