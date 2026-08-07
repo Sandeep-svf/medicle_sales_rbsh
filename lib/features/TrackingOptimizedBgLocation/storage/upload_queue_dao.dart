@@ -166,8 +166,10 @@ class UploadQueueDao {
     await db.update(
       _table,
       {
-        'status': 'FAILED',
+        // Keep it pending so it will be retried
+        'status': 'PENDING',
         'retry_count': retryCount + 1,
+        'last_attempt_utc': DateTime.now().toUtc().toIso8601String(),
       },
       where: 'id = ?',
       whereArgs: [id],

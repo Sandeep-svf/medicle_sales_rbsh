@@ -154,9 +154,6 @@
 
 
 
-
-
-
         </activity>
 
         <!-- Add this meta-data tag to enable battery optimization -->
@@ -186,13 +183,6 @@
             android:name="com.ekasetiawans.flutter_background_service.BackgroundService"
             android:foregroundServiceType="location"
             android:exported="false"/>-->
-
-
-
-
-
-
-
 
         <meta-data
             android:name="com.google.android.gms.version"

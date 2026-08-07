@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:medicle_sales_rbsh/features/approval_management/screen/wigets/beat_change_action_dialog.dart';
+import 'package:medicle_sales_rbsh/features/approval_management/screen/wigets/beat_change_request_card.dart';
 import 'package:medicle_sales_rbsh/features/approval_management/screen/wigets/empty_state.dart';
 import 'package:medicle_sales_rbsh/features/approval_management/screen/wigets/loading_view.dart';
 
@@ -50,7 +52,7 @@ class ApprovalManagementScreen extends StatelessWidget {
       }
 
       return DefaultTabController(
-        length: 2,
+        length: 3,
         child: Scaffold(
           backgroundColor: TColors.light,
           appBar: AppBar(
@@ -64,14 +66,22 @@ class ApprovalManagementScreen extends StatelessWidget {
               labelColor: TColors.primary,
               unselectedLabelColor: TColors.textSecondary,
               tabs: [
+
                 Tab(
                   text:
                   "Pending (${controller.pendingApprovals.length})",
                 ),
+
+                Tab(
+                  text:
+                  "Beat Changes (${controller.beatChangeRequests.length})",
+                ),
+
                 Tab(
                   text:
                   "Collaboration (${controller.collaborations.length})",
                 ),
+
               ],
             ),
           ),
@@ -80,8 +90,13 @@ class ApprovalManagementScreen extends StatelessWidget {
             child: _ResponsiveContainer(
               child: TabBarView(
                 children: [
+
                   _buildPendingList(),
+
+                  _buildBeatChangeList(),
+
                   _buildCollaborationList(),
+
                 ],
               ),
             ),
@@ -155,6 +170,94 @@ class ApprovalManagementScreen extends StatelessWidget {
                     },
                   ),
                 );
+              }).toList(),
+            ),
+          );
+        },
+      );
+    });
+  }
+
+  Widget _buildBeatChangeList() {
+    return Obx(() {
+
+      if (controller.beatChangeRequests.isEmpty) {
+        return const EmptyState(
+          icon: Icons.swap_horiz,
+          title: "No Beat Change Requests",
+          subtitle: "There are no pending beat change requests.",
+        );
+      }
+
+      return LayoutBuilder(
+        builder: (context, constraints) {
+
+          final isWide =
+              constraints.maxWidth >= 900;
+
+          return SingleChildScrollView(
+            physics:
+            const AlwaysScrollableScrollPhysics(),
+            padding:
+            const EdgeInsets.all(TSizes.lg),
+            child: Wrap(
+              spacing: TSizes.lg,
+              runSpacing: TSizes.lg,
+              children: controller.beatChangeRequests
+                  .map((request) {
+
+                return SizedBox(
+                  width: isWide
+                      ? (constraints.maxWidth -
+                      TSizes.lg) /
+                      2
+                      : constraints.maxWidth,
+                  child: BeatChangeRequestCard(
+                    request: request,
+
+                    loading:
+                    controller.isBeatResponding.value,
+
+                    onApprove: () {
+
+                      Get.dialog(
+                        BeatChangeActionDialog(
+                          approve: true,
+                          onSubmit: (comments) {
+
+                            controller.respondBeatChangeRequest(
+                              request: request,
+                              approve: true,
+                              comments: comments,
+                            );
+
+                          },
+                        ),
+                      );
+
+                    },
+
+                    onReject: () {
+
+                      Get.dialog(
+                        BeatChangeActionDialog(
+                          approve: false,
+                          onSubmit: (comments) {
+
+                            controller.respondBeatChangeRequest(
+                              request: request,
+                              approve: false,
+                              comments: comments,
+                            );
+
+                          },
+                        ),
+                      );
+
+                    },
+                  ),
+                );
+
               }).toList(),
             ),
           );

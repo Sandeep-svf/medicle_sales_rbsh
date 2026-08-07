@@ -23,6 +23,7 @@ import '../controller/DashboardController.dart';
 import '../model/SalesChartDashboardModel.dart' as dash;
 import '../services/WeatherService.dart';
 import '../widgets/CompactWeatherWidget.dart';
+import '../widgets/morning_action_center.dart';
 
 // =============================================================================
 // PART 1: THEME & CONSTANTS
@@ -171,8 +172,19 @@ class _SalesChartHomeScreenState extends State<SalesChartHomeScreen>
                 sliver: SliverToBoxAdapter(
                   child: Column(
                     children: [
-                      // -- TOP CARDS (REVENUE & PACE) --
-                      // FIXED: Using ConstrainedBox instead of SizedBox to allow growth
+
+                      /// NEW SECTION
+                      _StaggeredItem(
+                        controller: _entranceController,
+                        index: 0,
+                        child: MorningActionCenter(
+                          beat: data.todayBeatAssigned,
+                        ),
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      /// Existing Revenue Cards
                       ConstrainedBox(
                         constraints: BoxConstraints(
                           minHeight: isLandscape ? 220 : 250,
@@ -181,21 +193,29 @@ class _SalesChartHomeScreenState extends State<SalesChartHomeScreen>
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
+
                               Expanded(
                                 child: _StaggeredItem(
                                   controller: _entranceController,
-                                  index: 0,
-                                  child: _RevenueIntelligenceCard(targets: data.targets),
+                                  index: 1,
+                                  child: _RevenueIntelligenceCard(
+                                    targets: data.targets,
+                                  ),
                                 ),
                               ),
+
                               const SizedBox(width: 12),
+
                               Expanded(
                                 child: _StaggeredItem(
                                   controller: _entranceController,
-                                  index: 0,
-                                  child: _PerformancePaceCard(targets: data.targets),
+                                  index: 2,
+                                  child: _PerformancePaceCard(
+                                    targets: data.targets,
+                                  ),
                                 ),
                               ),
+
                             ],
                           ),
                         ),
@@ -203,13 +223,13 @@ class _SalesChartHomeScreenState extends State<SalesChartHomeScreen>
 
                       const SizedBox(height: 30),
 
-                      // -- SPLIT LAYOUT (TABLET vs MOBILE) --
                       if (isWideScreen)
                         _buildTabletLayout(data)
                       else
                         _buildMobileLayout(data),
 
                       const SizedBox(height: 60),
+
                     ],
                   ),
                 ),

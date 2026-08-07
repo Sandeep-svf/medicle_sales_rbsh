@@ -353,7 +353,7 @@ class TerritoryGoogleMap extends GetView<TerritoryController> {
 
 
 
-          if (controller.showDoctors.value &&
+         /* if (controller.showDoctors.value &&
               controller.showDoctorMarkers)
 
 
@@ -446,7 +446,7 @@ class TerritoryGoogleMap extends GetView<TerritoryController> {
 
               ),
 
-            ),
+            ),*/
 
         ],
 

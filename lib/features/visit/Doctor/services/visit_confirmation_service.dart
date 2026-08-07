@@ -16,6 +16,8 @@ class VisitConfirmationService {
 
   Future<http.Response> confirmVisit({
     required String visitId,
+    required double doctorLatitude,
+    required double doctorLongitude,
     required Position position,
     required List<String> productIds,
     String notes = "",
@@ -100,6 +102,37 @@ class VisitConfirmationService {
     debugPrint("VisitConfirmationService: OFFLINE MODE");
     debugPrint(
         "VisitConfirmationService: Saving visit into SQLite...");
+
+    debugPrint("VisitConfirmationService: OFFLINE MODE");
+
+// Check distance between doctor's location and current location
+    final double distance = Geolocator.distanceBetween(
+      doctorLatitude,
+      doctorLongitude,
+      position.latitude,
+      position.longitude,
+    );
+
+    debugPrint(
+        "VisitConfirmationService: Distance = ${distance.toStringAsFixed(2)} meters");
+
+// Allow only within 200 meters
+    if (distance > 200) {
+      final response = {
+        "status": false,
+        "offline": true,
+        "message":
+        "You are ${distance.toStringAsFixed(0)} meters away from the doctor's location. Please move within 200 meters to confirm this visit.",
+      };
+
+      return http.Response(
+        jsonEncode(response),
+        400,
+      );
+    }
+
+    debugPrint(
+        "VisitConfirmationService: Distance validation passed. Saving visit into SQLite...");
 
     final pendingVisit = PendingVisitModel(
       visitId: visitId,

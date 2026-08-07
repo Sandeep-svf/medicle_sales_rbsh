@@ -15,10 +15,7 @@ class TerritoryMapScreen extends GetView<TerritoryController> {
 
   @override
   Widget build(BuildContext context) {
-    Get.put(
-      TerritoryController(),
-      permanent: false,
-    );
+    Get.lazyPut(() => TerritoryController());
 
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
@@ -48,12 +45,12 @@ class TerritoryMapScreen extends GetView<TerritoryController> {
             ),
 
             /// HQ SELECTOR
-            const Positioned(
+           /* const Positioned(
               top: 82,
               left: 12,
               right: 12,
               child: HeadquarterSelector(),
-            ),
+            ),*/
 
             /// offline map toggle
            /* const Positioned(
@@ -75,6 +72,23 @@ class TerritoryMapScreen extends GetView<TerritoryController> {
 
               child: BeatCreationPanel(),
 
+            ),
+
+            Positioned(
+              right: 16,
+              bottom: 140,
+              child: FloatingActionButton(
+                heroTag: "hq_location",
+                mini: true,
+                backgroundColor: Colors.white,
+                onPressed: () {
+                  controller.goToHeadquarter();
+                },
+                child: const Icon(
+                  Icons.location_city,
+                  color: Colors.blue,
+                ),
+              ),
             ),
 
             const Align(

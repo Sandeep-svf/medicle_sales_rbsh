@@ -1,6 +1,5 @@
 import '../model/location_point.dart';
 import 'location_decision.dart';
-
 import 'dart:math';
 
 class LocationAcceptor {

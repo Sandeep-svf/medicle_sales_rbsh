@@ -106,7 +106,7 @@ class CollaborationRequestCard extends StatelessWidget {
               value: request.dayType,
             ),
 
-            const Spacer(),
+            const SizedBox(height: TSizes.lg),
 
             const Divider(),
 

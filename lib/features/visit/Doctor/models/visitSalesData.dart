@@ -219,6 +219,9 @@ class VisitDoctor {
   final String? areaId;
   final String? headOfficeId;
 
+  final double? latitude;
+  final double? longitude;
+
   final bool geoImageStatus;
 
   VisitDoctor({
@@ -227,6 +230,8 @@ class VisitDoctor {
     this.specialization,
     this.areaId,
     this.headOfficeId,
+    this.latitude,
+    this.longitude,
     this.geoImageStatus = false,
   });
 
@@ -240,53 +245,64 @@ class VisitDoctor {
       );
     }
 
-    String _s(dynamic v) =>
-        v?.toString() ?? "";
+    String _s(dynamic v) => v?.toString() ?? "";
 
     String? _sn(dynamic v) {
       if (v == null) return null;
 
-      final value =
-      v.toString().trim();
+      final value = v.toString().trim();
 
-      return value.isEmpty
-          ? null
-          : value;
+      return value.isEmpty ? null : value;
+    }
+
+    double? _d(dynamic v) {
+      if (v == null) return null;
+
+      if (v is num) {
+        return v.toDouble();
+      }
+
+      return double.tryParse(v.toString());
     }
 
     return VisitDoctor(
-      id: _s(j['id']),
-      name: _s(j['name']),
+      id: _s(j['id']).trim(),
+      name: _s(j['name']).trim(),
 
-      specialization:
-      _sn(
+      specialization: _sn(
         j['specialization'],
       ),
 
-      areaId:
-      _sn(j['areaId']),
+      areaId: _sn(
+        j['areaId'],
+      ),
 
-      headOfficeId:
-      _sn(
+      headOfficeId: _sn(
         j['headOfficeId'],
       ),
 
+      latitude: _d(
+        j['latitude'],
+      ),
+
+      longitude: _d(
+        j['longitude'],
+      ),
+
       geoImageStatus:
-      j['geo_image_status'] ==
-          true,
+      j['geo_image_status'] == true,
     );
   }
 
   Map<String, dynamic> toJson() => {
     "id": id,
     "name": name,
-    "specialization":
-    specialization,
+    "specialization": specialization,
     "areaId": areaId,
-    "headOfficeId":
-    headOfficeId,
-    "geo_image_status":
-    geoImageStatus,
+    "headOfficeId": headOfficeId,
+    "latitude": latitude,
+    "longitude": longitude,
+    "geo_image_status": geoImageStatus,
   };
 }
 

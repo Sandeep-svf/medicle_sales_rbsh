@@ -27,11 +27,9 @@ class AreaCircleWidget extends GetView<TerritoryController> {
 
       return GestureDetector(
 
-      onTap: (){
-
-        controller.selectArea(area);
-
-      },
+        onTap: () {
+          controller.showAreaActions(area);
+        },
 
       child: AnimatedContainer(
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../utils/local_storage/auth_manager.dart';
+import '../model/beat_change_request_model.dart';
 import '../model/collaboration_request_model.dart';
 import '../model/pending_approval_model.dart';
 import '../service/approval_management_service.dart';
@@ -33,6 +34,15 @@ class ApprovalManagementController extends GetxController {
   final RxList<CollaborationRequestModel> collaborations =
       <CollaborationRequestModel>[].obs;
 
+  //------------------------------------------------------------
+// Beat Change Requests
+//------------------------------------------------------------
+
+  final RxList<BeatChangeRequestModel> beatChangeRequests =
+      <BeatChangeRequestModel>[].obs;
+
+  final RxBool isBeatResponding = false.obs;
+
   bool get isUser => userRole.value.toLowerCase() == "user";
 
   @override
@@ -60,6 +70,8 @@ class ApprovalManagementController extends GetxController {
 
       if (!isUser) {
         await fetchPendingApprovals();
+
+        await fetchPendingBeatChangeRequests();
       }
 
       await fetchCollaborationRequests();
@@ -92,9 +104,81 @@ class ApprovalManagementController extends GetxController {
     debugPrint("$_tag Refresh Requested");
 
     pendingApprovals.clear();
+    beatChangeRequests.clear();
     collaborations.clear();
 
     await loadData();
+  }
+
+
+  /// ------------------------------
+  /// Pending Beat Change Requests
+  /// ------------------------------
+
+  Future<void> fetchPendingBeatChangeRequests() async {
+    debugPrint("$_tag fetchPendingBeatChangeRequests()");
+
+    final data = await _service.fetchPendingBeatChangeRequests();
+
+    debugPrint(
+      "$_tag API returned ${data.length} Beat Change Requests",
+    );
+
+    beatChangeRequests.assignAll(data);
+
+    debugPrint(
+      "$_tag beatChangeRequests updated. Count=${beatChangeRequests.length}",
+    );
+  }
+
+  /// ------------------------------
+  /// Respond Beat Change Request
+  /// ------------------------------
+
+  Future<void> respondBeatChangeRequest({
+    required BeatChangeRequestModel request,
+    required bool approve,
+    required String comments,
+  }) async {
+    try {
+      debugPrint(
+        "$_tag Respond Beat Change -> "
+            "id=${request.id}, "
+            "approve=$approve",
+      );
+
+      isBeatResponding.value = true;
+
+      await _service.respondBeatChangeRequest(
+        dayId: request.id,
+        action: approve ? "approve" : "reject",
+        comments: comments,
+      );
+
+      beatChangeRequests.removeWhere(
+            (e) => e.id == request.id,
+      );
+
+      Get.snackbar(
+        "Success",
+        approve
+            ? "Beat Change Approved"
+            : "Beat Change Rejected",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } catch (e, s) {
+      debugPrint("$_tag Beat Change Error");
+      debugPrint("$e");
+      debugPrint("$s");
+
+      Get.snackbar(
+        "Error",
+        e.toString(),
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } finally {
+      isBeatResponding.value = false;
+    }
   }
 
   /// ------------------------------
@@ -128,16 +212,23 @@ class ApprovalManagementController extends GetxController {
   /// Collaboration
   /// ------------------------------
 
+  /// ------------------------------
+  /// Collaboration
+  /// ------------------------------
+
   Future<void> fetchCollaborationRequests() async {
-    debugPrint("$_tag fetchCollaborationRequests()");
+    debugPrint("$_tag ========================================");
+    debugPrint("$_tag fetchCollaborationRequests() Started");
 
     final data = await _service.fetchIncomingCollaborations();
 
-    debugPrint("$_tag API returned ${data.length} collaboration requests");
+    debugPrint("$_tag Service returned ${data.length} collaboration request(s)");
 
-    for (final item in data) {
+    for (int i = 0; i < data.length; i++) {
+      final item = data[i];
+
       debugPrint(
-        "$_tag Collaboration -> "
+        "$_tag Item[$i] -> "
             "id=${item.id}, "
             "status=${item.collaborationStatus}",
       );
@@ -146,8 +237,24 @@ class ApprovalManagementController extends GetxController {
     collaborations.assignAll(data);
 
     debugPrint(
-      "$_tag collaborations updated. Count=${collaborations.length}",
+      "$_tag collaborations.assignAll() completed",
     );
+
+    debugPrint(
+      "$_tag collaborations.length = ${collaborations.length}",
+    );
+
+    for (int i = 0; i < collaborations.length; i++) {
+      final item = collaborations[i];
+
+      debugPrint(
+        "$_tag Observable[$i] -> "
+            "id=${item.id}, "
+            "status=${item.collaborationStatus}",
+      );
+    }
+
+    debugPrint("$_tag ========================================");
   }
 
   /// ------------------------------

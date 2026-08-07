@@ -30,6 +30,7 @@ class TTexts {
   // -- Slide Menu Text
   static const String dashboard = "Home";
   static const String userListScreen = "UserListScreen";
+  static const String dcr = "DCR";
   static const String home = "Home";
   static const String addDoctor = "Doctor";
   static const String salesActivity = "Sales Activity";

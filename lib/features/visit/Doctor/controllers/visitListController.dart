@@ -23,8 +23,6 @@ class VisitListController with ChangeNotifier {
 
   final RxSet<String> pendingVisits = <String>{}.obs;
 
-
-
   List<VisitSalesLogModel> _visitList = [];
   String? userId;
   bool _isLoading = false;

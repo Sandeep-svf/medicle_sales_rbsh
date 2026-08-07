@@ -33,8 +33,9 @@ class UploadQueueDrainer {
       name: 'UploadQueueDrainer',
     );
 
+    List<Map<String, dynamic>> rows = [];
     try {
-      final rows = await _dao.fetchPending(_batchSize);
+       rows = await _dao.fetchPending(_batchSize);
 
       developer.log(
         'Pending rows found: ${rows.length}',
@@ -61,6 +62,10 @@ class UploadQueueDrainer {
         'URL : $url',
         name: 'UploadQueueDrainer',
       );
+
+      for (final row in rows) {
+        await _dao.markSending(row['id'] as int);
+      }
 
       final events = rows.map((row) {
         return {
@@ -156,7 +161,8 @@ class UploadQueueDrainer {
         stackTrace: stackTrace,
       );
 
-      final rows = await _dao.fetchPending(_batchSize);
+
+     // final rows = await _dao.fetchPending(_batchSize);
 
       for (final row in rows) {
         await _dao.markFailedSafe(

@@ -65,7 +65,7 @@ class UserListController extends GetxController {
               backgroundColor: Colors.green,
               colorText: Colors.white,
             );
-            print("[UserListController] Successfully fetched Usert list.");
+            print("[UserListController] Successfully fetched User list.");
           } else {
             // Handle case where 'users' is not a List
             Get.snackbar(

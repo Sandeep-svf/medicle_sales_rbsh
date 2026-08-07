@@ -12,9 +12,12 @@ import '../../../addClinic/model/clinic.dart';
 import '../model/area_model.dart';
 import '../model/beat_area_model.dart';
 import '../model/beat_model.dart';
+import '../model/chemist_location_model.dart';
 import '../model/doctor_location_model.dart';
 import '../model/headquarter_model.dart';
+import '../model/stockist_location_model.dart';
 import '../repository/territory_repository.dart';
+import '../screen/area_detail_map_screen.dart';
 import '../service/area_polygon_builder.dart';
 import '../utils/enumsclass.dart';
 import '../wigets/area_details_bottom_sheet.dart';
@@ -70,6 +73,10 @@ class TerritoryController extends GetxController {
   final areas = <AreaModel>[].obs;
 
   final doctors = <DoctorLocationModel>[].obs;
+
+  final chemists = <ChemistLocationModel>[].obs;
+
+  final stockists = <StockistLocationModel>[].obs;
 
   final beats = <BeatModel>[].obs;
 
@@ -306,25 +313,53 @@ class TerritoryController extends GetxController {
 
   Future<void> loadData() async {
 
+
+
     //////////////////////////////////////////////////////
     /// LOAD HEAD OFFICES FROM LOGIN
     //////////////////////////////////////////////////////
 
     final user = await AuthManager().getUserData();
 
-    headquarters.assignAll(
-      (user?.user?.headOffices ?? []).map(
-            (e) => HeadquarterModel(
-          id: e.id ?? "",
+    debugPrint("[TerritoryController] ===== USER FROM SHARED PREF =====");
+    debugPrint("[TerritoryController] User Null: ${user == null}");
+    debugPrint("[TerritoryController] Head Office Count: ${user?.user?.headOffices.length}");
+    debugPrint("[TerritoryController] HQ Latitude: ${user?.user?.headOffices.first.latitude}");
+    debugPrint("[TerritoryController] HQ Longitude: ${user?.user?.headOffices.first.longitude}");
+
+    if (user == null) {
+      debugPrint("[TerritoryController] User data not found.");
+    } else if (user.user == null) {
+      debugPrint("[TerritoryController] User object is null.");
+    } else if (user.user!.headOffices.isEmpty) {
+      debugPrint("[TerritoryController] No head offices found.");
+    } else {
+      final hq = user.user!.headOffices.first;
+
+      headquarters.assignAll([
+        HeadquarterModel(
+          id: hq.id ?? "",
           code: "",
-          name: e.name ?? "",
+          name: hq.name ?? "",
           state: "",
-          latitude: 0,
-          longitude: 0,
-          zoom: 10,
+          latitude: hq.latitude.toDouble(),
+          longitude: hq.longitude.toDouble(),
+          zoom: 11,
         ),
-      ).toList(),
-    );
+      ]);
+
+      selectedHeadquarter.value = headquarters.first;
+
+      // initial map load
+      if (_mapReady) {
+        goToHeadquarter();
+      }
+
+      debugPrint(
+        "[TerritoryController] Selected HQ: ${hq.name} "
+            "(${hq.latitude}, ${hq.longitude})",
+      );
+    }
 
     //////////////////////////////////////////////////////
     /// LOAD TERRITORY FROM API
@@ -340,6 +375,14 @@ class TerritoryController extends GetxController {
       territory.doctors,
     );
 
+    chemists.assignAll(
+      territory.chemists,
+    );
+
+    stockists.assignAll(
+      territory.stockists,
+    );
+
     beats.assignAll(
       territory.beats,
     );
@@ -349,10 +392,10 @@ class TerritoryController extends GetxController {
     );
 
     //////////////////////////////////////////////////////
-    /// INITIAL MAP POSITION
+    /// INITIAL MAP POSITION first area
     //////////////////////////////////////////////////////
 
-    if (areas.isNotEmpty) {
+   /* if (areas.isNotEmpty) {
 
       moveCamera(
 
@@ -365,7 +408,7 @@ class TerritoryController extends GetxController {
 
       );
 
-    }
+    }*/
 
     update();
   }
@@ -1453,6 +1496,56 @@ class TerritoryController extends GetxController {
     return [...lower, ...upper];
   }
 
+  void showAreaActions(AreaModel area) {
+    Get.dialog(
+      AlertDialog(
+        title: Text(area.postOffice),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.map),
+              title: const Text("View Details"),
+              onTap: () {
+                Get.back();
+
+                Get.to(
+                      () => AreaDetailMapScreen(
+                    area: area,
+                        doctors: doctors,
+                        chemists: chemists,
+                        stockists: stockists,
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.add_location_alt),
+              title: const Text("Add To Beat"),
+              onTap: () {
+                Get.back();
+                selectArea(area);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void goToHeadquarter() {
+    final hq = selectedHeadquarter.value ??
+        headquarters.firstOrNull;
+
+    if (hq == null) return;
+
+    selectedHeadquarter.value = hq;
+
+    moveCamera(
+      LatLng(hq.latitude, hq.longitude),
+      hq.zoom,
+    );
+  }
 
 
 

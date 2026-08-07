@@ -1229,7 +1229,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
 
     _confirmVisit(
       context,
-      doctorVisit.id,
+      doctorVisit,
       selectedProducts,
     );
   }
@@ -1354,7 +1354,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
     }
   }  // 3. API CALL (MULTIPART)
 // 3. FINAL CONFIRM VISIT (Simplified)
-  void _confirmVisit(BuildContext context, String visitId,
+  void _confirmVisit(BuildContext context,  VisitSalesLogModel doctorVisit,
       List<String> selectedProducts) async {
     bool confirmed = false;
 
@@ -1381,7 +1381,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
       debugPrint(
           "VisitConfirmationController: Confirm Visit Started");
       debugPrint(
-          "VisitConfirmationController: Visit ID = $visitId");
+          "VisitConfirmationController: Visit ID = ${doctorVisit.doctorId}");
       debugPrint(
           "VisitConfirmationController: Selected Products = $selectedProducts");
 
@@ -1412,7 +1412,9 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
           "VisitConfirmationController: Request Body = ${jsonEncode(requestBody)}");
 
       final response = await VisitConfirmationService().confirmVisit(
-        visitId: visitId,
+        visitId: doctorVisit.id,
+        doctorLatitude: doctorVisit.doctor!.latitude!,
+        doctorLongitude: doctorVisit.doctor!.longitude!,
         position: pos,
         productIds: selectedProducts,
       );
@@ -1427,6 +1429,21 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
 
       debugPrint(
           "VisitConfirmationController: Response = ${response.body}");
+
+      if (response.statusCode == 400) {
+        final body = jsonDecode(response.body);
+
+        QuickAlert.show(
+          context: context,
+          type: QuickAlertType.error,
+          title: "Visit Confirmation Failed",
+          text: body["errors"]?[0]?["message"] ??
+              body["message"] ??
+              "Unable to confirm visit.",
+        );
+
+        return;
+      }
 
       if (response.statusCode == 200) {
         final body = jsonDecode(response.body);

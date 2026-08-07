@@ -21,6 +21,7 @@ import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../utils/local_storage/auth_manager.dart';
 import '../../Blog/screen/blog.dart';
+import '../../DCR/screen/performance_dashboard.dart';
 import '../../Holiday/screen/HolidayScreen.dart';
 import '../../Inbox/Screen/InboxScreen.dart';
 
@@ -104,6 +105,20 @@ class _CustomDrawerState extends State<CustomDrawer> {
                               UserListScreen(), TTexts.userListScreen),
                       isSelected: widget.currentScreen == TTexts.userListScreen,
                     ),
+
+                  if (widget.userRole == 'State Head')
+                    _buildDrawerItem(
+                      icon: Icons.report,
+                      text: TTexts.dcr,
+                      onTap: () =>
+                          widget.onMenuSelected(
+                              PerformanceDashboard(), TTexts.dcr),
+                      isSelected: widget.currentScreen == TTexts.dcr,
+                    ),
+
+
+
+
 
                   _buildDrawerItem(
                     icon: Icons.tour,
