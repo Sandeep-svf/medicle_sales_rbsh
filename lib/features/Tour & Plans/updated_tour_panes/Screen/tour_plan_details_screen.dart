@@ -8,6 +8,7 @@ import '../../../../utils/constants/sizes.dart';
 import '../DayType.dart';
 import '../controller/tour_plan_controller.dart';
 import '../model/pre_submit_validation_modal.dart';
+import '../wigets/DayDetailsPanel.dart';
 import '../wigets/custom_calander_grid.dart';
 import '../wigets/day_editor_pannel.dart';
 
@@ -67,7 +68,9 @@ class _TourPlanDetailsScreenState extends State<TourPlanDetailsScreen> {
               color: TColors.primary,
               child: SafeArea(
                 bottom: false,
-                child: _buildHeader(controller),
+                child: Obx(
+                      () => _buildHeader(controller),
+                ),
               ),
             ),
             Expanded(
@@ -278,11 +281,13 @@ class _TourPlanDetailsScreenState extends State<TourPlanDetailsScreen> {
 
   //------------------------------------------------------------
   Widget _buildLandscape(
-    TourPlanController controller,
-  ) {
+      TourPlanController controller,
+      ) {
     return Row(
       children: [
-        /// Calendar
+        // --------------------------------------------------------
+        // CALENDAR
+        // --------------------------------------------------------
 
         Expanded(
           flex: 7,
@@ -303,7 +308,15 @@ class _TourPlanDetailsScreenState extends State<TourPlanDetailsScreen> {
             child: CustomCalendarGrid(
               days: controller.monthDays,
               selectedDay: controller.selectedDay.value,
-              onDaySelected: controller.selectEditableDay,
+              onDaySelected: (day) {
+                if (controller.isViewMode) {
+                  // READ ONLY
+                  controller.selectedDay.value = day;
+                } else {
+                  // EDIT MODE
+                  controller.selectEditableDay(day);
+                }
+              },
             ),
           ),
         ),
@@ -312,7 +325,9 @@ class _TourPlanDetailsScreenState extends State<TourPlanDetailsScreen> {
           width: TSizes.lg,
         ),
 
-        /// Editor
+        // --------------------------------------------------------
+        // RIGHT PANEL
+        // --------------------------------------------------------
 
         SizedBox(
           width: 420,
@@ -332,20 +347,43 @@ class _TourPlanDetailsScreenState extends State<TourPlanDetailsScreen> {
             ),
             child: controller.selectedDay.value == null
                 ? const Center(
-                    child: Text(
-                      "Select any working day",
-                    ),
-                  )
+              child: Text(
+                "Select any working day",
+              ),
+            )
+                : controller.isViewMode
+                ? DayDetailsPanel(
+              key: ValueKey(
+                controller
+                    .selectedDay
+                    .value!
+                    .date,
+              ),
+              day: controller
+                  .selectedDay
+                  .value!,
+              onClose: () {
+                controller.selectedDay.value =
+                null;
+              },
+            )
                 : DayEditorPanel(
-                    key: ValueKey(
-                      controller.selectedDay.value!.date,
-                    ),
-                    day: controller.selectedDay.value!,
-                    onClose: () {
-                      controller.selectedDay.value = null;
-                    },
-                    onDayUpdated: controller.updateDay,
-                  ),
+              key: ValueKey(
+                controller
+                    .selectedDay
+                    .value!
+                    .date,
+              ),
+              day: controller
+                  .selectedDay
+                  .value!,
+              onClose: () {
+                controller.selectedDay.value =
+                null;
+              },
+              onDayUpdated:
+              controller.updateDay,
+            ),
           ),
         ),
       ],
@@ -354,14 +392,54 @@ class _TourPlanDetailsScreenState extends State<TourPlanDetailsScreen> {
 
   //------------------------------------------------------------
   Widget _buildPortrait(
-    BuildContext context,
-    TourPlanController controller,
-  ) {
+      BuildContext context,
+      TourPlanController controller,
+      ) {
     return Obx(
           () => CustomCalendarGrid(
         days: controller.monthDays,
         selectedDay: controller.selectedDay.value,
+
         onDaySelected: (day) {
+          // ------------------------------------------------------
+          // READ ONLY
+          // ------------------------------------------------------
+
+          if (controller.isViewMode) {
+            showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              backgroundColor: Colors.transparent,
+              builder: (_) {
+                return Container(
+                  height:
+                  MediaQuery.of(context).size.height *
+                      .78,
+                  decoration:
+                  const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius:
+                    BorderRadius.vertical(
+                      top: Radius.circular(24),
+                    ),
+                  ),
+                  child: DayDetailsPanel(
+                    day: day,
+                    onClose: () {
+                      Get.back();
+                    },
+                  ),
+                );
+              },
+            );
+
+            return;
+          }
+
+          // ------------------------------------------------------
+          // EDIT MODE
+          // ------------------------------------------------------
+
           controller.selectEditableDay(day);
 
           showModalBottomSheet(
@@ -370,10 +448,14 @@ class _TourPlanDetailsScreenState extends State<TourPlanDetailsScreen> {
             backgroundColor: Colors.transparent,
             builder: (_) {
               return Container(
-                height: MediaQuery.of(context).size.height * .72,
-                decoration: const BoxDecoration(
+                height:
+                MediaQuery.of(context).size.height *
+                    .72,
+                decoration:
+                const BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.vertical(
+                  borderRadius:
+                  BorderRadius.vertical(
                     top: Radius.circular(24),
                   ),
                 ),
@@ -382,7 +464,8 @@ class _TourPlanDetailsScreenState extends State<TourPlanDetailsScreen> {
                   onClose: () {
                     Get.back();
                   },
-                  onDayUpdated: controller.updateDay,
+                  onDayUpdated:
+                  controller.updateDay,
                 ),
               );
             },

@@ -6,6 +6,7 @@ import 'package:iconsax/iconsax.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 import '../../../controllers/AuthController.dart';
+import 'package:flutter/services.dart';
 
 class LoginForm extends StatelessWidget {
   final bool dark;
@@ -36,6 +37,16 @@ class LoginForm extends StatelessWidget {
       }
 
       return "";
+    }
+
+    Future<String> getAndroidId() async {
+      const channel = MethodChannel('device_id');
+
+      try {
+        return await channel.invokeMethod<String>('getAndroidId') ?? '';
+      } catch (e) {
+        return '';
+      }
     }
 
     return Form(
@@ -85,7 +96,8 @@ class LoginForm extends StatelessWidget {
                 onPressed: () async{
                   String email = emailController.text.trim();
                   String password = passwordController.text.trim();
-                  final deviceId = await _getDeviceId();
+                //  final deviceId = await _getDeviceId();
+                  final deviceId = await getAndroidId();
                   authController.login(email, password, deviceId);
                 },
                 child: const Text(TTexts.logIn),

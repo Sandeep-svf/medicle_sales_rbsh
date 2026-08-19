@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:get/get_rx/src/rx_types/rx_types.dart';
@@ -8,6 +9,7 @@ import '../../../../utils/http/http_client.dart';
 import '../../../../utils/local_storage/auth_manager.dart';
 import '../models/visitSalesData.dart';
 import '../repository/pending_visit_repository.dart';
+import '../repository/visit_cache_repository.dart';
 
 enum VisitDateFilter {
   today,
@@ -21,6 +23,15 @@ class VisitListController with ChangeNotifier {
   final PendingVisitRepository _pendingRepository =
   PendingVisitRepository();
 
+  final VisitCacheRepository _cacheRepository =
+  VisitCacheRepository();
+
+  bool _offlineMode = false;
+
+  bool get offlineMode => _offlineMode;
+
+  Timer? _refreshTimer;
+
   final RxSet<String> pendingVisits = <String>{}.obs;
 
   List<VisitSalesLogModel> _visitList = [];
@@ -31,6 +42,42 @@ class VisitListController with ChangeNotifier {
   bool get isLoading => _isLoading;
 
   final String fetchApiUrl = THttpHelper.baseUrl;
+  VisitDateFilter _currentFilter = VisitDateFilter.today;
+  DateTime? _currentStartDate;
+  DateTime? _currentEndDate;
+
+  @override
+  void dispose() {
+
+    _refreshTimer?.cancel();
+
+    super.dispose();
+  }
+
+  Future<void> setOfflineMode(bool value) async {
+
+    if (_offlineMode == value) return;
+
+    _offlineMode = value;
+
+    if (_offlineMode) {
+
+      _stopAutoRefresh();
+
+    } else {
+
+      await fetchSalesList(
+        filter: _currentFilter,
+        startDate: _currentStartDate,
+        endDate: _currentEndDate,
+
+      );
+
+      _startAutoRefresh();
+    }
+
+    notifyListeners();
+  }
 
   Future<void> loadPendingVisits() async {
     final visits = await _pendingRepository.getPendingVisits();
@@ -42,6 +89,59 @@ class VisitListController with ChangeNotifier {
     );
   }
 
+  String _getCacheKey({
+    required VisitDateFilter filter,
+    required String userId,
+    DateTime? startDate,
+    DateTime? endDate,
+  }) {
+    switch (filter) {
+      case VisitDateFilter.today:
+        return "${userId}_today";
+
+      case VisitDateFilter.last7Days:
+        return "${userId}_last7days";
+
+      case VisitDateFilter.last15Days:
+        return "${userId}_last15days";
+
+      case VisitDateFilter.custom:
+        if (startDate != null && endDate != null) {
+          final formatter = DateFormat('yyyy-MM-dd');
+
+          return "${userId}_custom_${formatter.format(startDate)}_${formatter.format(endDate)}";
+        }
+
+        return "${userId}_today";
+    }
+  }
+
+  void _startAutoRefresh() {
+
+    _refreshTimer?.cancel();
+
+    _refreshTimer = Timer.periodic(
+      const Duration(minutes: 10),
+          (_) async {
+
+        if (_offlineMode) return;
+
+        debugPrint(
+            "VisitListController: Auto Refresh");
+
+        await fetchSalesList(
+          filter: _currentFilter,
+          startDate: _currentStartDate,
+          endDate: _currentEndDate,
+        );
+      },
+    );
+  }
+
+  void _stopAutoRefresh() {
+    _refreshTimer?.cancel();
+  }
+
   Future<void> fetchSalesList({
     VisitDateFilter filter = VisitDateFilter.today,
     DateTime? startDate,
@@ -49,6 +149,56 @@ class VisitListController with ChangeNotifier {
   }) async {
     _isLoading = true;
     notifyListeners();
+
+    _currentFilter = filter;
+    _currentStartDate = startDate;
+    _currentEndDate = endDate;
+
+    userId ??= await authManager.getUserId();
+
+    if (userId == null || userId!.isEmpty) {
+      _visitList = [];
+      _isLoading = false;
+      notifyListeners();
+      return;
+    }
+
+    final cacheKey = _getCacheKey(
+      filter: filter,
+      userId: userId!,
+      startDate: startDate,
+      endDate: endDate,
+    );
+
+
+
+    if (offlineMode) {
+      debugPrint(
+          "VisitListController: OFFLINE MODE - Loading cached visits");
+
+      final cachedJson =
+      await _cacheRepository.get(cacheKey);
+
+      if (cachedJson != null) {
+        _visitList =
+            VisitSalesLogModel.listFromRawJson(cachedJson);
+
+        await loadPendingVisits();
+
+        debugPrint(
+            "VisitListController: Loaded ${_visitList.length} cached visits");
+      } else {
+        debugPrint(
+            "VisitListController: No cached visits found");
+
+        _visitList = [];
+      }
+
+      _isLoading = false;
+      notifyListeners();
+
+      return;
+    }
 
     try {
       debugPrint(
@@ -58,7 +208,7 @@ class VisitListController with ChangeNotifier {
       debugPrint(
           "VisitListController: Selected Filter = $filter");
 
-      userId = await authManager.getUserId();
+
 
       debugPrint(
           "VisitListController: User ID = $userId");
@@ -156,10 +306,21 @@ class VisitListController with ChangeNotifier {
         )
             .toList();
 
+        await _cacheRepository.save(
+          cacheKey: cacheKey,
+          json: response.body,
+        );
+
+
         await loadPendingVisits();
+
+        if (!_offlineMode && _refreshTimer == null) {
+          _startAutoRefresh();
+        }
 
         debugPrint(
             "VisitListController: Records Parsed = ${_visitList.length}");
+
 
         if (_visitList.isNotEmpty) {
           debugPrint(
@@ -180,7 +341,30 @@ class VisitListController with ChangeNotifier {
       debugPrint(
           "VisitListController: StackTrace = $stackTrace");
 
-      _visitList = [];
+      debugPrint(
+          "VisitListController: Trying to load cached data...");
+
+      final cachedJson =
+      await _cacheRepository.get(cacheKey);
+
+      if (cachedJson != null) {
+
+        _visitList =
+            VisitSalesLogModel.listFromRawJson(
+                cachedJson);
+
+        await loadPendingVisits();
+
+        debugPrint(
+            "VisitListController: Loaded ${_visitList.length} visits from cache.");
+
+      } else {
+
+        debugPrint(
+            "VisitListController: No cached data found.");
+
+        _visitList = [];
+      }
     } finally {
       _isLoading = false;
 

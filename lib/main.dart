@@ -203,6 +203,7 @@ import 'package:provider/provider.dart' as provider;
 
 import 'features/Inbox/service/AuthService.dart';
 import 'features/SalesChartAnalysis/controller/DashboardController.dart';
+import 'features/TrackingOptimizedBgLocation/draner_manager /UploadQueueManager.dart';
 import 'features/addDoctor/models/DoctorOfflineModel.dart';
 import 'features/addDoctor/services/SyncService.dart';
 import 'features/authentication/screens/onboarding/splash.dart';
@@ -255,7 +256,7 @@ void main() async{
 
 
 
-  Get.put(DashboardController()); // Register DashboardController
+ // Get.put(DashboardController()); // Register DashboardController
   /*runApp(
     MultiProvider(
       providers: [
@@ -266,6 +267,7 @@ void main() async{
     ),
   );*/
 
+  await UploadQueueManager.instance.start();
   // Adding Riverpod
   runApp(
     ProviderScope( // Riverpod

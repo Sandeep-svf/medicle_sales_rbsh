@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:flutter/services.dart';
 
 Future<String> getDeviceId() async {
   final deviceInfo = DeviceInfoPlugin();
@@ -16,3 +17,14 @@ Future<String> getDeviceId() async {
 
   return "unknown";
 }
+
+Future<String> getAndroidId() async {
+  const channel = MethodChannel('device_id');
+
+  try {
+    return await channel.invokeMethod<String>('getAndroidId') ?? '';
+  } catch (e) {
+    return '';
+  }
+}
+

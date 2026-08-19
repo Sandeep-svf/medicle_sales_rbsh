@@ -2,8 +2,8 @@
 
 configurations.all {
     resolutionStrategy {
-        force "org.jetbrains.kotlin:kotlin-stdlib:1.9.21"
-        force "org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.21"
+        force "org.jetbrains.kotlin:kotlin-stdlib:2.1.0"
+        force "org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.0"
     }
 }
 
@@ -22,7 +22,7 @@ buildscript {
     dependencies {
         classpath 'com.google.gms:google-services:4.3.15'
         classpath 'com.android.tools.build:gradle:8.0.2'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.21"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.0"
 
     }
 }
@@ -31,8 +31,7 @@ allprojects {
     repositories {
         google()
         mavenCentral()
-        maven { url "https://maven.transistorsoft.com" }   // ← add
-
+        maven { url "https://maven.transistorsoft.com" }
     }
     subprojects {
         afterEvaluate { project ->
@@ -41,13 +40,15 @@ allprojects {
                     if (namespace == null) {
                         namespace project.group
                     }
+                    compileSdkVersion 35
+                    defaultConfig {
+                        minSdkVersion 21
+                        targetSdkVersion 35
+                    }
                 }
             }
         }
     }
-
-
-
 }
 
 
@@ -57,14 +58,15 @@ subprojects { p ->
         if (p.plugins.hasPlugin("org.jetbrains.kotlin.android") ||
                 p.plugins.hasPlugin("kotlin-android")) {
             tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
-                kotlinOptions { jvmTarget = "1.8" }   // or "17" if you chose 17 everywhere
+                kotlinOptions { jvmTarget = "17" }
             }
         }
         def androidExt = p.extensions.findByName("android")
-        if (androidExt != null) {
+        // FIXED: Added && p.name != "app" so it doesn't overwrite our app settings
+        if (androidExt != null && p.name != "app") {
             androidExt.compileOptions {
-                sourceCompatibility = JavaVersion.VERSION_1_8   // or VERSION_17
-                targetCompatibility = JavaVersion.VERSION_1_8   // or VERSION_17
+                sourceCompatibility = JavaVersion.VERSION_17
+                targetCompatibility = JavaVersion.VERSION_17
             }
         }
     }

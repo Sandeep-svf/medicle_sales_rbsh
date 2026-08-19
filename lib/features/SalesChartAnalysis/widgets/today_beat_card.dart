@@ -326,7 +326,7 @@ class TodayBeatCard extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 height: 50,
-                child: ElevatedButton.icon(
+                child: ElevatedButton(
                   onPressed: () async {
                     final controller = Get.find<DashboardController>();
 
@@ -338,16 +338,25 @@ class TodayBeatCard extends StatelessWidget {
                     backgroundColor: TColors.primary,
                     foregroundColor: Colors.white,
                     elevation: 0,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),
                   ),
-                  icon: const Icon(Icons.swap_horiz_rounded),
-                  label: const Text(
-                    "Switch Today's Beat",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      const Icon(Icons.swap_horiz_rounded),
+                      const SizedBox(width: 8),
+                      Text(
+                        "Switch Today's Beat",
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),

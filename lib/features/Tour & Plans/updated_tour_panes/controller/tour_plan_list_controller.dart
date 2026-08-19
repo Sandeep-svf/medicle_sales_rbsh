@@ -312,12 +312,71 @@ class TourPlanListController extends GetxController {
     }
   }
 
-  void createTourPlan() {
+  /// old one no plan show if exist
+  /*void createTourPlan() {
 
     debugPrint("Create Tour Plan Clicked");
 
     Get.to(
           () => const TourPlanDetailsScreen(),
+    );
+  }*/
+
+  /// new one show plans if exist while create
+  void createTourPlan() {
+    debugPrint("========== Create Tour Plan ==========");
+
+    final now = DateTime.now();
+
+    // Upcoming / planning month
+    final DateTime upcomingMonth = now.month == 12
+        ? DateTime(now.year + 1, 1)
+        : DateTime(now.year, now.month + 1);
+
+    debugPrint(
+      "Upcoming Month : ${upcomingMonth.month}/${upcomingMonth.year}",
+    );
+
+    // Check if a Tour Plan already exists for the upcoming month
+    TourPlanModel? existingPlan;
+
+    for (final plan in tourPlans) {
+      if (plan.month == upcomingMonth.month &&
+          plan.year == upcomingMonth.year) {
+        existingPlan = plan;
+        break;
+      }
+    }
+
+    // ---------------------------------------------------------
+    // No existing plan
+    // ---------------------------------------------------------
+
+    if (existingPlan == null) {
+      debugPrint("No Tour Plan found for upcoming month.");
+      debugPrint("Opening NEW Tour Plan.");
+
+      Get.to(
+            () => const TourPlanDetailsScreen(),
+      );
+
+      return;
+    }
+
+    // ---------------------------------------------------------
+    // Existing plan found
+    // ---------------------------------------------------------
+
+    debugPrint("Existing Tour Plan found.");
+    debugPrint("Plan ID     : ${existingPlan.id}");
+    debugPrint("Month       : ${existingPlan.month}/${existingPlan.year}");
+    debugPrint("Status      : ${existingPlan.status}");
+    debugPrint("Days        : ${existingPlan.days.length}");
+
+    Get.to(
+          () => TourPlanDetailsScreen(
+        planId: existingPlan!.id,
+      ),
     );
   }
 

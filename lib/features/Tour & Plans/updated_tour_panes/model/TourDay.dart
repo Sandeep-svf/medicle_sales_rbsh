@@ -21,8 +21,9 @@ class TourDay {
 
   final String? tourPlanId;
 
-  /// Backend value
-  /// Example:
+  /// Backend day_type
+  ///
+  /// Examples:
   /// Field
   /// Joint work
   /// Meeting
@@ -33,6 +34,9 @@ class TourDay {
   /// Weekly off
   final String? apiDayType;
 
+  /// Backend collaboration_status
+  ///
+  /// Examples:
   /// None
   /// Pending
   /// Accepted
@@ -55,9 +59,11 @@ class TourDay {
   /// Joint Work
   ///--------------------------------------------------------
 
-  final String? jointWorkUserId;
+  /// IDs are used for API operations.
+  final List<String> jointWorkUserIds;
 
-  final String? jointWorkUserName;
+  /// Names are used for UI display.
+  final List<String> jointWorkUserNames;
 
   ///--------------------------------------------------------
   /// Others
@@ -72,27 +78,21 @@ class TourDay {
     required this.type,
 
     this.id,
-
     this.tourPlanId,
 
     this.apiDayType,
-
     this.collaborationStatus,
 
     this.beatId,
-
     this.beatName,
 
     this.beatId2,
-
     this.beatName2,
 
-    this.jointWorkUserId,
-
-    this.jointWorkUserName,
+    this.jointWorkUserIds = const [],
+    this.jointWorkUserNames = const [],
 
     this.notes,
-
     this.holidayName,
   });
 
@@ -102,65 +102,62 @@ class TourDay {
 
   TourDay copyWith({
     DateTime? date,
-
     DayType? type,
 
     String? id,
-
     String? tourPlanId,
 
     String? apiDayType,
-
     String? collaborationStatus,
 
     String? beatId,
-
     String? beatName,
 
     String? beatId2,
-
     String? beatName2,
 
-    String? jointWorkUserId,
-
-    String? jointWorkUserName,
+    List<String>? jointWorkUserIds,
+    List<String>? jointWorkUserNames,
 
     String? notes,
-
     String? holidayName,
   }) {
     return TourDay(
       date: date ?? this.date,
-
       type: type ?? this.type,
 
       id: id ?? this.id,
-
       tourPlanId: tourPlanId ?? this.tourPlanId,
 
-      apiDayType: apiDayType ?? this.apiDayType,
+      apiDayType:
+      apiDayType ?? this.apiDayType,
 
       collaborationStatus:
       collaborationStatus ??
           this.collaborationStatus,
 
-      beatId: beatId ?? this.beatId,
+      beatId:
+      beatId ?? this.beatId,
 
-      beatName: beatName ?? this.beatName,
+      beatName:
+      beatName ?? this.beatName,
 
-      beatId2: beatId2 ?? this.beatId2,
+      beatId2:
+      beatId2 ?? this.beatId2,
 
-      beatName2: beatName2 ?? this.beatName2,
+      beatName2:
+      beatName2 ?? this.beatName2,
 
-      jointWorkUserId:
-      jointWorkUserId ??
-          this.jointWorkUserId,
+      jointWorkUserIds:
+      jointWorkUserIds ??
+          this.jointWorkUserIds,
 
-      jointWorkUserName:
-      jointWorkUserName ??
-          this.jointWorkUserName,
+      jointWorkUserNames:
+      jointWorkUserNames ??
+          this.jointWorkUserNames,
 
-      notes: notes ?? this.notes,
+      notes:
+      notes ?? this.notes,
 
       holidayName:
       holidayName ?? this.holidayName,
@@ -184,23 +181,37 @@ class TourDay {
       type == DayType.field;
 
   bool get hasBeat =>
-      beatId != null &&
-          beatId!.isNotEmpty;
+      (beatId?.isNotEmpty ?? false);
 
   bool get hasJointUser =>
-      jointWorkUserId != null &&
-          jointWorkUserId!.isNotEmpty;
+      jointWorkUserIds.isNotEmpty;
+
+  bool get hasJointUserNames =>
+      jointWorkUserNames.isNotEmpty;
 
   bool get isEditable =>
       !isHoliday && !isWeeklyOff;
 
+  ///--------------------------------------------------------
+  /// Display Helpers
+  ///--------------------------------------------------------
+
+  String get jointWorkDisplayName {
+    if (jointWorkUserNames.isEmpty) {
+      return "No joint work user";
+    }
+
+    return jointWorkUserNames.join(", ");
+  }
+
   @override
   String toString() {
     return "TourDay("
-        "date:$date, "
-        "type:$type, "
-        "beat:$beatName, "
-        "joint:$jointWorkUserName"
+        "date: $date, "
+        "type: $type, "
+        "beat: $beatName, "
+        "beat2: $beatName2, "
+        "joint: ${jointWorkUserNames.join(', ')}"
         ")";
   }
 }

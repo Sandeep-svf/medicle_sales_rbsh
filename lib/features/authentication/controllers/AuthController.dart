@@ -17,19 +17,25 @@ class AuthController extends GetxController {
   static const String _baseUrl = THttpHelper.baseUrl;
 
   Future<void> login(String email, String password, String deviceID) async {
+    print("AuthController: login() initiated for email: $email | deviceID: $deviceID");
+
     if (email.isEmpty || password.isEmpty) {
+      print("AuthController: Validation failed - Email or Password is empty");
       Get.snackbar("Error", "Email and Password cannot be empty");
       return;
     }
 
     try {
+      print("AuthController: Setting isLoading to true");
       isLoading.value = true;
 
       // Close any existing dialogs before opening a new one
       if (Get.isDialogOpen ?? false) {
+        print("AuthController: Closing existing dialog");
         Get.back();
       }
 
+      print("AuthController: Showing Loading Dialog");
       // Show Loading Dialog
       Get.dialog(
         WillPopScope(
@@ -70,34 +76,43 @@ class AuthController extends GetxController {
         barrierDismissible: false, // Prevent user interaction
       );
 
-
-
-
+      print("AuthController: Sending POST request to $_baseUrl/auth/login");
       final response = await http.post(
         Uri.parse("$_baseUrl/auth/login"),
         headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"email": email, "password": password, "deviceId" : deviceID}),
+       // body: jsonEncode({"email": email, "password": password, "deviceId" : deviceID}),
+        body: jsonEncode({"email": email, "password": password}),
       );
+
+      print("AuthController: deviceID  - deviceID: ${deviceID}");
+
+      print("AuthController: Response received - Status Code: ${response.statusCode}");
+      print("AuthController: Raw Response Body: ${response.body}");
 
       final data = jsonDecode(response.body);
 
       // Close loading overlay
       if (Get.isDialogOpen ?? false) {
+        print("AuthController: Closing loading overlay");
         Get.back();
       }
 
       if (response.statusCode == 200) {
+        print("AuthController: Login Successful, checking for 'user' key in response");
         // Ensure 'user' key exists before parsing
         if (data.containsKey("user")) {
+          print("AuthController: 'user' key found, parsing UserModel");
           // Parse the JSON into UserModel
           UserModel userModel = UserModel.fromJson(data);
 
           // Extract the token
           String? token = userModel.token;
+          print("AuthController: Token extracted");
 
           // Initialize AuthManager
           AuthManager authManager = AuthManager();
 
+          print("AuthController: Saving user data, ID, role, and token to AuthManager");
           // Save the full UserModel
           await authManager.saveUserData(userModel);
 
@@ -105,65 +120,59 @@ class AuthController extends GetxController {
           await authManager.saveUserId(userModel.user!.id);
           await authManager.saveUserRole(userModel.user!.role);
 
-          print("auth check ${userModel.user!.role}");
+          print("AuthController: auth check role saved -> ${userModel.user!.role}");
 
           // Save the auth token
           await authManager.saveAuthToken(token!);
 
-         /* // Save the headOffices list safely from the user field
-          if (userModel.user != null) {
-            // Ensure that headOffices is not null, otherwise use an empty list
-            // Convert the list to List<HeadOfficeCustom> before saving
-            List<HeadOfficeCustom> headOffices = userModel.user!.headOffices!
-                .map((e) => HeadOfficeCustom.fromJson(e as Map<String, dynamic>))
-                .toList();
-            await authManager.saveHeadOffices(headOffices);
-          } else {
-            // If user is null, handle this case (perhaps log or show an error)
-            print("User data is missing");
-          }*/
-
-         // final String? headOfficeValue = await authManager.getHeadOffice();
-
-         // print("Head Office Value: $headOfficeValue");
-
           user.value = userModel; // Update state
-         // Get.snackbar("Success", "Login Successful");
+          print("AuthController: User state updated in GetX controller");
 
+          print("AuthController: Navigating to DashboardScreen");
           // Navigate to Dashboard
           Get.offAll(() => DashboardScreen());
         } else {
+          print("AuthController Error: 'user' key missing from server response");
           Get.snackbar("AuthController Error", "Invalid response from server");
         }
       } else {
+        print("AuthController Error: Login Failed with message -> ${data["message"]}");
         Get.snackbar("AuthController Error", data["message"] ?? "Login Failed");
       }
     } catch (e) {
+      print("AuthController Error: Exception caught during login -> $e");
       if (Get.isDialogOpen ?? false) {
         Get.back(); // Close loading overlay in case of error
       }
       Get.snackbar("AuthController Error", "Something went wrong: $e");
-      print("AuthController Error Something went wrong: $e");
     } finally {
+      print("AuthController: Resetting isLoading to false");
       isLoading.value = false;
     }
   }
 
- /* // Load user from SharedPreferences
+  /* // Load user from SharedPreferences
   Future<void> loadUser() async {
+    print("AuthController: loadUser() called");
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? userData = prefs.getString("userData");
 
     if (userData != null) {
+      print("AuthController: userData found in SharedPreferences, parsing...");
       user.value = UserModel.fromJsonString(userData);
+    } else {
+      print("AuthController: No userData found in SharedPreferences");
     }
   }*/
 
   // Logout function to clear user data
   Future<void> logout() async {
+    print("AuthController: logout() initiated");
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    print("AuthController: Removing 'userData' from SharedPreferences");
     await prefs.remove("userData");
     user.value = null;
+    print("AuthController: Navigating to LoginScreen");
     Get.offAll(() => const LoginScreen());
   }
 }

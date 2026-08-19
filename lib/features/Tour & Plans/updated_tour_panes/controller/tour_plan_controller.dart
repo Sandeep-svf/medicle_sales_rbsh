@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -14,7 +16,9 @@ import '../model/available_user_model.dart';
 import '../model/beat_model.dart';
 import '../model/tour_plan_model.dart';
 import '../service/TourPlanService.dart';
+import '../utils/month_selector.dart';
 import '../wigets/draft_saved_dialog.dart';
+import '../wigets/tour_plan_validation_dialog.dart';
 
 
 
@@ -167,74 +171,184 @@ class TourPlanController extends GetxController {
       tourPlan.value?.status == "Draft";
 
   bool get isSubmitted =>
-      tourPlan.value?.status ==
-          "Submitted";
+      tourPlan.value?.status == "Submitted";
 
   bool get isApproved =>
-      tourPlan.value?.status ==
-          "Approved";
+      tourPlan.value?.status == "Approved";
 
   bool get isReturned =>
-      tourPlan.value?.status ==
-          "Returned";
+      tourPlan.value?.status == "Returned";
 
+
+  /// -------------------------------------------------------
+  /// Editability
+  /// -------------------------------------------------------
+
+  /// New plan, Draft and Returned are editable.
   bool get canEdit {
     if (tourPlan.value == null) {
       return true;
     }
 
-    return
-
-      isDraft ||
-
-          isReturned;
+    return isDraft || isReturned;
   }
 
 
+  /// -------------------------------------------------------
+  /// New / Existing Plan
+  /// -------------------------------------------------------
 
-  /// =======================================================
-  /// New Flow Helpers (Safe - Doesn't affect existing code)
-  /// =======================================================
-
-  /// Creating a brand new Tour Plan
   bool get isNewTourPlan =>
       tourPlan.value == null;
 
-  /// Existing Returned plan
+
+  /// -------------------------------------------------------
+  /// Existing plan status helpers
+  /// -------------------------------------------------------
+
   bool get isReturnedTourPlan =>
-      currentStatus.value == "Returned";
+      tourPlan.value != null &&
+          tourPlan.value!.status == "Returned";
 
-  /// Existing Submitted plan
   bool get isSubmittedTourPlan =>
-      currentStatus.value == "Submitted";
+      tourPlan.value != null &&
+          tourPlan.value!.status == "Submitted";
 
-  /// Existing Approved plan
   bool get isApprovedTourPlan =>
-      currentStatus.value == "Approved";
+      tourPlan.value != null &&
+          tourPlan.value!.status == "Approved";
 
-  /// Existing Draft from List
   bool get isDraftTourPlan =>
-      currentStatus.value == "Draft";
+      tourPlan.value != null &&
+          tourPlan.value!.status == "Draft";
 
-  /// Only New + Returned are editable
-  bool get canEditCurrentPlan =>
-      isNewTourPlan || isReturnedTourPlan;
 
-  /// Read only plans
+  /// -------------------------------------------------------
+  /// Current Plan Edit Mode
+  /// -------------------------------------------------------
+
+  /// New + Draft + Returned = EDIT
+  /// Submitted + Approved = READ ONLY
+  bool get canEditCurrentPlan {
+    if (tourPlan.value == null) {
+      return true;
+    }
+
+    return isDraftTourPlan ||
+        isReturnedTourPlan;
+  }
+
+
+  /// -------------------------------------------------------
+  /// View Mode
+  /// -------------------------------------------------------
+
   bool get isViewMode =>
-      isSubmittedTourPlan ||
-          isApprovedTourPlan ||
-          isDraftTourPlan;
+      !canEditCurrentPlan;
 
 
 
 
 
+
+  Future<void> loadPlanForSelectedMonth() async {
+    final month = selectedMonth.value.month;
+    final year = selectedMonth.value.year;
+
+    debugPrint("==========================================");
+    debugPrint("TourPlanController loadPlanForSelectedMonth");
+    debugPrint("Selected Month : $month");
+    debugPrint("Selected Year  : $year");
+    debugPrint("==========================================");
+
+    isLoading.value = true;
+
+    try {
+      // ----------------------------------------------------------
+      // Get all existing tour plans
+      // ----------------------------------------------------------
+
+      final plans = await service.getTourPlans();
+
+      // ----------------------------------------------------------
+      // Find plan for selected month/year
+      // ----------------------------------------------------------
+
+      TourPlanModel? matchingPlan;
+
+      for (final plan in plans) {
+        if (plan.month == month &&
+            plan.year == year) {
+          matchingPlan = plan;
+          break;
+        }
+      }
+
+      // ----------------------------------------------------------
+      // EXISTING PLAN FOUND
+      // ----------------------------------------------------------
+
+      if (matchingPlan != null) {
+        debugPrint(
+          "Existing plan found: "
+              "${matchingPlan.id} | "
+              "${matchingPlan.month}/${matchingPlan.year} | "
+              "${matchingPlan.status}",
+        );
+
+        // Load complete details.
+        await loadTourPlan(
+          matchingPlan.id,
+        );
+
+        return;
+      }
+
+      // ----------------------------------------------------------
+      // NO PLAN FOUND
+      // ----------------------------------------------------------
+
+      debugPrint(
+        "No Tour Plan found for "
+            "$month/$year",
+      );
+
+      // Clear previous month's plan.
+      tourPlan.value = null;
+
+      currentStatus.value = "Draft";
+
+      draftId.value = "";
+
+      isReadOnly.value = false;
+
+      selectedDay.value = null;
+
+      monthDays.clear();
+
+      // Create empty calendar.
+      generateCalendar();
+
+    } catch (e, stackTrace) {
+
+      debugPrint(
+        "TourPlanController loadPlanForSelectedMonth ERROR: $e",
+      );
+
+      debugPrint(
+        stackTrace.toString(),
+      );
+
+    } finally {
+
+      isLoading.value = false;
+    }
+  }
 
   ///--------------------------------------------------------------
   /// Change Planning Month
   ///--------------------------------------------------------------
-  Future<void> changePlanningMonth(BuildContext context) async {
+  /*Future<void> changePlanningMonth(BuildContext context) async {
     if (!isNewTourPlan) return;
 
     final picked = await showDatePicker(
@@ -256,8 +370,97 @@ class TourPlanController extends GetxController {
     selectedDay.value = null;
 
     generateCalendar();
+  }*/
+
+  bool validateAllDaysAssigned() {
+    final List<TourDay> unassignedDays = [];
+
+    for (final day in monthDays) {
+      // Holiday is allowed.
+      if (day.isHoliday) {
+        continue;
+      }
+
+      // Weekly Off is allowed.
+      if (day.isWeeklyOff) {
+        continue;
+      }
+
+      // Every other day must have a plan.
+      if (day.type == DayType.unassigned) {
+        unassignedDays.add(day);
+      }
+    }
+
+    // ----------------------------------------------------------
+    // All working days are complete.
+    // ----------------------------------------------------------
+
+    if (unassignedDays.isEmpty) {
+      return true;
+    }
+
+    // ----------------------------------------------------------
+    // Show detailed validation dialog.
+    // ----------------------------------------------------------
+
+    Get.dialog(
+      TourPlanValidationDialog(
+        unassignedDays: unassignedDays,
+      ),
+      barrierDismissible: false,
+    );
+
+    return false;
   }
 
+  Future<void> changePlanningMonth(
+      BuildContext context,
+      ) async {
+
+    // Submitted / Approved cannot be edited.
+    if (!canEditCurrentPlan) {
+      Get.snackbar(
+        "Read Only",
+        "This Tour Plan cannot be edited.",
+      );
+
+      return;
+    }
+
+    final picked = await showDialog<DateTime>(
+      context: context,
+      builder: (_) {
+        return MonthSelector(
+          selectedMonth: selectedMonth.value,
+        );
+      },
+    );
+
+    if (picked == null) {
+      return;
+    }
+
+    final newMonth = DateTime(
+      picked.year,
+      picked.month,
+    );
+
+    // Same month selected.
+    if (newMonth.year == selectedMonth.value.year &&
+        newMonth.month == selectedMonth.value.month) {
+      return;
+    }
+
+    // Change selected month first.
+    selectedMonth.value = newMonth;
+
+    selectedDay.value = null;
+
+    // IMPORTANT:
+    // Find whether this month already has a plan.
+    await loadPlanForSelectedMonth();
+  }
   /// -------------------------------------------------------
   /// Init
   /// -------------------------------------------------------
@@ -365,6 +568,14 @@ class TourPlanController extends GetxController {
         tourPlanId,
       );
 
+      if (response == null) {
+        debugPrint(
+          "TourPlanController API Response : NULL",
+        );
+
+        return;
+      }
+
       debugPrint("========== TourPlanController ==========");
       debugPrint("TourPlanController Response Month : ${response?.month}");
       debugPrint("TourPlanController Response Year  : ${response?.year}");
@@ -423,6 +634,8 @@ class TourPlanController extends GetxController {
       debugPrint("========================================");
 
       populateExistingDays();
+
+
 
       debugPrint("========== TourPlanController ==========");
       debugPrint("TourPlanController Month Days After Populate : ${monthDays.length}");
@@ -637,22 +850,78 @@ class TourPlanController extends GetxController {
       }
 
       monthDays[index] = monthDays[index].copyWith(
-        type: mapApiDayType(apiDay.dayType),
+        // ----------------------------------------------------------
+        // DAY
+        // ----------------------------------------------------------
 
-        apiDayType: apiDay.dayType,
+        type: mapApiDayType(
+          apiDay.dayType,
+        ),
 
-        beatId: apiDay.beatId1,
+        apiDayType:
+        apiDay.dayType,
 
-        beatName: apiDay.dayType == "Field"
-            ? (apiDay.beat1?["name"] as String?)
-            : null,
+        // ----------------------------------------------------------
+        // BACKEND IDS
+        // ----------------------------------------------------------
 
-        jointWorkUserId: apiDay.jointWorkWithUserId,
+        id:
+        apiDay.id,
 
-        jointWorkUserName: apiDay.jointWorkWith?["name"],
+        tourPlanId:
+        apiDay.tourPlanId,
 
-        notes: apiDay.notes,
+        // ----------------------------------------------------------
+        // COLLABORATION
+        // ----------------------------------------------------------
 
+        collaborationStatus:
+        apiDay.collaborationStatus,
+
+        // ----------------------------------------------------------
+        // BEAT 1
+        // ----------------------------------------------------------
+
+        beatId:
+        apiDay.beatId1,
+
+        beatName:
+        _getBeatName(
+          apiDay.beat1,
+        ),
+
+        // ----------------------------------------------------------
+        // BEAT 2
+        // ----------------------------------------------------------
+
+        beatId2:
+        apiDay.beatId2,
+
+        beatName2:
+        _getBeatName(
+          apiDay.beat2,
+        ),
+
+        // ----------------------------------------------------------
+        // JOINT WORK
+        // ----------------------------------------------------------
+
+        jointWorkUserIds:
+        List<String>.from(
+          apiDay.jointWorkUserIds,
+        ),
+
+        jointWorkUserNames:
+        _getJointWorkUserNames(
+          apiDay.jointWorkWith,
+        ),
+
+        // ----------------------------------------------------------
+        // NOTES
+        // ----------------------------------------------------------
+
+        notes:
+        apiDay.notes,
       );
 
       debugPrint(
@@ -677,6 +946,66 @@ class TourPlanController extends GetxController {
     debugPrint("===================================");
 
     monthDays.refresh();
+  }
+
+  String? _getBeatName(
+      Map<String, dynamic>? beat,
+      ) {
+    if (beat == null) {
+      return null;
+    }
+
+    final name =
+        beat["name"] ??
+            beat["beat_name"] ??
+            beat["beatName"];
+
+    if (name == null) {
+      return null;
+    }
+
+    final value = name.toString().trim();
+
+    if (value.isEmpty) {
+      return null;
+    }
+
+    return value;
+  }
+
+  List<String> _getJointWorkUserNames(
+      Map<String, dynamic>? jointWorkWith,
+      ) {
+    if (jointWorkWith == null) {
+      return [];
+    }
+
+    final users =
+    jointWorkWith["users"];
+
+    if (users is List) {
+      return users
+          .map(
+            (e) {
+          if (e is Map<String, dynamic>) {
+            final name =
+                e["name"] ??
+                    e["user_name"] ??
+                    e["userName"];
+
+            return name?.toString() ?? "";
+          }
+
+          return e.toString();
+        },
+      )
+          .where(
+            (name) => name.trim().isNotEmpty,
+      )
+          .toList();
+    }
+
+    return [];
   }
 
   void selectDay(TourDay day,) {
@@ -982,9 +1311,9 @@ class TourPlanController extends GetxController {
 
             day.beatId2,
 
-            "joint_work_with_user_id":
+            "joint_work_user_ids":
 
-            day.jointWorkUserId,
+            day.jointWorkUserIds,
 
             "notes":
 
@@ -1042,14 +1371,32 @@ class TourPlanController extends GetxController {
   ///------------------------------------------------------------
 
   Future<void> saveDraft() async {
+
     if (!validateTourPlan()) {
       return;
     }
 
-    isSavingDraft.value = true;
+    if (!validateAllDaysAssigned()) {
+      return;
+    }
 
+    isSavingDraft.value = true;
     try {
       final body = buildDraftBody();
+
+
+
+      debugPrint('[TourPlanService] DAYS COUNT: ${(body['days'] as List).length}');
+      debugPrint('[TourPlanService] FIRST DAY: ${(body['days'] as List).first}');
+      debugPrint('[TourPlanService] LAST DAY: ${(body['days'] as List).last}');
+
+      debugPrint('[TourPlanService] BODY TYPE: ${body.runtimeType}');
+      debugPrint('[TourPlanService] BODY: $body');
+
+      final encodedBody = jsonEncode(body);
+
+      debugPrint('[TourPlanService] ENCODED LENGTH: ${encodedBody.length}');
+      debugPrint('[TourPlanService] ENCODED BODY: $encodedBody');
 
       final id = await service.saveDraft(body);
 
@@ -1106,17 +1453,39 @@ class TourPlanController extends GetxController {
   /// =======================================================
   Future<bool> saveCurrentPlanDraft() async {
 
+    // ----------------------------------------------------------
+    // READ ONLY CHECK
+    // ----------------------------------------------------------
+
     if (!canEditCurrentPlan) {
       Get.snackbar(
         "Read Only",
         "This Tour Plan cannot be edited.",
       );
+
       return false;
     }
+
+    // ----------------------------------------------------------
+    // VALIDATE DAY DETAILS
+    // ----------------------------------------------------------
 
     if (!validateTourPlan()) {
       return false;
     }
+
+    // ----------------------------------------------------------
+    // VALIDATE ALL WORKING DAYS ARE ASSIGNED
+    // Holiday + Weekly Off are allowed to remain unassigned
+    // ----------------------------------------------------------
+
+    if (!validateAllDaysAssigned()) {
+      return false;
+    }
+
+    // ----------------------------------------------------------
+    // SAVE DRAFT
+    // ----------------------------------------------------------
 
     isSavingDraft.value = true;
 
@@ -1136,7 +1505,15 @@ class TourPlanController extends GetxController {
         return false;
       }
 
+      // --------------------------------------------------------
+      // SAVE DRAFT ID
+      // --------------------------------------------------------
+
       draftId.value = id;
+
+      // --------------------------------------------------------
+      // REFRESH FROM SERVER
+      // --------------------------------------------------------
 
       await refreshTourPlan();
 
@@ -1189,9 +1566,7 @@ class TourPlanController extends GetxController {
 
   Future<bool> submitPlan() async {
 
-    if (!validateTourPlan()) {
-      return false;
-    }
+
 
     if (draftId.value.isEmpty) {
       Get.snackbar(

@@ -209,6 +209,57 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
 
           const SizedBox(height: 10),
 
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+
+                Icon(
+                  _visitListController.offlineMode
+                      ? Icons.cloud_off
+                      : Icons.cloud_done,
+                  color: _visitListController.offlineMode
+                      ? Colors.orange
+                      : Colors.green,
+                ),
+
+                const SizedBox(width: 8),
+
+                Expanded(
+                  child: Text(
+                    _visitListController.offlineMode
+                        ? "Offline Mode"
+                        : "Online Mode",
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+
+                Switch(
+                  value: _visitListController.offlineMode,
+                  onChanged: (value) async {
+
+                    _visitListController.setOfflineMode(value);
+
+                    await _visitListController.fetchSalesList(
+                      filter: _selectedFilter,
+                      startDate: _selectedDateRange?.start,
+                      endDate: _selectedDateRange?.end,
+                    );
+
+                    if (mounted) {
+                      setState(() {});
+                    }
+                  },
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 10),
+
+
           // 3. Main Content List (Includes Status Summary)
           Expanded(
             child: ListenableBuilder(
@@ -1509,7 +1560,8 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
       QuickAlert.show(
         context: context,
         type: QuickAlertType.error,
-        text: "Error: $e",
+        title: "Unable to Update",
+        text: "Could not update from server. Offline mode switched.",
       );
     } finally {
       debugPrint(

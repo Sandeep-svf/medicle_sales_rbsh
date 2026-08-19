@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:developer' as developer;
+import 'dart:io';
 
 import 'package:http/http.dart' as http;
 import 'package:medicle_sales_rbsh/utils/http/http_client.dart';
@@ -50,7 +51,8 @@ class UploadQueueDrainer {
         return;
       }
 
-      final deviceId = await getDeviceId();
+     // final deviceId = await getDeviceId();
+       final deviceId = await getAndroidId();
       final url = "${THttpHelper.baseUrl}/offline-bg-tracking";
 
       developer.log(
@@ -154,6 +156,7 @@ class UploadQueueDrainer {
         }
       }
     } catch (e, stackTrace) {
+
       developer.log(
         'Exception while uploading.',
         name: 'UploadQueueDrainer',
@@ -161,14 +164,32 @@ class UploadQueueDrainer {
         stackTrace: stackTrace,
       );
 
+      if (e is SocketException) {
 
-     // final rows = await _dao.fetchPending(_batchSize);
-
-      for (final row in rows) {
-        await _dao.markFailedSafe(
-          row['id'] as int,
-          row['retry_count'] as int,
+        developer.log(
+          'No internet. Keeping rows pending.',
+          name: 'UploadQueueDrainer',
         );
+
+        for (final row in rows) {
+
+          await _dao.markPending(
+            row['id'] as int,
+          );
+
+        }
+
+      } else {
+
+        for (final row in rows) {
+
+          await _dao.markFailedSafe(
+            row['id'] as int,
+            row['retry_count'] as int,
+          );
+
+        }
+
       }
     } finally {
       developer.log(

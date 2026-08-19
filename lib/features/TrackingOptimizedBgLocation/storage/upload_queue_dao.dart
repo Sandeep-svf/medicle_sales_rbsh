@@ -126,7 +126,8 @@ class UploadQueueDao {
     return db.query(
       _table,
       where: 'status = ? AND retry_count < ?',
-      whereArgs: ['PENDING', 5],
+      whereArgs: ['PENDING', 5], // Remove retry limit here.
+    //  whereArgs: ['PENDING'],
       orderBy: 'created_at_utc ASC',
       limit: limit,
     );
@@ -192,5 +193,22 @@ class UploadQueueDao {
       where: 'status = ? AND created_at_utc < ?',
       whereArgs: ['SENT', cutoff],
     );
+  }
+
+  Future markPending(int id) async {
+
+    final db = await AppDatabase().database;
+
+    await db.update(
+      _table,
+      {
+        'status': 'PENDING',
+        'last_attempt_utc':
+        DateTime.now().toUtc().toIso8601String(),
+      },
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+
   }
 }

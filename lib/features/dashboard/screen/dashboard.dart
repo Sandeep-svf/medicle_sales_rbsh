@@ -25,6 +25,7 @@ import '../../Blog/screen/blog.dart';
 import '../../Inbox/Screen/InboxScreen.dart';
 import '../../MarketingMaterials/Screens/MarketingMaterials.dart';
 import '../../SalesChartAnalysis/Screen/salesChartHome2.dart';
+import '../../SalesChartAnalysis/controller/DashboardController.dart';
 import '../../addDoctor/screens/addDoctor.dart';
 import '../../marketing/screen/MarketingScreen.dart';
 import '../../marketing/screen/marketing.dart';
@@ -52,6 +53,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Map<String, String>? deviceInfo;
 
   late final AttendanceController attendanceController;
+  late final DashboardController dashboardController;
 
   @override
   void initState() {
@@ -59,6 +61,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
 
     _syncService.startListening();
+
+    dashboardController = Get.put(DashboardController());
 
     attendanceController = Get.put(AttendanceController());
 

@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:get/get.dart';
+import 'package:medicle_sales_rbsh/features/authentication/screens/login/login.dart';
 import 'package:medicle_sales_rbsh/utils/http/http_client.dart';
 import 'package:medicle_sales_rbsh/utils/local_storage/auth_manager.dart';
 import '../../Tour & Plans/TeritoryModule/model/beat_model.dart';
@@ -211,8 +212,6 @@ class DashboardController extends GetxController {
     }
   }
 
-
-
   // Fetch data from the server
   Future<void> fetchDashboardData(String barrierToken) async {
     try {
@@ -245,6 +244,13 @@ class DashboardController extends GetxController {
         print("===============================");
 
         isLoading.value = false;
+      } else if (response.statusCode == 401) {
+        final Map<String, dynamic> errorData = json.decode(response.body);
+
+        await _handleUnauthorized(
+          errorData['msg'] ?? 'Your session has expired. Please Login again.',
+        );
+
       } else {
         // Handle failure, maybe throw an exception
         print('$_debugPrefix Failed to load dashboard data, Status Code: ${response.statusCode}');
@@ -255,5 +261,19 @@ class DashboardController extends GetxController {
       print('$_debugPrefix Error fetching dashboard data: $e');
       isLoading.value = false;
     }
+  }
+
+  Future<void> _handleUnauthorized(String message) async {
+    final authManager = AuthManager();
+
+    await authManager.logout();
+
+    Get.offAll(() => const LoginScreen());
+
+    Get.snackbar(
+      "Session Expired",
+      "Your session has expired. Please Login again.",
+      backgroundColor: Colors.red.shade100,
+    );
   }
 }

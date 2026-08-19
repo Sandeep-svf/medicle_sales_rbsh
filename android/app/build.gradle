@@ -19,17 +19,17 @@ android {
 
 
 
-    /*compileOptions {
+    compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
-        //coreLibraryDesugaringEnabled true
+        coreLibraryDesugaringEnabled true
     }
 
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_17
-    }*/
+    }
 
-    compileOptions {
+   /* compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
         coreLibraryDesugaringEnabled true // Enable desugaring for Java 8 features
@@ -37,7 +37,7 @@ android {
 
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_1_8
-    }
+    }*/
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
