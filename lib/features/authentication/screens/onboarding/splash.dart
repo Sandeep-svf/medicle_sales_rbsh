@@ -1,11 +1,23 @@
-/*import 'package:flutter/material.dart';
-import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
-import 'package:medicle_sales_rbsh/utils/local_storage/auth_manager.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:async';
+import 'dart:io';
+
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:geolocator/geolocator.dart' as geo;
 import 'package:in_app_update/in_app_update.dart';
-import 'package:medicle_sales_rbsh/features/authentication/screens/login/login.dart';
+import 'package:permission_handler/permission_handler.dart';
+
 import '../../../../utils/constants/image_strings.dart';
+import '../../../../utils/constants/text_strings.dart';
+import '../../../../utils/local_storage/auth_manager.dart';
+
+import '../../../TrackingOptimizedBgLocation/service/tracking_service_manager.dart';
+import '../../../TrackingOptimizedBgLocation/storage/app_state_dao.dart';
+import '../../../TrackingOptimizedBgLocation/utils/samsung_battery_settings.dart';
 import '../../../dashboard/screen/dashboard.dart';
+
+import '../login/login.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -15,344 +27,1621 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  StreamSubscription<RemoteMessage>? _foregroundMessageSubscription;
+
+  bool _startupRunning = false;
+
+  // =========================================================
+  // INIT
+  // =========================================================
+
   @override
   void initState() {
     super.initState();
-    print("[SplashScreen] App started. Checking for updates...");
-    _checkForUpdate(); // Start checking for updates first
+
+    // Listen to foreground Firebase notifications.
+    _foregroundMessageSubscription =
+        FirebaseMessaging.onMessage.listen(
+              (RemoteMessage message) {
+            final notification = message.notification;
+
+            if (notification != null) {
+              _showPushNotification(
+                title: notification.title ?? 'New Message',
+                body: notification.body ?? '',
+              );
+            }
+          },
+        );
+
+    // IMPORTANT:
+    // Permission dialogs should only start after first frame.
+    WidgetsBinding.instance.addPostFrameCallback(
+          (_) {
+        _startFlow();
+      },
+    );
   }
 
-  /// Check if app update is available
-  Future<void> _checkForUpdate() async {
+  // =========================================================
+  // MAIN STARTUP FLOW
+  // =========================================================
+
+  Future<void> _startFlow() async {
+    if (_startupRunning) {
+      return;
+    }
+
+    _startupRunning = true;
+
     try {
-      AppUpdateInfo info = await InAppUpdate.checkForUpdate();
-      print("[UpdateCheck] Update availability: ${info.updateAvailability}");
-      if (info.updateAvailability == UpdateAvailability.updateAvailable) {
-        print("[UpdateCheck] Update available. Showing update dialog...");
-        _showUpdateDialog();
-      } else {
-        print("[UpdateCheck] No update available. Proceeding to login check...");
-        _checkLoginStatus();
+      debugPrint(
+        '[SPLASH] ========================================',
+      );
+      debugPrint(
+        '[SPLASH] Starting application startup flow',
+      );
+      debugPrint(
+        '[SPLASH] ========================================',
+      );
+
+      // -----------------------------------------------------
+      // STEP 1: TRACKING PERMISSIONS
+      // -----------------------------------------------------
+
+      final trackingReady = await _prepareTracking();
+
+      if (!trackingReady) {
+        debugPrint(
+          '[SPLASH] Tracking prerequisites not ready.',
+        );
+
+        _startupRunning = false;
+        return;
       }
-    } catch (e) {
-      print("[UpdateCheck] Error occurred while checking for updates: $e");
-      _checkLoginStatus(); // If error occurs, continue normal flow
+
+      // -----------------------------------------------------
+      // STEP 2: NORMAL ANDROID BATTERY OPTIMIZATION
+      // -----------------------------------------------------
+
+      await _handleBatteryOptimization();
+
+      // -----------------------------------------------------
+      // STEP 3: SAMSUNG BACKGROUND USAGE LIMITS
+      //
+      // Samsung only.
+      // Runs once per installation/update state key.
+      //
+      // Checks:
+      //
+      // 1. Sleeping apps
+      // 2. Deep sleeping apps
+      // 3. Never auto sleeping apps
+      // -----------------------------------------------------
+
+    //  await _handleSamsungBackgroundUsageSetup();
+
+      // -----------------------------------------------------
+      // STEP 4: START / VERIFY TRACKING SERVICE
+      // -----------------------------------------------------
+
+      final serviceReady =
+      await _ensureTrackingServiceRunning();
+
+      if (!serviceReady) {
+        debugPrint(
+          '[SPLASH] Tracking service could not start.',
+        );
+
+        _startupRunning = false;
+        return;
+      }
+
+      debugPrint(
+        '[SPLASH] Tracking service is running.',
+      );
+
+      // -----------------------------------------------------
+      // STEP 5: PLAY STORE UPDATE CHECK
+      // -----------------------------------------------------
+
+      await _checkForUpdateAndNavigate();
+    } catch (e, s) {
+      debugPrint(
+        '[SPLASH] Startup error: $e',
+      );
+
+      debugPrint(
+        '[SPLASH] StackTrace: $s',
+      );
+
+      _startupRunning = false;
+
+      if (mounted) {
+        await _showStartupErrorDialog();
+      }
     }
   }
 
-  /// Show Update Dialog
-  void _showUpdateDialog() {
-    showDialog(
+
+
+  // =========================================================
+// SAMSUNG BACKGROUND USAGE LIMITS
+//
+// Samsung only.
+//
+// We cannot silently modify Samsung's Sleeping / Deep
+// Sleeping / Never Sleeping lists.
+//
+// Therefore we guide the user/admin through all 3 screens
+// one time and save completion in app_state.
+// =========================================================
+
+  Future<void> _handleSamsungBackgroundUsageSetup() async {
+    if (!Platform.isAndroid) {
+      return;
+    }
+
+    try {
+      // -----------------------------------------------------
+      // CHECK SAMSUNG
+      // -----------------------------------------------------
+
+      final isSamsung =
+      await SamsungBatterySettings.isSamsungDevice();
+
+      debugPrint(
+        '[SAMSUNG_BATTERY] Samsung device: $isSamsung',
+      );
+
+      if (!isSamsung) {
+        debugPrint(
+          '[SAMSUNG_BATTERY] Not Samsung. Skipping.',
+        );
+
+        return;
+      }
+
+      // -----------------------------------------------------
+      // CHECK ONE-TIME SETUP FLAG
+      // -----------------------------------------------------
+
+      final appStateDao = AppStateDao();
+
+      final setupDone =
+      await appStateDao.get(
+        'samsung_background_setup_done',
+      );
+
+      debugPrint(
+        '[SAMSUNG_BATTERY] '
+            'Saved setup status: $setupDone',
+      );
+
+      if (setupDone == 'true') {
+        debugPrint(
+          '[SAMSUNG_BATTERY] '
+              'Samsung background setup already completed.',
+        );
+
+        return;
+      }
+
+      if (!mounted) {
+        return;
+      }
+
+      // -----------------------------------------------------
+      // INTRODUCTION
+      // -----------------------------------------------------
+
+      await _showSamsungBackgroundIntro();
+
+      if (!mounted) {
+        return;
+      }
+
+      // -----------------------------------------------------
+      // STEP 1: SLEEPING APPS
+      // -----------------------------------------------------
+
+      await _showSamsungSleepingInstruction();
+
+      if (!mounted) {
+        return;
+      }
+
+      debugPrint(
+        '[SAMSUNG_BATTERY] Opening Sleeping apps...',
+      );
+
+      await SamsungBatterySettings.openSleepingApps();
+
+      await _waitForSettingsRoundTrip();
+
+      if (!mounted) {
+        return;
+      }
+
+      // -----------------------------------------------------
+      // STEP 2: DEEP SLEEPING APPS
+      // -----------------------------------------------------
+
+      await _showSamsungDeepSleepingInstruction();
+
+      if (!mounted) {
+        return;
+      }
+
+      debugPrint(
+        '[SAMSUNG_BATTERY] '
+            'Opening Deep sleeping apps...',
+      );
+
+      await SamsungBatterySettings.openDeepSleepingApps();
+
+      await _waitForSettingsRoundTrip();
+
+      if (!mounted) {
+        return;
+      }
+
+      // -----------------------------------------------------
+      // STEP 3: NEVER AUTO SLEEPING APPS
+      // -----------------------------------------------------
+
+      await _showSamsungNeverSleepingInstruction();
+
+      if (!mounted) {
+        return;
+      }
+
+      debugPrint(
+        '[SAMSUNG_BATTERY] '
+            'Opening Never sleeping apps...',
+      );
+
+      await SamsungBatterySettings.openNeverSleepingApps();
+
+      await _waitForSettingsRoundTrip();
+
+      if (!mounted) {
+        return;
+      }
+
+      // -----------------------------------------------------
+      // FINAL USER CONFIRMATION
+      // -----------------------------------------------------
+
+      final confirmed =
+      await _showSamsungSetupConfirmation();
+
+      if (!confirmed) {
+        debugPrint(
+          '[SAMSUNG_BATTERY] '
+              'Setup not confirmed. Rechecking.',
+        );
+
+        // Do not save completion.
+        //
+        // Restart Samsung setup immediately.
+        await _handleSamsungBackgroundUsageSetup();
+
+        return;
+      }
+
+      // -----------------------------------------------------
+      // SAVE COMPLETION
+      // -----------------------------------------------------
+
+      await appStateDao.set(
+        'samsung_background_setup_done',
+        'true',
+      );
+
+      debugPrint(
+        '[SAMSUNG_BATTERY] '
+            'Samsung background setup completed.',
+      );
+    } catch (e, s) {
+      debugPrint(
+        '[SAMSUNG_BATTERY] Setup error: $e',
+      );
+
+      debugPrint(
+        '[SAMSUNG_BATTERY] StackTrace: $s',
+      );
+
+      // IMPORTANT:
+      //
+      // Do not crash Splash because Samsung changed an OEM
+      // screen on a particular One UI version.
+      //
+      // Normal Android battery optimization +
+      // foreground tracking service still remain configured.
+    }
+  }
+
+
+
+  Future<void> _waitForSettingsRoundTrip() async {
+    if (!mounted) {
+      return;
+    }
+
+    // Give Android a moment to launch Device Care.
+    await Future.delayed(
+      const Duration(milliseconds: 400),
+    );
+
+    bool appLeftForeground = false;
+
+    // -------------------------------------------------------
+    // First wait briefly for Flutter to leave resumed state.
+    //
+    // If Samsung's settings Intent fails to open entirely,
+    // this prevents us from waiting forever.
+    // -------------------------------------------------------
+
+    for (int i = 0; i < 20; i++) {
+      if (!mounted) {
+        return;
+      }
+
+      final state =
+          WidgetsBinding.instance.lifecycleState;
+
+      if (state != AppLifecycleState.resumed) {
+        appLeftForeground = true;
+
+        debugPrint(
+          '[SAMSUNG_BATTERY] '
+              'App moved to background/settings.',
+        );
+
+        break;
+      }
+
+      await Future.delayed(
+        const Duration(milliseconds: 100),
+      );
+    }
+
+    // Samsung screen did not actually move app to background.
+    if (!appLeftForeground) {
+      debugPrint(
+        '[SAMSUNG_BATTERY] '
+            'Settings lifecycle transition not detected.',
+      );
+
+      return;
+    }
+
+    // -------------------------------------------------------
+    // Wait until user comes back to Gluckscare.
+    // -------------------------------------------------------
+
+    while (mounted) {
+      final state =
+          WidgetsBinding.instance.lifecycleState;
+
+      if (state == AppLifecycleState.resumed) {
+        debugPrint(
+          '[SAMSUNG_BATTERY] '
+              'Returned from Samsung settings.',
+        );
+
+        // Let Android/Flutter settle.
+        await Future.delayed(
+          const Duration(milliseconds: 400),
+        );
+
+        return;
+      }
+
+      await Future.delayed(
+        const Duration(milliseconds: 200),
+      );
+    }
+  }
+
+
+  Future<void> _showSamsungBackgroundIntro() async {
+    if (!mounted) {
+      return;
+    }
+
+    await showDialog<void>(
       context: context,
       barrierDismissible: false,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text(TTexts.updateAvailable),
-          content: const Text(TTexts.updateAvailableContent),
-          actions: [
-            TextButton(
-              onPressed: () {
-                print("[UpdateDialog] User skipped the update.");
-                Navigator.pop(context);
-                _checkLoginStatus();
-              },
-              child: const Text(TTexts.skip),
+      builder: (_) {
+        return PopScope(
+          canPop: false,
+          child: AlertDialog(
+            title: const Text(
+              'Samsung Background Tracking',
             ),
-            TextButton(
-              onPressed: () async {
-                print("[UpdateDialog] User opted to update now.");
-                Navigator.pop(context);
-                await _startImmediateUpdate();
-              },
-              child: const Text(TTexts.updateNow),
+            content: const Text(
+              'Samsung can automatically restrict apps '
+                  'that run for long periods in the background.\n\n'
+                  'Gluckscare requires continuous background '
+                  'location tracking for sales activity.\n\n'
+                  'We will check three Samsung background '
+                  'usage settings.',
             ),
-          ],
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text(
+                  'Continue',
+                ),
+              ),
+            ],
+          ),
         );
       },
     );
   }
 
-  /// Perform Immediate Update
-  Future<void> _startImmediateUpdate() async {
-    try {
-      print("[UpdateStart] Starting immediate update...");
- AuthManager authManager = AuthManager();
-      await authManager.logout();
-
-      await InAppUpdate.performImmediateUpdate();
-    } catch (e) {
-      print("[UpdateStart] Immediate update failed: $e");
-      _checkLoginStatus(); // Continue app flow even if update fails
+  Future<void> _showSamsungSleepingInstruction() async {
+    if (!mounted) {
+      return;
     }
-  }
 
-  /// Check Login Session
-  Future<void> _checkLoginStatus() async {
-    print("[LoginCheck] Checking saved login session...");
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final String? userId = prefs.getString("user_id");
-
-    await Future.delayed(const Duration(seconds: 3)); // Splash delay
-
-    if (userId != null && userId.isNotEmpty) {
-      print("[LoginCheck] User ID found: $userId. Navigating to Dashboard.");
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => DashboardScreen()),
-      );
-    } else {
-      print("[LoginCheck] No user session found. Navigating to Login Screen.");
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => LoginScreen()),
-      );
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Image.asset(
-            TImages.lightAppLogo,
-            height: 150,
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) {
+        return PopScope(
+          canPop: false,
+          child: AlertDialog(
+            title: const Text(
+              'Step 1 of 3',
+            ),
+            content: const Text(
+              'Sleeping apps will open.\n\n'
+                  'If Gluckscare is listed there, '
+                  'REMOVE it from Sleeping apps.\n\n'
+                  'Then return to Gluckscare.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text(
+                  'Open Sleeping Apps',
+                ),
+              ),
+            ],
           ),
-        ),
-      ),
+        );
+      },
     );
   }
-}*/
 
-/*import 'dart:async';
-import 'dart:developer' as dev;
-import 'dart:io';
-import 'dart:isolate';
-import 'dart:ui';
-
-import 'package:flutter/material.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:background_locator_2/background_locator.dart';
-import 'package:background_locator_2/location_dto.dart';
-import 'package:background_locator_2/settings/locator_settings.dart';
-import 'package:background_locator_2/settings/android_settings.dart';
-import 'package:background_locator_2/settings/ios_settings.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:in_app_update/in_app_update.dart';
-
-import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
-import 'package:medicle_sales_rbsh/utils/constants/image_strings.dart';
-import 'package:medicle_sales_rbsh/features/authentication/screens/login/login.dart';
-import 'package:medicle_sales_rbsh/features/dashboard/screen/dashboard.dart';
-import 'package:medicle_sales_rbsh/services/LocationController.dart';
-
-const _bgPortName = 'bg_location_port';
-final ValueNotifier<LocationDto?> lastLocation = ValueNotifier<LocationDto?>(null);
-Timer? _tick;
-LocationDto? _lastFix;
-
-// 🔹 Common debug prefix
-const String debugPrefix = 'AppDebug';
-
-@pragma('vm:entry-point')
-void initCallback(dynamic _) {
-  _tick?.cancel();
-  _tick = Timer.periodic(const Duration(seconds: 1), (_) {
-    final l = _lastFix;
-    if (l != null) {
-      print('BG Tick: lat=${l.latitude}, lng=${l.longitude}, acc=${l.accuracy}', name: debugPrefix);
-      final locationController = LocationController(l.latitude, l.longitude);
-      locationController.sendLocationData();
+  Future<void>
+  _showSamsungDeepSleepingInstruction() async {
+    if (!mounted) {
+      return;
     }
-  });
-}
 
-@pragma('vm:entry-point')
-void locationCallback(LocationDto data) {
-  _lastFix = data;
-  print('BG Location Callback: lat=${data.latitude}, lng=${data.longitude}, acc=${data.accuracy}', name: debugPrefix);
-  IsolateNameServer.lookupPortByName(_bgPortName)?.send(data);
-}
-
-@pragma('vm:entry-point')
-void disposeCallback() {
-  _tick?.cancel();
-  print('BG disposed', name: debugPrefix);
-}
-
-@pragma('vm:entry-point')
-void notificationCallback() {
-  print('Notification tapped', name: debugPrefix);
-}
-
-void _registerBgPort(void Function(LocationDto) onLocation) {
-  final port = ReceivePort();
-  IsolateNameServer.removePortNameMapping(_bgPortName);
-  IsolateNameServer.registerPortWithName(port.sendPort, _bgPortName);
-
-  port.listen((msg) {
-    if (msg is LocationDto) {
-      lastLocation.value = msg;
-      print('BG port received: lat=${msg.latitude}, lng=${msg.longitude}', name: debugPrefix);
-      onLocation(msg);
-    }
-  });
-}
-
-class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
-
-  @override
-  State<SplashScreen> createState() => _SplashScreenState();
-}
-
-class _SplashScreenState extends State<SplashScreen> {
-  @override
-  void initState() {
-    super.initState();
-    _startSplashFlow();
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) {
+        return PopScope(
+          canPop: false,
+          child: AlertDialog(
+            title: const Text(
+              'Step 2 of 3',
+            ),
+            content: const Text(
+              'Deep sleeping apps will open.\n\n'
+                  'Gluckscare MUST NOT be listed here.\n\n'
+                  'If Gluckscare is present, REMOVE it '
+                  'from Deep sleeping apps.\n\n'
+                  'Then return to Gluckscare.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text(
+                  'Open Deep Sleeping Apps',
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
-  Future<void> _startSplashFlow() async {
-    print('SplashScreen started', name: debugPrefix);
-    await _checkForUpdate();
+  Future<void>
+  _showSamsungNeverSleepingInstruction() async {
+    if (!mounted) {
+      return;
+    }
+
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) {
+        return PopScope(
+          canPop: false,
+          child: AlertDialog(
+            title: const Text(
+              'Step 3 of 3',
+            ),
+            content: const Text(
+              'Never auto sleeping apps will open.\n\n'
+                  'Tap + and ADD Gluckscare to this list.\n\n'
+                  'This helps prevent Samsung from '
+                  'automatically putting Gluckscare into '
+                  'Sleeping or Deep sleeping mode.\n\n'
+                  'After adding it, return to Gluckscare.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text(
+                  'Open Never Sleeping Apps',
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
-  Future<void> _checkForUpdate() async {
+
+  Future<bool> _showSamsungSetupConfirmation() async {
+    if (!mounted) {
+      return false;
+    }
+
+    final result = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) {
+        return PopScope(
+          canPop: false,
+          child: AlertDialog(
+            title: const Text(
+              'Confirm Background Setup',
+            ),
+            content: const Text(
+              'Please confirm all three settings:\n\n'
+                  '✓ Gluckscare is NOT in Sleeping apps.\n\n'
+                  '✓ Gluckscare is NOT in Deep sleeping apps.\n\n'
+                  '✓ Gluckscare IS in Never auto sleeping apps.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(
+                    false,
+                  );
+                },
+                child: const Text(
+                  'Check Again',
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(
+                    true,
+                  );
+                },
+                child: const Text(
+                  'Configured',
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+
+    return result ?? false;
+  }
+
+  // =========================================================
+  // TRACKING PERMISSION FLOW
+  // =========================================================
+
+  Future<bool> _prepareTracking() async {
+    // Your field deployment is Android.
+    if (!Platform.isAndroid) {
+      return true;
+    }
+
+    debugPrint(
+      '[SPLASH] Checking tracking permissions...',
+    );
+
+    final existingForeground =
+    await Permission.location.status;
+
+    final existingBackground =
+    await Permission.locationAlways.status;
+
+    debugPrint(
+      '[SPLASH] Existing foreground location: '
+          '$existingForeground',
+    );
+
+    debugPrint(
+      '[SPLASH] Existing background location: '
+          '$existingBackground',
+    );
+
+    // -------------------------------------------------------
+    // DISCLOSURE
+    //
+    // Existing production users that already granted both
+    // permissions are NOT shown this again.
+    // -------------------------------------------------------
+
+    if (!existingForeground.isGranted ||
+        !existingBackground.isGranted) {
+      await _showDisclosureDialog();
+    }
+
+    // -------------------------------------------------------
+    // FOREGROUND LOCATION
+    // -------------------------------------------------------
+
+    final foregroundGranted =
+    await _ensureForegroundLocation();
+
+    if (!foregroundGranted) {
+      return false;
+    }
+
+    // -------------------------------------------------------
+    // BACKGROUND LOCATION
+    //
+    // IMPORTANT:
+    // Always ask AFTER foreground location.
+    // -------------------------------------------------------
+
+    final backgroundGranted =
+    await _ensureBackgroundLocation();
+
+    if (!backgroundGranted) {
+      return false;
+    }
+
+    // -------------------------------------------------------
+    // NOTIFICATION
+    // -------------------------------------------------------
+
+    final notificationGranted =
+    await _ensureNotificationPermission();
+
+    if (!notificationGranted) {
+      return false;
+    }
+
+    // -------------------------------------------------------
+    // GPS / LOCATION SERVICE
+    // -------------------------------------------------------
+
+    final locationServiceEnabled =
+    await _ensureLocationServiceEnabled();
+
+    if (!locationServiceEnabled) {
+      return false;
+    }
+
+    debugPrint(
+      '[SPLASH] All mandatory tracking prerequisites ready.',
+    );
+
+    return true;
+  }
+
+  // =========================================================
+  // DISCLOSURE
+  //
+  // NO CANCEL / SKIP / NOT NOW
+  // =========================================================
+
+  Future<void> _showDisclosureDialog() async {
+    if (!mounted) {
+      return;
+    }
+
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) {
+        return PopScope(
+          canPop: false,
+          child: AlertDialog(
+            title: const Text(
+              'Location Access Required',
+            ),
+            content: const Text(
+              'Gluckscare collects location data to support '
+                  'sales activity tracking, including when the app '
+                  'is minimized, the screen is off, or the app is '
+                  'not actively being used.\n\n'
+                  'Location access is required for this application.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text(
+                  'Continue',
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // =========================================================
+  // FOREGROUND LOCATION
+  // =========================================================
+
+  Future<bool> _ensureForegroundLocation() async {
+    while (mounted) {
+      var status =
+      await Permission.location.status;
+
+      debugPrint(
+        '[SPLASH] Foreground location status: $status',
+      );
+
+      if (status.isGranted) {
+        return true;
+      }
+
+      // If it is not permanently denied, request normally.
+      if (!status.isPermanentlyDenied) {
+        status =
+        await Permission.location.request();
+
+        debugPrint(
+          '[SPLASH] Foreground location request result: '
+              '$status',
+        );
+
+        if (status.isGranted) {
+          return true;
+        }
+      }
+
+      if (!mounted) {
+        return false;
+      }
+
+      final action =
+      await _showMandatoryPermissionDialog(
+        title: 'Location Permission Required',
+        message:
+        'Gluckscare requires location access for '
+            'sales tracking.\n\n'
+            'Please allow location permission to continue.',
+        showSettings:
+        status.isPermanentlyDenied,
+      );
+
+      if (action ==
+          _MandatoryPermissionAction.settings) {
+        await openAppSettings();
+
+        await Future.delayed(
+          const Duration(milliseconds: 700),
+        );
+      }
+
+      // Retry loops automatically.
+    }
+
+    return false;
+  }
+
+  // =========================================================
+  // BACKGROUND LOCATION
+  // =========================================================
+
+  Future<bool> _ensureBackgroundLocation() async {
+    while (mounted) {
+      var status =
+      await Permission.locationAlways.status;
+
+      debugPrint(
+        '[SPLASH] Background location status: $status',
+      );
+
+      if (status.isGranted) {
+        return true;
+      }
+
+      if (!status.isPermanentlyDenied) {
+        status =
+        await Permission.locationAlways.request();
+
+        debugPrint(
+          '[SPLASH] Background location request result: '
+              '$status',
+        );
+
+        if (status.isGranted) {
+          return true;
+        }
+      }
+
+      if (!mounted) {
+        return false;
+      }
+
+      final action =
+      await _showMandatoryPermissionDialog(
+        title: 'Background Location Required',
+        message:
+        'Gluckscare must track sales activity while the '
+            'app is minimized or the screen is off.\n\n'
+            'Please open App Settings → Permissions → '
+            'Location and select "Allow all the time".',
+        showSettings: true,
+      );
+
+      if (action ==
+          _MandatoryPermissionAction.settings) {
+        await openAppSettings();
+
+        // Allow Android time to resume this app and refresh
+        // the permission state.
+        await Future.delayed(
+          const Duration(milliseconds: 700),
+        );
+      }
+    }
+
+    return false;
+  }
+
+  // =========================================================
+  // NOTIFICATION PERMISSION
+  // =========================================================
+
+  Future<bool> _ensureNotificationPermission() async {
+    if (!Platform.isAndroid) {
+      return true;
+    }
+
+    while (mounted) {
+      var status =
+      await Permission.notification.status;
+
+      debugPrint(
+        '[SPLASH] Notification permission status: $status',
+      );
+
+      if (status.isGranted) {
+        return true;
+      }
+
+      if (!status.isPermanentlyDenied) {
+        status =
+        await Permission.notification.request();
+
+        debugPrint(
+          '[SPLASH] Notification request result: $status',
+        );
+
+        if (status.isGranted) {
+          return true;
+        }
+      }
+
+      if (!mounted) {
+        return false;
+      }
+
+      final action =
+      await _showMandatoryPermissionDialog(
+        title: 'Notification Permission Required',
+        message:
+        'Notification permission is required so '
+            'Gluckscare can display the active location '
+            'tracking service.',
+        showSettings:
+        status.isPermanentlyDenied,
+      );
+
+      if (action ==
+          _MandatoryPermissionAction.settings) {
+        await openAppSettings();
+
+        await Future.delayed(
+          const Duration(milliseconds: 700),
+        );
+      }
+    }
+
+    return false;
+  }
+
+  // =========================================================
+  // GPS / LOCATION SERVICE ENABLED
+  // =========================================================
+
+  Future<bool> _ensureLocationServiceEnabled() async {
+    while (mounted) {
+      final enabled =
+      await geo.Geolocator.isLocationServiceEnabled();
+
+      debugPrint(
+        '[SPLASH] GPS/location service enabled: $enabled',
+      );
+
+      if (enabled) {
+        return true;
+      }
+
+      if (!mounted) {
+        return false;
+      }
+
+      await _showLocationServiceDialog();
+
+      await geo.Geolocator.openLocationSettings();
+
+      await Future.delayed(
+        const Duration(milliseconds: 700),
+      );
+    }
+
+    return false;
+  }
+
+  // =========================================================
+  // MANDATORY PERMISSION DIALOG
+  //
+  // NO SKIP
+  // NO CONTINUE WITHOUT PERMISSION
+  // =========================================================
+
+  Future<_MandatoryPermissionAction>
+  _showMandatoryPermissionDialog({
+    required String title,
+    required String message,
+    required bool showSettings,
+  }) async {
+    if (!mounted) {
+      return _MandatoryPermissionAction.retry;
+    }
+
+    final result =
+    await showDialog<_MandatoryPermissionAction>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) {
+        return PopScope(
+          canPop: false,
+          child: AlertDialog(
+            title: Text(title),
+            content: Text(message),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(
+                    _MandatoryPermissionAction.retry,
+                  );
+                },
+                child: const Text(
+                  'Retry',
+                ),
+              ),
+
+              if (showSettings)
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(
+                      _MandatoryPermissionAction.settings,
+                    );
+                  },
+                  child: const Text(
+                    'Open Settings',
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
+    );
+
+    return result ??
+        _MandatoryPermissionAction.retry;
+  }
+
+  // =========================================================
+  // GPS DISABLED DIALOG
+  // =========================================================
+
+  Future<void> _showLocationServiceDialog() async {
+    if (!mounted) {
+      return;
+    }
+
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) {
+        return PopScope(
+          canPop: false,
+          child: AlertDialog(
+            title: const Text(
+              'Location Service Required',
+            ),
+            content: const Text(
+              'Device location/GPS must be turned on '
+                  'for sales tracking to work.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text(
+                  'Open Location Settings',
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // =========================================================
+  // BATTERY OPTIMIZATION
+  //
+  // We request this for reliability.
+  //
+  // IMPORTANT:
+  // Unlike foreground/background location, this is NOT
+  // treated as a hard Android runtime permission blocker.
+  // =========================================================
+
+  Future<bool> _handleBatteryOptimization() async {
+    if (!Platform.isAndroid) {
+      return true;
+    }
+
+    while (mounted) {
+      try {
+        // =====================================================
+        // CHECK CURRENT STATUS
+        // =====================================================
+
+        final status =
+        await Permission
+            .ignoreBatteryOptimizations
+            .status;
+
+        debugPrint(
+          '[SPLASH] Battery optimization status: $status',
+        );
+
+        // Already exempted.
+        if (status.isGranted) {
+          debugPrint(
+            '[SPLASH] Battery optimization already disabled.',
+          );
+
+          return true;
+        }
+
+        if (!mounted) {
+          return false;
+        }
+
+        // =====================================================
+        // EXPLAIN WHY IT IS REQUIRED
+        // =====================================================
+
+        await showDialog<void>(
+          context: context,
+          barrierDismissible: false,
+          builder: (_) {
+            return PopScope(
+              canPop: false,
+              child: AlertDialog(
+                title: const Text(
+                  'Background Tracking Required',
+                ),
+                content: const Text(
+                  'Gluckscare needs to continue location '
+                      'tracking while the screen is off or the '
+                      'app is minimized.\n\n'
+                      'On the next screen, please select '
+                      '"Allow" to stop battery optimization '
+                      'for Gluckscare.\n\n'
+                      'This setting is required for reliable '
+                      'background tracking.',
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text(
+                      'Continue',
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+
+        if (!mounted) {
+          return false;
+        }
+
+        // =====================================================
+        // OPEN ANDROID BATTERY EXEMPTION REQUEST
+        // =====================================================
+
+        final requestResult =
+        await Permission
+            .ignoreBatteryOptimizations
+            .request();
+
+        debugPrint(
+          '[SPLASH] Battery optimization request result: '
+              '$requestResult',
+        );
+
+        // Give Android a moment to update PowerManager state.
+        await Future.delayed(
+          const Duration(milliseconds: 500),
+        );
+
+        // =====================================================
+        // IMPORTANT:
+        // DO NOT TRUST ONLY requestResult.
+        //
+        // Check the ACTUAL status again.
+        // =====================================================
+
+        final afterRequest =
+        await Permission
+            .ignoreBatteryOptimizations
+            .status;
+
+        debugPrint(
+          '[SPLASH] Battery optimization status after request: '
+              '$afterRequest',
+        );
+
+        if (afterRequest.isGranted) {
+          debugPrint(
+            '[SPLASH] Battery optimization exemption granted.',
+          );
+
+          return true;
+        }
+
+        // =====================================================
+        // USER DENIED / CLOSED / BACKED OUT
+        //
+        // DO NOT CONTINUE SPLASH.
+        // =====================================================
+
+        debugPrint(
+          '[SPLASH] Battery optimization was NOT granted.',
+        );
+
+        if (!mounted) {
+          return false;
+        }
+
+        await _showBatteryOptimizationDeniedDialog();
+
+        // while loop starts again:
+        // status → explanation → Android request
+      } catch (e, s) {
+        debugPrint(
+          '[SPLASH] Battery optimization error: $e',
+        );
+
+        debugPrint(
+          '[SPLASH] Battery optimization stack: $s',
+        );
+
+        if (!mounted) {
+          return false;
+        }
+
+        await _showBatteryOptimizationErrorDialog();
+
+        // Retry instead of bypassing.
+      }
+    }
+
+    return false;
+  }
+
+  // =========================================================
+  // ENSURE TRACKING SERVICE RUNNING
+  //
+  // Mandatory. We do NOT navigate until service starts.
+  // =========================================================
+
+  Future<bool> _ensureTrackingServiceRunning() async {
+    while (mounted) {
+      try {
+        final running =
+        await TrackingServiceManager
+            .instance
+            .isRunning();
+
+        if (running) {
+          debugPrint(
+            '[SPLASH] Tracking service already running.',
+          );
+
+          return true;
+        }
+
+        debugPrint(
+          '[SPLASH] Starting tracking service...',
+        );
+
+        final started =
+        await TrackingServiceManager
+            .instance
+            .ensureRunning();
+
+        if (started) {
+          debugPrint(
+            '[SPLASH] Tracking service started successfully.',
+          );
+
+          return true;
+        }
+      } catch (e, s) {
+        debugPrint(
+          '[SPLASH] Tracking service start error: $e',
+        );
+
+        debugPrint('$s');
+      }
+
+      if (!mounted) {
+        return false;
+      }
+
+      await _showTrackingServiceErrorDialog();
+    }
+
+    return false;
+  }
+
+  // =========================================================
+  // SERVICE START ERROR
+  // =========================================================
+
+  Future<void> _showTrackingServiceErrorDialog() async {
+    if (!mounted) {
+      return;
+    }
+
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) {
+        return PopScope(
+          canPop: false,
+          child: AlertDialog(
+            title: const Text(
+              'Tracking Service Required',
+            ),
+            content: const Text(
+              'Gluckscare could not start the location '
+                  'tracking service.\n\n'
+                  'Please retry to continue.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text(
+                  'Retry',
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // =========================================================
+  // PLAY STORE UPDATE CHECK
+  // =========================================================
+
+  Future<void> _checkForUpdateAndNavigate() async {
     try {
-      AppUpdateInfo info = await InAppUpdate.checkForUpdate();
-      print('Update Availability: ${info.updateAvailability}', name: debugPrefix);
-      if (info.updateAvailability == UpdateAvailability.updateAvailable) {
-        _showUpdateDialog();
-      } else {
-        _showDisclosureAndPermissions();
+      debugPrint(
+        '[SPLASH] Checking Play Store update...',
+      );
+
+      final info =
+      await InAppUpdate.checkForUpdate();
+
+      debugPrint(
+        '[SPLASH] Update availability: '
+            '${info.updateAvailability}',
+      );
+
+      if (info.updateAvailability ==
+          UpdateAvailability.updateAvailable) {
+        if (!mounted) {
+          return;
+        }
+
+        await _showUpdateDialog();
+
+        return;
       }
     } catch (e) {
-      print('Update check failed: $e', name: debugPrefix);
-      _showDisclosureAndPermissions();
+      // Existing behavior:
+      // update-check failure must not prevent field users
+      // from entering the application.
+      debugPrint(
+        '[SPLASH] Play Store update check error: $e',
+      );
     }
+
+    await _navigateAfterDelay();
   }
 
-  void _showUpdateDialog() {
-    showDialog(
+  // =========================================================
+  // UPDATE DIALOG
+  //
+  // NO SKIP
+  // =========================================================
+
+  Future<void> _showUpdateDialog() async {
+    if (!mounted) {
+      return;
+    }
+
+    await showDialog<void>(
       context: context,
       barrierDismissible: false,
-      builder: (_) => AlertDialog(
-        title: const Text(TTexts.updateAvailable),
-        content: const Text(TTexts.updateAvailableContent),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _showDisclosureAndPermissions();
-            },
-            child: const Text(TTexts.skip),
+      builder: (_) {
+        return PopScope(
+          canPop: false,
+          child: AlertDialog(
+            title: const Text(
+              TTexts.updateAvailable,
+            ),
+            content: const Text(
+              TTexts.updateAvailableContent,
+            ),
+            actions: [
+              TextButton(
+                onPressed: () async {
+                  Navigator.of(context).pop();
+
+                  try {
+                    debugPrint(
+                      '[SPLASH] Starting immediate update...',
+                    );
+
+                    await InAppUpdate
+                        .performImmediateUpdate();
+
+                    debugPrint(
+                      '[SPLASH] Immediate update completed.',
+                    );
+                  } catch (e) {
+                    debugPrint(
+                      '[SPLASH] Immediate update error: $e',
+                    );
+                  }
+
+                  if (mounted) {
+                    await _navigateAfterDelay();
+                  }
+                },
+                child: const Text(
+                  TTexts.updateNow,
+                ),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              try {
-                await InAppUpdate.performImmediateUpdate();
-              } catch (_) {
-                _showDisclosureAndPermissions();
-              }
-            },
-            child: const Text(TTexts.updateNow),
-          ),
-        ],
+        );
+      },
+    );
+  }
+
+  // =========================================================
+  // AUTH NAVIGATION
+  //
+  // IMPORTANT:
+  // Tracking is already started ABOVE.
+  //
+  // Login state DOES NOT control tracking.
+  // =========================================================
+
+  Future<void> _navigateAfterDelay() async {
+    final auth = AuthManager();
+
+    final userId =
+    await auth.getUserId();
+
+    final token =
+    await auth.getAuthToken();
+
+    debugPrint(
+      '[SPLASH] Auth userId exists: '
+          '${userId != null}',
+    );
+
+    debugPrint(
+      '[SPLASH] Auth token exists: '
+          '${token != null}',
+    );
+
+    await Future.delayed(
+      const Duration(seconds: 2),
+    );
+
+    if (!mounted) {
+      return;
+    }
+
+    if (userId != null &&
+        token != null) {
+      debugPrint(
+        '[SPLASH] Navigating to Dashboard.',
+      );
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) =>
+              DashboardScreen(),
+        ),
+      );
+
+      return;
+    }
+
+    debugPrint(
+      '[SPLASH] Navigating to Login.',
+    );
+
+    // Keep your existing logout cleanup.
+    //
+    // IMPORTANT:
+    // This does NOT stop TrackingServiceManager.
+    await auth.logout();
+
+    if (!mounted) {
+      return;
+    }
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) =>
+        const LoginScreen(),
       ),
     );
   }
 
-  Future<void> _showDisclosureAndPermissions() async {
-    final accepted = await showDialog<bool>(
+  // =========================================================
+  // STARTUP ERROR
+  // =========================================================
+
+  Future<void> _showStartupErrorDialog() async {
+    if (!mounted) {
+      return;
+    }
+
+    await showDialog<void>(
       context: context,
       barrierDismissible: false,
-      builder: (_) => AlertDialog(
-        title: const Text("Location Access Required"),
-        content: const Text(
-          "Gluckscare collects your location even when the app is closed or not in use. "
-              "We use this data to track your sales visits and provide accurate reporting. "
-              "Your location is never shared with third parties.",
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text("Cancel"),
+      builder: (_) {
+        return PopScope(
+          canPop: false,
+          child: AlertDialog(
+            title: const Text(
+              'Unable to Start',
+            ),
+            content: const Text(
+              'Gluckscare could not complete startup. '
+                  'Please retry.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+
+                  _startupRunning = false;
+
+                  _startFlow();
+                },
+                child: const Text(
+                  'Retry',
+                ),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text("Continue"),
-          ),
-        ],
+        );
+      },
+    );
+  }
+
+  // =========================================================
+  // PUSH NOTIFICATION
+  // =========================================================
+
+  void _showPushNotification({
+    required String title,
+    required String body,
+  }) {
+    final plugin =
+    FlutterLocalNotificationsPlugin();
+
+    const details =
+    NotificationDetails(
+      android: AndroidNotificationDetails(
+        'push_channel',
+        'Push Notifications',
+        importance: Importance.max,
+        priority: Priority.high,
       ),
-    ) ?? false;
+    );
 
-    if (!accepted) {
-      print('User denied disclosure. Exiting...', name: debugPrefix);
-      exit(0);
-    }
-
-    await _requestPermissionsAndStart();
-    _checkLoginStatus();
+    plugin.show(
+      DateTime.now()
+          .millisecondsSinceEpoch ~/
+          1000,
+      title,
+      body,
+      details,
+    );
   }
 
-  Future<void> _requestPermissionsAndStart() async {
-    print('Requesting permissions...', name: debugPrefix);
-    final fg = await Permission.location.request();
-    if (!fg.isGranted) return _showDisclosureAndPermissions();
+  // =========================================================
+  // DISPOSE
+  // =========================================================
 
-    final bg = await Permission.locationAlways.request();
-    if (!bg.isGranted) return _showDisclosureAndPermissions();
+  @override
+  void dispose() {
+    _foregroundMessageSubscription
+        ?.cancel();
 
-    final nt = await Permission.notification.request();
-    print('Permissions granted -> fg:${fg.isGranted}, bg:${bg.isGranted}, notif:${nt.isGranted}', name: debugPrefix);
-
-    try {
-      await BackgroundLocator.initialize();
-      await BackgroundLocator.registerLocationUpdate(
-        locationCallback,
-        initCallback: initCallback,
-        disposeCallback: disposeCallback,
-        androidSettings: const AndroidSettings(
-          accuracy: LocationAccuracy.NAVIGATION,
-          interval: 1000,
-          distanceFilter: 0,
-          client: LocationClient.google,
-          androidNotificationSettings: AndroidNotificationSettings(
-            notificationChannelName: 'Location tracking',
-            notificationTitle: 'Background Location Running',
-            notificationMsg: 'App uses your location in the background for tracking.',
-            notificationTapCallback: notificationCallback,
-          ),
-        ),
-        iosSettings: const IOSSettings(),
-        autoStop: false,
-      );
-      print('BackgroundLocator initialized', name: debugPrefix);
-    } catch (e) {
-      print('BackgroundLocator failed: $e', name: debugPrefix);
-    }
-
-    _registerBgPort((_) {});
+    super.dispose();
   }
 
-  Future<void> _checkLoginStatus() async {
-    final prefs = await SharedPreferences.getInstance();
-    final userId = prefs.getString("user_id");
-
-    await Future.delayed(const Duration(seconds: 2));
-
-    if (userId != null && userId.isNotEmpty) {
-      print('User logged in: $userId -> Dashboard', name: debugPrefix);
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => DashboardScreen()));
-    } else {
-      print('No session found -> LoginScreen', name: debugPrefix);
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
-    }
-  }
+  // =========================================================
+  // UI
+  // =========================================================
 
   @override
   Widget build(BuildContext context) {
@@ -366,1300 +1655,90 @@ class _SplashScreenState extends State<SplashScreen> {
       ),
     );
   }
-}*/
 
-
-/*
-import 'dart:developer' as dev;
-import 'dart:io';
-import 'dart:async';
-import 'dart:isolate';
-import 'dart:ui';
-
-import 'package:flutter/material.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:background_locator_2/background_locator.dart';
-import 'package:background_locator_2/location_dto.dart';
-import 'package:background_locator_2/settings/locator_settings.dart';
-import 'package:background_locator_2/settings/android_settings.dart';
-import 'package:background_locator_2/settings/ios_settings.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:in_app_update/in_app_update.dart';
-
-import 'package:medicle_sales_rbsh/features/authentication/screens/login/login.dart';
-import '../../../../utils/device/movementdetector.dart';
-import '../../../dashboard/screen/dashboard.dart';
-import '../../../../services/LocationController.dart';
-import '../../../../utils/constants/image_strings.dart';
-import '../../../../utils/constants/text_strings.dart';
-
-// Globals
-const _bgPortName = 'bg_location_port';
-final ValueNotifier<LocationDto?> lastLocation = ValueNotifier<LocationDto?>(null);
-Timer? _tick;
-LocationDto? _lastFix;
-
-@pragma('vm:entry-point')
-void initCallback(dynamic _) {
-  _tick?.cancel();
-  late MovementDetector movementDetector;
-  bool isMoving = false;
-
-  _tick = Timer.periodic(const Duration(seconds: 1), (_) {
-    final l = _lastFix;
-    if (l != null) {
-      print('AppDebug: BG Tick lat=${l.latitude}, lng=${l.longitude}, acc=${l.accuracy}');
-      LocationController(l.latitude, l.longitude).sendLocationData();
-      movementDetector = MovementDetector(
-        onMovement: (moving) {
-         // setState(() => isMoving = moving);
-          print(moving ? " Phone moving" : " Phone still");
-          print("sensor_of_phone $isMoving");
-        },
-      );
-      movementDetector.start();
-    }
-  });
-}
-
-@pragma('vm:entry-point')
-void locationCallback(LocationDto data) {
-  _lastFix = data;
-  IsolateNameServer.lookupPortByName(_bgPortName)?.send(data);
-}
-
-@pragma('vm:entry-point')
-void disposeCallback() => _tick?.cancel();
-
-@pragma('vm:entry-point')
-void notificationCallback() {
-  print('AppDebug: Notification tapped');
-}
-
-void _registerBgPort(void Function(LocationDto) onLocation) {
-  print('AppDebug: BG port register event fireed.');
-  final port = ReceivePort();
-  IsolateNameServer.removePortNameMapping(_bgPortName);
-  IsolateNameServer.registerPortWithName(port.sendPort, _bgPortName);
-
-  port.listen((msg) {
-    if (msg is LocationDto) {
-      lastLocation.value = msg;
-      print('AppDebug: BG port received lat=${msg.latitude}, lng=${msg.longitude}');
-      onLocation(msg);
-    }
-  });
-}
-
-class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
-
-  @override
-  State<SplashScreen> createState() => _SplashScreenState();
-}
-
-class _SplashScreenState extends State<SplashScreen> {
-  @override
-  void initState() {
-    super.initState();
-    _startFlow();
-  }
-
-  Future<void> _startFlow() async {
-    print('AppDebug: Splash started');
-
-    // 1️⃣ Check if location permissions are already granted
-    final fgStatus = await Permission.location.status;
-    final bgStatus = await Permission.locationAlways.status;
-
-    if (!fgStatus.isGranted || !bgStatus.isGranted) {
-      // Show disclosure only if permissions are NOT granted
-      print('AppDebug: Permissions not granted, showing disclosure');
-      await _showDisclosureDialog();
-    } else {
-      print('AppDebug: Permissions already granted, skipping disclosure');
-      await _initBackgroundLocator();
-      _checkForUpdateAndLogin();
-    }
-  }
-
-  Future<void> _showDisclosureDialog() async {
-    final accepted = await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => AlertDialog(
-        title: const Text("Location Access Required"),
-        content: const Text(
-            "Gluckscare collects your location even when the app is closed or not in use. "
-                "We use this data to track your sales visits and provide accurate reporting. "
-                "Your location is never shared with third parties."),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: const Text("Cancel")),
-          TextButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: const Text("Continue")),
-        ],
-      ),
-    ) ?? false;
-
-    if (!accepted) exit(0);
-
-    print('AppDebug: User accepted disclosure, requesting permissions');
-    await _requestPermissionsAndStart();
-    _checkForUpdateAndLogin();
-  }
-
-  Future<void> _requestPermissionsAndStart() async {
-    final fg = await Permission.location.request();
-    if (!fg.isGranted) return _showDisclosureDialog();
-
-    final bg = await Permission.locationAlways.request();
-    if (!bg.isGranted) return _showDisclosureDialog();
-
-    await _initBackgroundLocator();
-  }
-
-  Future<void> _initBackgroundLocator() async {
-    try {
-      await BackgroundLocator.initialize();
-      await Future.delayed(const Duration(seconds: 1));
-      await BackgroundLocator.registerLocationUpdate(
-        locationCallback,
-        initCallback: initCallback,
-        disposeCallback: disposeCallback,
-        androidSettings: const AndroidSettings(
-          accuracy: LocationAccuracy.NAVIGATION,
-          interval: 1000,
-          distanceFilter: 0,
-          client: LocationClient.google,
-          androidNotificationSettings: AndroidNotificationSettings(
-            notificationChannelName: 'Location tracking',
-            notificationTitle: 'Background Location Running',
-            notificationMsg: 'App uses your location in the background for tracking.',
-            notificationTapCallback: notificationCallback,
-          ),
-        ),
-        iosSettings: const IOSSettings(),
-        autoStop: false,
-      );
-      _registerBgPort((_) {});
-      print('AppDebug: BackgroundLocator initialized ✅');
-    } catch (e) {
-      print('AppDebug: BackgroundLocator failed: $e');
-    }
-  }
-
-  Future<void> _checkForUpdateAndLogin() async {
-    print('AppDebug: Checking for update');
-    try {
-      final info = await InAppUpdate.checkForUpdate();
-      if (info.updateAvailability == UpdateAvailability.updateAvailable) {
-        _showUpdateDialog();
-      } else {
-        _navigateAfterDelay();
-      }
-    } catch (_) {
-      _navigateAfterDelay();
-    }
-  }
-
-  void _showUpdateDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => AlertDialog(
-        title: const Text(TTexts.updateAvailable),
-        content: const Text(TTexts.updateAvailableContent),
-        actions: [
-          TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                _navigateAfterDelay();
-              },
-              child: const Text(TTexts.skip)),
-          TextButton(
-              onPressed: () async {
-                Navigator.pop(context);
-                try {
-                  await InAppUpdate.performImmediateUpdate();
-                } catch (_) {
-                  _navigateAfterDelay();
-                }
-              },
-              child: const Text(TTexts.updateNow)),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _navigateAfterDelay() async {
-    final prefs = await SharedPreferences.getInstance();
-    final userId = prefs.getString("user_id");
-
-    await Future.delayed(const Duration(seconds: 2));
-
-    if (userId != null && userId.isNotEmpty) {
-      Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (_) => DashboardScreen()));
-    } else {
-      Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (_) => const LoginScreen()));
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Center(
-        child: Image.asset(TImages.lightAppLogo, height: 150),
-      ),
-    );
-  }
-}*/
-
-// chat gpt 5 code
-
-/*
-
-import 'dart:developer' as dev;
-import 'dart:io';
-import 'dart:async';
-import 'dart:isolate';
-import 'dart:ui';
-
-import 'package:flutter/material.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:background_locator_2/background_locator.dart';
-import 'package:background_locator_2/location_dto.dart';
-import 'package:background_locator_2/settings/locator_settings.dart';
-import 'package:background_locator_2/settings/android_settings.dart';
-import 'package:background_locator_2/settings/ios_settings.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:in_app_update/in_app_update.dart';
-
-import 'package:medicle_sales_rbsh/features/authentication/screens/login/login.dart';
-import '../../../../utils/device/movementdetector.dart';
-import '../../../dashboard/screen/dashboard.dart';
-import '../../../../services/LocationController.dart';
-import '../../../../utils/constants/image_strings.dart';
-import '../../../../utils/constants/text_strings.dart';
-
-import 'package:background_locator_2/location_dto.dart';
-
-
-// Globals
-const _bgPortName = 'bg_location_port';
-final ValueNotifier<LocationDto?> lastLocation = ValueNotifier<LocationDto?>(null);
-Timer? _tick;
-LocationDto? _lastFix;
-
-@pragma('vm:entry-point')
-void initCallback(dynamic _) {
-  _tick?.cancel();
-  late MovementDetector movementDetector;
-  bool isMoving = false;
-
-  _tick = Timer.periodic(const Duration(seconds: 1), (_) {
-    final l = _lastFix;
-    if (l != null) {
-      print('AppDebug: BG Tick lat=${l.latitude}, lng=${l.longitude}, acc=${l.accuracy}');
-      LocationController(l.latitude, l.longitude).sendLocationData();
-
-      // Movement detection
-      movementDetector = MovementDetector(
-        onMovement: (moving) {
-          print(moving ? "Phone moving" : "Phone still");
-          print("sensor_of_phone: $isMoving");
-        },
-      );
-      movementDetector.start();
-    } else {
-      print("AppDebug: No location fix received yet.");
-    }
-  });
-}
-
-
-
-
-*/
-/*@pragma('vm:entry-point')
-void locationCallback(LocationDto data) {
-  _lastFix = data;
-
-  // Ensure that port is registered before sending data to the port
-  final port = IsolateNameServer.lookupPortByName(_bgPortName);
-  if (port != null) {
-    print("AppDebug: Sending location data to port.");
-    port.send(data);
-  } else {
-    print("AppDebug: BG port not found.");
-    // Register the port if it isn't found yet
-    _registerBgPort((LocationDto locationData) {
-      print('AppDebug: Location data received after port registered: lat=${locationData.latitude}, lng=${locationData.longitude}');
-    });
-  }
-}*//*
-
-
-@pragma('vm:entry-point')
-void locationCallback(LocationDto data) {
-  print('AppDebug: Received location data. Lat: ${data.latitude}, Lng: ${data.longitude}, Acc: ${data.accuracy}');
-  _lastFix = data; // Update _lastFix with the new location data
-
-  // Ensure that the port is registered before sending data to the port
-  final port = IsolateNameServer.lookupPortByName(_bgPortName);
-  if (port != null) {
-    print("AppDebug: Sending location data to port. Lat: ${data.latitude}, Lng: ${data.longitude}");
-    port.send(data); // Send location data to the registered port
-  } else {
-    print("AppDebug: BG port not found.");
-    // Register the port if it isn't found yet
-    _registerBgPort((LocationDto locationData) {
-      print('AppDebug: Location data received after port registered: lat=${locationData.latitude}, lng=${locationData.longitude}');
-    });
-  }
-}
-
-
-
-
-
-
-
-*/
-/*void _registerBgPort(void Function(LocationDto) onLocation) {
-  print('AppDebug: BG port register event fired.');
-
-  // Check if the port is already registered before proceeding
-  if (IsolateNameServer.lookupPortByName(_bgPortName) != null) {
-    print("AppDebug: Port already registered.");
-    return; // Exit if already registered
-  }
-
-  // Create a ReceivePort to listen for messages
-  final port = ReceivePort();
-
-  // Remove any existing port name mappings to avoid conflicts
-  IsolateNameServer.removePortNameMapping(_bgPortName);
-
-  // Register the port with a unique name to be looked up later
-  IsolateNameServer.registerPortWithName(port.sendPort, _bgPortName);
-
-  // Start listening to the port for incoming location updates
-  port.listen((msg) {
-    if (msg is LocationDto) {
-      lastLocation.value = msg;
-      print('AppDebug: BG port received lat=${msg.latitude}, lng=${msg.longitude}');
-
-      // Call the function provided to handle the location data
-      onLocation(msg);
-    } else {
-      print('AppDebug: Unexpected message received: $msg');
-    }
-  });
-}*//*
-
-
-void _registerBgPort(void Function(LocationDto) onLocation) {
-  print('AppDebug: BG port register event fired.');
-
-  // Check if the port is already registered before proceeding
-  final existingPort = IsolateNameServer.lookupPortByName(_bgPortName);
-  if (existingPort != null) {
-    print("AppDebug: Port already registered.");
-    return; // Exit if already registered
-  }
-
-  // Create a ReceivePort to listen for messages
-  final port = ReceivePort();
-
-  // Remove any existing port name mappings to avoid conflicts
-  IsolateNameServer.removePortNameMapping(_bgPortName);
-
-  // Register the port with a unique name to be looked up later
-  IsolateNameServer.registerPortWithName(port.sendPort, _bgPortName);
-
-  // Start listening to the port for incoming location updates
-  port.listen((msg) {
-    print("AppDebug: Port listener triggered.");
-    if (msg is LocationDto) {
-      lastLocation.value = msg;
-      print('AppDebug: BG port received lat=${msg.latitude}, lng=${msg.longitude}');
-      onLocation(msg); // Call the function provided to handle the location data
-    } else {
-      print('AppDebug: Unexpected message received: $msg');
-    }
-  });
-
-  print('AppDebug: Port registration completed.');
-}
-
-
-
-
-void onLocation(LocationDto locationData) {
-  print('AppDebug: Location data received in onLocation: Lat=${locationData.latitude}, Lng=${locationData.longitude}');
-  // You can add additional logic here to process the location data
-}
-
-
-
-
-
-@pragma('vm:entry-point')
-void disposeCallback() {
-  _tick?.cancel();
-  print("AppDebug: Background location service stopped.");
-}
-
-@pragma('vm:entry-point')
-void notificationCallback() {
-  print('AppDebug: Notification tapped');
-}
-
-
-
-
-class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
-
-  @override
-  State<SplashScreen> createState() => _SplashScreenState();
-}
-
-class _SplashScreenState extends State<SplashScreen> {
-  @override
-  void initState() {
-    super.initState();
-
-    _startFlow();
-  }
-
-  // Simulate location update for testing
-
-
-  Future<void> _startFlow() async {
-    print('AppDebug: Splash started');
-
-    // Register the background port right after app starts
-    _registerBgPort((locationData) {
-      print("AppDebug: Received location data: $locationData");
-    });
-
-    //  Check if location permissions are already granted
-    final fgStatus = await Permission.location.status;
-    final bgStatus = await Permission.locationAlways.status;
-
-    if (!fgStatus.isGranted || !bgStatus.isGranted) {
-      // Show disclosure only if permissions are NOT granted
-      print('AppDebug: Permissions not granted, showing disclosure');
-      await _showDisclosureDialog();
-    } else {
-      print('AppDebug: Permissions already granted, skipping disclosure');
-      await _initBackgroundLocator();
-      _checkForUpdateAndLogin();
-    }
-  }
-
-
-  Future<void> _showDisclosureDialog() async {
-    final accepted = await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => AlertDialog(
-        title: const Text("Location Access Required"),
-        content: const Text(
-            "Gluckscare collects your location even when the app is closed or not in use. "
-                "We use this data to track your sales visits and provide accurate reporting. "
-                "Your location is never shared with third parties."),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: const Text("Cancel")),
-          TextButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: const Text("Continue")),
-        ],
-      ),
-    ) ?? false;
-
-    if (!accepted) exit(0);
-
-    print('AppDebug: User accepted disclosure, requesting permissions');
-    await _requestPermissionsAndStart();
-    _checkForUpdateAndLogin();
-  }
-
-  // workig with andoird 13
-  */
-/*Future<void> _requestPermissionsAndStart() async {
-    final fg = await Permission.location.request();
-    if (!fg.isGranted) return _showDisclosureDialog();
-
-    final bg = await Permission.locationAlways.request();
-    if (!bg.isGranted) return _showDisclosureDialog();
-
-    await _requestNotificationPermission();
-
-    // Register the port as soon as permissions are granted
-    _registerBgPort((locationData) {
-      print("AppDebug: Received location data: $locationData");
-    });
-
-    await _initBackgroundLocator();
-  }*//*
-
-
-
-
-
-  Future<void> _requestPermissionsAndStart() async {
-
-    await _requestNotificationPermission();
-
-
-    // Step 1: Request foreground location permission (ACCESS_FINE_LOCATION)
-    final fg = await Permission.location.request();
-    if (!fg.isGranted) {
-      print('AppDebug: Foreground permission denied.');
-      return; // Exit if foreground location permission is not granted
-    }
-
-    // Step 2: Request background location permission (ACCESS_BACKGROUND_LOCATION)
-    final bg = await Permission.locationAlways.request();
-    if (!bg.isGranted) {
-      print('AppDebug: Background permission denied.');
-      return; // Exit if background location permission is not granted
-    }
-
-    print('AppDebug: Permissions granted for both foreground and background.');
-
-
-
-    // Proceed with background location initialization
-    await _initBackgroundLocator();
-  }
-
-  Future<void> _requestNotificationPermission() async {
-    // Request permission to show notifications
-    final status = await Permission.notification.request();
-
-    if (status.isGranted) {
-      print("Notification permission granted.");
-    } else {
-      print("Notification permission denied.");
-    }
-  }
-
-
-
-
-  Future<void> _initBackgroundLocator() async {
-    try {
-      await BackgroundLocator.initialize();
-      await Future.delayed(const Duration(seconds: 1));
-
-      // Register the background location update with proper settings
-      await BackgroundLocator.registerLocationUpdate(
-        locationCallback,
-        initCallback: initCallback,
-        disposeCallback: disposeCallback,
-        androidSettings: AndroidSettings(
-          accuracy: LocationAccuracy.NAVIGATION,
-          interval: 1000, // Every second
-          distanceFilter: 0, // Update location immediately
-          client: LocationClient.google,
-          androidNotificationSettings: AndroidNotificationSettings(
-            notificationChannelName: 'Location tracking',
-            notificationTitle: 'Background Location Running',
-            notificationMsg: 'App uses your location in the background for tracking.',
-            notificationTapCallback: notificationCallback,
-          ),
-        ),
-        iosSettings: IOSSettings(),
-        autoStop: false, // Keep running in background
-      );
-
-
-      _registerBgPort((_) {});
-      print('AppDebug: BackgroundLocator initialized ');
-    } catch (e) {
-      print('AppDebug: BackgroundLocator failed: $e');
-    }
-  }
-
-
-
-
-  Future<void> _checkForUpdateAndLogin() async {
-    print('AppDebug: Checking for update');
-    try {
-      final info = await InAppUpdate.checkForUpdate();
-      if (info.updateAvailability == UpdateAvailability.updateAvailable) {
-        _showUpdateDialog();
-      } else {
-        _navigateAfterDelay();
-      }
-    } catch (_) {
-      _navigateAfterDelay();
-    }
-  }
-
-  void _showUpdateDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => AlertDialog(
-        title: const Text(TTexts.updateAvailable),
-        content: const Text(TTexts.updateAvailableContent),
-        actions: [
-          TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                _navigateAfterDelay();
-              },
-              child: const Text(TTexts.skip)),
-          TextButton(
-              onPressed: () async {
-                Navigator.pop(context);
-                try {
-                  await InAppUpdate.performImmediateUpdate();
-                } catch (_) {
-                  _navigateAfterDelay();
-                }
-              },
-              child: const Text(TTexts.updateNow)),
-        ],
-      ),
-    );
-  }
-
-
-
-  Future<void> _navigateAfterDelay() async {
-    final prefs = await SharedPreferences.getInstance();
-    final userId = prefs.getString("user_id");
-
-    await Future.delayed(const Duration(seconds: 2));
-
-    if (userId != null && userId.isNotEmpty) {
-      Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (_) => DashboardScreen()));
-    } else {
-      Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (_) => const LoginScreen()));
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Center(
-        child: Image.asset(TImages.lightAppLogo, height: 150),
-      ),
-    );
-  }
-}
-*/
-
-
-
-
-/*
-
-import 'dart:io';
-import 'dart:async';
-import 'dart:ui';
-
-import 'package:flutter/material.dart';
-import 'package:flutter_background_service/flutter_background_service.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:geolocator/geolocator.dart' as geolocator;
-import 'package:in_app_update/in_app_update.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:device_info_plus/device_info_plus.dart';
-import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
-import 'package:medicle_sales_rbsh/utils/local_storage/auth_manager.dart';
-import 'package:medicle_sales_rbsh/features/authentication/screens/login/login.dart';
-import '../../../dashboard/screen/dashboard.dart';
-import '../../../../utils/constants/image_strings.dart';
-
-// Request permission in foreground before starting background service
-Future<bool> requestLocationPermission() async {
-  PermissionStatus permissionStatus = await Permission.locationWhenInUse.request();
-  if (Platform.isAndroid) {
-    PermissionStatus backgroundPermissionStatus = await Permission.locationAlways.request();
-    if (!backgroundPermissionStatus.isGranted) {
-      return false; // Background location permission is not granted
-    }
-  }
-
-  return permissionStatus.isGranted;
-}
-
-// Top-level onStart method for the background service
-@pragma('vm:entry-point')  // Add this annotation for background access
-void onStart(ServiceInstance service) async {
-  DartPluginRegistrant.ensureInitialized();
-
-  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-  FlutterLocalNotificationsPlugin();
-
-  if (service is AndroidServiceInstance) {
-    service.on('setAsForeground').listen((event) {
-      service.setAsForegroundService();
-    });
-
-    service.on('setAsBackground').listen((event) {
-      service.setAsBackgroundService();
-    });
-  }
-
-  service.on('stopService').listen((event) {
-    service.stopSelf();
-  });
-
-  // Update every second with new location and timestamp
-  Timer.periodic(const Duration(seconds: 1), (timer) async {
-    if (service is AndroidServiceInstance) {
-      if (await service.isForegroundService()) {
-        String location = await getCurrentLocation(); // Static method call
-
-        flutterLocalNotificationsPlugin.show(
-          888,
-          'COOL SERVICE',
-          'Location: $location',
-          const NotificationDetails(
-            android: AndroidNotificationDetails(
-              'my_foreground',
-              'MY FOREGROUND SERVICE',
-              icon: 'ic_bg_service_small',
-              ongoing: true,
-            ),
-          ),
-        );
-
-        service.setForegroundNotificationInfo(
-          title: "My App Service",
-          content: "Location: $location",
-        );
-      }
-    }
-
-    debugPrint("SplashScreen: FLUTTER BACKGROUND SERVICE: ${DateTime.now()}");
-
-    final deviceInfo = DeviceInfoPlugin();
-    String? device;
-    if (Platform.isAndroid) {
-      final androidInfo = await deviceInfo.androidInfo;
-      device = androidInfo.model;
-    } else if (Platform.isIOS) {
-      final iosInfo = await deviceInfo.iosInfo;
-      device = iosInfo.model;
-    }
-
-    // Fetch current location
-    String location = await getCurrentLocation();
-
-    // Debug print to check lat and long
-    debugPrint("SplashScreen: Current Location - $location");
-
-    service.invoke(
-      'update',
-      {
-        "current_date": DateTime.now().toIso8601String(),
-        "device": device,
-        "location": location, // Add location here
-      },
-    );
-  });
-}
-
-// Static method for getting current location
-@pragma('vm:entry-point')  // Add this annotation for background access
-Future<String> getCurrentLocation() async {
-  try {
-// Request location permission if not granted
-    geolocator.LocationPermission permission = await geolocator.Geolocator.requestPermission();
-    if (permission == geolocator.LocationPermission.denied ||
-        permission == geolocator.LocationPermission.deniedForever) {
-      return 'Location permission denied';
-    }
-
-// Fetch the current position
-    geolocator.Position position = await geolocator.Geolocator.getCurrentPosition(
-        desiredAccuracy: geolocator.LocationAccuracy.high);
-    return 'Lat: ${position.latitude}, Long: ${position.longitude}';
-  } catch (e) {
-    return 'Error fetching location: $e';
-  }
-}
-
-class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
-
-  @override
-  State<SplashScreen> createState() => _SplashScreenState();
-}
-
-class _SplashScreenState extends State<SplashScreen> {
-  @override
-  void initState() {
-    super.initState();
-    print("[SplashScreen] App started. Checking for updates...");
-    _checkForUpdate(); // Start checking for updates first
-    _startLocationFetching(); // Start location fetching in background
-  }
-
-// Initialize Background Location Fetching
-  Future<void> _startLocationFetching() async {
-    print("[SplashScreen] Starting background location service...");
-
-// Check and request location permissions
-    bool isLocationGranted = await requestLocationPermission();
-    if (!isLocationGranted) {
-      print("[SplashScreen] Location permission denied.");
+  Future<void>
+  _showBatteryOptimizationDeniedDialog() async {
+    if (!mounted) {
       return;
     }
 
-// Start background location fetching
-    await initializeService();
-
-    print("[SplashScreen] Location service initialized and running.");
-  }
-
-  Future<void> initializeService() async {
-    final service = FlutterBackgroundService();
-
-// Create notification channel before starting the service
-    const AndroidNotificationChannel channel = AndroidNotificationChannel(
-      'my_foreground', // id
-      'MY FOREGROUND SERVICE', // title
-      description: 'This channel is used for important notifications.',
-      importance: Importance.low, // importance must be at low or higher level
-    );
-
-    final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-    FlutterLocalNotificationsPlugin();
-
-// Initialize flutter_local_notifications for Android and iOS
-    if (Platform.isIOS || Platform.isAndroid) {
-      await flutterLocalNotificationsPlugin.initialize(
-        const InitializationSettings(
-          iOS: DarwinInitializationSettings(),
-          android: AndroidInitializationSettings('ic_bg_service_small'),
-        ),
-      );
-    }
-
-// Create notification channel
-    await flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(channel);
-
-// Configure the background service
-    await service.configure(
-      androidConfiguration: AndroidConfiguration(
-        onStart: onStart,  // Use top-level function
-        autoStart: true,
-        isForegroundMode: true,
-        notificationChannelId: 'my_foreground',
-        initialNotificationTitle: 'AWESOME SERVICE',
-        initialNotificationContent: 'Initializing',
-        foregroundServiceNotificationId: 888,
-        foregroundServiceTypes: [AndroidForegroundType.location],
-      ),
-      iosConfiguration: IosConfiguration(
-        autoStart: true,
-        onForeground: onStart, // Use top-level function
-        onBackground: onIosBackground,
-      ),
-    );
-  }
-
-// Callback for iOS background
-  @pragma('vm:entry-point')
-  Future<bool> onIosBackground(ServiceInstance service) async {
-    WidgetsFlutterBinding.ensureInitialized();
-    DartPluginRegistrant.ensureInitialized();
-
-    SharedPreferences preferences = await SharedPreferences.getInstance();
-    await preferences.reload();
-    final log = preferences.getStringList('log') ?? <String>[];
-    log.add(DateTime.now().toIso8601String());
-    await preferences.setStringList('log', log);
-
-    debugPrint("SplashScreen: onIosBackground called");
-
-    return true;
-  }
-
-// Check for app update
-  Future<void> _checkForUpdate() async {
-    try {
-      AppUpdateInfo info = await InAppUpdate.checkForUpdate();
-      print("[UpdateCheck] Update availability: ${info.updateAvailability}");
-      if (info.updateAvailability == UpdateAvailability.updateAvailable) {
-        print("[UpdateCheck] Update available. Showing update dialog...");
-        _showUpdateDialog();
-      } else {
-        print("[UpdateCheck] No update available. Proceeding to login check...");
-        _checkLoginStatus();
-      }
-    } catch (e) {
-      print("[UpdateCheck] Error occurred while checking for updates: $e");
-      _checkLoginStatus(); // If error occurs, continue normal flow
-    }
-  }
-
-// Show Update Dialog
-  void _showUpdateDialog() {
-    showDialog(
+    await showDialog<void>(
       context: context,
       barrierDismissible: false,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text(TTexts.updateAvailable),
-          content: const Text(TTexts.updateAvailableContent),
-          actions: [
-            TextButton(
-              onPressed: () {
-                print("[UpdateDialog] User skipped the update.");
-                Navigator.pop(context);
-                _checkLoginStatus();
-              },
-              child: const Text(TTexts.skip),
+      builder: (_) {
+        return PopScope(
+          canPop: false,
+          child: AlertDialog(
+            title: const Text(
+              'Permission Required',
             ),
-            TextButton(
-              onPressed: () async {
-                print("[UpdateDialog] User opted to update now.");
-                Navigator.pop(context);
-                await _startImmediateUpdate();
-              },
-              child: const Text(TTexts.updateNow),
+            content: const Text(
+              'Battery optimization is still enabled '
+                  'for Gluckscare.\n\n'
+                  'Background location tracking may stop when '
+                  'the screen is off or the app is minimized.\n\n'
+                  'Please allow Gluckscare to run without '
+                  'battery optimization.',
             ),
-          ],
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text(
+                  'Try Again',
+                ),
+              ),
+            ],
+          ),
         );
       },
     );
   }
 
-// Perform Immediate Update
-  Future<void> _startImmediateUpdate() async {
-    try {
-      print("[UpdateStart] Starting immediate update...");
-      AuthManager authManager = AuthManager();
-      await authManager.logout();
-
-      await InAppUpdate.performImmediateUpdate();
-    } catch (e) {
-      print("[UpdateStart] Immediate update failed: $e");
-      _checkLoginStatus(); // Continue app flow even if update fails
+  Future<void>
+  _showBatteryOptimizationErrorDialog() async {
+    if (!mounted) {
+      return;
     }
-  }
 
-// Check Login Session
-  Future<void> _checkLoginStatus() async {
-    print("[LoginCheck] Checking saved login session...");
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final String? userId = prefs.getString("user_id");
-
-    await Future.delayed(const Duration(seconds: 3)); // Splash delay
-
-    if (userId != null && userId.isNotEmpty) {
-      print("[LoginCheck] User ID found: $userId. Navigating to Dashboard.");
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => DashboardScreen()),
-      );
-    } else {
-      print("[LoginCheck] No user session found. Navigating to Login Screen.");
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const LoginScreen()),
-      );
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Image.asset(
-            TImages.lightAppLogo,
-            height: 150,
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) {
+        return PopScope(
+          canPop: false,
+          child: AlertDialog(
+            title: const Text(
+              'Battery Setting Required',
+            ),
+            content: const Text(
+              'Gluckscare could not verify the battery '
+                  'optimization setting.\n\n'
+                  'Please retry to continue.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text(
+                  'Retry',
+                ),
+              ),
+            ],
           ),
-        ),
-      ),
+        );
+      },
     );
   }
-}*/
-
-// working with andoird 15 tab
-import 'dart:io';
-import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:flutter_background_service/flutter_background_service.dart';
-import 'package:medicle_sales_rbsh/features/TrackingOptimizedBgLocation/debug/debug_screen.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:in_app_update/in_app_update.dart';
-
-import '../../../../utils/local_storage/auth_manager.dart';
-import '../../../TrackingOptimizedBgLocation/background/location_service.dart';
-import '../../../dashboard/screen/dashboard.dart';
-
-import '../../../../utils/constants/image_strings.dart';
-import '../../../../utils/constants/text_strings.dart';
-
-//  IMPORTANT: import your background entry
-
-import '../login/login.dart'; // <-- contains locationServiceEntry
-
-class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
-
-  @override
-  State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
-  @override
-  void initState() {
-    super.initState();
-    _startFlow();
+// ===========================================================
+// INTERNAL PERMISSION ACTION
+// ===========================================================
 
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      final notification = message.notification;
-      if (notification != null) {
-        _showPushNotification(
-          title: notification.title ?? 'New Message',
-          body: notification.body ?? '',
-        );
-      }
-    });
-  }
-
-  // ======================================================
-  // MAIN FLOW
-  // ======================================================
-
-  Future<void> _startFlow() async {
-    final fgStatus = await Permission.location.status;
-    final bgStatus = await Permission.locationAlways.status;
-
-    if (!fgStatus.isGranted || !bgStatus.isGranted) {
-      await _showDisclosureDialog();
-    } else {
-      await _startTrackingService();
-      await _checkForUpdateAndNavigate();
-    }
-  }
-
-  // ======================================================
-  // DISCLOSURE
-  // ======================================================
-
-  Future<void> _showDisclosureDialog() async {
-    final accepted = await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => AlertDialog(
-        title: const Text("Location Access Required"),
-        content: const Text(
-          "Gluckscare collects your location even when the app is closed "
-              "to track sales visits and activity accurately.",
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text("Cancel"),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text("Continue"),
-          ),
-        ],
-      ),
-    ) ??
-        false;
-
-    if (!accepted) exit(0);
-
-    await _requestPermissions();
-    await _startTrackingService();
-    await _checkForUpdateAndNavigate();
-  }
-
-  // ======================================================
-  // PERMISSIONS
-  // ======================================================
-
-  Future<void> _requestPermissions() async {
-    await Permission.notification.request();
-
-    final fg = await Permission.location.request();
-    if (!fg.isGranted) exit(0);
-
-    final bg = await Permission.locationAlways.request();
-    if (!bg.isGranted) exit(0);
-  }
-
-  // ======================================================
-  // BACKGROUND SERVICE (THE ONLY ONE)
-  // ======================================================
-
-  Future<void> _startTrackingService() async {
-    final service = FlutterBackgroundService();
-
-    if (await service.isRunning()) return;
-
-    const channel = AndroidNotificationChannel(
-      'tracking_channel',
-      'Tracking Service',
-      description: 'Background location tracking',
-      importance: Importance.low,
-    );
-
-    final notifications = FlutterLocalNotificationsPlugin();
-    await notifications
-        .resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(channel);
-
-    await service.configure(
-      androidConfiguration: AndroidConfiguration(
-        onStart: locationServiceEntry, //  YOUR ENGINE
-        isForegroundMode: true,
-        autoStart: false,
-        notificationChannelId: 'tracking_channel',
-        initialNotificationTitle: 'Tracking active',
-        initialNotificationContent: 'Location tracking running',
-        foregroundServiceNotificationId: 1001,
-        foregroundServiceTypes: [AndroidForegroundType.location],
-      ),
-      iosConfiguration: IosConfiguration(
-        autoStart: false,
-      ),
-    );
-
-    await service.startService();
-  }
-
-  // ======================================================
-  // UPDATE + NAVIGATION
-  // ======================================================
-
-  Future<void> _checkForUpdateAndNavigate() async {
-    try {
-      final info = await InAppUpdate.checkForUpdate();
-      if (info.updateAvailability == UpdateAvailability.updateAvailable) {
-        _showUpdateDialog();
-        return;
-      }
-    } catch (_) {}
-
-    _navigateAfterDelay();
-  }
-
-  void _showUpdateDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => AlertDialog(
-        title: const Text(TTexts.updateAvailable),
-        content: const Text(TTexts.updateAvailableContent),
-        actions: [
-         /* TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _navigateAfterDelay();
-            },
-            child: const Text(TTexts.skip),
-          ),*/
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              try {
-                await InAppUpdate.performImmediateUpdate();
-              } catch (_) {}
-              _navigateAfterDelay();
-            },
-            child: const Text(TTexts.updateNow),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _navigateAfterDelay() async {
-    final auth = AuthManager();
-    final userId = await auth.getUserId();
-    final token = await auth.getAuthToken();
-
-    await Future.delayed(const Duration(seconds: 2));
-
-    if (userId != null && token != null) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => DashboardScreen()),
-      );
-    } else {
-      await auth.logout();
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const LoginScreen()),
-      );
-    }
-  }
-
-  // ======================================================
-  // PUSH NOTIFICATION (UNCHANGED)
-  // ======================================================
-
-  void _showPushNotification({
-    required String title,
-    required String body,
-  }) {
-    final plugin = FlutterLocalNotificationsPlugin();
-
-    const details = NotificationDetails(
-      android: AndroidNotificationDetails(
-        'push_channel',
-        'Push Notifications',
-        importance: Importance.max,
-        priority: Priority.high,
-      ),
-    );
-
-    plugin.show(
-      DateTime.now().millisecondsSinceEpoch ~/ 1000,
-      title,
-      body,
-      details,
-    );
-  }
-
-  // ======================================================
-  // UI
-  // ======================================================
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Center(
-        child: Image.asset(TImages.lightAppLogo, height: 150),
-      ),
-    );
-  }
+enum _MandatoryPermissionAction {
+  retry,
+  settings,
 }

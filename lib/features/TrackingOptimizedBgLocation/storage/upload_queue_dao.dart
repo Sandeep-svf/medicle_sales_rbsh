@@ -114,6 +114,7 @@ class UploadQueueDao {
         'created_at_utc': event.createdAtUtc.toIso8601String(),
         'last_attempt_utc': null,
       },
+      conflictAlgorithm: ConflictAlgorithm.ignore,
     );
   }
 
@@ -125,9 +126,8 @@ class UploadQueueDao {
 
     return db.query(
       _table,
-      where: 'status = ? AND retry_count < ?',
-      whereArgs: ['PENDING', 5], // Remove retry limit here.
-    //  whereArgs: ['PENDING'],
+      where: 'status = ?',
+      whereArgs: ['PENDING'],
       orderBy: 'created_at_utc ASC',
       limit: limit,
     );
@@ -195,7 +195,7 @@ class UploadQueueDao {
     );
   }
 
-  Future markPending(int id) async {
+  Future<void> markPending(int id) async {
 
     final db = await AppDatabase().database;
 
