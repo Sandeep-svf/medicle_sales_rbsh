@@ -1,3 +1,5 @@
+const Object _tourPlanDayUnset = Object();
+
 class TourPlanDayModel {
   final String id;
   final String tourPlanId;
@@ -112,7 +114,7 @@ class TourPlanDayModel {
 
       date: _parseDate(
         data["date"],
-      ) ?? DateTime.now(),
+      ) ?? DateTime.fromMillisecondsSinceEpoch(0),
 
       dayType:
       data["day_type"]?.toString() ?? "",
@@ -130,8 +132,9 @@ class TourPlanDayModel {
       ),
 
       jointWorkUserIds:
-      _parseStringList(
+      _parseJointWorkUserIds(
         data["joint_work_user_ids"],
+        data["joint_work_users"] ?? data["jointWorkUsers"],
       ),
 
       // ------------------------------------------------
@@ -238,12 +241,12 @@ class TourPlanDayModel {
       createdAt:
       _parseDate(
         data["created_at"],
-      ) ?? DateTime.now(),
+      ) ?? DateTime.fromMillisecondsSinceEpoch(0),
 
       updatedAt:
       _parseDate(
         data["updated_at"],
-      ) ?? DateTime.now(),
+      ) ?? DateTime.fromMillisecondsSinceEpoch(0),
 
       // ------------------------------------------------
       // BEAT DETAILS
@@ -265,12 +268,12 @@ class TourPlanDayModel {
 
       jointWorkWith:
       _parseMap(
-        data["jointWorkWith"],
+        data["jointWorkWith"] ?? data["joint_work_with"],
       ),
 
       jointWorkUsers:
       _parseMapList(
-        data["joint_work_users"],
+        data["joint_work_users"] ?? data["jointWorkUsers"],
       ),
     );
   }
@@ -374,132 +377,91 @@ class TourPlanDayModel {
   TourPlanDayModel copyWith({
     String? dayType,
     String? collaborationStatus,
-
-    String? jointWorkWithUserId,
+    Object? jointWorkWithUserId = _tourPlanDayUnset,
     List<String>? jointWorkUserIds,
-
     String? handshakeStatus,
-    DateTime? handshakeTime,
-    double? handshakeDistanceMeters,
-
-    double? handshakeUserLat,
-    double? handshakeUserLng,
-
-    double? handshakePartnerLat,
-    double? handshakePartnerLng,
-
-    String? handshakeVerifiedByUserId,
-
-    String? beatId1,
-    String? beatId2,
-
+    Object? handshakeTime = _tourPlanDayUnset,
+    Object? handshakeDistanceMeters = _tourPlanDayUnset,
+    Object? handshakeUserLat = _tourPlanDayUnset,
+    Object? handshakeUserLng = _tourPlanDayUnset,
+    Object? handshakePartnerLat = _tourPlanDayUnset,
+    Object? handshakePartnerLng = _tourPlanDayUnset,
+    Object? handshakeVerifiedByUserId = _tourPlanDayUnset,
+    Object? beatId1 = _tourPlanDayUnset,
+    Object? beatId2 = _tourPlanDayUnset,
     String? changeRequestStatus,
-    String? changeRequestReason,
-
-    String? changeRequestBeatId1,
-    String? changeRequestBeatId2,
-
-    String? changeRequestDayType,
-    String? changeRequestComments,
-
-    String? notes,
+    Object? changeRequestReason = _tourPlanDayUnset,
+    Object? changeRequestBeatId1 = _tourPlanDayUnset,
+    Object? changeRequestBeatId2 = _tourPlanDayUnset,
+    Object? changeRequestDayType = _tourPlanDayUnset,
+    Object? changeRequestComments = _tourPlanDayUnset,
+    Object? notes = _tourPlanDayUnset,
   }) {
     return TourPlanDayModel(
       id: id,
       tourPlanId: tourPlanId,
-
       date: date,
       createdAt: createdAt,
       updatedAt: updatedAt,
-
-      dayType:
-      dayType ?? this.dayType,
-
-      collaborationStatus:
-      collaborationStatus ??
-          this.collaborationStatus,
-
-      jointWorkWithUserId:
-      jointWorkWithUserId ??
-          this.jointWorkWithUserId,
-
-      jointWorkUserIds:
-      jointWorkUserIds ??
-          this.jointWorkUserIds,
-
-      handshakeStatus:
-      handshakeStatus ??
-          this.handshakeStatus,
-
-      handshakeTime:
-      handshakeTime ??
-          this.handshakeTime,
-
+      dayType: dayType ?? this.dayType,
+      collaborationStatus: collaborationStatus ?? this.collaborationStatus,
+      jointWorkWithUserId: identical(jointWorkWithUserId, _tourPlanDayUnset)
+          ? this.jointWorkWithUserId
+          : jointWorkWithUserId as String?,
+      jointWorkUserIds: jointWorkUserIds ?? this.jointWorkUserIds,
+      handshakeStatus: handshakeStatus ?? this.handshakeStatus,
+      handshakeTime: identical(handshakeTime, _tourPlanDayUnset)
+          ? this.handshakeTime
+          : handshakeTime as DateTime?,
       handshakeDistanceMeters:
-      handshakeDistanceMeters ??
-          this.handshakeDistanceMeters,
-
-      handshakeUserLat:
-      handshakeUserLat ??
-          this.handshakeUserLat,
-
-      handshakeUserLng:
-      handshakeUserLng ??
-          this.handshakeUserLng,
-
-      handshakePartnerLat:
-      handshakePartnerLat ??
-          this.handshakePartnerLat,
-
-      handshakePartnerLng:
-      handshakePartnerLng ??
-          this.handshakePartnerLng,
-
+          identical(handshakeDistanceMeters, _tourPlanDayUnset)
+              ? this.handshakeDistanceMeters
+              : handshakeDistanceMeters as double?,
+      handshakeUserLat: identical(handshakeUserLat, _tourPlanDayUnset)
+          ? this.handshakeUserLat
+          : handshakeUserLat as double?,
+      handshakeUserLng: identical(handshakeUserLng, _tourPlanDayUnset)
+          ? this.handshakeUserLng
+          : handshakeUserLng as double?,
+      handshakePartnerLat: identical(handshakePartnerLat, _tourPlanDayUnset)
+          ? this.handshakePartnerLat
+          : handshakePartnerLat as double?,
+      handshakePartnerLng: identical(handshakePartnerLng, _tourPlanDayUnset)
+          ? this.handshakePartnerLng
+          : handshakePartnerLng as double?,
       handshakeVerifiedByUserId:
-      handshakeVerifiedByUserId ??
-          this.handshakeVerifiedByUserId,
-
-      beatId1:
-      beatId1 ?? this.beatId1,
-
-      beatId2:
-      beatId2 ?? this.beatId2,
-
-      changeRequestStatus:
-      changeRequestStatus ??
-          this.changeRequestStatus,
-
-      changeRequestReason:
-      changeRequestReason ??
-          this.changeRequestReason,
-
-      changeRequestBeatId1:
-      changeRequestBeatId1 ??
-          this.changeRequestBeatId1,
-
-      changeRequestBeatId2:
-      changeRequestBeatId2 ??
-          this.changeRequestBeatId2,
-
+          identical(handshakeVerifiedByUserId, _tourPlanDayUnset)
+              ? this.handshakeVerifiedByUserId
+              : handshakeVerifiedByUserId as String?,
+      beatId1: identical(beatId1, _tourPlanDayUnset)
+          ? this.beatId1
+          : beatId1 as String?,
+      beatId2: identical(beatId2, _tourPlanDayUnset)
+          ? this.beatId2
+          : beatId2 as String?,
+      changeRequestStatus: changeRequestStatus ?? this.changeRequestStatus,
+      changeRequestReason: identical(changeRequestReason, _tourPlanDayUnset)
+          ? this.changeRequestReason
+          : changeRequestReason as String?,
+      changeRequestBeatId1: identical(changeRequestBeatId1, _tourPlanDayUnset)
+          ? this.changeRequestBeatId1
+          : changeRequestBeatId1 as String?,
+      changeRequestBeatId2: identical(changeRequestBeatId2, _tourPlanDayUnset)
+          ? this.changeRequestBeatId2
+          : changeRequestBeatId2 as String?,
       changeRequestDayType:
-      changeRequestDayType ??
-          this.changeRequestDayType,
-
+          identical(changeRequestDayType, _tourPlanDayUnset)
+              ? this.changeRequestDayType
+              : changeRequestDayType as String?,
       changeRequestComments:
-      changeRequestComments ??
-          this.changeRequestComments,
-
-      notes:
-      notes ?? this.notes,
-
+          identical(changeRequestComments, _tourPlanDayUnset)
+              ? this.changeRequestComments
+              : changeRequestComments as String?,
+      notes: identical(notes, _tourPlanDayUnset) ? this.notes : notes as String?,
       beat1: beat1,
       beat2: beat2,
-
-      jointWorkWith:
-      jointWorkWith,
-
-      jointWorkUsers:
-      jointWorkUsers,
+      jointWorkWith: jointWorkWith,
+      jointWorkUsers: jointWorkUsers,
     );
   }
 
@@ -548,6 +510,34 @@ class TourPlanDayModel {
     return DateTime.tryParse(
       value.toString(),
     );
+  }
+
+  static List<String> _parseJointWorkUserIds(
+    dynamic idsValue,
+    dynamic usersValue,
+  ) {
+    final directIds = _parseStringList(idsValue);
+    if (directIds.isNotEmpty) {
+      return directIds;
+    }
+
+    if (usersValue is! List) {
+      return const [];
+    }
+
+    return usersValue
+        .whereType<Map>()
+        .map((user) {
+          final nested = user["user"];
+          final value =
+              user["user_id"] ??
+              user["userId"] ??
+              (nested is Map ? nested["id"] : null) ??
+              user["id"];
+          return _nullableString(value);
+        })
+        .whereType<String>()
+        .toList();
   }
 
   static List<String> _parseStringList(

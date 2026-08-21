@@ -12,10 +12,14 @@ class TourPlanTable extends StatelessWidget {
     super.key,
     required this.plans,
     required this.onDetails,
+    required this.onSubmit,
+    required this.submittingPlanId,
   });
 
   final List<TourPlanModel> plans;
   final Function(TourPlanModel) onDetails;
+  final Function(TourPlanModel) onSubmit;
+  final String submittingPlanId;
 
   @override
   Widget build(BuildContext context) {
@@ -97,6 +101,9 @@ class TourPlanTable extends StatelessWidget {
                     index: index,
                     plan: plan,
                     onDetails: () => onDetails(plan),
+                    onSubmit: () => onSubmit(plan),
+                    isSubmitting: submittingPlanId == plan.id,
+                    submitEnabled: submittingPlanId.isEmpty,
                   );
                 },
               ),
@@ -172,7 +179,7 @@ class TourPlanTable extends StatelessWidget {
           ),
 
           Expanded(
-            flex: 2,
+            flex: 3,
             child: Align(
               alignment: Alignment.centerRight,
               child: Text(

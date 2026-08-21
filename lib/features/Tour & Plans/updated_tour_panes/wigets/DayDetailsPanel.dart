@@ -137,7 +137,6 @@ class DayDetailsPanel extends StatelessWidget {
                         day.beatName != null)
                       _beatCard(
                         title: "Beat 1",
-                        id: day.beatId,
                         name: day.beatName,
                       ),
 
@@ -145,7 +144,6 @@ class DayDetailsPanel extends StatelessWidget {
                         day.beatName2 != null)
                       _beatCard(
                         title: "Beat 2",
-                        id: day.beatId2,
                         name: day.beatName2,
                       ),
 
@@ -175,28 +173,6 @@ class DayDetailsPanel extends StatelessWidget {
 
                   const SizedBox(height: 20),
 
-                  /// IDs / backend information
-                  if (day.id != null ||
-                      day.tourPlanId != null) ...[
-                    _sectionTitle(
-                      "Record Information",
-                      Icons.fingerprint,
-                    ),
-
-                    if (day.id != null)
-                      _detailRow(
-                        "Day ID",
-                        day.id!,
-                        Icons.tag,
-                      ),
-
-                    if (day.tourPlanId != null)
-                      _detailRow(
-                        "Tour Plan ID",
-                        day.tourPlanId!,
-                        Icons.assignment_outlined,
-                      ),
-                  ],
                 ],
               ),
             ),
@@ -311,7 +287,6 @@ class DayDetailsPanel extends StatelessWidget {
 
   Widget _beatCard({
     required String title,
-    String? id,
     String? name,
   }) {
     final displayName =
@@ -351,16 +326,6 @@ class DayDetailsPanel extends StatelessWidget {
             ),
           ),
 
-          if (id != null) ...[
-            const SizedBox(height: 5),
-            Text(
-              "ID: $id",
-              style: TextStyle(
-                fontSize: 11,
-                color: Colors.grey.shade600,
-              ),
-            ),
-          ],
         ],
       ),
     );

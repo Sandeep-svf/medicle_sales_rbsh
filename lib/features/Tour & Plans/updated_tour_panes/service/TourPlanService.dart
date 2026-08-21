@@ -130,29 +130,33 @@ class TourPlanService {
   Future<List<TourPlanModel>>
   getTourPlans() async {
     try {
-      final response =
-      await THttpHelper.authGet(
+      final response = await THttpHelper.authGet(
         "tour-plans",
       );
 
-      if (response["success"] == true) {
-        final List data =
-            response["data"] ?? [];
-
-        return data
-            .map(
-              (e) =>
-              TourPlanModel.fromJson(e),
-        )
-            .toList();
+      if (response["success"] != true) {
+        throw Exception(
+          response["message"]?.toString() ??
+              "Unable to load Tour Plans.",
+        );
       }
+
+      final List data = response["data"] ?? [];
+
+      return data
+          .whereType<Map>()
+          .map(
+            (e) => TourPlanModel.fromJson(
+              Map<String, dynamic>.from(e),
+            ),
+          )
+          .toList();
     } catch (e) {
       print(
         "[TourPlanService] getTourPlans : $e",
       );
+      rethrow;
     }
-
-    return [];
   }
 
   /// -----------------------------------------------------------

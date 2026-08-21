@@ -25,6 +25,7 @@ class _DayEditorPanelState extends State<DayEditorPanel> {
   final TourPlanController controller = Get.find<TourPlanController>();
   late DayType selectedType;
   String? selectedBeatId;
+  String? selectedBeatId2;
   List<String> selectedUserIds = [];
   late TextEditingController notesController;
 
@@ -66,6 +67,7 @@ class _DayEditorPanelState extends State<DayEditorPanel> {
   void didUpdateWidget(covariant DayEditorPanel oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.day.date != widget.day.date || oldWidget.day.type != widget.day.type) {
+      notesController.dispose();
       _resetFormState();
     }
   }
@@ -78,6 +80,7 @@ class _DayEditorPanelState extends State<DayEditorPanel> {
       selectedType = widget.day.type;
     }
     selectedBeatId = widget.day.beatId;
+    selectedBeatId2 = widget.day.beatId2;
     selectedUserIds = List<String>.from(
       widget.day.jointWorkUserIds,
     );
@@ -90,107 +93,114 @@ class _DayEditorPanelState extends State<DayEditorPanel> {
     super.dispose();
   }
 
-  void _dispatchChanges() {
+  bool _dispatchChanges() {
+    final isBeatDay =
+        selectedType == DayType.field || selectedType == DayType.jointWork;
 
-    //------------------------------------------------------------
-    // Validation - Field
-    //------------------------------------------------------------
-
-    if (selectedType == DayType.field &&
+    if (isBeatDay &&
         (selectedBeatId == null || selectedBeatId!.isEmpty)) {
       Get.snackbar(
         "Validation",
         "Please select a Beat.",
         snackPosition: SnackPosition.BOTTOM,
       );
-      return;
+      return false;
     }
 
-    //------------------------------------------------------------
-    // Validation - Joint Work
-    //------------------------------------------------------------
-
-    if (selectedType == DayType.jointWork) {
-
-      if (selectedBeatId == null || selectedBeatId!.isEmpty) {
-        Get.snackbar(
-          "Validation",
-          "Please select a Beat.",
-          snackPosition: SnackPosition.BOTTOM,
-        );
-        return;
-      }
-
-      if (selectedUserIds.isEmpty) {
-        Get.snackbar(
-          "Validation",
-          "Please select at least one Joint Work User.",
-          snackPosition: SnackPosition.BOTTOM,
-        );
-        return;
-      }
+    if (selectedType == DayType.jointWork && selectedUserIds.isEmpty) {
+      Get.snackbar(
+        "Validation",
+        "Please select at least one Joint Work User.",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return false;
     }
 
-    //------------------------------------------------------------
-    // Validation - Remarks Required
-    //------------------------------------------------------------
-
-    if ((selectedType == DayType.meeting ||
+    final requiresRemarks =
+        selectedType == DayType.meeting ||
         selectedType == DayType.office ||
         selectedType == DayType.transit ||
-        selectedType == DayType.leave) &&
-        notesController.text.trim().isEmpty) {
+        selectedType == DayType.leave;
 
+    if (requiresRemarks && notesController.text.trim().isEmpty) {
       Get.snackbar(
         "Validation",
         "Remarks are required.",
         snackPosition: SnackPosition.BOTTOM,
       );
-
-      return;
+      return false;
     }
 
-    //------------------------------------------------------------
-    // Existing Logic (UNCHANGED)
-    //------------------------------------------------------------
+    if (selectedBeatId2 != null && selectedBeatId2 == selectedBeatId) {
+      Get.snackbar(
+        "Validation",
+        "Primary and secondary Beat cannot be the same.",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return false;
+    }
 
     final matchedBeat = controller.beats.firstWhereOrNull(
-          (b) => b.id == selectedBeatId,
+      (b) => b.id == selectedBeatId,
+    );
+    final matchedBeat2 = controller.beats.firstWhereOrNull(
+      (b) => b.id == selectedBeatId2,
     );
 
-    final matchedUsers = controller.availableUsers
-        .where((u) => selectedUserIds.contains(u.id))
-        .toList();
+    final availableNameById = {
+      for (final user in controller.availableUsers) user.id: user.name,
+    };
+    final existingNameById = _existingJointNameById();
+
+    final selectedUserNames = selectedType == DayType.jointWork
+        ? selectedUserIds
+            .map((id) => availableNameById[id] ?? existingNameById[id])
+            .whereType<String>()
+            .where((name) => name.trim().isNotEmpty)
+            .toList()
+        : <String>[];
 
     widget.onDayUpdated(
       widget.day.copyWith(
         type: selectedType,
-
         apiDayType: _mapDayTypeToApi(selectedType),
-
-        beatId: (selectedType == DayType.field ||
-            selectedType == DayType.jointWork)
-            ? selectedBeatId
-            : null,
-
-        beatName: (selectedType == DayType.field ||
-            selectedType == DayType.jointWork)
-            ? matchedBeat?.name
-            : null,
-
-        jointWorkUserIds:
-        selectedType == DayType.jointWork
+        beatId: isBeatDay ? selectedBeatId : null,
+        beatName: isBeatDay ? matchedBeat?.name : null,
+        beatId2: isBeatDay ? selectedBeatId2 : null,
+        beatName2: isBeatDay ? matchedBeat2?.name : null,
+        jointWorkUserIds: selectedType == DayType.jointWork
             ? List<String>.from(selectedUserIds)
             : const [],
-
-        jointWorkUserNames:
-        selectedType == DayType.jointWork
-            ? matchedUsers.map((u) => u.name).toList()
+        jointWorkUserNames: selectedType == DayType.jointWork
+            ? selectedUserNames
             : const [],
-
-        notes: notesController.text.trim(),
+        notes: requiresRemarks ? notesController.text.trim() : null,
       ),
     );
+
+    return true;
+  }
+
+  bool _sameIds(List<String> a, List<String> b) {
+    if (a.length != b.length) return false;
+    final left = a.toSet();
+    final right = b.toSet();
+    return left.length == right.length && left.containsAll(right);
+  }
+
+  Map<String, String> _existingJointNameById() {
+    final result = <String, String>{};
+    final ids = widget.day.jointWorkUserIds;
+    final names = widget.day.jointWorkUserNames;
+
+    for (var i = 0; i < ids.length && i < names.length; i++) {
+      final name = names[i].trim();
+      if (name.isNotEmpty) {
+        result[ids[i]] = name;
+      }
+    }
+
+    return result;
   }
 
   @override
@@ -253,129 +263,28 @@ class _DayEditorPanelState extends State<DayEditorPanel> {
                 if (selectedType == DayType.field ||
                     selectedType == DayType.jointWork) ...[
                   const SizedBox(height: 24),
-                  const Text("TARGET VISITATION BEAT", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: TColors.textSecondary, letterSpacing: 1.2)),
-                  const SizedBox(height: 10),
-                  Obx(
-                        () {
-                      final selectedBeat =
-                      controller.beats.firstWhereOrNull(
-                            (b) => b.id == selectedBeatId,
-                      );
-
-                      return InkWell(
-                        onTap: () async {
-                          final result =
-                          await _showBeatSelectionDialog();
-
-                          if (result != null) {
-                            setState(() {
-                              selectedBeatId = result;
-                            });
-                          }
-                        },
-                        borderRadius: BorderRadius.circular(14),
-                        child: Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 14,
-                          ),
-                          decoration: BoxDecoration(
-                            color: TColors.light,
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(
-                              color: selectedBeat != null
-                                  ? TColors.primary.withOpacity(0.35)
-                                  : TColors.borderSecondary,
-                            ),
-                          ),
-                          child: selectedBeat == null
-                              ? const Row(
-                            children: [
-                              Icon(
-                                Icons.alt_route_outlined,
-                                color: TColors.textSecondary,
-                              ),
-                              SizedBox(width: 12),
-                              Expanded(
-                                child: Text(
-                                  "Select base route assignment",
-                                  style: TextStyle(
-                                    color: TColors.textSecondary,
-                                  ),
-                                ),
-                              ),
-                              Icon(
-                                Icons.keyboard_arrow_down_rounded,
-                                color: TColors.textSecondary,
-                              ),
-                            ],
-                          )
-                              : Row(
-                            crossAxisAlignment:
-                            CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                width: 42,
-                                height: 42,
-                                decoration: BoxDecoration(
-                                  color:
-                                  TColors.primary.withOpacity(0.10),
-                                  borderRadius:
-                                  BorderRadius.circular(10),
-                                ),
-                                child: const Icon(
-                                  Icons.alt_route_rounded,
-                                  color: TColors.primary,
-                                ),
-                              ),
-
-                              const SizedBox(width: 12),
-
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment:
-                                  CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      selectedBeat.name,
-                                      maxLines: 1,
-                                      overflow:
-                                      TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w700,
-                                        color: TColors.textPrimary,
-                                      ),
-                                    ),
-
-                                    const SizedBox(height: 4),
-
-                                    Text(
-                                      selectedBeat.areas.isEmpty
-                                          ? "No areas assigned"
-                                          : "${selectedBeat.areas.length} "
-                                          "${selectedBeat.areas.length == 1 ? 'area' : 'areas'} included",
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        color:
-                                        TColors.textSecondary,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-
-                              const SizedBox(width: 8),
-
-                              const Icon(
-                                Icons.keyboard_arrow_down_rounded,
-                                color: TColors.textSecondary,
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
+                  _buildBeatSelector(
+                    title: "PRIMARY VISITATION BEAT",
+                    selectedId: selectedBeatId,
+                    isRequired: true,
+                    onChanged: (value) {
+                      setState(() {
+                        selectedBeatId = value;
+                        if (selectedBeatId2 == value) {
+                          selectedBeatId2 = null;
+                        }
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 18),
+                  _buildBeatSelector(
+                    title: "SECONDARY BEAT (OPTIONAL)",
+                    selectedId: selectedBeatId2,
+                    excludeId: selectedBeatId,
+                    onChanged: (value) {
+                      setState(() {
+                        selectedBeatId2 = value;
+                      });
                     },
                   ),
                 ],
@@ -386,6 +295,9 @@ class _DayEditorPanelState extends State<DayEditorPanel> {
                   const SizedBox(height: 10),
                   InkWell(
                     onTap: () async {
+                      await controller.loadAvailableUsers(widget.day.date);
+                      if (!mounted) return;
+
                       final result = await _showJointWorkUserDialog();
 
                       if (result != null) {
@@ -475,8 +387,9 @@ class _DayEditorPanelState extends State<DayEditorPanel> {
               child: ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(backgroundColor: TColors.primary, foregroundColor: TColors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
                 onPressed: () {
-                  _dispatchChanges(); // 1. Commit values to state
-                  widget.onClose();   // 2. FIXED: Auto-closes side panel or bottom panel smoothly
+                  if (_dispatchChanges()) {
+                    widget.onClose();
+                  }
                 },
                 icon: const Icon(Icons.check_circle_outline, size: 20),
                 label: const Text("APPLY CHANGES TO CALENDAR", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, letterSpacing: 0.5)),
@@ -486,6 +399,144 @@ class _DayEditorPanelState extends State<DayEditorPanel> {
         ],
       ),
     );
+  }
+
+  Widget _buildBeatSelector({
+    required String title,
+    required String? selectedId,
+    required ValueChanged<String?> onChanged,
+    String? excludeId,
+    bool isRequired = false,
+  }) {
+    return Obx(() {
+      final selectedBeat = controller.beats.firstWhereOrNull(
+        (b) => b.id == selectedId,
+      );
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 11,
+              color: TColors.textSecondary,
+              letterSpacing: 1.2,
+            ),
+          ),
+          const SizedBox(height: 10),
+          InkWell(
+            onTap: () async {
+              final result = await _showBeatSelectionDialog(
+                selectedId: selectedId,
+                excludeId: excludeId,
+              );
+
+              if (result != null) {
+                onChanged(result);
+              }
+            },
+            borderRadius: BorderRadius.circular(14),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
+              ),
+              decoration: BoxDecoration(
+                color: TColors.light,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: selectedBeat != null
+                      ? TColors.primary.withOpacity(0.35)
+                      : TColors.borderSecondary,
+                ),
+              ),
+              child: selectedBeat == null
+                  ? Row(
+                      children: [
+                        const Icon(
+                          Icons.alt_route_outlined,
+                          color: TColors.textSecondary,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            isRequired
+                                ? "Select primary Beat"
+                                : "Select secondary Beat (optional)",
+                            style: const TextStyle(
+                              color: TColors.textSecondary,
+                            ),
+                          ),
+                        ),
+                        const Icon(
+                          Icons.keyboard_arrow_down_rounded,
+                          color: TColors.textSecondary,
+                        ),
+                      ],
+                    )
+                  : Row(
+                      children: [
+                        Container(
+                          width: 42,
+                          height: 42,
+                          decoration: BoxDecoration(
+                            color: TColors.primary.withOpacity(0.10),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(
+                            Icons.alt_route_rounded,
+                            color: TColors.primary,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                selectedBeat.name,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w700,
+                                  color: TColors.textPrimary,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                selectedBeat.areas.isEmpty
+                                    ? "No areas assigned"
+                                    : "${selectedBeat.areas.length} ${selectedBeat.areas.length == 1 ? 'area' : 'areas'} included",
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: TColors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (!isRequired)
+                          IconButton(
+                            tooltip: "Clear secondary Beat",
+                            onPressed: () => onChanged(null),
+                            icon: const Icon(Icons.close, size: 18),
+                          )
+                        else
+                          const Icon(
+                            Icons.keyboard_arrow_down_rounded,
+                            color: TColors.textSecondary,
+                          ),
+                      ],
+                    ),
+            ),
+          ),
+        ],
+      );
+    });
   }
 
   Widget _buildTypeCard(DayType type, String label, IconData icon, Color themeColor) {
@@ -498,14 +549,15 @@ class _DayEditorPanelState extends State<DayEditorPanel> {
           if (type != DayType.field &&
               type != DayType.jointWork) {
             selectedBeatId = null;
+            selectedBeatId2 = null;
           }
 
           if (type != DayType.jointWork) {
             selectedUserIds = [];
           }
         });
-        if (type == DayType.jointWork &&
-            controller.availableUsers.isEmpty) {
+
+        if (type == DayType.jointWork) {
           await controller.loadAvailableUsers(widget.day.date);
         }
       },
@@ -593,9 +645,15 @@ class _DayEditorPanelState extends State<DayEditorPanel> {
   }
 
   String _selectedUserNames() {
-    final names = controller.availableUsers
-        .where((u) => selectedUserIds.contains(u.id))
-        .map((u) => u.name)
+    final availableNameById = {
+      for (final user in controller.availableUsers) user.id: user.name,
+    };
+    final existingNameById = _existingJointNameById();
+
+    final names = selectedUserIds
+        .map((id) => availableNameById[id] ?? existingNameById[id])
+        .whereType<String>()
+        .where((name) => name.trim().isNotEmpty)
         .toList();
 
     if (names.isEmpty) {
@@ -687,7 +745,10 @@ class _DayEditorPanelState extends State<DayEditorPanel> {
     );
   }
 
-  Future<String?> _showBeatSelectionDialog() async {
+  Future<String?> _showBeatSelectionDialog({
+    String? selectedId,
+    String? excludeId,
+  }) async {
     return showDialog<String>(
       context: context,
       barrierDismissible: true,
@@ -699,6 +760,14 @@ class _DayEditorPanelState extends State<DayEditorPanel> {
             : screenSize.width * 0.92;
 
         final dialogHeight = screenSize.height * 0.82;
+
+        final visibleBeats = controller.beats
+            .where(
+              (beat) =>
+                  beat.id != excludeId &&
+                  (beat.isActive || beat.id == selectedId),
+            )
+            .toList();
 
         return Dialog(
           insetPadding: const EdgeInsets.symmetric(
@@ -792,7 +861,7 @@ class _DayEditorPanelState extends State<DayEditorPanel> {
                   // ==================================================
 
                   Expanded(
-                    child: controller.beats.isEmpty
+                    child: visibleBeats.isEmpty
                         ? const Center(
                       child: Text(
                         "No beats available.",
@@ -805,16 +874,14 @@ class _DayEditorPanelState extends State<DayEditorPanel> {
                       padding: const EdgeInsets.only(
                         bottom: 8,
                       ),
-                      itemCount: controller.beats.length,
+                      itemCount: visibleBeats.length,
                       separatorBuilder: (_, __) =>
                       const SizedBox(height: 10),
 
                       itemBuilder: (context, index) {
-                        final beat =
-                        controller.beats[index];
+                        final beat = visibleBeats[index];
 
-                        final isSelected =
-                            beat.id == selectedBeatId;
+                        final isSelected = beat.id == selectedId;
 
                         return InkWell(
                           onTap: () {

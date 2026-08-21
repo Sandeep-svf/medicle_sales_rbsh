@@ -7,7 +7,6 @@ import '../../../../utils/constants/sizes.dart';
 
 import '../DayType.dart';
 import '../controller/tour_plan_controller.dart';
-import '../model/pre_submit_validation_modal.dart';
 import '../wigets/DayDetailsPanel.dart';
 import '../wigets/custom_calander_grid.dart';
 import '../wigets/day_editor_pannel.dart';
@@ -40,16 +39,27 @@ class _TourPlanDetailsScreenState extends State<TourPlanDetailsScreen> {
     );
 
     controller = Get.put(TourPlanController());
+    _initializeController();
+  }
 
-    if (widget.planId != null) {
-      // Existing Tour Plan
-      controller.initialize(createNew: false).then((_) {
-        controller.loadTourPlan(widget.planId!);
-      });
-    } else {
-      // New Tour Plan
-      controller.initialize(createNew: true);
+  Future<void> _initializeController() async {
+    final planId = widget.planId;
+
+    await controller.initialize(createNew: planId == null);
+    if (!mounted || planId == null) return;
+
+    await controller.loadTourPlan(planId);
+  }
+
+  @override
+  void dispose() {
+    if (Get.isRegistered<TourPlanController>()) {
+      final registered = Get.find<TourPlanController>();
+      if (identical(registered, controller)) {
+        Get.delete<TourPlanController>();
+      }
     }
+    super.dispose();
   }
 
   @override
@@ -154,9 +164,9 @@ class _TourPlanDetailsScreenState extends State<TourPlanDetailsScreen> {
             ),
           ),
           OutlinedButton.icon(
-            onPressed: controller.isNewTourPlan
-                ? () => controller.changePlanningMonth(context)
-                : null,
+            onPressed: controller.isLoading.value
+                ? null
+                : () => controller.changePlanningMonth(context),
             icon: const Icon(
               Icons.calendar_month,
               color: Colors.white,
@@ -506,16 +516,18 @@ class _TourPlanDetailsScreenState extends State<TourPlanDetailsScreen> {
                   ),
                 ),
                 child: Row(
-                  children: const [
-                    Icon(
+                  children: [
+                    const Icon(
                       Icons.lock,
                       color: TColors.success,
                     ),
-                    SizedBox(width: 10),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        "Save your changes as a draft before submitting the tour plan.",
-                        style: TextStyle(
+                        controller.isApprovedTourPlan
+                            ? "This Tour Plan is approved and is read-only."
+                            : "This Tour Plan is submitted and is read-only.",
+                        style: const TextStyle(
                           fontWeight: FontWeight.w600,
                         ),
                       ),

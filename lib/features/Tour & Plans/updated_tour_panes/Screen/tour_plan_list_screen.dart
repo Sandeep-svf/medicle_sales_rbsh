@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:medicle_sales_rbsh/features/Tour%20&%20Plans/updated_tour_panes/Screen/tour_plan_table.dart';
+import 'package:path/path.dart';
 
 import '../../../../utils/constants/colors.dart';
 import '../../../../utils/constants/sizes.dart';
@@ -55,7 +56,7 @@ class TourPlanListScreen extends StatelessWidget {
 
                     _buildHeader(controller),
 
-                    _buildFilterBar(controller),
+                    _buildFilterBar(context,controller),
 
                     Expanded(
 
@@ -68,6 +69,8 @@ class TourPlanListScreen extends StatelessWidget {
                           ? TourPlanTable(
                         plans: controller.filteredPlans,
                         onDetails: controller.openDetails,
+                        onSubmit: controller.submitDraftFromList,
+                        submittingPlanId: controller.submittingPlanId.value,
                       )
 
                           : _buildMobileList(
@@ -182,7 +185,9 @@ class TourPlanListScreen extends StatelessWidget {
   //-----------------------------------------------------------
 
   Widget _buildFilterBar(
-      TourPlanListController controller) {
+      BuildContext context,
+      TourPlanListController controller,
+      ) {
 
     return Container(
       padding: const EdgeInsets.symmetric(
@@ -236,12 +241,8 @@ class TourPlanListScreen extends StatelessWidget {
           Expanded(
             child: OutlinedButton.icon(
 
-              onPressed: () {
-
-                controller.changeMonth(
-                  null,
-                );
-              },
+              onPressed: () =>
+                  _showMonthFilterDialog(context, controller),
 
               icon: const Icon(
                 Icons.calendar_today,
@@ -340,21 +341,42 @@ class TourPlanListScreen extends StatelessWidget {
 
                 Row(
                   children: [
-
                     StatusChip(
                       status: plan.status,
                     ),
-
                     const Spacer(),
-
-                    TextButton(
-                      onPressed: () =>
-                          controller.openDetails(
-                            plan,
-                          ),
-                      child:
-                      const Text("Details"),
+                    TextButton.icon(
+                      onPressed: () => controller.openDetails(plan),
+                      icon: Icon(
+                        plan.isDraft ? Icons.edit : Icons.visibility,
+                        size: 18,
+                      ),
+                      label: Text(plan.isDraft ? "Edit" : "Details"),
                     ),
+                    if (plan.isDraft) ...[
+                      const SizedBox(width: 8),
+                      Obx(() {
+                        final isSubmitting =
+                            controller.submittingPlanId.value == plan.id;
+
+                        return ElevatedButton.icon(
+                          onPressed: controller.submittingPlanId.value.isNotEmpty
+                              ? null
+                              : () => controller.submitDraftFromList(plan),
+                          icon: isSubmitting
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Icon(Icons.send, size: 18),
+                          label: Text(isSubmitting ? "Submitting" : "Submit"),
+                        );
+                      }),
+                    ],
                   ],
                 ),
 
@@ -380,6 +402,76 @@ class TourPlanListScreen extends StatelessWidget {
         );
       },
     );
+  }
+
+  Future<void> _showMonthFilterDialog(
+    BuildContext context,
+    TourPlanListController controller,
+  ) async {
+    final months = controller.tourPlans
+        .where((plan) => plan.year > 0 && plan.month >= 1 && plan.month <= 12)
+        .map((plan) => DateTime(plan.year, plan.month))
+        .toSet()
+        .toList()
+      ..sort((a, b) => b.compareTo(a));
+
+    final picked = await showDialog<DateTime>(
+      context: context,
+      builder: (context) {
+        return SimpleDialog(
+          title: const Text("Filter by Month"),
+          children: [
+            SimpleDialogOption(
+              onPressed: () => Navigator.pop(
+                context,
+                DateTime(1900, 1),
+              ),
+              child: const Row(
+                children: [
+                  Icon(Icons.clear_all),
+                  SizedBox(width: 12),
+                  Text("All Months"),
+                ],
+              ),
+            ),
+            ...months.map(
+              (month) => SimpleDialogOption(
+                onPressed: () => Navigator.pop(context, month),
+                child: Text(_monthLabel(month)),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (picked == null) return;
+
+    if (picked.year == 1900) {
+      controller.changeMonth(null);
+    } else {
+      controller.changeMonth(picked);
+    }
+  }
+
+  String _monthLabel(DateTime date) {
+    const months = [
+      '',
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
+    ];
+
+    return "${months[date.month]} ${date.year}";
   }
 
   //-----------------------------------------------------------

@@ -22,6 +22,8 @@ class TourPlanListController extends GetxController {
 
   final RxBool isRefreshing = false.obs;
 
+  final RxString submittingPlanId = ''.obs;
+
   ///------------------------------------------------------------
   /// Data
   ///------------------------------------------------------------
@@ -322,62 +324,114 @@ class TourPlanListController extends GetxController {
     );
   }*/
 
-  /// new one show plans if exist while create
-  void createTourPlan() {
+  /// Create flow:
+  /// - Refresh the list first so duplicate checks use latest server data.
+  /// - Open next month if it already exists; otherwise open a new plan.
+  /// - The details screen can then switch to any selectable future month.
+  Future<void> createTourPlan() async {
     debugPrint("========== Create Tour Plan ==========");
 
-    final now = DateTime.now();
+    try {
+      final latestPlans = await _service.getTourPlans();
+      tourPlans.assignAll(latestPlans);
+      applyFilters();
 
-    // Upcoming / planning month
-    final DateTime upcomingMonth = now.month == 12
-        ? DateTime(now.year + 1, 1)
-        : DateTime(now.year, now.month + 1);
+      final now = DateTime.now();
+      final upcomingMonth = DateTime(now.year, now.month + 1);
 
-    debugPrint(
-      "Upcoming Month : ${upcomingMonth.month}/${upcomingMonth.year}",
-    );
-
-    // Check if a Tour Plan already exists for the upcoming month
-    TourPlanModel? existingPlan;
-
-    for (final plan in tourPlans) {
-      if (plan.month == upcomingMonth.month &&
-          plan.year == upcomingMonth.year) {
-        existingPlan = plan;
-        break;
-      }
-    }
-
-    // ---------------------------------------------------------
-    // No existing plan
-    // ---------------------------------------------------------
-
-    if (existingPlan == null) {
-      debugPrint("No Tour Plan found for upcoming month.");
-      debugPrint("Opening NEW Tour Plan.");
-
-      Get.to(
-            () => const TourPlanDetailsScreen(),
+      final existingPlan = tourPlans.firstWhereOrNull(
+        (plan) =>
+            plan.month == upcomingMonth.month &&
+            plan.year == upcomingMonth.year,
       );
 
+      if (existingPlan == null) {
+        await Get.to<bool>(() => const TourPlanDetailsScreen());
+      } else {
+        await Get.to<bool>(
+          () => TourPlanDetailsScreen(planId: existingPlan.id),
+        );
+      }
+
+      // Always refresh after returning because the user may have saved a draft
+      // even when the details route did not explicitly return a refresh flag.
+      await refreshList();
+    } catch (e) {
+      Get.snackbar(
+        "Error",
+        "Unable to open Tour Plan. $e",
+      );
+    }
+  }
+
+  /// Submit a Draft directly from the list using its existing draft ID.
+  /// No calendar validation/save call is needed here because the backend
+  /// submit endpoint only requires the draft ID.
+  Future<void> submitDraftFromList(TourPlanModel plan) async {
+    if (!plan.isDraft || submittingPlanId.value.isNotEmpty) {
       return;
     }
 
-    // ---------------------------------------------------------
-    // Existing plan found
-    // ---------------------------------------------------------
-
-    debugPrint("Existing Tour Plan found.");
-    debugPrint("Plan ID     : ${existingPlan.id}");
-    debugPrint("Month       : ${existingPlan.month}/${existingPlan.year}");
-    debugPrint("Status      : ${existingPlan.status}");
-    debugPrint("Days        : ${existingPlan.days.length}");
-
-    Get.to(
-          () => TourPlanDetailsScreen(
-        planId: existingPlan!.id,
+    final confirmed = await Get.dialog<bool>(
+      AlertDialog(
+        title: const Text("Submit Tour Plan?"),
+        content: Text(
+          "Submit ${plan.monthName}? After submission the plan will be read-only.",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(result: false),
+            child: const Text("Cancel"),
+          ),
+          ElevatedButton.icon(
+            onPressed: () => Get.back(result: true),
+            icon: const Icon(Icons.send),
+            label: const Text("Submit"),
+          ),
+        ],
       ),
     );
+
+    if (confirmed != true) {
+      return;
+    }
+
+    submittingPlanId.value = plan.id;
+
+    try {
+      final success = await _service.submitDraft(plan.id);
+
+      if (!success) {
+        Get.snackbar(
+          "Failed",
+          "Unable to submit ${plan.monthName}.",
+        );
+        return;
+      }
+
+      final index = tourPlans.indexWhere((item) => item.id == plan.id);
+      if (index != -1) {
+        tourPlans[index] = tourPlans[index].copyWith(
+          status: "Submitted",
+          updatedAt: DateTime.now(),
+        );
+        applyFilters();
+      }
+
+      Get.snackbar(
+        "Success",
+        "${plan.monthName} submitted successfully.",
+      );
+
+      await refreshList();
+    } catch (e) {
+      Get.snackbar(
+        "Error",
+        e.toString(),
+      );
+    } finally {
+      submittingPlanId.value = '';
+    }
   }
 
 
@@ -388,6 +442,8 @@ class TourPlanListController extends GetxController {
     tourPlans.close();
 
     filteredPlans.close();
+
+    submittingPlanId.close();
 
     searchText.close();
 

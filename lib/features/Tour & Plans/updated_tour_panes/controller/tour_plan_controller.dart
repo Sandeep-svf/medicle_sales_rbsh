@@ -1,6 +1,3 @@
-import 'dart:convert';
-
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -30,12 +27,12 @@ class TourPlanController extends GetxController {
   final RxString currentStatus = "Draft".obs;
 
   bool get readOnly =>
-      currentStatus.value == "Submitted" ||
-          currentStatus.value == "Approved";
+      tourPlan.value?.status == "Submitted" ||
+          tourPlan.value?.status == "Approved";
 
   bool get canSubmit =>
-      currentStatus.value == "Draft" ||
-          currentStatus.value == "Returned";
+      tourPlan.value?.status == "Draft" ||
+          tourPlan.value?.status == "Returned";
 
 
 
@@ -54,6 +51,8 @@ class TourPlanController extends GetxController {
 
   final RxBool isReadOnly =
       false.obs;
+
+  final RxBool hasUnsavedChanges = false.obs;
 
   /// -------------------------------------------------------
   /// Tour Plan
@@ -101,6 +100,8 @@ class TourPlanController extends GetxController {
   final RxList<AvailableUserModel>
   availableUsers =
       <AvailableUserModel>[].obs;
+
+  DateTime? _availableUsersDate;
 
   /// -------------------------------------------------------
   /// Month
@@ -248,8 +249,16 @@ class TourPlanController extends GetxController {
 
 
 
+  void _syncPlanState(TourPlanModel? plan) {
+    tourPlan.value = plan;
+    currentStatus.value = plan?.status ?? "Draft";
+    draftId.value = plan?.id ?? "";
+    isReadOnly.value = plan?.isReadOnly ?? false;
 
-
+    if (plan != null) {
+      selectedMonth.value = DateTime(plan.year, plan.month);
+    }
+  }
 
   Future<void> loadPlanForSelectedMonth() async {
     final month = selectedMonth.value.month;
@@ -296,10 +305,14 @@ class TourPlanController extends GetxController {
               "${matchingPlan.status}",
         );
 
-        // Load complete details.
-        await loadTourPlan(
+        // Load complete details. Keep the current month intact if details fail.
+        final loaded = await loadTourPlan(
           matchingPlan.id,
+          showError: false,
         );
+        if (!loaded) {
+          throw Exception("Unable to load ${matchingPlan.monthName} details.");
+        }
 
         return;
       }
@@ -313,20 +326,15 @@ class TourPlanController extends GetxController {
             "$month/$year",
       );
 
-      // Clear previous month's plan.
-      tourPlan.value = null;
-
-      currentStatus.value = "Draft";
-
-      draftId.value = "";
-
-      isReadOnly.value = false;
-
+      // Clear previous month's plan and reset state for a new draft.
+      _syncPlanState(null);
+      hasUnsavedChanges.value = false;
       selectedDay.value = null;
-
+      availableUsers.clear();
+      _availableUsersDate = null;
       monthDays.clear();
 
-      // Create empty calendar.
+      // Create empty calendar for the selected month.
       generateCalendar();
 
     } catch (e, stackTrace) {
@@ -339,6 +347,7 @@ class TourPlanController extends GetxController {
         stackTrace.toString(),
       );
 
+      rethrow;
     } finally {
 
       isLoading.value = false;
@@ -418,16 +427,6 @@ class TourPlanController extends GetxController {
       BuildContext context,
       ) async {
 
-    // Submitted / Approved cannot be edited.
-    if (!canEditCurrentPlan) {
-      Get.snackbar(
-        "Read Only",
-        "This Tour Plan cannot be edited.",
-      );
-
-      return;
-    }
-
     final picked = await showDialog<DateTime>(
       context: context,
       builder: (_) {
@@ -452,14 +451,48 @@ class TourPlanController extends GetxController {
       return;
     }
 
-    // Change selected month first.
-    selectedMonth.value = newMonth;
+    if (hasUnsavedChanges.value) {
+      final discard = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text("Discard Unsaved Changes?"),
+          content: Text(
+            "You have unsaved changes in $monthTitle. "
+            "Switching months will discard those changes.",
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text("Stay"),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text("Discard & Switch"),
+            ),
+          ],
+        ),
+      );
 
+      if (discard != true) {
+        return;
+      }
+    }
+
+    final previousMonth = selectedMonth.value;
+
+    selectedMonth.value = newMonth;
     selectedDay.value = null;
 
-    // IMPORTANT:
-    // Find whether this month already has a plan.
-    await loadPlanForSelectedMonth();
+    try {
+      // Existing month -> load it. Missing month -> create a blank calendar.
+      await loadPlanForSelectedMonth();
+    } catch (e) {
+      selectedMonth.value = previousMonth;
+      Get.snackbar(
+        "Unable to Change Month",
+        "Could not load the selected month. Please try again.",
+      );
+    }
   }
   /// -------------------------------------------------------
   /// Init
@@ -492,21 +525,27 @@ class TourPlanController extends GetxController {
   }
 
   Future<void> loadBeats() async {
-    final result =
-    await service.getBeats();
+    final result = await service.getBeats();
 
+    // Keep inactive beats available for displaying historical assignments.
+    // The editor filters them out when choosing a new beat.
     beats.assignAll(result);
   }
 
-  Future<void> loadAvailableUsers(DateTime date,) async {
-    final result =
-    await service
-        .getAvailableUsers(date);
+  Future<void> loadAvailableUsers(DateTime date) async {
+    _availableUsersDate = DateTime(date.year, date.month, date.day);
+    availableUsers.clear();
+
+    final result = await service.getAvailableUsers(date);
+
+    // Ignore a slower response if the user has already selected another date.
+    final requestedDate = DateTime(date.year, date.month, date.day);
+    if (_availableUsersDate != requestedDate) {
+      return;
+    }
 
     availableUsers.assignAll(
-      result.where(
-            (e) => e.available,
-      ),
+      result.where((e) => e.available),
     );
   }
 
@@ -546,7 +585,10 @@ class TourPlanController extends GetxController {
     }
   }
 
-  Future<void> loadTourPlan(String tourPlanId) async {
+  Future<bool> loadTourPlan(
+    String tourPlanId, {
+    bool showError = true,
+  }) async {
 
     debugPrint("========== TourPlanController ==========");
     debugPrint("TourPlanController loadTourPlan()");
@@ -556,9 +598,6 @@ class TourPlanController extends GetxController {
     isLoading.value = true;
 
     try {
-
-      selectedDay.value = null;
-      monthDays.clear();
 
       debugPrint("========== TourPlanController ==========");
       debugPrint("TourPlanController Calling Details API...");
@@ -573,7 +612,23 @@ class TourPlanController extends GetxController {
           "TourPlanController API Response : NULL",
         );
 
-        return;
+        if (showError) {
+          Get.snackbar(
+            "Error",
+            "Unable to load Tour Plan details.",
+          );
+        }
+        return false;
+      }
+
+      if (response.year <= 0 || response.month < 1 || response.month > 12) {
+        if (showError) {
+          Get.snackbar(
+            "Invalid Tour Plan",
+            "The server returned an invalid planning month.",
+          );
+        }
+        return false;
       }
 
       debugPrint("========== TourPlanController ==========");
@@ -589,16 +644,6 @@ class TourPlanController extends GetxController {
       debugPrint("TourPlanController Selected Year  : ${selectedMonth.value.year}");
       debugPrint("=================================");
 
-
-      if (response == null) {
-
-        debugPrint("========== TourPlanController ==========");
-        debugPrint("TourPlanController API Response : NULL");
-        debugPrint("========================================");
-
-        return;
-      }
-
       debugPrint("========== TourPlanController ==========");
       debugPrint("TourPlanController API Success");
       debugPrint("TourPlanController TourPlan Id : ${response.id}");
@@ -608,20 +653,12 @@ class TourPlanController extends GetxController {
       debugPrint("TourPlanController Days Count  : ${response.days.length}");
       debugPrint("========================================");
 
-      tourPlan.value = response;
+      selectedDay.value = null;
+      availableUsers.clear();
+      _availableUsersDate = null;
+      monthDays.clear();
 
-      currentStatus.value = response.status;
-
-      draftId.value = response.id;
-
-      selectedMonth.value = DateTime(
-        response.year,
-        response.month,
-      );
-
-      isReadOnly.value =
-          response.status == "Submitted" ||
-              response.status == "Approved";
+      _syncPlanState(response);
 
       debugPrint("========== TourPlanController ==========");
       debugPrint("TourPlanController Generating Calendar...");
@@ -634,8 +671,7 @@ class TourPlanController extends GetxController {
       debugPrint("========================================");
 
       populateExistingDays();
-
-
+      hasUnsavedChanges.value = false;
 
       debugPrint("========== TourPlanController ==========");
       debugPrint("TourPlanController Month Days After Populate : ${monthDays.length}");
@@ -652,6 +688,7 @@ class TourPlanController extends GetxController {
       debugPrint("TourPlanController Editable   : $canEditCurrentPlan");
       debugPrint("===============================");
 
+      return true;
     } catch (e, stack) {
 
       debugPrint("========== TourPlanController ==========");
@@ -660,6 +697,13 @@ class TourPlanController extends GetxController {
       debugPrint(stack.toString());
       debugPrint("========================================");
 
+      if (showError) {
+        Get.snackbar(
+          "Error",
+          "Unable to load Tour Plan details.",
+        );
+      }
+      return false;
     } finally {
 
       isLoading.value = false;
@@ -673,29 +717,29 @@ class TourPlanController extends GetxController {
 
 
   Future<void> createNewTourPlan() async {
-    tourPlan.value = null;
-
-    draftId.value = "";
-
-    isReadOnly.value = false;
-
+    _syncPlanState(null);
+    hasUnsavedChanges.value = false;
     selectedDay.value = null;
-
+    availableUsers.clear();
+    _availableUsersDate = null;
     monthDays.clear();
-
     generateCalendar();
   }
 
-  void changeMonth(DateTime month,) {
-    if (!canEdit) {
-      return;
-    }
-
-    selectedMonth.value = month;
-
+  Future<void> changeMonth(DateTime month) async {
+    final previousMonth = selectedMonth.value;
+    selectedMonth.value = DateTime(month.year, month.month);
     selectedDay.value = null;
 
-    generateCalendar();
+    try {
+      await loadPlanForSelectedMonth();
+    } catch (_) {
+      selectedMonth.value = previousMonth;
+      Get.snackbar(
+        "Unable to Change Month",
+        "Could not load the selected month. Please try again.",
+      );
+    }
   }
 
   void generateCalendar() {
@@ -913,6 +957,7 @@ class TourPlanController extends GetxController {
 
         jointWorkUserNames:
         _getJointWorkUserNames(
+          apiDay.jointWorkUsers,
           apiDay.jointWorkWith,
         ),
 
@@ -974,65 +1019,64 @@ class TourPlanController extends GetxController {
   }
 
   List<String> _getJointWorkUserNames(
-      Map<String, dynamic>? jointWorkWith,
-      ) {
-    if (jointWorkWith == null) {
-      return [];
+    List<Map<String, dynamic>> jointWorkUsers,
+    Map<String, dynamic>? jointWorkWith,
+  ) {
+    String? extractName(dynamic value) {
+      if (value is! Map) return null;
+
+      final nestedUser = value["user"] ?? value["joint_work_user"];
+      if (nestedUser is Map) {
+        final nestedName = extractName(nestedUser);
+        if (nestedName != null) return nestedName;
+      }
+
+      final name =
+          value["name"] ??
+          value["user_name"] ??
+          value["userName"] ??
+          value["full_name"] ??
+          value["fullName"];
+
+      final text = name?.toString().trim() ?? "";
+      return text.isEmpty ? null : text;
     }
 
-    final users =
-    jointWorkWith["users"];
+    // Current API shape: joint_work_users: [{...user...}, ...]
+    final names = jointWorkUsers
+        .map(extractName)
+        .whereType<String>()
+        .toList();
 
+    if (names.isNotEmpty) {
+      return names;
+    }
+
+    // Backward-compatible fallback for older jointWorkWith payloads.
+    final users = jointWorkWith?["users"];
     if (users is List) {
       return users
-          .map(
-            (e) {
-          if (e is Map<String, dynamic>) {
-            final name =
-                e["name"] ??
-                    e["user_name"] ??
-                    e["userName"];
-
-            return name?.toString() ?? "";
-          }
-
-          return e.toString();
-        },
-      )
-          .where(
-            (name) => name.trim().isNotEmpty,
-      )
+          .map(extractName)
+          .whereType<String>()
           .toList();
     }
 
-    return [];
+    final singleName = extractName(jointWorkWith);
+    return singleName == null ? const [] : [singleName];
   }
 
-  void selectDay(TourDay day,) {
-    if (isReadOnly.value) {
-      return;
-    }
-
-    if (
-
-    day.holidayName == "Weekly Off" ||
-
-        day.type == DayType.holiday
-
-    ) {
+  void selectDay(TourDay day) {
+    if (!canEditCurrentPlan || !day.isEditable) {
       return;
     }
 
     selectedDay.value = day;
 
-    if (
-
-    day.type == DayType.jointWork
-
-    ) {
-      loadAvailableUsers(
-        day.date,
-      );
+    if (day.type == DayType.jointWork) {
+      loadAvailableUsers(day.date);
+    } else {
+      availableUsers.clear();
+      _availableUsersDate = null;
     }
   }
 
@@ -1060,11 +1104,14 @@ class TourPlanController extends GetxController {
 
     if (day.type == DayType.jointWork) {
       loadAvailableUsers(day.date);
+    } else {
+      availableUsers.clear();
+      _availableUsersDate = null;
     }
   }
 
   void updateDay(TourDay updatedDay,) {
-    if (isReadOnly.value) {
+    if (!canEditCurrentPlan) {
       return;
     }
 
@@ -1085,6 +1132,7 @@ class TourPlanController extends GetxController {
     }
 
     monthDays[index] = updatedDay;
+    hasUnsavedChanges.value = true;
 
     selectedDay.value = updatedDay;
 
@@ -1135,7 +1183,7 @@ class TourPlanController extends GetxController {
 
     /// Office
 
-    if (day.apiDayType == "Office") {
+    if (day.type == DayType.office) {
       if ((day.notes ?? "")
           .trim()
           .isEmpty) {
@@ -1145,11 +1193,17 @@ class TourPlanController extends GetxController {
 
     /// Transit
 
-    if (day.apiDayType == "Transit") {
-      if ((day.notes ?? "")
-          .trim()
-          .isEmpty) {
+    if (day.type == DayType.transit) {
+      if ((day.notes ?? "").trim().isEmpty) {
         return "Transit remarks are required.";
+      }
+    }
+
+    /// Leave
+
+    if (day.type == DayType.leave) {
+      if ((day.notes ?? "").trim().isEmpty) {
+        return "Leave remarks are required.";
       }
     }
 
@@ -1183,29 +1237,25 @@ class TourPlanController extends GetxController {
 //------------------------------------------------------------
 
   int get fieldCount =>
-      monthDays.where((e) => e.apiDayType == "Field").length;
+      monthDays.where((e) => e.type == DayType.field).length;
 
   int get jointWorkCount =>
-      monthDays.where((e) => e.apiDayType == "Joint work").length;
+      monthDays.where((e) => e.type == DayType.jointWork).length;
 
   int get meetingCount =>
-      monthDays.where((e) => e.apiDayType == "Meeting").length;
+      monthDays.where((e) => e.type == DayType.meeting).length;
 
   int get officeCount =>
-      monthDays.where((e) => e.apiDayType == "Office").length;
+      monthDays.where((e) => e.type == DayType.office).length;
 
   int get transitCount =>
-      monthDays.where((e) => e.apiDayType == "Transit").length;
+      monthDays.where((e) => e.type == DayType.transit).length;
 
   int get leaveCount =>
-      monthDays.where((e) => e.apiDayType == "Leave").length;
+      monthDays.where((e) => e.type == DayType.leave).length;
 
   int get holidayCount =>
-      monthDays.where(
-            (e) =>
-        e.apiDayType == "Holiday" &&
-            !e.isWeeklyOff,
-      ).length;
+      monthDays.where((e) => e.isHoliday && !e.isWeeklyOff).length;
 
   int get weeklyOffCount =>
       monthDays.where((e) => e.isWeeklyOff).length;
@@ -1215,16 +1265,6 @@ class TourPlanController extends GetxController {
   ///------------------------------------------------------------
 
   String mapDayType(TourDay day) {
-    if (
-
-    day.apiDayType != null &&
-
-        day.apiDayType!.isNotEmpty
-
-    ) {
-      return day.apiDayType!;
-    }
-
     switch (day.type) {
 
       case DayType.field:
@@ -1254,7 +1294,9 @@ class TourPlanController extends GetxController {
         return "Holiday";
 
       case DayType.unassigned:
-        return "Field";
+        throw StateError(
+          "Unassigned day ${day.date.toIso8601String()} cannot be sent to the API.",
+        );
     }
   }
 
@@ -1370,33 +1412,37 @@ class TourPlanController extends GetxController {
   /// Save Draft
   ///------------------------------------------------------------
 
-  Future<void> saveDraft() async {
-
-    if (!validateTourPlan()) {
-      return;
+  Future<String?> _saveDraftCore() async {
+    if (!canEditCurrentPlan) {
+      Get.snackbar(
+        "Read Only",
+        "This Tour Plan cannot be edited.",
+      );
+      return null;
     }
 
+    // Show the detailed missing-day dialog first.
     if (!validateAllDaysAssigned()) {
-      return;
+      return null;
+    }
+
+    if (!validateTourPlan()) {
+      return null;
+    }
+
+    if (isSavingDraft.value) {
+      return null;
     }
 
     isSavingDraft.value = true;
+
     try {
       final body = buildDraftBody();
 
-
-
-      debugPrint('[TourPlanService] DAYS COUNT: ${(body['days'] as List).length}');
-      debugPrint('[TourPlanService] FIRST DAY: ${(body['days'] as List).first}');
-      debugPrint('[TourPlanService] LAST DAY: ${(body['days'] as List).last}');
-
-      debugPrint('[TourPlanService] BODY TYPE: ${body.runtimeType}');
-      debugPrint('[TourPlanService] BODY: $body');
-
-      final encodedBody = jsonEncode(body);
-
-      debugPrint('[TourPlanService] ENCODED LENGTH: ${encodedBody.length}');
-      debugPrint('[TourPlanService] ENCODED BODY: $encodedBody');
+      debugPrint(
+        '[TourPlanService] Saving ${monthTitle} with ' 
+        '${(body['days'] as List).length} days',
+      );
 
       final id = await service.saveDraft(body);
 
@@ -1406,139 +1452,62 @@ class TourPlanController extends GetxController {
           "Unable to save draft.",
           backgroundColor: TColors.error.withOpacity(.15),
         );
-
-        return;
+        return null;
       }
 
       draftId.value = id;
 
-      /// New Draft
-
+      // Keep local state coherent even if the details refresh is delayed.
       if (tourPlan.value == null) {
-        tourPlan.value = TourPlanModel(
-          id: id,
-          userId: "",
-          month: selectedMonth.value.month,
-          year: selectedMonth.value.year,
-          status: "Draft",
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-          days: const [],
+        _syncPlanState(
+          TourPlanModel(
+            id: id,
+            userId: "",
+            month: selectedMonth.value.month,
+            year: selectedMonth.value.year,
+            status: "Draft",
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
+            days: const [],
+          ),
         );
       }
 
       await refreshTourPlan();
-
-      Get.dialog(
-        const DraftSavedDialog(),
-        barrierDismissible: false,
-      );
-
-      /// Refresh latest server data
-
-
+      hasUnsavedChanges.value = false;
+      return id;
     } catch (e) {
       Get.snackbar(
         "Error",
         e.toString(),
         backgroundColor: TColors.error.withOpacity(.15),
       );
+      return null;
     } finally {
       isSavingDraft.value = false;
     }
   }
 
-  /// =======================================================
-  /// New Flow : Save Draft (New + Returned)
-  /// =======================================================
+  Future<void> saveDraft() async {
+    final id = await _saveDraftCore();
+    if (id == null) return;
+
+    Get.dialog(
+      const DraftSavedDialog(),
+      barrierDismissible: false,
+    );
+  }
+
   Future<bool> saveCurrentPlanDraft() async {
+    final id = await _saveDraftCore();
+    if (id == null) return false;
 
-    // ----------------------------------------------------------
-    // READ ONLY CHECK
-    // ----------------------------------------------------------
-
-    if (!canEditCurrentPlan) {
-      Get.snackbar(
-        "Read Only",
-        "This Tour Plan cannot be edited.",
-      );
-
-      return false;
-    }
-
-    // ----------------------------------------------------------
-    // VALIDATE DAY DETAILS
-    // ----------------------------------------------------------
-
-    if (!validateTourPlan()) {
-      return false;
-    }
-
-    // ----------------------------------------------------------
-    // VALIDATE ALL WORKING DAYS ARE ASSIGNED
-    // Holiday + Weekly Off are allowed to remain unassigned
-    // ----------------------------------------------------------
-
-    if (!validateAllDaysAssigned()) {
-      return false;
-    }
-
-    // ----------------------------------------------------------
-    // SAVE DRAFT
-    // ----------------------------------------------------------
-
-    isSavingDraft.value = true;
-
-    try {
-
-      final body = buildDraftBody();
-
-      final id = await service.saveDraft(body);
-
-      if (id == null || id.isEmpty) {
-
-        Get.snackbar(
-          "Error",
-          "Unable to save draft.",
-        );
-
-        return false;
-      }
-
-      // --------------------------------------------------------
-      // SAVE DRAFT ID
-      // --------------------------------------------------------
-
-      draftId.value = id;
-
-      // --------------------------------------------------------
-      // REFRESH FROM SERVER
-      // --------------------------------------------------------
-
-      await refreshTourPlan();
-
-      Get.snackbar(
-        "Success",
-        "Draft saved successfully.",
-      );
-
-      return true;
-
-    } catch (e) {
-
-      Get.snackbar(
-        "Error",
-        e.toString(),
-      );
-
-      return false;
-
-    } finally {
-
-      isSavingDraft.value = false;
-    }
+    Get.snackbar(
+      "Success",
+      "Draft saved successfully.",
+    );
+    return true;
   }
-
 
   /// =======================================================
   /// New Flow : Save + Submit
@@ -1557,7 +1526,10 @@ class TourPlanController extends GetxController {
 
     if (!saved) return;
 
-    await submitPlan();
+    final submitted = await submitPlan();
+    if (submitted) {
+      Get.back(result: true);
+    }
   }
 
   ///------------------------------------------------------------
@@ -1592,13 +1564,16 @@ class TourPlanController extends GetxController {
       }
 
       if (tourPlan.value != null) {
-        tourPlan.value = tourPlan.value!.copyWith(
-          status: "Submitted",
-          updatedAt: DateTime.now(),
+        _syncPlanState(
+          tourPlan.value!.copyWith(
+            status: "Submitted",
+            updatedAt: DateTime.now(),
+          ),
         );
+      } else {
+        currentStatus.value = "Submitted";
+        isReadOnly.value = true;
       }
-
-      isReadOnly.value = true;
 
       Get.snackbar(
         "Success",
@@ -1606,13 +1581,6 @@ class TourPlanController extends GetxController {
         backgroundColor: TColors.success.withOpacity(.15),
       );
 
-
-      if (Get.isDialogOpen ?? false) {
-        Get.back();
-      }
-
-// Return to previous screen
-      Get.back(result: true);
       return true;
 
     } catch (e) {
@@ -1648,9 +1616,11 @@ class TourPlanController extends GetxController {
       return;
     }
 
-    tourPlan.value = result;
-
+    _syncPlanState(result);
+    selectedDay.value = null;
+    generateCalendar();
     populateExistingDays();
+    hasUnsavedChanges.value = false;
   }
 
   ///------------------------------------------------------------
@@ -1684,9 +1654,9 @@ class TourPlanController extends GetxController {
 
     dayTypes.clear();
 
-    tourPlan.value = null;
-
-    isReadOnly.value = false;
+    _syncPlanState(null);
+    hasUnsavedChanges.value = false;
+    _availableUsersDate = null;
 
     selectedMonth.value =
         _defaultPlanningMonth();

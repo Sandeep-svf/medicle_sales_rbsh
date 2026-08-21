@@ -11,11 +11,17 @@ class TourPlanRow extends StatefulWidget {
     required this.index,
     required this.plan,
     required this.onDetails,
+    required this.onSubmit,
+    required this.isSubmitting,
+    required this.submitEnabled,
   });
 
   final int index;
   final TourPlanModel plan;
   final VoidCallback onDetails;
+  final VoidCallback onSubmit;
+  final bool isSubmitting;
+  final bool submitEnabled;
 
   @override
   State<TourPlanRow> createState() =>
@@ -140,7 +146,7 @@ class TourPlanRowState
 
               /// ACTION
               Expanded(
-                flex: 2,
+                flex: 3,
                 child: Align(
                   alignment:
                   Alignment.centerRight,
@@ -196,20 +202,35 @@ class TourPlanRowState
       ) {
 
     if (plan.isDraft) {
-
-      return ElevatedButton.icon(
-        onPressed: widget.onDetails,
-        style: ElevatedButton.styleFrom(
-          backgroundColor:
-          Colors.orange,
-          foregroundColor:
-          Colors.white,
-        ),
-        icon: const Icon(
-          Icons.edit,
-          size: 18,
-        ),
-        label: const Text("Edit"),
+      return Wrap(
+        spacing: 8,
+        runSpacing: 6,
+        alignment: WrapAlignment.end,
+        children: [
+          OutlinedButton.icon(
+            onPressed: widget.onDetails,
+            icon: const Icon(Icons.edit, size: 17),
+            label: const Text("Edit"),
+          ),
+          ElevatedButton.icon(
+            onPressed: widget.submitEnabled ? widget.onSubmit : null,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: TColors.primary,
+              foregroundColor: Colors.white,
+            ),
+            icon: widget.isSubmitting
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : const Icon(Icons.send, size: 17),
+            label: Text(widget.isSubmitting ? "Submitting" : "Submit"),
+          ),
+        ],
       );
     }
 
