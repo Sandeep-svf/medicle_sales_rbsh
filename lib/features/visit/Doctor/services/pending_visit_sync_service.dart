@@ -1,8 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 import '../../../../utils/http/http_client.dart';
@@ -10,6 +11,9 @@ import '../../../../utils/local_storage/auth_manager.dart';
 import '../repository/pending_visit_repository.dart';
 
 class PendingVisitSyncService {
+  static const Duration _requestTimeout = Duration(seconds: 20);
+  static Future<void>? _activeSync;
+
   final PendingVisitRepository _repository = PendingVisitRepository();
 
   StreamSubscription<List<ConnectivityResult>>? _subscription;
@@ -19,6 +23,9 @@ class PendingVisitSyncService {
     debugPrint(
         "PendingVisitSyncService: Connectivity listener started.");
 
+    _subscription?.cancel();
+    unawaited(_syncWhenConnected());
+
     _subscription = Connectivity().onConnectivityChanged.listen((result) {
       debugPrint(
           "PendingVisitSyncService: Connectivity Changed = $result");
@@ -26,7 +33,7 @@ class PendingVisitSyncService {
       if (!result.contains(ConnectivityResult.none)) {
         debugPrint(
             "PendingVisitSyncService: Internet available. Starting sync...");
-        syncPendingVisits();
+        unawaited(syncPendingVisits());
       } else {
         debugPrint(
             "PendingVisitSyncService: Internet unavailable.");
@@ -36,16 +43,54 @@ class PendingVisitSyncService {
 
   void dispose() {
     _subscription?.cancel();
+    _subscription = null;
   }
 
-  Future<void> syncPendingVisits() async {
+  Future<void> _syncWhenConnected() async {
+    try {
+      final connectivity = await Connectivity().checkConnectivity();
+      if (!connectivity.contains(ConnectivityResult.none)) {
+        await syncPendingVisits();
+      }
+    } catch (error) {
+      debugPrint(
+        'PendingVisitSyncService: Connectivity check failed: $error',
+      );
+    }
+  }
+
+  Future<void> syncPendingVisits() {
+    final activeSync = _activeSync;
+    if (activeSync != null) return activeSync;
+
+    final sync = _performSync();
+    _activeSync = sync;
+
+    return sync.whenComplete(() {
+      if (identical(_activeSync, sync)) {
+        _activeSync = null;
+      }
+    });
+  }
+
+  Future<void> _performSync() async {
+    try {
+      await _syncPendingVisits();
+    } catch (error, stackTrace) {
+      debugPrint(
+        'PendingVisitSyncService: Could not access pending visits: $error',
+      );
+      debugPrintStack(stackTrace: stackTrace);
+    }
+  }
+
+  Future<void> _syncPendingVisits() async {
     debugPrint(
         "PendingVisitSyncService: ======================================");
     debugPrint(
         "PendingVisitSyncService: syncPendingVisits() started");
 
     final pendingVisits = await _repository.getPendingVisits();
-    final token = await _authManager.getAuthToken();
 
     debugPrint(
         "PendingVisitSyncService: Pending Visits Count = ${pendingVisits.length}");
@@ -55,6 +100,14 @@ class PendingVisitSyncService {
           "PendingVisitSyncService: No pending visits found.");
       debugPrint(
           "PendingVisitSyncService: ======================================");
+      return;
+    }
+
+    final token = await _authManager.getAuthToken();
+    if (token == null || token.trim().isEmpty) {
+      debugPrint(
+        'PendingVisitSyncService: No auth token. Pending visits retained.',
+      );
       return;
     }
 
@@ -90,14 +143,16 @@ class PendingVisitSyncService {
             'Authorization': 'Bearer $token',
           },
           body: jsonEncode(requestBody),
-        );
+        ).timeout(_requestTimeout);
 
         debugPrint(
             "PendingVisitSyncService: Response Status = ${response.statusCode}");
 
+        dynamic responseBody;
         try {
+          responseBody = jsonDecode(response.body);
           final pretty = const JsonEncoder.withIndent('  ')
-              .convert(jsonDecode(response.body));
+              .convert(responseBody);
 
           debugPrint(
               "PendingVisitSyncService: Response JSON =\n$pretty");
@@ -106,8 +161,13 @@ class PendingVisitSyncService {
               "PendingVisitSyncService: Raw Response = ${response.body}");
         }
 
-        if (response.statusCode == 200 ||
-            response.statusCode == 201) {
+        final responseAccepted = response.statusCode >= 200 &&
+            response.statusCode < 300 &&
+            !(responseBody is Map &&
+                (responseBody['status'] == false ||
+                    responseBody['success'] == false));
+
+        if (responseAccepted) {
 
           debugPrint(
               "PendingVisitSyncService: Sync Successful");
@@ -120,6 +180,23 @@ class PendingVisitSyncService {
           debugPrint(
               "PendingVisitSyncService: Sync Failed. Keeping record in SQLite.");
         }
+      } on TimeoutException {
+        debugPrint(
+          'PendingVisitSyncService: Sync timed out. Remaining visits retained.',
+        );
+        break;
+      } on SocketException {
+        debugPrint(
+          'PendingVisitSyncService: Internet unreachable. '
+          'Remaining visits retained.',
+        );
+        break;
+      } on http.ClientException {
+        debugPrint(
+          'PendingVisitSyncService: API unreachable. '
+          'Remaining visits retained.',
+        );
+        break;
       } catch (e, stackTrace) {
         debugPrint(
             "PendingVisitSyncService: Exception = $e");

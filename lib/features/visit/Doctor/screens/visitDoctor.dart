@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/services.dart';
 import 'package:image/image.dart' as img; // Rename to avoid conflict with Flutter Image
 import 'package:http_parser/http_parser.dart'; // For MediaType
@@ -24,10 +26,11 @@ import '../../../../utils/camera/CameraLocationResult.dart';
 import '../../../../utils/camera/image_overlay_utils.dart';
 import '../../../../utils/http/http_client.dart';
 import '../../../addDoctor/controllers/DoctroController.dart';
-import '../../../product/controller/ProductController.dart';
 import '../../GeoVerificationScreen.dart';
+import '../controllers/doctor_visit_product_controller.dart';
 import '../controllers/visitListController.dart';
 import '../models/visitSalesData.dart';
+import '../services/pending_visit_sync_service.dart';
 import '../services/visit_confirmation_service.dart';
 import 'ScheduleVisitScreen.dart';
 
@@ -39,7 +42,8 @@ class VisitDoctorScreen extends StatefulWidget {
   State<VisitDoctorScreen> createState() => _VisitDoctorScreenState();
 }
 
-class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
+class _VisitDoctorScreenState extends State<VisitDoctorScreen>
+    with WidgetsBindingObserver {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = "";
 
@@ -48,7 +52,10 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
 
   late VisitListController _visitListController;
   final AuthManager authManager = AuthManager();
-  late ProductController productController;
+  late DoctorVisitProductController productController;
+  late PendingVisitSyncService _pendingVisitSyncService;
+  StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
+  bool _isRefreshingAfterReconnect = false;
 
   // Location helper
   String _location = 'Fetching location...';
@@ -61,6 +68,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _doctorListController.fetchDoctorList();
 
     // Initialize controller
@@ -69,8 +77,64 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
     // Initial Fetch (Default: Today)
     _visitListController.fetchSalesList(filter: VisitDateFilter.today);
 
-    productController = Get.put(ProductController());
-    productController.fetchProducts();
+    productController = DoctorVisitProductController();
+    _pendingVisitSyncService = PendingVisitSyncService();
+    unawaited(productController.loadProducts());
+    _startConnectivityRefresh();
+  }
+
+  void _startConnectivityRefresh() {
+    _connectivitySubscription = Connectivity()
+        .onConnectivityChanged
+        .listen((connectivity) {
+      if (!connectivity.contains(ConnectivityResult.none)) {
+        unawaited(_refreshAfterReconnect());
+      }
+    });
+  }
+
+  Future<void> _refreshAfterReconnect() async {
+    if (_isRefreshingAfterReconnect || _visitListController.offlineMode) {
+      return;
+    }
+
+    _isRefreshingAfterReconnect = true;
+    try {
+      await productController.refreshProducts();
+      await _pendingVisitSyncService.syncPendingVisits();
+
+      if (!mounted) return;
+
+      await _visitListController.fetchSalesList(
+        filter: _selectedFilter,
+        startDate: _selectedDateRange?.start,
+        endDate: _selectedDateRange?.end,
+      );
+    } catch (error, stackTrace) {
+      debugPrint(
+        'VisitDoctorScreen: Reconnect refresh failed: $error',
+      );
+      debugPrintStack(stackTrace: stackTrace);
+    } finally {
+      _isRefreshingAfterReconnect = false;
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      unawaited(_refreshAfterReconnect());
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _connectivitySubscription?.cancel();
+    productController.dispose();
+    _visitListController.dispose();
+    _searchController.dispose();
+    super.dispose();
   }
 
   // --- NEW: Navigation to Schedule Screen ---
@@ -239,14 +303,12 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
                 Switch(
                   value: _visitListController.offlineMode,
                   onChanged: (value) async {
+                    await _visitListController.setOfflineMode(value);
+                    await productController.loadProducts(refresh: !value);
 
-                    _visitListController.setOfflineMode(value);
-
-                    await _visitListController.fetchSalesList(
-                      filter: _selectedFilter,
-                      startDate: _selectedDateRange?.start,
-                      endDate: _selectedDateRange?.end,
-                    );
+                    if (!value) {
+                      unawaited(_refreshAfterReconnect());
+                    }
 
                     if (mounted) {
                       setState(() {});
@@ -1005,9 +1067,10 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
   Future<List<String>> _showProductSelectionDialog(BuildContext context) async {
     final RxList<String> selectedProductIds = <String>[].obs;
     final RxString searchQuery = "".obs;
-    final productController = Get.put(ProductController());
 
-    await productController.fetchProducts();
+    await productController.loadProducts(
+      refresh: !_visitListController.offlineMode,
+    );
 
     return await showDialog<List<String>>(
       context: context,
@@ -1468,6 +1531,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
         doctorLongitude: doctorVisit.doctor!.longitude!,
         position: pos,
         productIds: selectedProducts,
+        forceOffline: _visitListController.offlineMode,
       );
 
       Navigator.of(
@@ -1496,13 +1560,13 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
         return;
       }
 
-      if (response.statusCode == 200) {
+      if (response.statusCode >= 200 && response.statusCode < 300) {
         final body = jsonDecode(response.body);
 
         debugPrint(
             "VisitConfirmationController: Parsed Response = $body");
 
-        if (body['status'] == true) {
+        if (body['status'] != false && body['success'] != false) {
 
           final bool isOffline = body['offline'] == true;
 
@@ -1512,16 +1576,19 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
                 (isOffline
                     ? "Visit saved offline."
                     : "Visit Confirmed!"),
-            backgroundColor:
-            isOffline ? Colors.orange : TColors.success,
+            backgroundColor: TColors.success,
             colorText: Colors.white,
           );
 
-          await _visitListController.fetchSalesList(
-            filter: _selectedFilter,
-            startDate: _selectedDateRange?.start,
-            endDate: _selectedDateRange?.end,
-          );
+          if (isOffline) {
+            await _visitListController.refreshPendingVisits();
+          } else {
+            await _visitListController.fetchSalesList(
+              filter: _selectedFilter,
+              startDate: _selectedDateRange?.start,
+              endDate: _selectedDateRange?.end,
+            );
+          }
         } else {
           debugPrint(
               "VisitConfirmationController: API returned status=false");
@@ -1560,8 +1627,8 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
       QuickAlert.show(
         context: context,
         type: QuickAlertType.error,
-        title: "Unable to Update",
-        text: "Could not update from server. Offline mode switched.",
+        title: "Unable to Save Visit",
+        text: "Visit could not be saved. Please try again.",
       );
     } finally {
       debugPrint(
@@ -2360,4 +2427,3 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen> {
   }
   
 }
-

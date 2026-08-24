@@ -4,9 +4,9 @@ import 'package:http/http.dart' as http;
 import '../local_storage/auth_manager.dart';
 
 class THttpHelper {
-     //  static const String baseUrl = 'https://test.gluckscare.com/api'; // API base URL development
+       static const String baseUrl = 'https://test.gluckscare.com/api'; // API base URL development
     // static const String baseUrl = 'https://apiv2.gluckscare.com/api'; // API base URL prod
-     static const String baseUrl = 'https://api.gluckscare.com/api'; // API base URL production
+    //it static const String baseUrl = 'https://api.gluckscare.com/api'; // API base URL production
 
 
       // newly added for pass auth token as well

@@ -61,18 +61,16 @@ class VisitListController with ChangeNotifier {
     _offlineMode = value;
 
     if (_offlineMode) {
-
       _stopAutoRefresh();
+    }
 
-    } else {
+    await fetchSalesList(
+      filter: _currentFilter,
+      startDate: _currentStartDate,
+      endDate: _currentEndDate,
+    );
 
-      await fetchSalesList(
-        filter: _currentFilter,
-        startDate: _currentStartDate,
-        endDate: _currentEndDate,
-
-      );
-
+    if (!_offlineMode) {
       _startAutoRefresh();
     }
 
@@ -87,6 +85,11 @@ class VisitListController with ChangeNotifier {
     pendingVisits.addAll(
       visits.map((e) => e.visitId),
     );
+  }
+
+  Future<void> refreshPendingVisits() async {
+    await loadPendingVisits();
+    notifyListeners();
   }
 
   String _getCacheKey({
@@ -283,8 +286,9 @@ class VisitListController with ChangeNotifier {
       debugPrint(
           "VisitListController: API URL = $fullUrl");
 
-      final response =
-      await http.get(Uri.parse(fullUrl));
+      final response = await http
+          .get(Uri.parse(fullUrl))
+          .timeout(const Duration(seconds: 20));
 
       debugPrint(
           "VisitListController: Status Code = ${response.statusCode}");

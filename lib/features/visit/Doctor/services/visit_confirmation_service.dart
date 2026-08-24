@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 
@@ -11,6 +13,8 @@ import '../repository/pending_visit_repository.dart';
 import '../../../../utils/http/http_client.dart';
 
 class VisitConfirmationService {
+  static const Duration _requestTimeout = Duration(seconds: 20);
+
   final PendingVisitRepository _repository = PendingVisitRepository();
   final AuthManager _authManager = AuthManager();
 
@@ -21,9 +25,23 @@ class VisitConfirmationService {
     required Position position,
     required List<String> productIds,
     String notes = "",
+    bool forceOffline = false,
   }) async {
-    final connectivity = await Connectivity().checkConnectivity();
     final token = await _authManager.getAuthToken();
+    var canAttemptOnline = !forceOffline;
+    List<ConnectivityResult> connectivity = const [ConnectivityResult.none];
+
+    if (canAttemptOnline) {
+      try {
+        connectivity = await Connectivity().checkConnectivity();
+        canAttemptOnline = !connectivity.contains(ConnectivityResult.none);
+      } catch (error) {
+        canAttemptOnline = false;
+        debugPrint(
+          'VisitConfirmationService: Connectivity check failed: $error',
+        );
+      }
+    }
 
     debugPrint(
         "VisitConfirmationService: ======================================");
@@ -34,8 +52,6 @@ class VisitConfirmationService {
     debugPrint(
         "VisitConfirmationService: Connectivity = $connectivity");
 
-    debugPrint("VisitConfirmationService: Value = $connectivity");
-    debugPrint("VisitConfirmationService: Comparison = ${connectivity != ConnectivityResult.none}");
     debugPrint(
         "VisitConfirmationService: Latitude = ${position.latitude}");
     debugPrint(
@@ -46,7 +62,7 @@ class VisitConfirmationService {
     // ============================
     // ONLINE
     // ============================
-    if (!connectivity.contains(ConnectivityResult.none)) {
+    if (canAttemptOnline) {
       final uri =
       Uri.parse('${THttpHelper.baseUrl}/doctor-visits/bulk-confirm');
 
@@ -67,45 +83,71 @@ class VisitConfirmationService {
       debugPrint(
           "VisitConfirmationService: Request JSON = ${const JsonEncoder.withIndent('  ').convert(requestBody)}");
 
-      final response = await http.put(
-        uri,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: jsonEncode(requestBody),
-      );
-
-      debugPrint(
-          "VisitConfirmationService: Response Status = ${response.statusCode}");
-
       try {
-        final pretty =
-        const JsonEncoder.withIndent('  ').convert(jsonDecode(response.body));
+        final response = await http.put(
+          uri,
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+          body: jsonEncode(requestBody),
+        ).timeout(_requestTimeout);
+
         debugPrint(
-            "VisitConfirmationService: Response JSON =\n$pretty");
-      } catch (_) {
+            "VisitConfirmationService: Response Status = ${response.statusCode}");
+
+        try {
+          final pretty = const JsonEncoder.withIndent('  ')
+              .convert(jsonDecode(response.body));
+          debugPrint(
+              "VisitConfirmationService: Response JSON =\n$pretty");
+        } catch (_) {
+          debugPrint(
+              "VisitConfirmationService: Raw Response = ${response.body}");
+        }
+
         debugPrint(
-            "VisitConfirmationService: Raw Response = ${response.body}");
+            "VisitConfirmationService: ======================================");
+
+        return response;
+      } on TimeoutException {
+        debugPrint(
+          'VisitConfirmationService: Request timed out. Saving offline.',
+        );
+      } on SocketException {
+        debugPrint(
+          'VisitConfirmationService: Internet unreachable. Saving offline.',
+        );
+      } on http.ClientException {
+        debugPrint(
+          'VisitConfirmationService: API unreachable. Saving offline.',
+        );
       }
-
-      debugPrint(
-          "VisitConfirmationService: ======================================");
-
-      return response;
     }
 
-    // ============================
-    // OFFLINE
-    // ============================
+    return _saveOffline(
+      visitId: visitId,
+      doctorLatitude: doctorLatitude,
+      doctorLongitude: doctorLongitude,
+      position: position,
+      productIds: productIds,
+      notes: notes,
+    );
+  }
+
+  Future<http.Response> _saveOffline({
+    required String visitId,
+    required double doctorLatitude,
+    required double doctorLongitude,
+    required Position position,
+    required List<String> productIds,
+    required String notes,
+  }) async {
 
     debugPrint("VisitConfirmationService: OFFLINE MODE");
     debugPrint(
         "VisitConfirmationService: Saving visit into SQLite...");
 
-    debugPrint("VisitConfirmationService: OFFLINE MODE");
-
-// Check distance between doctor's location and current location
     final double distance = Geolocator.distanceBetween(
       doctorLatitude,
       doctorLongitude,
@@ -116,7 +158,6 @@ class VisitConfirmationService {
     debugPrint(
         "VisitConfirmationService: Distance = ${distance.toStringAsFixed(2)} meters");
 
-// Allow only within 200 meters
     if (distance > 200) {
       final response = {
         "status": false,
