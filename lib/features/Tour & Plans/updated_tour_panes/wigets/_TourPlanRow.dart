@@ -38,10 +38,10 @@ class TourPlanRowState
     final plan = widget.plan;
 
     final rowColor = _hover
-        ? TColors.primary.withOpacity(.04)
+        ? TColors.primary.withValues(alpha: .04)
         : widget.index.isEven
         ? Colors.white
-        : TColors.primary_shade50.withOpacity(.35);
+        : TColors.primary_shade50.withValues(alpha: .35);
 
     return MouseRegion(
       cursor: SystemMouseCursors.click,
@@ -55,7 +55,12 @@ class TourPlanRowState
         onTap: widget.onDetails,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
-          color: rowColor,
+          decoration: BoxDecoration(
+            color: rowColor,
+            border: const Border(
+              bottom: BorderSide(color: TColors.borderSecondary),
+            ),
+          ),
           padding: const EdgeInsets.symmetric(
             horizontal: TSizes.lg,
             vertical: TSizes.md,
@@ -106,7 +111,7 @@ class TourPlanRowState
 
               /// DAYS
               Expanded(
-                flex: 2,
+                flex: 1,
                 child: Center(
                   child: Container(
                     padding:
@@ -130,14 +135,6 @@ class TourPlanRowState
                 ),
               ),
 
-              /// UPDATED
-              Expanded(
-                flex: 3,
-                child: Text(
-                  _date(plan.updatedAt),
-                ),
-              ),
-
               /// REMARKS
               Expanded(
                 flex: 4,
@@ -146,7 +143,7 @@ class TourPlanRowState
 
               /// ACTION
               Expanded(
-                flex: 3,
+                flex: 5,
                 child: Align(
                   alignment:
                   Alignment.centerRight,
@@ -169,7 +166,7 @@ class TourPlanRowState
     if ((plan.comments ?? "").isEmpty) {
 
       return const Text(
-        "-",
+        "No remarks",
         style: TextStyle(
           color: TColors.textSecondary,
         ),
@@ -179,7 +176,7 @@ class TourPlanRowState
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: Colors.red.withOpacity(.08),
+        color: Colors.red.withValues(alpha: .08),
         borderRadius:
         BorderRadius.circular(10),
       ),
@@ -201,22 +198,40 @@ class TourPlanRowState
       TourPlanModel plan,
       ) {
 
-    if (plan.isDraft) {
-      return Wrap(
-        spacing: 8,
-        runSpacing: 6,
-        alignment: WrapAlignment.end,
-        children: [
+    return Wrap(
+      spacing: 8,
+      runSpacing: 6,
+      alignment: WrapAlignment.end,
+      children: [
+        OutlinedButton.icon(
+          onPressed: widget.onDetails,
+          style: OutlinedButton.styleFrom(
+            visualDensity: VisualDensity.compact,
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+          ),
+          icon: const Icon(Icons.visibility_outlined, size: 17),
+          label: const Text("View"),
+        ),
+        if (plan.isDraft)
           OutlinedButton.icon(
             onPressed: widget.onDetails,
-            icon: const Icon(Icons.edit, size: 17),
+            style: OutlinedButton.styleFrom(
+              visualDensity: VisualDensity.compact,
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+            ),
+            icon: const Icon(Icons.edit_outlined, size: 17),
             label: const Text("Edit"),
           ),
+        if (plan.isDraft)
           ElevatedButton.icon(
             onPressed: widget.submitEnabled ? widget.onSubmit : null,
             style: ElevatedButton.styleFrom(
               backgroundColor: TColors.primary,
               foregroundColor: Colors.white,
+              visualDensity: VisualDensity.compact,
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
             ),
             icon: widget.isSubmitting
                 ? const SizedBox(
@@ -227,44 +242,23 @@ class TourPlanRowState
                       color: Colors.white,
                     ),
                   )
-                : const Icon(Icons.send, size: 17),
+                : const Icon(Icons.send_rounded, size: 17),
             label: Text(widget.isSubmitting ? "Submitting" : "Submit"),
           ),
-        ],
-      );
-    }
-
-    if (plan.isReturned) {
-
-      return ElevatedButton.icon(
-        onPressed: widget.onDetails,
-        style: ElevatedButton.styleFrom(
-          backgroundColor:
-          Colors.red,
-          foregroundColor:
-          Colors.white,
-        ),
-        icon: const Icon(
-          Icons.refresh,
-          size: 18,
-        ),
-        label: const Text("Revise"),
-      );
-    }
-
-    return ElevatedButton.icon(
-      onPressed: widget.onDetails,
-      style: ElevatedButton.styleFrom(
-        backgroundColor:
-        TColors.primary,
-        foregroundColor:
-        Colors.white,
-      ),
-      icon: const Icon(
-        Icons.visibility,
-        size: 18,
-      ),
-      label: const Text("View"),
+        if (plan.isReturned)
+          ElevatedButton.icon(
+            onPressed: widget.onDetails,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              visualDensity: VisualDensity.compact,
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+            ),
+            icon: const Icon(Icons.refresh_rounded, size: 17),
+            label: const Text("Revise"),
+          ),
+      ],
     );
   }
 

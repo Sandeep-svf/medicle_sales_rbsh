@@ -10,78 +10,47 @@ class SubmitButtons extends GetView<AddInvestmentController> {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      return Column(
-        children: [
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: TColors.primary,
-                padding: const EdgeInsets.symmetric(
-                  vertical: 18,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-              ),
+      final isPreparingImage = controller.isPickingPaymentProof.value;
+      final isSubmitting = controller.isLoading.value;
+      final isBusy = controller.isLoading.value || isPreparingImage;
 
-              onPressed: controller.isLoading.value
-                  ? null
-                  : controller.submitInvestment,
-
-              icon: controller.isLoading.value
-                  ? const SizedBox(
-                width: 18,
-                height: 18,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
+      return SizedBox(
+        width: double.infinity,
+        child: ElevatedButton.icon(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: TColors.primary,
+            padding: const EdgeInsets.symmetric(vertical: 18),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
+          ),
+          onPressed: isBusy ? null : controller.submitInvestment,
+          icon: isPreparingImage || isSubmitting
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
+              : const Icon(
+                  Icons.send,
                   color: Colors.white,
                 ),
-              )
-                  : const Icon(
-                Icons.send,
-                color: Colors.white,
-              ),
-
-              label: Text(
-                controller.isLoading.value
+          label: Text(
+            isPreparingImage
+                ? "Preparing Image..."
+                : isSubmitting
                     ? "Submitting..."
-                    : "Submit For Approval",
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
-              ),
+                    : controller.submitButtonLabel,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
             ),
           ),
-
-          const SizedBox(height: 14),
-
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 18,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-              ),
-
-              onPressed: controller.isLoading.value
-                  ? null
-                  : controller.clearForm,
-
-              icon: const Icon(Icons.refresh),
-
-              label: const Text(
-                "Reset Form",
-              ),
-            ),
-          ),
-        ],
+        ),
       );
     });
   }

@@ -24,6 +24,8 @@ class TourPlanListController extends GetxController {
 
   final RxString submittingPlanId = ''.obs;
 
+  final RxBool isTableView = true.obs;
+
   ///------------------------------------------------------------
   /// Data
   ///------------------------------------------------------------
@@ -33,37 +35,6 @@ class TourPlanListController extends GetxController {
 
   final RxList<TourPlanModel> filteredPlans =
       <TourPlanModel>[].obs;
-
-  ///------------------------------------------------------------
-  /// Filters
-  ///------------------------------------------------------------
-
-  final RxString searchText =
-      ''.obs;
-
-  final RxString selectedStatus =
-      'All'.obs;
-
-  final Rx<DateTime?> selectedMonth =
-  Rx<DateTime?>(null);
-
-  ///------------------------------------------------------------
-  /// Status List
-  ///------------------------------------------------------------
-
-  final List<String> statuses = const [
-
-    "All",
-
-    "Draft",
-
-    "Submitted",
-
-    "Approved",
-
-    "Returned",
-
-  ];
 
   @override
   void onInit() {
@@ -76,9 +47,11 @@ class TourPlanListController extends GetxController {
   /// Load
   ///------------------------------------------------------------
 
-  Future<void> loadTourPlans() async {
+  Future<void> loadTourPlans({bool showLoadingIndicator = true}) async {
 
-    isLoading.value = true;
+    if (showLoadingIndicator) {
+      isLoading.value = true;
+    }
 
     try {
 
@@ -100,7 +73,7 @@ class TourPlanListController extends GetxController {
 
       tourPlans.assignAll(result);
 
-      applyFilters();
+      _syncDisplayedPlans();
 
     } catch (e, stackTrace) {
 
@@ -116,7 +89,9 @@ class TourPlanListController extends GetxController {
 
     } finally {
 
-      isLoading.value = false;
+      if (showLoadingIndicator) {
+        isLoading.value = false;
+      }
     }
   }
 
@@ -126,133 +101,31 @@ class TourPlanListController extends GetxController {
 
   Future<void> refreshList() async {
 
+    if (isRefreshing.value) {
+      return;
+    }
+
     isRefreshing.value = true;
 
-    await loadTourPlans();
+    try {
+      await loadTourPlans(showLoadingIndicator: false);
+    } finally {
+      isRefreshing.value = false;
+    }
+  }
 
-    isRefreshing.value = false;
+  void changeView({required bool showTable}) {
+    isTableView.value = showTable;
   }
 
   ///------------------------------------------------------------
-  /// Search
+  /// Display Order
   ///------------------------------------------------------------
 
-  void onSearchChanged(
-      String value,
-      ) {
-
-    searchText.value = value;
-
-    applyFilters();
-  }
-
-  ///------------------------------------------------------------
-  /// Status
-  ///------------------------------------------------------------
-
-  void changeStatus(
-      String status,
-      ) {
-
-    selectedStatus.value = status;
-
-    applyFilters();
-  }
-
-  ///------------------------------------------------------------
-  /// Month
-  ///------------------------------------------------------------
-
-  void changeMonth(
-      DateTime? month,
-      ) {
-
-    selectedMonth.value = month;
-
-    applyFilters();
-  }
-
-  ///------------------------------------------------------------
-  /// Clear
-  ///------------------------------------------------------------
-
-  void clearFilters() {
-
-    searchText.value = "";
-
-    selectedStatus.value = "All";
-
-    selectedMonth.value = null;
-
-    applyFilters();
-  }
-
-  ///------------------------------------------------------------
-  /// Apply Filters
-  ///------------------------------------------------------------
-
-  void applyFilters() {
+  void _syncDisplayedPlans() {
 
     List<TourPlanModel> list =
     List.from(tourPlans);
-
-    /// Search
-
-    if (searchText.value.trim().isNotEmpty) {
-
-      final keyword =
-      searchText.value
-          .toLowerCase();
-
-      list = list.where((plan) {
-
-        return
-
-          plan.monthName
-              .toLowerCase()
-              .contains(keyword)
-
-              ||
-
-              plan.status
-                  .toLowerCase()
-                  .contains(keyword);
-
-      }).toList();
-    }
-
-    /// Status
-
-    if (selectedStatus.value != "All") {
-
-      list = list.where((plan) {
-
-        return
-
-          plan.status ==
-              selectedStatus.value;
-
-      }).toList();
-    }
-
-    /// Month
-
-    if (selectedMonth.value != null) {
-
-      list = list.where((plan) {
-
-        return
-
-          plan.month ==
-              selectedMonth.value!.month
-
-              &&
-
-              plan.year ==
-                  selectedMonth.value!.year;
-
-      }).toList();
-    }
 
     /// Latest first
 
@@ -334,7 +207,7 @@ class TourPlanListController extends GetxController {
     try {
       final latestPlans = await _service.getTourPlans();
       tourPlans.assignAll(latestPlans);
-      applyFilters();
+      _syncDisplayedPlans();
 
       final now = DateTime.now();
       final upcomingMonth = DateTime(now.year, now.month + 1);
@@ -415,7 +288,7 @@ class TourPlanListController extends GetxController {
           status: "Submitted",
           updatedAt: DateTime.now(),
         );
-        applyFilters();
+        _syncDisplayedPlans();
       }
 
       Get.snackbar(
@@ -445,11 +318,7 @@ class TourPlanListController extends GetxController {
 
     submittingPlanId.close();
 
-    searchText.close();
-
-    selectedStatus.close();
-
-    selectedMonth.close();
+    isTableView.close();
 
     super.onClose();
   }

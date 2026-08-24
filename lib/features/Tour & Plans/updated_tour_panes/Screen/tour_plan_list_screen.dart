@@ -1,27 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:medicle_sales_rbsh/features/Tour%20&%20Plans/updated_tour_panes/Screen/tour_plan_table.dart';
-import 'package:path/path.dart';
 
 import '../../../../utils/constants/colors.dart';
 import '../../../../utils/constants/sizes.dart';
-
+import 'tour_plan_table.dart';
 import '../controller/tour_plan_list_controller.dart';
+import '../model/tour_plan_model.dart';
 import '../wigets/status_chip.dart';
-
 
 class TourPlanListScreen extends StatelessWidget {
   const TourPlanListScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(
-      TourPlanListController(),
-    );
+    final controller = Get.put(TourPlanListController());
 
     return Scaffold(
       backgroundColor: TColors.light,
-
       floatingActionButton: FloatingActionButton.extended(
         heroTag: "createTourPlan",
         backgroundColor: TColors.primary,
@@ -30,10 +25,8 @@ class TourPlanListScreen extends StatelessWidget {
         icon: const Icon(Icons.add),
         label: const Text("Create Tour Plan"),
       ),
-
       body: SafeArea(
         child: Obx(() {
-
           if (controller.isLoading.value) {
             return const Center(
               child: CircularProgressIndicator(
@@ -42,320 +35,385 @@ class TourPlanListScreen extends StatelessWidget {
             );
           }
 
-          return RefreshIndicator(
-            color: TColors.primary,
-            onRefresh: controller.refreshList,
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-
-                final isLandscape =
-                    constraints.maxWidth >= 900;
-
-                return Column(
-                  children: [
-
-                    _buildHeader(controller),
-
-                    _buildFilterBar(context,controller),
-
-                    Expanded(
-
-                      child: controller.isEmpty
-
-                          ? _buildEmptyState()
-
-                          : isLandscape
-
+          return Column(
+            children: [
+              _buildHeader(controller),
+              Expanded(
+                child: RefreshIndicator(
+                  color: TColors.primary,
+                  onRefresh: controller.refreshList,
+                  notificationPredicate: (notification) =>
+                      notification.metrics.axis == Axis.vertical,
+                  child: controller.isEmpty
+                      ? _buildEmptyState()
+                      : controller.isTableView.value
                           ? TourPlanTable(
-                        plans: controller.filteredPlans,
-                        onDetails: controller.openDetails,
-                        onSubmit: controller.submitDraftFromList,
-                        submittingPlanId: controller.submittingPlanId.value,
-                      )
-
-                          : _buildMobileList(
-                        controller,
-                      ),
-                    ),
-                  ],
-                );
-              },
-            ),
+                              plans: controller.filteredPlans,
+                              onDetails: controller.openDetails,
+                              onSubmit: controller.submitDraftFromList,
+                              submittingPlanId:
+                                  controller.submittingPlanId.value,
+                            )
+                          : LayoutBuilder(
+                          builder: (context, constraints) {
+                            return _buildPlanGrid(
+                              controller,
+                              showTwoColumns: constraints.maxWidth >= 720,
+                            );
+                          },
+                        ),
+                ),
+              ),
+            ],
           );
         }),
       ),
     );
   }
 
-  //-----------------------------------------------------------
-  // Header
-  //-----------------------------------------------------------
-
-  Widget _buildHeader(
-      TourPlanListController controller) {
-
+  Widget _buildHeader(TourPlanListController controller) {
     return Container(
-      padding: const EdgeInsets.all(
+      width: double.infinity,
+      margin: const EdgeInsets.fromLTRB(
         TSizes.lg,
+        TSizes.lg,
+        TSizes.lg,
+        0,
       ),
-
-      color: TColors.white,
-
-      child: Row(
-        children: [
-
-          const Icon(
-            Icons.calendar_month,
-            color: TColors.primary,
-            size: 32,
+      padding: const EdgeInsets.all(TSizes.lg),
+      decoration: BoxDecoration(
+        color: TColors.primary,
+        borderRadius: BorderRadius.circular(TSizes.cardRadiusLg),
+        boxShadow: [
+          BoxShadow(
+            color: TColors.primary.withValues(alpha: .18),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
           ),
+        ],
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final title = _buildHeaderTitle(controller);
+          final toggle = _buildViewToggle(controller);
 
-          const SizedBox(
-            width: TSizes.md,
-          ),
-
-          Expanded(
-            child: Column(
-              crossAxisAlignment:
-              CrossAxisAlignment.start,
+          if (constraints.maxWidth < 560) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-
-                const Text(
-                  "Tour Plans",
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight:
-                    FontWeight.bold,
-                  ),
-                ),
-
-                const SizedBox(height: 4),
-
-                Text(
-                  "${controller.totalPlans} Plans",
-                  style: const TextStyle(
-                    color:
-                    TColors.textSecondary,
-                  ),
+                title,
+                const SizedBox(height: TSizes.md),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: toggle,
                 ),
               ],
-            ),
-          ),
+            );
+          }
 
-          SizedBox(
-            width: 280,
-
-            child: TextField(
-
-              onChanged:
-              controller.onSearchChanged,
-
-              decoration: InputDecoration(
-
-                hintText:
-                "Search month or status",
-
-                prefixIcon:
-                const Icon(Icons.search),
-
-                filled: true,
-
-                fillColor:
-                TColors.softGrey,
-
-                border:
-                OutlineInputBorder(
-                  borderRadius:
-                  BorderRadius.circular(
-                    TSizes.borderRadiusLg,
-                  ),
-                  borderSide:
-                  BorderSide.none,
-                ),
-              ),
-            ),
-          ),
-        ],
+          return Row(
+            children: [
+              Expanded(child: title),
+              const SizedBox(width: TSizes.md),
+              toggle,
+            ],
+          );
+        },
       ),
     );
   }
 
-  //-----------------------------------------------------------
-  // Filters
-  //-----------------------------------------------------------
+  Widget _buildHeaderTitle(TourPlanListController controller) {
+    return Row(
+      children: [
+        Container(
+          width: 58,
+          height: 58,
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: .16),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: const Icon(
+            Icons.calendar_month_rounded,
+            color: Colors.white,
+            size: 32,
+          ),
+        ),
+        const SizedBox(width: TSizes.md),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                "Tour & Plans",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 5),
+              Text(
+                "${controller.totalPlans} plans • Plan and track monthly activity",
+                style: const TextStyle(
+                  color: Colors.white70,
+                  height: 1.3,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
 
-  Widget _buildFilterBar(
-      BuildContext context,
-      TourPlanListController controller,
-      ) {
-
+  Widget _buildViewToggle(TourPlanListController controller) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: TSizes.lg,
-        vertical: TSizes.md,
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: .14),
+        borderRadius: BorderRadius.circular(12),
       ),
-
-      color: TColors.white,
-
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-
-          Expanded(
-            child: DropdownButtonFormField<String>(
-
-              value:
-              controller.selectedStatus.value,
-
-              decoration:
-              const InputDecoration(
-                labelText: "Status",
-              ),
-
-              items: controller.statuses
-
-                  .map(
-                    (e) => DropdownMenuItem(
-                  value: e,
-                  child: Text(e),
-                ),
-              )
-                  .toList(),
-
-              onChanged: (value) {
-
-                if (value == null) {
-                  return;
-                }
-
-                controller.changeStatus(
-                  value,
-                );
-              },
-            ),
+          _buildViewOption(
+            icon: Icons.table_rows_rounded,
+            label: "Table",
+            isSelected: controller.isTableView.value,
+            onTap: () => controller.changeView(showTable: true),
           ),
-
-          const SizedBox(
-            width: TSizes.md,
-          ),
-
-          Expanded(
-            child: OutlinedButton.icon(
-
-              onPressed: () =>
-                  _showMonthFilterDialog(context, controller),
-
-              icon: const Icon(
-                Icons.calendar_today,
-              ),
-
-              label: Text(
-
-                controller.selectedMonth.value ==
-                    null
-
-                    ? "All Months"
-
-                    : "${controller.selectedMonth.value!.month}/${controller.selectedMonth.value!.year}",
-              ),
-            ),
-          ),
-
-          const SizedBox(
-            width: TSizes.md,
-          ),
-
-          ElevatedButton.icon(
-
-            onPressed:
-            controller.clearFilters,
-
-            icon: const Icon(
-              Icons.clear,
-            ),
-
-            label: const Text(
-              "Clear",
-            ),
+          _buildViewOption(
+            icon: Icons.grid_view_rounded,
+            label: "Cards",
+            isSelected: !controller.isTableView.value,
+            onTap: () => controller.changeView(showTable: false),
           ),
         ],
       ),
     );
   }
 
-  //-----------------------------------------------------------
-  // Portrait Cards
-  //-----------------------------------------------------------
-
-  Widget _buildMobileList(
-      TourPlanListController controller) {
-
-    return ListView.separated(
-
-      padding:
-      const EdgeInsets.all(
-        TSizes.lg,
-      ),
-
-      itemCount:
-      controller.filteredPlans.length,
-
-      separatorBuilder:
-          (_, __) =>
-      const SizedBox(
-        height: TSizes.md,
-      ),
-
-      itemBuilder: (context, index) {
-
-        final plan =
-        controller.filteredPlans[index];
-
-        return Card(
-
-          child: Padding(
-
-            padding:
-            const EdgeInsets.all(
-              TSizes.md,
+  Widget _buildViewOption({
+    required IconData icon,
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(9),
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 9,
+        ),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.white : Colors.transparent,
+          borderRadius: BorderRadius.circular(9),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              size: 18,
+              color: isSelected ? TColors.primary : Colors.white,
             ),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? TColors.primary : Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
-            child: Column(
+  Widget _buildPlanGrid(
+    TourPlanListController controller, {
+    required bool showTwoColumns,
+  }) {
+    return GridView.builder(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(
+        TSizes.lg,
+        TSizes.lg,
+        TSizes.lg,
+        96,
+      ),
+      itemCount: controller.filteredPlans.length,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: showTwoColumns ? 2 : 1,
+        crossAxisSpacing: TSizes.md,
+        mainAxisSpacing: TSizes.md,
+        mainAxisExtent: 310,
+      ),
+      itemBuilder: (context, index) {
+        final plan = controller.filteredPlans[index];
+        return _buildPlanCard(controller, plan);
+      },
+    );
+  }
 
-              crossAxisAlignment:
-              CrossAxisAlignment.start,
+  Widget _buildPlanCard(
+    TourPlanListController controller,
+    TourPlanModel plan,
+  ) {
+    final remarks = plan.comments?.trim() ?? '';
 
-              children: [
-
-                Text(
-                  plan.monthName,
-                  style: const TextStyle(
-                    fontWeight:
-                    FontWeight.bold,
-                    fontSize: 18,
-                  ),
-                ),
-
-                const SizedBox(
-                  height: 8,
-                ),
-
-                Row(
-                  children: [
-                    StatusChip(
-                      status: plan.status,
+    return Card(
+      margin: EdgeInsets.zero,
+      elevation: 2,
+      shadowColor: TColors.primary.withValues(alpha: .12),
+      surfaceTintColor: Colors.transparent,
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(TSizes.cardRadiusLg),
+        side: const BorderSide(color: TColors.borderSecondary),
+      ),
+      child: InkWell(
+        onTap: () => controller.openDetails(plan),
+        child: Padding(
+          padding: const EdgeInsets.all(TSizes.lg),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 46,
+                    height: 46,
+                    decoration: BoxDecoration(
+                      color: TColors.primary_shade50,
+                      borderRadius: BorderRadius.circular(14),
                     ),
-                    const Spacer(),
-                    TextButton.icon(
+                    child: const Icon(
+                      Icons.event_note_rounded,
+                      color: TColors.primary,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          plan.monthName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: TColors.textPrimary,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        const Text(
+                          "Monthly Tour Plan",
+                          style: TextStyle(
+                            color: TColors.textSecondary,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  StatusChip(status: plan.status),
+                ],
+              ),
+              const SizedBox(height: 14),
+              const Divider(height: 1),
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildInfoItem(
+                      icon: Icons.calendar_view_day_outlined,
+                      label: "Planned Days",
+                      value: plan.days.length.toString(),
+                    ),
+                  ),
+                  const SizedBox(width: TSizes.md),
+                  Expanded(
+                    child: _buildInfoItem(
+                      icon: Icons.schedule_outlined,
+                      label: "Created",
+                      value: _formatDate(plan.createdAt),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  color: remarks.isEmpty
+                      ? TColors.softGrey
+                      : Colors.red.withValues(alpha: .06),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      remarks.isEmpty
+                          ? Icons.notes_rounded
+                          : Icons.info_outline_rounded,
+                      size: 17,
+                      color: remarks.isEmpty
+                          ? TColors.textSecondary
+                          : Colors.red,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        remarks.isEmpty ? "No remarks added" : remarks,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: remarks.isEmpty
+                              ? TColors.textSecondary
+                              : Colors.red,
+                          fontSize: 13,
+                          fontWeight: remarks.isEmpty
+                              ? FontWeight.normal
+                              : FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Spacer(),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
                       onPressed: () => controller.openDetails(plan),
                       icon: Icon(
-                        plan.isDraft ? Icons.edit : Icons.visibility,
+                        plan.canEdit
+                            ? Icons.edit_outlined
+                            : Icons.visibility_outlined,
                         size: 18,
                       ),
-                      label: Text(plan.isDraft ? "Edit" : "Details"),
+                      label: Text(
+                        plan.canEdit ? "Edit Plan" : "View Details",
+                      ),
                     ),
-                    if (plan.isDraft) ...[
-                      const SizedBox(width: 8),
-                      Obx(() {
+                  ),
+                  if (plan.isDraft) ...[
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Obx(() {
                         final isSubmitting =
                             controller.submittingPlanId.value == plan.id;
 
@@ -372,146 +430,110 @@ class TourPlanListScreen extends StatelessWidget {
                                     color: Colors.white,
                                   ),
                                 )
-                              : const Icon(Icons.send, size: 18),
+                              : const Icon(Icons.send_rounded, size: 18),
                           label: Text(isSubmitting ? "Submitting" : "Submit"),
                         );
                       }),
-                    ],
+                    ),
                   ],
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoItem({
+    required IconData icon,
+    required String label,
+    required String value,
+  }) {
+    return Row(
+      children: [
+        Icon(icon, size: 18, color: TColors.primary),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: const TextStyle(
+                  color: TColors.textSecondary,
+                  fontSize: 11,
                 ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                value,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: TColors.textPrimary,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
 
-                if ((plan.comments ?? "")
-                    .isNotEmpty)
-
-                  Padding(
-                    padding:
-                    const EdgeInsets.only(
-                      top: 8,
-                    ),
-                    child: Text(
-                      plan.comments!,
-                      style:
-                      const TextStyle(
-                        color: Colors.red,
-                      ),
-                    ),
+  Widget _buildEmptyState() {
+    return const CustomScrollView(
+      physics: AlwaysScrollableScrollPhysics(),
+      slivers: [
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.assignment_outlined,
+                  size: 80,
+                  color: TColors.textSecondary,
+                ),
+                SizedBox(height: 16),
+                Text(
+                  "No Tour Plans Found",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
                   ),
+                ),
+                SizedBox(height: 8),
+                Text("Pull down to refresh or create a new Tour Plan."),
               ],
             ),
           ),
-        );
-      },
+        ),
+      ],
     );
   }
 
-  Future<void> _showMonthFilterDialog(
-    BuildContext context,
-    TourPlanListController controller,
-  ) async {
-    final months = controller.tourPlans
-        .where((plan) => plan.year > 0 && plan.month >= 1 && plan.month <= 12)
-        .map((plan) => DateTime(plan.year, plan.month))
-        .toSet()
-        .toList()
-      ..sort((a, b) => b.compareTo(a));
-
-    final picked = await showDialog<DateTime>(
-      context: context,
-      builder: (context) {
-        return SimpleDialog(
-          title: const Text("Filter by Month"),
-          children: [
-            SimpleDialogOption(
-              onPressed: () => Navigator.pop(
-                context,
-                DateTime(1900, 1),
-              ),
-              child: const Row(
-                children: [
-                  Icon(Icons.clear_all),
-                  SizedBox(width: 12),
-                  Text("All Months"),
-                ],
-              ),
-            ),
-            ...months.map(
-              (month) => SimpleDialogOption(
-                onPressed: () => Navigator.pop(context, month),
-                child: Text(_monthLabel(month)),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (picked == null) return;
-
-    if (picked.year == 1900) {
-      controller.changeMonth(null);
-    } else {
-      controller.changeMonth(picked);
-    }
-  }
-
-  String _monthLabel(DateTime date) {
+  String _formatDate(DateTime date) {
     const months = [
       '',
-      'January',
-      'February',
-      'March',
-      'April',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
       'May',
-      'June',
-      'July',
-      'August',
-      'September',
-      'October',
-      'November',
-      'December',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
 
-    return "${months[date.month]} ${date.year}";
-  }
-
-  //-----------------------------------------------------------
-  // Empty
-  //-----------------------------------------------------------
-
-  Widget _buildEmptyState() {
-
-    return Center(
-      child: Column(
-
-        mainAxisAlignment:
-        MainAxisAlignment.center,
-
-        children: const [
-
-          Icon(
-            Icons.assignment_outlined,
-            size: 80,
-            color: TColors.textSecondary,
-          ),
-
-          SizedBox(height: 16),
-
-          Text(
-            "No Tour Plans Found",
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight:
-              FontWeight.bold,
-            ),
-          ),
-
-          SizedBox(height: 8),
-
-          Text(
-            "Tap 'Create Tour Plan' to start planning.",
-          ),
-        ],
-      ),
-    );
+    return "${date.day.toString().padLeft(2, '0')} "
+        "${months[date.month]} ${date.year}";
   }
 }

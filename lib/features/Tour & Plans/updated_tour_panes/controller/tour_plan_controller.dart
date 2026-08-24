@@ -1536,7 +1536,7 @@ class TourPlanController extends GetxController {
   /// Submit Plan
   ///------------------------------------------------------------
 
-  Future<bool> submitPlan() async {
+  Future<bool> submitPlan({bool showSuccessMessage = true}) async {
 
 
 
@@ -1575,11 +1575,13 @@ class TourPlanController extends GetxController {
         isReadOnly.value = true;
       }
 
-      Get.snackbar(
-        "Success",
-        "Tour Plan submitted successfully.",
-        backgroundColor: TColors.success.withOpacity(.15),
-      );
+      if (showSuccessMessage) {
+        Get.snackbar(
+          "Success",
+          "Tour Plan submitted successfully.",
+          backgroundColor: TColors.success.withOpacity(.15),
+        );
+      }
 
       return true;
 

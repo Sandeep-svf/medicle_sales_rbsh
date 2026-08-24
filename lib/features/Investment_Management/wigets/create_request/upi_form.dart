@@ -5,6 +5,7 @@ import 'package:medicle_sales_rbsh/features/Investment_Management/wigets/create_
 
 import '../../controller/add_investment_controller.dart';
 import 'investment_textfield.dart';
+
 class UpiForm extends GetView<AddInvestmentController> {
   const UpiForm({super.key});
 
@@ -15,31 +16,28 @@ class UpiForm extends GetView<AddInvestmentController> {
       icon: Icons.qr_code_scanner,
       child: Column(
         children: [
-
           InvestmentTextField(
             controller: controller.amountController,
             label: "Amount",
             icon: Icons.currency_rupee,
-            keyboardType: TextInputType.number,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            validator: controller.validateAmount,
           ),
-
           const SizedBox(height: 16),
-
           InvestmentTextField(
             controller: controller.upiController,
             label: "UPI ID",
             icon: Icons.qr_code,
+            validator: (value) => controller.validateRequired(value, "UPI ID"),
           ),
-
           const SizedBox(height: 16),
-
           InvestmentTextField(
             controller: controller.purposeController,
             label: "Purpose",
             icon: Icons.description,
             maxLines: 3,
+            validator: (value) => controller.validateRequired(value, "Purpose"),
           ),
-
         ],
       ),
     );

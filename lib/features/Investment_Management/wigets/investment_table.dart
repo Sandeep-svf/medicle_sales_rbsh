@@ -313,75 +313,66 @@ class InvestmentRequestTable
       ///===================================
 
       Expanded(
-
-      child: requests.isEmpty
-
-      ? Center(
-
-      child: Column(
-
-      mainAxisAlignment: MainAxisAlignment.center,
-
-      children: [
-
-      Icon(
-      Icons.account_balance_wallet_outlined,
-      size: 70,
-      color: Colors.grey.shade400,
-      ),
-
-      const SizedBox(height: 16),
-
-      const Text(
-      "No Investment Requests",
-      style: TextStyle(
-      fontSize: 18,
-      fontWeight: FontWeight.bold,
-      ),
-      ),
-
-      const SizedBox(height: 8),
-
-      Text(
-      "No investment requests found.",
-      style: TextStyle(
-      color: Colors.grey.shade600,
-      ),
-      ),
-
-      ],
-
-      ),
-
-      )
-
-          : ListView.separated(
-
-      padding: EdgeInsets.zero,
-
-      physics: const BouncingScrollPhysics(),
-
-      itemCount: requests.length,
-
-      separatorBuilder: (_, __) => Divider(
-      color: Colors.grey.shade200,
-      height: 1,
-      ),
-
-      itemBuilder: (_, index) {
-
-      return InvestmentRequestTableRow(
-
-      request: requests[index],
-
-      index: index,
-
-      );
-
-      },
-
-      ),
-
+        child: RefreshIndicator(
+          onRefresh: controller.refreshData,
+          child: requests.isEmpty
+              ? LayoutBuilder(
+                  builder: (context, constraints) {
+                    return ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      children: [
+                        SizedBox(
+                          height: constraints.maxHeight,
+                          child: Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.account_balance_wallet_outlined,
+                                  size: 70,
+                                  color: Colors.grey.shade400,
+                                ),
+                                const SizedBox(height: 16),
+                                const Text(
+                                  "No Investment Requests",
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  "No investment requests found.",
+                                  style: TextStyle(
+                                    color: Colors.grey.shade600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                )
+              : ListView.separated(
+                  padding: EdgeInsets.zero,
+                  physics: const AlwaysScrollableScrollPhysics(
+                    parent: BouncingScrollPhysics(),
+                  ),
+                  itemCount: requests.length,
+                  separatorBuilder: (_, __) => Divider(
+                    color: Colors.grey.shade200,
+                    height: 1,
+                  ),
+                  itemBuilder: (_, index) {
+                    return InvestmentRequestTableRow(
+                      request: requests[index],
+                      index: index,
+                    );
+                  },
+                ),
+        ),
       ),
               ///===================================
               /// FOOTER

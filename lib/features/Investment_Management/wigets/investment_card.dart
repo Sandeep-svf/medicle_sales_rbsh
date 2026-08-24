@@ -9,10 +9,12 @@ import 'investment_status_chip.dart';
 
 class InvestmentRequestCard extends StatelessWidget {
   final InvestmentRequest request;
+  final VoidCallback? onEdit;
 
   const InvestmentRequestCard({
     super.key,
     required this.request,
+    this.onEdit,
   });
 
   @override
@@ -234,6 +236,16 @@ class InvestmentRequestCard extends StatelessWidget {
               ],
             ),
           ),
+
+          if (onEdit != null)
+            IconButton(
+              tooltip: "Edit & Resubmit",
+              onPressed: onEdit,
+              icon: const Icon(
+                Icons.edit_outlined,
+                color: TColors.primary,
+              ),
+            ),
         ],
       ),
     );

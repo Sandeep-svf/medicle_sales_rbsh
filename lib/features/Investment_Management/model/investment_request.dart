@@ -20,9 +20,6 @@ class InvestmentRequestModel {
   /// UPI
   String? upiId;
 
-  /// Common Proof
-  String? paymentProof;
-
   /// Gift
   String? justification;
   List<GiftItem> items = [];
@@ -47,15 +44,17 @@ class InvestmentRequestModel {
         json["amount"] = amount;
         json["purpose"] = purpose;
 
-        json["bankDetails"] =
-        "$accountHolder | "
-            "$bankName | "
-            "A/C: $accountNumber | "
-            "IFSC: $ifsc";
+        final account = accountNumber?.trim() ?? "";
+        final ifscCode = ifsc?.trim() ?? "";
+        final bank = bankName?.trim() ?? "";
+        final beneficiary = accountHolder?.trim() ?? "";
 
-        if (paymentProof != null &&
-            paymentProof!.isNotEmpty) {
-          json["paymentProof"] = paymentProof;
+        if ([account, ifscCode, bank, beneficiary]
+            .any((value) => value.isNotEmpty)) {
+          json["bankDetails"] = "A/C: $account, "
+              "IFSC: $ifscCode, "
+              "Bank: $bank, "
+              "Beneficiary: $beneficiary";
         }
 
         break;
@@ -66,13 +65,7 @@ class InvestmentRequestModel {
         json["purpose"] = purpose;
         json["upiId"] = upiId;
 
-        if (paymentProof != null &&
-            paymentProof!.isNotEmpty) {
-          json["paymentProof"] = paymentProof;
-        }
-
         break;
-
 
       case InvestmentMode.emi:
         json["paymentMode"] = "EMI";
@@ -81,15 +74,9 @@ class InvestmentRequestModel {
 
         json["purpose"] = purpose;
 
-        json["bankDetails"] =
-        "$accountHolder | "
+        json["bankDetails"] = "$accountHolder | "
             "A/C: $accountNumber | "
             "IFSC: $ifsc";
-
-        if (paymentProof != null &&
-            paymentProof!.isNotEmpty) {
-          json["paymentProof"] = paymentProof;
-        }
 
         break;
 
@@ -97,16 +84,14 @@ class InvestmentRequestModel {
         json["paymentMode"] = "Items/Gift";
         json["justification"] = justification;
 
-        json["items"] =
-            items.map((e) => e.toJson()).toList();
+        json["items"] = items.map((e) => e.toJson()).toList();
 
         break;
     }
 
     json.removeWhere(
-          (key, value) =>
-      value == null ||
-          (value is String && value.trim().isEmpty),
+      (key, value) =>
+          value == null || (value is String && value.trim().isEmpty),
     );
 
     return json;

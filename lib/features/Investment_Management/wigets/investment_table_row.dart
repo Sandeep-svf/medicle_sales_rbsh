@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../utils/constants/colors.dart';
+import '../controller/investment_request_controller.dart';
 import '../model/investment_request_model.dart';
+import '../screen/add_investment_screen.dart';
+import 'investment_request_details_dialog.dart';
 import 'investment_status_chip.dart';
 
 class InvestmentRequestTableRow extends StatefulWidget {
@@ -378,22 +382,24 @@ class _InvestmentRequestTableRowState
 
                         onSelected: _menuSelected,
 
-                        itemBuilder: (_) => const [
+                        itemBuilder: (_) => [
 
-                          PopupMenuItem(
+                          const PopupMenuItem(
                             value: 1,
                             child: Text("View"),
                           ),
 
-                          PopupMenuItem(
-                            value: 2,
-                            child: Text("Edit"),
-                          ),
+                          if (request.canEdit)
+                            const PopupMenuItem(
+                              value: 2,
+                              child: Text("Edit & Resubmit"),
+                            ),
 
-                          PopupMenuItem(
-                            value: 3,
-                            child: Text("Download"),
-                          ),
+                          if (request.hasProof)
+                            const PopupMenuItem(
+                              value: 3,
+                              child: Text("Download"),
+                            ),
 
                         ],
 
@@ -420,11 +426,25 @@ class _InvestmentRequestTableRowState
   void _menuSelected(int value) async {
     switch (value) {
       case 1:
-      // TODO: View Details
+        await InvestmentRequestDetailsDialog.show(context, request);
         break;
 
       case 2:
-      // TODO: Edit Request
+        if (request.canEdit) {
+          final successMessage = await Get.to<String>(
+            () => AddInvestmentScreen(request: request),
+          );
+
+          if (successMessage != null &&
+              Get.isRegistered<InvestmentRequestController>()) {
+            await Get.find<InvestmentRequestController>().refreshData();
+            Get.snackbar(
+              "Success",
+              successMessage,
+              snackPosition: SnackPosition.BOTTOM,
+            );
+          }
+        }
         break;
 
       case 3:

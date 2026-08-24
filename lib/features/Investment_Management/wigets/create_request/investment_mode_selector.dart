@@ -18,7 +18,6 @@ class InvestmentModeSelector extends GetView<AddInvestmentController> {
       child: Obx(() {
         return Row(
           children: [
-
             Expanded(
               child: InvestmentModeCard(
                 selected: controller.selectedMode.value == InvestmentMode.cash,
@@ -28,9 +27,7 @@ class InvestmentModeSelector extends GetView<AddInvestmentController> {
                 onTap: () => controller.changeMode(InvestmentMode.cash),
               ),
             ),
-
             const SizedBox(width: 10),
-
             Expanded(
               child: InvestmentModeCard(
                 selected: controller.selectedMode.value == InvestmentMode.neft,
@@ -40,9 +37,7 @@ class InvestmentModeSelector extends GetView<AddInvestmentController> {
                 onTap: () => controller.changeMode(InvestmentMode.neft),
               ),
             ),
-
             const SizedBox(width: 10),
-
             Expanded(
               child: InvestmentModeCard(
                 selected: controller.selectedMode.value == InvestmentMode.upi,
@@ -52,21 +47,7 @@ class InvestmentModeSelector extends GetView<AddInvestmentController> {
                 onTap: () => controller.changeMode(InvestmentMode.upi),
               ),
             ),
-
             const SizedBox(width: 10),
-
-            Expanded(
-              child: InvestmentModeCard(
-                selected: controller.selectedMode.value == InvestmentMode.emi,
-                title: "EMI",
-                subtitle: "",
-                icon: Icons.calendar_month_outlined,
-                onTap: () => controller.changeMode(InvestmentMode.emi),
-              ),
-            ),
-
-            const SizedBox(width: 10),
-
             Expanded(
               child: InvestmentModeCard(
                 selected: controller.selectedMode.value == InvestmentMode.gift,

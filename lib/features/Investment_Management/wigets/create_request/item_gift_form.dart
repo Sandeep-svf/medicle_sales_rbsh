@@ -16,18 +16,14 @@ class GiftForm extends GetView<AddInvestmentController> {
       icon: Icons.card_giftcard,
       child: Column(
         children: [
-
           InvestmentTextField(
             controller: controller.itemNameController,
             label: "Item Name",
             icon: Icons.inventory_2_outlined,
           ),
-
           const SizedBox(height: 16),
-
           Row(
             children: [
-
               Expanded(
                 child: InvestmentTextField(
                   controller: controller.quantityController,
@@ -36,9 +32,7 @@ class GiftForm extends GetView<AddInvestmentController> {
                   keyboardType: TextInputType.number,
                 ),
               ),
-
               const SizedBox(width: 16),
-
               Expanded(
                 child: InvestmentTextField(
                   controller: controller.valueController,
@@ -47,21 +41,18 @@ class GiftForm extends GetView<AddInvestmentController> {
                   keyboardType: TextInputType.number,
                 ),
               ),
-
             ],
           ),
-
           const SizedBox(height: 16),
-
           InvestmentTextField(
             controller: controller.justificationController,
             label: "Justification",
             icon: Icons.description,
             maxLines: 3,
+            validator: (value) =>
+                controller.validateRequired(value, "Justification"),
           ),
-
           const SizedBox(height: 20),
-
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
@@ -70,9 +61,7 @@ class GiftForm extends GetView<AddInvestmentController> {
               label: const Text("Add Item"),
             ),
           ),
-
           const SizedBox(height: 20),
-
           Obx(() {
             if (controller.giftItems.isEmpty) {
               return const SizedBox.shrink();
@@ -82,8 +71,7 @@ class GiftForm extends GetView<AddInvestmentController> {
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: controller.giftItems.length,
-              separatorBuilder: (_, __) =>
-              const Divider(height: 16),
+              separatorBuilder: (_, __) => const Divider(height: 16),
               itemBuilder: (_, index) {
                 final item = controller.giftItems[index];
 
@@ -98,14 +86,12 @@ class GiftForm extends GetView<AddInvestmentController> {
                       Icons.delete,
                       color: Colors.red,
                     ),
-                    onPressed: () =>
-                        controller.removeGiftItem(index),
+                    onPressed: () => controller.removeGiftItem(index),
                   ),
                 );
               },
             );
           }),
-
         ],
       ),
     );

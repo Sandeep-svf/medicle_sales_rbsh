@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../utils/constants/colors.dart';
-import '../../../../utils/constants/sizes.dart';
 import '../controller/tour_plan_controller.dart';
 
 class DraftSavedDialog extends StatelessWidget {
@@ -71,7 +70,9 @@ class DraftSavedDialog extends StatelessWidget {
           (sum, e) => sum + e.count,
     );
 
-    return Dialog(
+    return PopScope(
+      canPop: false,
+      child: Dialog(
         elevation: 0,
         backgroundColor: Colors.transparent,
         child: Container(
@@ -147,15 +148,6 @@ class DraftSavedDialog extends StatelessWidget {
     ),
     ),
 
-    IconButton(
-    onPressed: () {
-    Get.back();
-    },
-    icon: const Icon(
-    Icons.close,
-    color: Colors.white,
-    ),
-    ),
     ],
     ),
     ),
@@ -187,7 +179,7 @@ class DraftSavedDialog extends StatelessWidget {
 
     Expanded(
     child: Text(
-    "You can submit this Tour Plan now or later from the Tour Plan list.",
+    "Review the summary below, then submit this Tour Plan.",
     style: TextStyle(
     color: Colors.grey.shade700,
     height: 1.5,
@@ -257,40 +249,10 @@ class DraftSavedDialog extends StatelessWidget {
 
       const SizedBox(height: 20),
 
-      Row(
-        children: [
-
-          Expanded(
-            child: OutlinedButton.icon(
-              style: OutlinedButton.styleFrom(
-                minimumSize: const Size.fromHeight(52),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-              ),
-              onPressed: () {
-
-                Get.back();
-
-                Get.back(result: true);
-
-              },
-              icon: const Icon(Icons.arrow_back),
-              label: const Text(
-                "Later",
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ),
-
-          const SizedBox(width: 16),
-
-          Expanded(
-            child: Obx(() {
-
-              return ElevatedButton.icon(
+      Obx(() {
+        return SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
 
                 style: ElevatedButton.styleFrom(
                   backgroundColor: TColors.primary,
@@ -305,14 +267,21 @@ class DraftSavedDialog extends StatelessWidget {
                     ? null
                     : () async {
 
-                  final success =
-                  await controller.submitPlan();
+                  final success = await controller.submitPlan(
+                    showSuccessMessage: false,
+                  );
 
                   if (success) {
 
                     Get.back();
 
                     Get.back(result: true);
+
+                    Get.snackbar(
+                      "Success",
+                      "Tour Plan submitted successfully.",
+                      backgroundColor: TColors.success.withValues(alpha: .15),
+                    );
 
                   }
                 },
@@ -336,17 +305,16 @@ class DraftSavedDialog extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-              );
-            }),
           ),
-        ],
-      ),
+        );
+      }),
     ],
     ),
     ),
     ],
     ),
         ),
+      ),
     );
   }
 }

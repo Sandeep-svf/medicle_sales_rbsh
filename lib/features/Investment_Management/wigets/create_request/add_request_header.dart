@@ -2,18 +2,19 @@ import 'package:flutter/material.dart';
 
 import '../../../../utils/constants/colors.dart';
 
-
-
 class AddRequestHeader extends StatelessWidget {
-  const AddRequestHeader({super.key});
+  const AddRequestHeader({
+    super.key,
+    required this.isEditing,
+  });
+
+  final bool isEditing;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-
       padding: const EdgeInsets.all(20),
-
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -23,10 +24,8 @@ class AddRequestHeader extends StatelessWidget {
         ),
         borderRadius: BorderRadius.circular(18),
       ),
-
       child: Row(
         children: [
-
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
@@ -39,37 +38,34 @@ class AddRequestHeader extends StatelessWidget {
               size: 30,
             ),
           ),
-
           const SizedBox(width: 18),
-
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-
                 Text(
-                  "Create Investment Request",
-                  style: TextStyle(
+                  isEditing
+                      ? "Edit Investment Request"
+                      : "Create Investment Request",
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-
-                SizedBox(height: 6),
-
+                const SizedBox(height: 6),
                 Text(
-                  "Fill the required details to submit an investment request for approval.",
-                  style: TextStyle(
+                  isEditing
+                      ? "Update the request details and submit it again."
+                      : "Fill the required details and submit the investment request.",
+                  style: const TextStyle(
                     color: Colors.white70,
                     height: 1.4,
                   ),
                 ),
-
               ],
             ),
           ),
-
         ],
       ),
     );

@@ -44,69 +44,90 @@ class TourPlanTable extends StatelessWidget {
               horizontal: TSizes.lg,
               vertical: TSizes.md,
             ),
-            color: TColors.primary,
+            color: Colors.white,
             child: Row(
               children: [
 
-                const Icon(
-                  Icons.table_chart,
-                  color: Colors.white,
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: TColors.primary_shade50,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.table_chart_rounded,
+                    color: TColors.primary,
+                  ),
                 ),
 
                 const SizedBox(width: 10),
 
-                Text(
-                  "Tour Plans (${plans.length})",
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium
-                      ?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-
-                const Spacer(),
-
-                Text(
-                  "Updated Recently",
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(
-                    color: Colors.white70,
+                Expanded(
+                  child: Text(
+                    "Tour Plans (${plans.length})",
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleMedium
+                        ?.copyWith(
+                      color: TColors.textPrimary,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ],
             ),
           ),
 
-          _buildHeader(),
-
-          const Divider(
-            height: 1,
-            thickness: 1,
-          ),
-
           Expanded(
-            child: Scrollbar(
-              thumbVisibility: true,
-              child: ListView.builder(
-                itemCount: plans.length,
-                itemBuilder: (context, index) {
-                  final plan = plans[index];
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final tableWidth = constraints.maxWidth < 1200
+                    ? 1200.0
+                    : constraints.maxWidth;
 
-                  return TourPlanRow(
-                    key: ValueKey(plan.id),
-                    index: index,
-                    plan: plan,
-                    onDetails: () => onDetails(plan),
-                    onSubmit: () => onSubmit(plan),
-                    isSubmitting: submittingPlanId == plan.id,
-                    submitEnabled: submittingPlanId.isEmpty,
-                  );
-                },
-              ),
+                return SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: SizedBox(
+                    width: tableWidth,
+                    height: constraints.maxHeight,
+                    child: Column(
+                      children: [
+                        _buildHeader(),
+                        const Divider(
+                          height: 1,
+                          thickness: 1,
+                        ),
+                        Expanded(
+                          child: Scrollbar(
+                            thumbVisibility: true,
+                            child: ListView.builder(
+                              physics:
+                                  const AlwaysScrollableScrollPhysics(),
+                              itemCount: plans.length,
+                              itemBuilder: (context, index) {
+                                final plan = plans[index];
+
+                                return TourPlanRow(
+                                  key: ValueKey(plan.id),
+                                  index: index,
+                                  plan: plan,
+                                  onDetails: () => onDetails(plan),
+                                  onSubmit: () => onSubmit(plan),
+                                  isSubmitting: submittingPlanId == plan.id,
+                                  submitEnabled: submittingPlanId.isEmpty,
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
             ),
           ),
         ],
@@ -147,23 +168,13 @@ class TourPlanTable extends StatelessWidget {
           ),
 
           Expanded(
-            flex: 2,
+            flex: 1,
             child: Center(
               child: Text(
                 "Days",
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                 ),
-              ),
-            ),
-          ),
-
-          Expanded(
-            flex: 3,
-            child: Text(
-              "Updated",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
               ),
             ),
           ),
@@ -179,7 +190,7 @@ class TourPlanTable extends StatelessWidget {
           ),
 
           Expanded(
-            flex: 3,
+            flex: 5,
             child: Align(
               alignment: Alignment.centerRight,
               child: Text(
