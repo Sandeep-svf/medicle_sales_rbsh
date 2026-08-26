@@ -3,25 +3,29 @@ import 'package:medicle_sales_rbsh/features/SalesChartAnalysis/widgets/today_bea
 
 import '../model/SalesChartDashboardModel.dart';
 import 'handshake_request_card.dart';
-class MorningActionCenter extends StatelessWidget {
 
+class MorningActionCenter extends StatelessWidget {
   final TodayBeatAssigned? beat;
+  final Future<void> Function()? onHandshakeSubmitted;
 
   const MorningActionCenter({
     super.key,
     this.beat,
+    this.onHandshakeSubmitted,
   });
-
 
   @override
   Widget build(BuildContext context) {
     return Column(
-      children:  [
+      children: [
         TodayBeatCard(
           beat: beat,
         ),
-        SizedBox(height: 18),
-        HandshakeRequestCard(),
+        const SizedBox(height: 18),
+        HandshakeRequestCard(
+          beat: beat,
+          onSubmitted: onHandshakeSubmitted,
+        ),
       ],
     );
   }

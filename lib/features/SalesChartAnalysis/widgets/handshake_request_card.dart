@@ -1,97 +1,205 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../../utils/constants/colors.dart';
+import '../Screen/handshake_user_list_screen.dart';
+import '../model/SalesChartDashboardModel.dart';
+import '../model/handshake_available_user.dart';
+import '../services/handshake_service.dart';
+import 'handshake_confirmation_dialog.dart';
+import 'handshake_user_tile.dart';
 
 class HandshakeRequestCard extends StatefulWidget {
-  const HandshakeRequestCard({super.key});
+  const HandshakeRequestCard({
+    super.key,
+    required this.beat,
+    this.onSubmitted,
+  });
+
+  final TodayBeatAssigned? beat;
+  final Future<void> Function()? onSubmitted;
 
   @override
-  State<HandshakeRequestCard> createState() =>
-      _HandshakeRequestCardState();
+  State<HandshakeRequestCard> createState() => _HandshakeRequestCardState();
 }
 
 class _HandshakeRequestCardState extends State<HandshakeRequestCard> {
-  // ---------------------------------------------------------------------------
-  // UI ONLY - Replace with API response later
-  // ---------------------------------------------------------------------------
+  static const int _previewLimit = 3;
 
-  final List<_HandshakeUser> _users = const [
-    _HandshakeUser(
-      id: '1',
-      name: 'Rajesh Kumar',
-      designation: 'ASM',
-    ),
-    _HandshakeUser(
-      id: '2',
-      name: 'Amit Singh',
-      designation: 'RSM',
-    ),
-    _HandshakeUser(
-      id: '3',
-      name: 'Vivek Sharma',
-      designation: 'ZSM',
-    ),
-  ];
+  final HandshakeService _service = const HandshakeService();
+  final Set<String> _selectedIds = <String>{};
 
-  final Set<String> _selectedIds = {};
+  List<HandshakeAvailableUser> _users = const [];
+  bool _loading = true;
+  bool _sending = false;
+  bool _sent = false;
+  String? _errorMessage;
+  String _notes = '';
 
-  bool _isSending = false;
-  bool _isSent = false;
+  DateTime get _availabilityDate =>
+      HandshakeService.resolveAvailabilityDate(widget.beat?.date);
 
-  int get _selectedCount => _selectedIds.length;
+  String get _dayId => widget.beat?.dayId?.trim() ?? '';
 
-  // ---------------------------------------------------------------------------
-  // Selection
-  // ---------------------------------------------------------------------------
+  List<HandshakeAvailableUser> get _selectedUsers {
+    return _users
+        .where((user) => _selectedIds.contains(user.id))
+        .toList(growable: false);
+  }
 
-  void _toggleUser(String id) {
-    if (_isSending) return;
+  @override
+  void initState() {
+    super.initState();
+    _loadUsers();
+  }
+
+  @override
+  void didUpdateWidget(covariant HandshakeRequestCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.beat?.dayId != widget.beat?.dayId ||
+        oldWidget.beat?.date != widget.beat?.date) {
+      _selectedIds.clear();
+      _loadUsers();
+    }
+  }
+
+  Future<void> _loadUsers({bool showLoader = true}) async {
+    if (_dayId.isEmpty) {
+      if (!mounted) return;
+      setState(() {
+        _users = const [];
+        _loading = false;
+        _errorMessage = 'No current tour-plan day is available.';
+      });
+      return;
+    }
+
+    if (showLoader && mounted) {
+      setState(() {
+        _loading = true;
+        _errorMessage = null;
+      });
+    }
+
+    try {
+      final users = await _service.fetchAvailableUsers(
+        date: _availabilityDate,
+      );
+
+      if (!mounted) return;
+      setState(() {
+        _users = users;
+        _selectedIds.retainAll(users.map((user) => user.id));
+        _errorMessage = null;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _errorMessage = HandshakeService.errorMessage(error);
+      });
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  void _toggleUser(HandshakeAvailableUser user) {
+    if (_sending || !user.available) return;
 
     setState(() {
-      _isSent = false;
-
-      if (_selectedIds.contains(id)) {
-        _selectedIds.remove(id);
-      } else {
-        _selectedIds.add(id);
+      _sent = false;
+      if (!_selectedIds.add(user.id)) {
+        _selectedIds.remove(user.id);
       }
     });
   }
 
-  // ---------------------------------------------------------------------------
-  // UI ONLY - Fake API
-  // ---------------------------------------------------------------------------
+  Future<void> _sendSelectedUsers() async {
+    final selectedUsers = _selectedUsers;
+    if (selectedUsers.isEmpty || _sending) return;
 
-  Future<void> _sendRequest() async {
-    if (_selectedIds.isEmpty || _isSending) return;
+    final confirmation = await showHandshakeConfirmationDialog(
+      context: context,
+      selectedUsers: selectedUsers,
+      date: _availabilityDate,
+      dayId: _dayId,
+      beatName: widget.beat?.beatName,
+      initialNotes: _notes,
+    );
+
+    if (confirmation == null || !mounted) return;
+    _notes = confirmation.notes;
 
     setState(() {
-      _isSending = true;
-      _isSent = false;
+      _sending = true;
+      _sent = false;
     });
 
-    // Simulating API request
-    await Future.delayed(const Duration(milliseconds: 1200));
+    try {
+      final result = await _service.sendRequest(
+        dayId: _dayId,
+        userIds: selectedUsers.map((user) => user.id),
+        notes: _notes,
+      );
 
+      if (!mounted) return;
+      await _handleSubmissionSuccess(result.message);
+    } catch (error) {
+      if (!mounted) return;
+      _showMessage(HandshakeService.errorMessage(error), isError: true);
+    } finally {
+      if (mounted) setState(() => _sending = false);
+    }
+  }
+
+  Future<void> _openFullList() async {
+    if (_dayId.isEmpty || _sending) return;
+
+    final result = await Navigator.of(context).push<HandshakePageResult>(
+      MaterialPageRoute(
+        builder: (_) => HandshakeUserListScreen(
+          initialUsers: _users,
+          initialSelectedIds: _selectedIds,
+          dayId: _dayId,
+          date: _availabilityDate,
+          beatName: widget.beat?.beatName,
+        ),
+      ),
+    );
+
+    if (!mounted || result == null || !result.submitted) return;
+    await _handleSubmissionSuccess(result.message);
+  }
+
+  Future<void> _handleSubmissionSuccess(String message) async {
     if (!mounted) return;
 
     setState(() {
-      _isSending = false;
-      _isSent = true;
-    });
-
-    // Keep success state visible briefly.
-    await Future.delayed(const Duration(seconds: 2));
-
-    if (!mounted) return;
-
-    setState(() {
-      _isSent = false;
+      _sent = true;
       _selectedIds.clear();
+      _notes = '';
     });
+
+    _showMessage(message, isError: false);
+
+    try {
+      await widget.onSubmitted?.call();
+    } catch (error) {
+      debugPrint('[HandshakeCard] Dashboard refresh failed: $error');
+    }
+
+    await _loadUsers(showLoader: false);
+
+    await Future<void>.delayed(const Duration(seconds: 2));
+    if (mounted) setState(() => _sent = false);
+  }
+
+  void _showMessage(String message, {required bool isError}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? TColors.error : TColors.success,
+      ),
+    );
   }
 
   @override
@@ -102,12 +210,10 @@ class _HandshakeRequestCardState extends State<HandshakeRequestCard> {
       decoration: BoxDecoration(
         color: TColors.cardBackground,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: TColors.cardBorder,
-        ),
+        border: Border.all(color: TColors.cardBorder),
         boxShadow: [
           BoxShadow(
-            color: TColors.primary.withOpacity(.07),
+            color: TColors.primary.withValues(alpha: .07),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -116,620 +222,218 @@ class _HandshakeRequestCardState extends State<HandshakeRequestCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // -------------------------------------------------------------------
-          // Header
-          // -------------------------------------------------------------------
-
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Container(
-                width: 46,
-                height: 46,
-                decoration: BoxDecoration(
-                  color: TColors.primary_shade50,
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: const Icon(
-                  Icons.handshake_rounded,
-                  color: TColors.primary,
-                  size: 25,
-                ),
-              )
-                  .animate(
-                onPlay: (controller) => controller.repeat(
-                  reverse: true,
-                ),
-              )
-                  .scale(
-                begin: const Offset(.96, .96),
-                end: const Offset(1.04, 1.04),
-                duration: 1400.ms,
-              ),
-
-              const SizedBox(width: 14),
-
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'FIELD SUPPORT',
-                      style: TextStyle(
-                        color: TColors.primary,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 1.3,
-                      ),
-                    ),
-                    SizedBox(height: 3),
-                    Text(
-                      'Request a Handshake',
-                      style: TextStyle(
-                        color: TColors.textPrimary,
-                        fontSize: 17,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              if (_selectedCount > 0)
-                AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 250),
-                  transitionBuilder: (child, animation) {
-                    return ScaleTransition(
-                      scale: animation,
-                      child: child,
-                    );
-                  },
-                  child: Container(
-                    key: ValueKey(_selectedCount),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: TColors.primary_shade50,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      '$_selectedCount selected',
-                      style: const TextStyle(
-                        color: TColors.primary,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ),
-            ],
-          ),
-
-          const SizedBox(height: 10),
-
-          const Text(
-            'Select one or more reporting managers you want to work with today.',
-            style: TextStyle(
-              color: TColors.textSecondary,
-              fontSize: 12,
-              height: 1.5,
-            ),
-          ),
-
-          const SizedBox(height: 18),
-
-          // -------------------------------------------------------------------
-          // Manager List
-          // -------------------------------------------------------------------
-
-          ...List.generate(
-            _users.length,
-                (index) {
-              final user = _users[index];
-
-              final selected = _selectedIds.contains(user.id);
-
-              return Padding(
-                padding: EdgeInsets.only(
-                  bottom: index == _users.length - 1 ? 0 : 10,
-                ),
-                child: _ManagerSelectionTile(
-                  user: user,
-                  selected: selected,
-                  onTap: () => _toggleUser(user.id),
-                )
-                    .animate()
-                    .fadeIn(
-                  delay: Duration(
-                    milliseconds: 100 + (index * 80),
-                  ),
-                  duration: 350.ms,
-                )
-                    .slideX(
-                  begin: .08,
-                  end: 0,
-                  delay: Duration(
-                    milliseconds: 100 + (index * 80),
-                  ),
-                  duration: 400.ms,
-                  curve: Curves.easeOutCubic,
-                ),
-              );
-            },
-          ),
-
-          const SizedBox(height: 18),
-
-          Divider(
-            height: 1,
-            color: TColors.borderSecondary.withOpacity(.8),
-          ),
-
+          _buildHeader(),
           const SizedBox(height: 16),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 250),
+            child: _buildContent(),
+          ),
+        ],
+      ),
+    );
+  }
 
-          // -------------------------------------------------------------------
-          // Bottom Action
-          // -------------------------------------------------------------------
-
-          Row(
+  Widget _buildHeader() {
+    return Row(
+      children: [
+        Container(
+          width: 46,
+          height: 46,
+          decoration: BoxDecoration(
+            color: TColors.primary_shade50,
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: const Icon(
+            Icons.handshake_rounded,
+            color: TColors.primary,
+            size: 25,
+          ),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 250),
-                  child: _selectedCount == 0
-                      ? const Column(
-                    key: ValueKey('empty'),
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'No manager selected',
-                        style: TextStyle(
-                          color: TColors.textPrimary,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      SizedBox(height: 2),
-                      Text(
-                        'Select a manager to continue',
-                        style: TextStyle(
-                          color: TColors.textSecondary,
-                          fontSize: 10,
-                        ),
-                      ),
-                    ],
-                  )
-                      : Column(
-                    key: ValueKey(_selectedCount),
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Ready to send',
-                        style: TextStyle(
-                          color: TColors.textSecondary,
-                          fontSize: 10,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        '$_selectedCount ${_selectedCount == 1 ? 'manager' : 'managers'} selected',
-                        style: const TextStyle(
-                          color: TColors.textPrimary,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
-                  ),
+              const Text(
+                'REQUEST A HANDSHAKE',
+                style: TextStyle(
+                  color: TColors.primary,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1.2,
                 ),
               ),
-
-              const SizedBox(width: 14),
-
-              _SendHandshakeButton(
-                enabled: _selectedIds.isNotEmpty,
-                isSending: _isSending,
-                isSent: _isSent,
-                onPressed: _sendRequest,
+              const SizedBox(height: 3),
+              Text(
+                '${HandshakeService.formatApiDate(_availabilityDate)} • ${widget.beat?.beatName ?? 'Current Beat'}',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: TColors.textSecondary,
+                  fontSize: 11,
+                ),
               ),
             ],
           ),
-        ],
-      ),
-    )
-        .animate()
-        .fadeIn(
-      duration: 500.ms,
-    )
-        .slideY(
-      begin: .12,
-      end: 0,
-      duration: 500.ms,
-      curve: Curves.easeOutCubic,
-    );
-  }
-}
-
-// =============================================================================
-// MANAGER TILE
-// =============================================================================
-
-class _ManagerSelectionTile extends StatelessWidget {
-  final _HandshakeUser user;
-  final bool selected;
-  final VoidCallback onTap;
-
-  const _ManagerSelectionTile({
-    required this.user,
-    required this.selected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedScale(
-      scale: selected ? 1 : .985,
-      duration: const Duration(milliseconds: 220),
-      curve: Curves.easeOutBack,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 250),
-            curve: Curves.easeOutCubic,
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: selected
-                  ? TColors.primary_shade50
-                  : TColors.lightGrey,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: selected
-                    ? TColors.primary
-                    : TColors.borderSecondary,
-                width: selected ? 1.4 : 1,
-              ),
-              boxShadow: selected
-                  ? [
-                BoxShadow(
-                  color: TColors.primary.withOpacity(.10),
-                  blurRadius: 14,
-                  offset: const Offset(0, 6),
-                ),
-              ]
-                  : null,
-            ),
-            child: Row(
-              children: [
-                // Avatar
-
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 250),
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    gradient: selected
-                        ? const LinearGradient(
-                      colors: [
-                        TColors.primary,
-                        TColors.primary_shade700,
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    )
-                        : null,
-                    color: selected
-                        ? null
-                        : TColors.primary_shade100,
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    _initials(user.name),
-                    style: TextStyle(
-                      color: selected
-                          ? Colors.white
-                          : TColors.primary,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ),
-
-                const SizedBox(width: 12),
-
-                // Manager Information
-
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        user.name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: TColors.textPrimary,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(height: 3),
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 7,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: selected
-                                  ? Colors.white
-                                  : TColors.primary_shade50,
-                              borderRadius:
-                              BorderRadius.circular(6),
-                            ),
-                            child: Text(
-                              user.designation,
-                              style: const TextStyle(
-                                color: TColors.primary,
-                                fontSize: 9,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: .5,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          const Flexible(
-                            child: Text(
-                              'Reporting Manager',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                color: TColors.textSecondary,
-                                fontSize: 10,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(width: 8),
-
-                // Animated selection indicator
-
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 250),
-                  width: 26,
-                  height: 26,
-                  decoration: BoxDecoration(
-                    color: selected
-                        ? TColors.primary
-                        : Colors.transparent,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: selected
-                          ? TColors.primary
-                          : TColors.darkGrey,
-                      width: 1.5,
-                    ),
-                  ),
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 200),
-                    child: selected
-                        ? const Icon(
-                      Icons.check_rounded,
-                      key: ValueKey('checked'),
-                      color: Colors.white,
-                      size: 17,
-                    )
-                        : const SizedBox(
-                      key: ValueKey('unchecked'),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
         ),
-      ),
-    );
-  }
-
-  static String _initials(String name) {
-    final parts = name
-        .trim()
-        .split(' ')
-        .where((element) => element.isNotEmpty)
-        .toList();
-
-    if (parts.isEmpty) return '?';
-
-    if (parts.length == 1) {
-      return parts.first.substring(0, 1).toUpperCase();
-    }
-
-    return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
-  }
-}
-
-// =============================================================================
-// SEND BUTTON
-// =============================================================================
-
-class _SendHandshakeButton extends StatelessWidget {
-  final bool enabled;
-  final bool isSending;
-  final bool isSent;
-  final VoidCallback onPressed;
-
-  const _SendHandshakeButton({
-    required this.enabled,
-    required this.isSending,
-    required this.isSent,
-    required this.onPressed,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final active = enabled || isSending || isSent;
-
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      height: 48,
-      constraints: const BoxConstraints(
-        minWidth: 130,
-      ),
-      decoration: BoxDecoration(
-        gradient: active && !isSent
-            ? const LinearGradient(
-          colors: [
-            TColors.primary,
-            TColors.primary_shade700,
-          ],
-        )
-            : null,
-        color: isSent
-            ? TColors.success
-            : active
-            ? null
-            : TColors.buttonDisabled,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: active && !isSending
-            ? [
-          BoxShadow(
-            color: (isSent
-                ? TColors.success
-                : TColors.primary)
-                .withOpacity(.20),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
-          ),
-        ]
-            : null,
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap:
-          enabled && !isSending && !isSent ? onPressed : null,
-          borderRadius: BorderRadius.circular(14),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Center(
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                transitionBuilder: (child, animation) {
-                  return FadeTransition(
-                    opacity: animation,
-                    child: ScaleTransition(
-                      scale: animation,
-                      child: child,
-                    ),
-                  );
-                },
-                child: _buildContent(),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildContent() {
-    if (isSending) {
-      return const Row(
-        key: ValueKey('sending'),
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SizedBox(
-            width: 17,
-            height: 17,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              color: Colors.white,
-            ),
-          ),
-          SizedBox(width: 9),
-          Text(
-            'Sending...',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ],
-      );
-    }
-
-    if (isSent) {
-      return const Row(
-        key: ValueKey('sent'),
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            Icons.check_circle_rounded,
-            color: Colors.white,
-            size: 18,
-          ),
-          SizedBox(width: 7),
-          Text(
-            'Request Sent',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ],
-      );
-    }
-
-    return Row(
-      key: const ValueKey('send'),
-      mainAxisSize: MainAxisSize.min,
-      children: const [
-        Icon(
-          Icons.send_rounded,
-          color: Colors.white,
-          size: 17,
-        ),
-        SizedBox(width: 8),
-        Text(
-          'Send Request',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 12,
-            fontWeight: FontWeight.w700,
-          ),
+        IconButton(
+          tooltip: 'Refresh available users',
+          onPressed: _loading || _sending ? null : _loadUsers,
+          icon: const Icon(Icons.refresh_rounded, color: TColors.primary),
         ),
       ],
     );
   }
-}
 
-// =============================================================================
-// TEMP MODEL
-// Later remove this and use your API model.
-// =============================================================================
+  Widget _buildContent() {
+    if (_loading) {
+      return const SizedBox(
+        key: ValueKey('loading'),
+        height: 110,
+        child: Center(
+          child: CircularProgressIndicator(color: TColors.primary),
+        ),
+      );
+    }
 
-class _HandshakeUser {
-  final String id;
-  final String name;
-  final String designation;
+    if (_errorMessage != null) {
+      return Container(
+        key: const ValueKey('error'),
+        width: double.infinity,
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: TColors.errorBg,
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.error_outline, color: TColors.error),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                _errorMessage!,
+                style: const TextStyle(
+                  color: TColors.error,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            TextButton(onPressed: _loadUsers, child: const Text('Retry')),
+          ],
+        ),
+      );
+    }
 
-  const _HandshakeUser({
-    required this.id,
-    required this.name,
-    required this.designation,
-  });
+    if (_users.isEmpty) {
+      return const SizedBox(
+        key: ValueKey('empty'),
+        height: 100,
+        child: Center(
+          child: Text(
+            'No users are available for today.',
+            style: TextStyle(
+              color: TColors.textSecondary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      );
+    }
+
+    final previewUsers = _users.take(_previewLimit).toList(growable: false);
+
+    return Column(
+      key: const ValueKey('users'),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Select one or more available users for joint field work.',
+          style: TextStyle(
+            color: TColors.textSecondary,
+            fontSize: 12,
+          ),
+        ),
+        const SizedBox(height: 12),
+        ...previewUsers.map(
+          (user) => Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: HandshakeUserTile(
+              user: user,
+              selected: _selectedIds.contains(user.id),
+              onTap: () => _toggleUser(user),
+            ),
+          ),
+        ),
+        if (_users.length > _previewLimit)
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton.icon(
+              onPressed: _openFullList,
+              icon: const Icon(Icons.people_alt_outlined, size: 18),
+              label: Text('View More (${_users.length})'),
+            ),
+          ),
+        const Divider(height: 24, color: TColors.borderSecondary),
+        Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${_selectedIds.length} user(s) selected',
+                    style: const TextStyle(
+                      color: TColors.textPrimary,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  const Text(
+                    'Verify details before sending.',
+                    style: TextStyle(
+                      color: TColors.textSecondary,
+                      fontSize: 10,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _sent ? TColors.success : TColors.primary,
+                foregroundColor: Colors.white,
+                minimumSize: const Size(136, 46),
+              ),
+              onPressed: _selectedIds.isEmpty || _sending || _sent
+                  ? null
+                  : _sendSelectedUsers,
+              icon: _sending
+                  ? const SizedBox(
+                      width: 17,
+                      height: 17,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Icon(
+                      _sent ? Icons.check_circle : Icons.send_rounded,
+                      size: 18,
+                    ),
+              label: Text(
+                _sending
+                    ? 'Sending...'
+                    : _sent
+                        ? 'Sent'
+                        : 'Send Request',
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
 }

@@ -12,9 +12,10 @@ class InvestmentRequestCardList extends GetView<InvestmentRequestController> {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
+      final requests = controller.investmentRequests.toList(growable: false);
+
       return LayoutBuilder(
         builder: (context, constraints) {
-          final requests = controller.investmentRequests;
           final width = constraints.maxWidth;
 
           int crossAxisCount = 1;

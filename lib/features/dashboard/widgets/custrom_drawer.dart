@@ -26,6 +26,7 @@ import '../../Holiday/screen/HolidayScreen.dart';
 import '../../Inbox/Screen/InboxScreen.dart';
 
 import '../../Investment_Management/screen/investment_list_screen.dart';
+import '../../TrackingOptimizedBgLocation/utils/samsung_battery_settings.dart';
 import '../../InvoiceTrackerShipment/screen/InvoiceScreen.dart';
 import '../../PtsPtrCalculator/PtsPtrCalculator.dart';
 import '../../SalesChartAnalysis/Screen/salesChartHome2.dart';
@@ -57,6 +58,23 @@ class CustomDrawer extends StatefulWidget {
 }
 
 class _CustomDrawerState extends State<CustomDrawer> {
+  bool _isSamsungDevice = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSamsungDevice();
+  }
+
+  Future<void> _loadSamsungDevice() async {
+    final isSamsung = await SamsungBatterySettings.isSamsungDevice();
+    if (mounted) {
+      setState(() {
+        _isSamsungDevice = isSamsung;
+      });
+    }
+  }
+
   // late String? userRole;  // Store the user role variable
 
   /*@override
@@ -325,6 +343,16 @@ class _CustomDrawerState extends State<CustomDrawer> {
                         widget.onMenuSelected(ReportScreen(), TTexts.report),
                     isSelected: widget.currentScreen == TTexts.report,
                   ),*/
+                 /* if (_isSamsungDevice)
+                    _buildDrawerItem(
+                      icon: Icons.battery_saver,
+                      text: 'Samsung Tracking Setup',
+                      onTap: () async {
+                        Navigator.of(context).pop();
+                        await SamsungBatterySettings
+                            .openNeverSleepingApps();
+                      },
+                    ),*/
                   _buildDrawerItem(
                     icon: Icons.logout,
                     text: TTexts.logout,

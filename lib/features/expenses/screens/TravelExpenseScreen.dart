@@ -73,6 +73,13 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
     super.initState();
     selectedExpenseDate = DateTime.now();
     _loadSettingsAndPrefill();
+
+    // Show DCR policy every time user lands on this screen.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _showDcrPolicyDialog();
+      }
+    });
   }
 
   Future<void> _loadSettingsAndPrefill() async {
@@ -840,4 +847,535 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
       ),
     );
   }
+
+  Future<void> _showDcrPolicyDialog() async {
+    if (!mounted) return;
+
+    await showDialog<void>(
+      context: context,
+
+      // User can close using the X button.
+      // Prevent accidental close by tapping outside.
+      barrierDismissible: false,
+
+      builder: (dialogContext) {
+        final screenSize = MediaQuery.of(dialogContext).size;
+
+        return Dialog(
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 24,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: 920,
+              maxHeight: screenSize.height * 0.88,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // ====================================================
+                // HEADER
+                // ====================================================
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.fromLTRB(
+                    24,
+                    18,
+                    12,
+                    18,
+                  ),
+                  color: TColors.primary,
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.assessment_outlined,
+                          color: Colors.white,
+                          size: 24,
+                        ),
+                      ),
+
+                      const SizedBox(width: 14),
+
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment:
+                          CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'DCR (Daily Call Report)',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 21,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            SizedBox(height: 3),
+                            Text(
+                              'Daily call performance and allowance eligibility',
+                              style: TextStyle(
+                                color: Colors.white70,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      IconButton(
+                        tooltip: 'Close',
+                        onPressed: () {
+                          Navigator.of(dialogContext).pop();
+                        },
+                        icon: const Icon(
+                          Icons.close_rounded,
+                          color: Colors.white,
+                          size: 26,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // ====================================================
+                // CONTENT
+                // ====================================================
+                Flexible(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      crossAxisAlignment:
+                      CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: Colors.blueGrey
+                                .withOpacity(0.06),
+                            borderRadius:
+                            BorderRadius.circular(12),
+                            border: Border.all(
+                              color: Colors.blueGrey
+                                  .withOpacity(0.12),
+                            ),
+                          ),
+                          child: const Row(
+                            crossAxisAlignment:
+                            CrossAxisAlignment.start,
+                            children: [
+                              Icon(
+                                Icons.info_outline_rounded,
+                                size: 20,
+                                color: Colors.blueGrey,
+                              ),
+                              SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  'Allowance eligibility is calculated '
+                                      'based on the number of Doctor and '
+                                      'Chemist calls completed during the day.',
+                                  style: TextStyle(
+                                    fontSize: 13.5,
+                                    height: 1.4,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        // Horizontally scrollable for smaller devices.
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Container(
+                            width: 800,
+                            decoration: BoxDecoration(
+                              borderRadius:
+                              BorderRadius.circular(14),
+                              border: Border.all(
+                                color: Colors.grey.shade300,
+                              ),
+                            ),
+                            clipBehavior: Clip.antiAlias,
+                            child: Column(
+                              children: [
+                                _buildDcrTableHeader(),
+
+                                _buildDcrRow(
+                                  doctorCall: '12 or more',
+                                  chemistCall: '5 or more',
+                                  ta: '100%',
+                                  da: '100%',
+                                  backgroundColor:
+                                  const Color(0xFFE8F5E1),
+                                  statusColor:
+                                  const Color(0xFF2E7D32),
+                                ),
+
+                                _buildDcrRow(
+                                  doctorCall: '10 - 11',
+                                  chemistCall: '4',
+                                  ta: '100%',
+                                  da: '100%',
+                                  daNote:
+                                  'Recorded as FLAG',
+                                  backgroundColor:
+                                  const Color(0xFFE5F1FB),
+                                  statusColor:
+                                  const Color(0xFF1565C0),
+                                ),
+
+                                _buildDcrRow(
+                                  doctorCall: '8 - 9',
+                                  chemistCall: '3',
+                                  ta: '100%',
+                                  da: '50%',
+                                  backgroundColor:
+                                  const Color(0xFFFFF5D6),
+                                  statusColor:
+                                  const Color(0xFFF9A825),
+                                ),
+
+                                _buildDcrRow(
+                                  doctorCall: '7',
+                                  chemistCall: '2',
+                                  ta: '50%',
+                                  da: '50%',
+                                  backgroundColor:
+                                  const Color(0xFFFFE9DA),
+                                  statusColor:
+                                  const Color(0xFFEF6C00),
+                                ),
+
+                                _buildDcrRow(
+                                  doctorCall: 'Less than 7',
+                                  chemistCall: '1',
+                                  ta: '0%',
+                                  da: '0%',
+                                  backgroundColor:
+                                  const Color(0xFFFFE2E2),
+                                  statusColor:
+                                  const Color(0xFFC62828),
+                                  isLast: true,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 18),
+
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.amber
+                                .withOpacity(0.10),
+                            borderRadius:
+                            BorderRadius.circular(10),
+                            border: Border.all(
+                              color: Colors.amber
+                                  .withOpacity(0.30),
+                            ),
+                          ),
+                          child: const Row(
+                            children: [
+                              Icon(
+                                Icons.flag_outlined,
+                                color: Color(0xFFB7791F),
+                                size: 20,
+                              ),
+                              SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  '10 - 11 Doctor calls with 4 Chemist '
+                                      'calls receives 100% DA, but the entry '
+                                      'is recorded as FLAG.',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: Color(0xFF744210),
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // ====================================================
+                // FOOTER
+                // ====================================================
+                Container(
+                  padding: const EdgeInsets.fromLTRB(
+                    24,
+                    14,
+                    24,
+                    18,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade50,
+                    border: Border(
+                      top: BorderSide(
+                        color: Colors.grey.shade200,
+                      ),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      const Expanded(
+                        child: Text(
+                          'Please review the DCR criteria before '
+                              'submitting your allowance.',
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            color: Colors.black54,
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(width: 20),
+
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.of(dialogContext).pop();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: TColors.primary,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 22,
+                            vertical: 13,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius:
+                            BorderRadius.circular(10),
+                          ),
+                        ),
+                        icon: const Icon(
+                          Icons.check_rounded,
+                          size: 18,
+                        ),
+                        label: const Text(
+                          'Understood',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDcrTableHeader() {
+    return Container(
+      color: const Color(0xFFF1F3F5),
+      padding: const EdgeInsets.symmetric(
+        vertical: 15,
+        horizontal: 12,
+      ),
+      child: const Row(
+        children: [
+          Expanded(
+            flex: 3,
+            child: Text(
+              "Doctor's Call",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF263238),
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 3,
+            child: Text(
+              'Chemist Call',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF263238),
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 2,
+            child: Text(
+              'TA',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF263238),
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 4,
+            child: Text(
+              'DA',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF263238),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDcrRow({
+    required String doctorCall,
+    required String chemistCall,
+    required String ta,
+    required String da,
+    required Color backgroundColor,
+    required Color statusColor,
+    String? daNote,
+    bool isLast = false,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        vertical: 14,
+        horizontal: 12,
+      ),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        border: isLast
+            ? null
+            : Border(
+          bottom: BorderSide(
+            color: Colors.black.withOpacity(0.06),
+          ),
+        ),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 3,
+            child: Text(
+              doctorCall,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF263238),
+              ),
+            ),
+          ),
+
+          Expanded(
+            flex: 3,
+            child: Text(
+              chemistCall,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF263238),
+              ),
+            ),
+          ),
+
+          Expanded(
+            flex: 2,
+            child: Center(
+              child: _buildPercentageBadge(
+                ta,
+                statusColor,
+              ),
+            ),
+          ),
+
+          Expanded(
+            flex: 4,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildPercentageBadge(
+                  da,
+                  statusColor,
+                ),
+
+                if (daNote != null) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    daNote,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w600,
+                      color: statusColor,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPercentageBadge(
+      String value,
+      Color color,
+      ) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 11,
+        vertical: 5,
+      ),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.10),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: color.withOpacity(0.25),
+        ),
+      ),
+      child: Text(
+        value,
+        style: TextStyle(
+          color: color,
+          fontSize: 13.5,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+
+
 }

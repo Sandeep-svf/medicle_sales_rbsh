@@ -15,17 +15,31 @@ class AppDatabase {
   static const String _dbName = 'tracking.db';
 
   //  IMPORTANT: bump when schema changes
-  static const int _dbVersion = 2;
+  static const int _dbVersion = 3;
 
   Database? _db;
+  Future<Database>? _opening;
 
   // =========================
   // PUBLIC ACCESS
   // =========================
-  Future<Database> get database async {
-    if (_db != null && _db!.isOpen) return _db!;
-    _db = await _open();
-    return _db!;
+  Future<Database> get database {
+    final current = _db;
+    if (current != null && current.isOpen) {
+      return Future.value(current);
+    }
+
+    return _opening ??= _openAndCache();
+  }
+
+  Future<Database> _openAndCache() async {
+    try {
+      final database = await _open();
+      _db = database;
+      return database;
+    } finally {
+      _opening = null;
+    }
   }
 
   // =========================
@@ -37,6 +51,8 @@ class AppDatabase {
     return openDatabase(
       path,
       version: _dbVersion,
+      singleInstance: false,
+      onConfigure: _onConfigure,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
 
@@ -45,28 +61,36 @@ class AppDatabase {
     );
   }
 
+  Future<void> _onConfigure(Database db) async {
+    await db.rawQuery('PRAGMA busy_timeout = 5000');
+  }
+
   // =========================
   // CREATE (Fresh install)
   // =========================
   Future<void> _onCreate(Database db, int version) async {
     print('[DB] onCreate v$version');
     await _createAllTables(db);
+    await _createIndexes(db);
   }
 
   // =========================
   // UPGRADE (Existing users)
   // =========================
   Future<void> _onUpgrade(
-      Database db,
-      int oldVersion,
-      int newVersion,
-      ) async {
+    Database db,
+    int oldVersion,
+    int newVersion,
+  ) async {
     print('[DB] onUpgrade $oldVersion → $newVersion');
 
-    // Safe additive migrations only
-    if (oldVersion < newVersion) {
-      await _createAllTables(db);
+    await _createAllTables(db);
+
+    if (oldVersion < 3) {
+      await _migrateToVersion3(db);
     }
+
+    await _createIndexes(db);
   }
 
   // =========================
@@ -99,10 +123,19 @@ class AppDatabase {
         retry_count INTEGER NOT NULL DEFAULT 0,
 
         created_at_utc TEXT NOT NULL,
-        last_attempt_utc TEXT
+        last_attempt_utc TEXT,
+        next_attempt_utc TEXT,
+        failure_reason TEXT
       )
     ''');
 
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS upload_drain_lock (
+        id INTEGER PRIMARY KEY CHECK (id = 1),
+        owner_id TEXT,
+        expires_at_utc TEXT
+      )
+    ''');
 
     await db.execute('''
       CREATE TABLE IF NOT EXISTS tracking_state (
@@ -123,8 +156,6 @@ CREATE TABLE IF NOT EXISTS app_state (
   value TEXT
 )
 ''');
-
-
 
     // -------- STOPS --------
     await db.execute('''
@@ -169,6 +200,60 @@ CREATE TABLE IF NOT EXISTS app_state (
     ''');
 
     print('[DB] Tables created / verified');
+  }
+
+  Future<void> _migrateToVersion3(Database db) async {
+    await _addColumnIfMissing(
+      db,
+      table: 'upload_queue',
+      column: 'next_attempt_utc',
+      definition: 'TEXT',
+    );
+    await _addColumnIfMissing(
+      db,
+      table: 'upload_queue',
+      column: 'failure_reason',
+      definition: 'TEXT',
+    );
+  }
+
+  Future<void> _addColumnIfMissing(
+    Database db, {
+    required String table,
+    required String column,
+    required String definition,
+  }) async {
+    final columns = await db.rawQuery('PRAGMA table_info($table)');
+    final exists = columns.any((entry) => entry['name'] == column);
+
+    if (!exists) {
+      await db.execute(
+        'ALTER TABLE $table ADD COLUMN $column $definition',
+      );
+    }
+  }
+
+  Future<void> _createIndexes(Database db) async {
+    await db.execute('''
+      DELETE FROM upload_queue
+      WHERE id NOT IN (
+        SELECT MIN(id)
+        FROM upload_queue
+        GROUP BY entity_type, entity_id
+      )
+    ''');
+
+    await db.execute('''
+      CREATE UNIQUE INDEX IF NOT EXISTS
+      idx_upload_queue_entity
+      ON upload_queue(entity_type, entity_id)
+    ''');
+
+    await db.execute('''
+      CREATE INDEX IF NOT EXISTS
+      idx_upload_queue_delivery
+      ON upload_queue(status, next_attempt_utc, created_at_utc)
+    ''');
   }
 
   // =========================

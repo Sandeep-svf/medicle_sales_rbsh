@@ -1,12 +1,14 @@
 /*
 import 'dart:convert';
 
+import '../../background/tracking_upload_work_manager.dart';
 import '../../storage/last_location_dao.dart';
-import '../../storage/upload_queue_dao.dart';
+import '../../storage/tracking_point_persistence_dao.dart';
 
 import '../model/location_point.dart';
 import '../buffer/buffer_event.dart';
 
+import '../../debug/tracking_console_logger.dart';
 import '../../debug/tracking_debug_state.dart';
 import 'tracking_engine.dart';
 
@@ -104,12 +106,13 @@ class TrackingEnginePersisted {
 }
 */
 
-
 // updated one for fix store data in the db
 import 'dart:convert';
 
+import '../../background/tracking_upload_work_manager.dart';
+import '../../debug/tracking_console_logger.dart';
 import '../../storage/last_location_dao.dart';
-import '../../storage/upload_queue_dao.dart';
+import '../../storage/tracking_point_persistence_dao.dart';
 
 import '../model/location_point.dart';
 import '../buffer/buffer_event.dart';
@@ -122,23 +125,17 @@ class TrackingEnginePersisted {
 
   // SAFE DAOs (ALLOWED IN BACKGROUND)
   final _lastLocationDao = LastLocationDao();
-  final _uploadQueueDao = UploadQueueDao();
+  final _persistenceDao = TrackingPointPersistenceDao();
 
   /// =========================================================
   /// MAIN ENTRY POINT FROM BACKGROUND SERVICE
   /// =========================================================
   Future<void> process(
-      LocationPoint point,
-      String trackingSessionId,
-      ) async {
+    LocationPoint point,
+    String trackingSessionId,
+  ) async {
     // ==================================================
-    // 1. ALWAYS SAVE LAST LOCATION (CRASH / KILL SAFE)
-    // ==================================================
-    await _lastLocationDao.save(point);
-    print('[LAST] saved ${point.latitude}, ${point.longitude}');
-
-    // ==================================================
-    // 2. RUN CORE ENGINE (PURE LOGIC — NO DB)
+    // 1. RUN CORE ENGINE (PURE LOGIC — NO DB)
     // ==================================================
     final event = _engine.processRawPoint(
       point,
@@ -146,7 +143,7 @@ class TrackingEnginePersisted {
     );
 
     // ==================================================
-    // 3. DEBUG STATE (IN-MEMORY ONLY)
+    // 2. DEBUG STATE (IN-MEMORY ONLY)
     // ==================================================
     TrackingDebugState.lastSpeed = point.speed;
 
@@ -158,49 +155,65 @@ class TrackingEnginePersisted {
 
     TrackingDebugState.activeStop = event.activeStop;
 
-    print(
-      '[DEBUG] accepted=${TrackingDebugState.acceptedGps}, '
+    trackingConsoleLog(
+      'TrackingEngine',
+      'decision=${event.decision.name}, lat=${point.latitude}, '
+          'lng=${point.longitude}, accuracy=${point.accuracy}, '
+          'speed=${point.speed}, accepted=${TrackingDebugState.acceptedGps}, '
           'rejected=${TrackingDebugState.rejectedGps}, '
-          'speed=${point.speed.toStringAsFixed(2)}, '
-          'activeStop=${event.activeStop != null}',
+          'activeStop=${event.activeStop != null}.',
     );
 
     // ==================================================
-    // 4. PHASE-2 WRITE-AHEAD BUFFER (THE ONLY DB WRITE)
+    // 3. ATOMIC LAST-LOCATION + WRITE-AHEAD BUFFER
     // ==================================================
     if (event.decision.name == 'accepted') {
       // MUST be unique
-      final entityId =
-          '${trackingSessionId}_'
+      final entityId = '${trackingSessionId}_'
           '${point.timestampUtc.millisecondsSinceEpoch}_'
           '${point.latitude.toStringAsFixed(6)}_'
           '${point.longitude.toStringAsFixed(6)}';
 
-      await _uploadQueueDao.enqueue(
-        BufferEvent(
+      final inserted = await _persistenceDao.save(
+        point,
+        uploadEvent: BufferEvent(
           type: BufferEntityType.location,
           entityId: entityId,
           payload: jsonEncode({
-            //  REQUIRED METADATA
             'event_type': 'LOCATION_POINT',
             'tracking_session_id': trackingSessionId,
-
-            //  LOCATION DATA
             'latitude': point.latitude,
             'longitude': point.longitude,
             'accuracy': point.accuracy,
             'speed': point.speed,
-
-            //  TIME
             'timestamp_utc': point.timestampUtc.toIso8601String(),
           }),
           createdAtUtc: DateTime.now().toUtc(),
         ),
       );
 
-      print('[QUEUE] location enqueued → $entityId');
+      if (inserted) {
+        trackingConsoleLog(
+          'TrackingEngine',
+          'Accepted location inserted into the PENDING upload queue.',
+        );
+        await TrackingUploadWorkManager.instance.scheduleOneOffUpload();
+        trackingConsoleLog(
+          'TrackingEngine',
+          'One-off WorkManager upload requested.',
+        );
+      } else {
+        trackingConsoleLog(
+          'TrackingEngine',
+          'Duplicate accepted location ignored by the upload queue.',
+        );
+      }
     } else {
-      print('[QUEUE] location rejected');
+      await _persistenceDao.save(point);
+      trackingConsoleLog(
+        'TrackingEngine',
+        'Rejected location saved as the latest point but not queued.',
+      );
     }
   }
 
@@ -212,8 +225,7 @@ class TrackingEnginePersisted {
       'acceptedGps': TrackingDebugState.acceptedGps,
       'rejectedGps': TrackingDebugState.rejectedGps,
       'lastSpeed': TrackingDebugState.lastSpeed,
-      'activeStopMinutes':
-      TrackingDebugState.activeStop?.duration.inMinutes,
+      'activeStopMinutes': TrackingDebugState.activeStop?.duration.inMinutes,
     };
   }
 
@@ -224,4 +236,3 @@ class TrackingEnginePersisted {
     return _lastLocationDao.load();
   }
 }
-

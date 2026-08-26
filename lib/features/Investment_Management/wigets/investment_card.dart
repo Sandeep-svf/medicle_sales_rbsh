@@ -447,83 +447,69 @@ class InvestmentRequestCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-
-        _infoRow(
-          Icons.currency_rupee,
-          "Amount",
-          request.displayAmount,
-        ),
-
-        _infoRow(
-          Icons.description,
-          "Purpose",
-          request.displayPurpose,
-        ),
-
-        if ((request.upiId ?? "").isNotEmpty)
-
-          _infoRow(
-            Icons.qr_code,
-            "UPI ID",
-            request.upiId!,
+        Expanded(
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _infoRow(
+                  Icons.currency_rupee,
+                  "Amount",
+                  request.displayAmount,
+                ),
+                _infoRow(
+                  Icons.description,
+                  "Purpose",
+                  request.displayPurpose,
+                ),
+                if ((request.upiId ?? "").isNotEmpty)
+                  _infoRow(
+                    Icons.qr_code,
+                    "UPI ID",
+                    request.upiId!,
+                  ),
+                _infoRow(
+                  Icons.calendar_today,
+                  "Submitted",
+                  request.displayDate,
+                ),
+              ],
+            ),
           ),
-
-        _infoRow(
-          Icons.calendar_today,
-          "Submitted",
-          request.displayDate,
         ),
-
-        const SizedBox(
-          height: TSizes.spaceBtwItems,
-        ),
-
-        if (request.hasProof)
-
+        if (request.hasProof) ...[
+          const SizedBox(height: TSizes.sm),
           Row(
             children: [
-
               Expanded(
                 child: OutlinedButton.icon(
-
                   onPressed: () {
                     _showProof(context);
                   },
-
                   icon: const Icon(Icons.visibility),
-
                   label: const Text("View Proof"),
-
                 ),
               ),
-
               const SizedBox(width: TSizes.sm),
-
               Expanded(
                 child: ElevatedButton.icon(
-
                   style: ElevatedButton.styleFrom(
                     backgroundColor: TColors.primary,
                     foregroundColor: Colors.white,
                   ),
-
                   onPressed: () async {
                     await launchUrl(
                       Uri.parse(request.paymentProof!),
                       mode: LaunchMode.externalApplication,
                     );
                   },
-
                   icon: const Icon(Icons.download),
-
                   label: const Text("Download"),
-
                 ),
               )
-
             ],
-          )
-
+          ),
+        ],
       ],
     );
   }

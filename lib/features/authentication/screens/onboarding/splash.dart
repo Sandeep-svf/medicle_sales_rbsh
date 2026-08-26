@@ -13,6 +13,7 @@ import '../../../../utils/constants/text_strings.dart';
 import '../../../../utils/local_storage/auth_manager.dart';
 
 import '../../../TrackingOptimizedBgLocation/service/tracking_service_manager.dart';
+import '../../../TrackingOptimizedBgLocation/service/tracking_health_monitor.dart';
 import '../../../TrackingOptimizedBgLocation/storage/app_state_dao.dart';
 import '../../../TrackingOptimizedBgLocation/utils/samsung_battery_settings.dart';
 import '../../../dashboard/screen/dashboard.dart';
@@ -107,19 +108,11 @@ class _SplashScreenState extends State<SplashScreen> {
       await _handleBatteryOptimization();
 
       // -----------------------------------------------------
-      // STEP 3: SAMSUNG BACKGROUND USAGE LIMITS
-      //
-      // Samsung only.
-      // Runs once per installation/update state key.
-      //
-      // Checks:
-      //
-      // 1. Sleeping apps
-      // 2. Deep sleeping apps
-      // 3. Never auto sleeping apps
+      // STEP 3: CHECK SAMSUNG TRACKING HEALTH
       // -----------------------------------------------------
 
-    //  await _handleSamsungBackgroundUsageSetup();
+      final samsungSetupRequired =
+      await _isSamsungBackgroundSetupRequired();
 
       // -----------------------------------------------------
       // STEP 4: START / VERIFY TRACKING SERVICE
@@ -140,6 +133,20 @@ class _SplashScreenState extends State<SplashScreen> {
       debugPrint(
         '[SPLASH] Tracking service is running.',
       );
+
+      if (samsungSetupRequired) {
+        await _handleSamsungBackgroundUsageSetup(
+          forceReview: true,
+        );
+
+        final serviceStillReady =
+        await _ensureTrackingServiceRunning();
+
+        if (!serviceStillReady) {
+          _startupRunning = false;
+          return;
+        }
+      }
 
       // -----------------------------------------------------
       // STEP 5: PLAY STORE UPDATE CHECK
@@ -177,7 +184,51 @@ class _SplashScreenState extends State<SplashScreen> {
 // one time and save completion in app_state.
 // =========================================================
 
-  Future<void> _handleSamsungBackgroundUsageSetup() async {
+  Future<bool> _isSamsungBackgroundSetupRequired() async {
+    if (!Platform.isAndroid) {
+      return false;
+    }
+
+    try {
+      final isSamsung =
+      await SamsungBatterySettings.isSamsungDevice();
+      if (!isSamsung) {
+        return false;
+      }
+
+      final appStateDao = AppStateDao();
+      final setupDone = await appStateDao.get(
+        'samsung_background_setup_done',
+      );
+
+      if (setupDone != 'true') {
+        return true;
+      }
+
+      final healthy = await TrackingHealthMonitor(
+        appStateDao: appStateDao,
+      ).hasFreshHeartbeat();
+
+      if (!healthy) {
+        debugPrint(
+          '[SAMSUNG_BATTERY] Tracking heartbeat is stale. '
+              'Samsung setup will be reviewed.',
+        );
+      }
+
+      return !healthy;
+    } catch (e, s) {
+      debugPrint(
+        '[SAMSUNG_BATTERY] Health check error: $e',
+      );
+      debugPrint('$s');
+      return false;
+    }
+  }
+
+  Future<void> _handleSamsungBackgroundUsageSetup({
+    bool forceReview = false,
+  }) async {
     if (!Platform.isAndroid) {
       return;
     }
@@ -218,7 +269,7 @@ class _SplashScreenState extends State<SplashScreen> {
             'Saved setup status: $setupDone',
       );
 
-      if (setupDone == 'true') {
+      if (setupDone == 'true' && !forceReview) {
         debugPrint(
           '[SAMSUNG_BATTERY] '
               'Samsung background setup already completed.',
@@ -325,7 +376,9 @@ class _SplashScreenState extends State<SplashScreen> {
         // Do not save completion.
         //
         // Restart Samsung setup immediately.
-        await _handleSamsungBackgroundUsageSetup();
+        await _handleSamsungBackgroundUsageSetup(
+          forceReview: true,
+        );
 
         return;
       }
@@ -337,6 +390,10 @@ class _SplashScreenState extends State<SplashScreen> {
       await appStateDao.set(
         'samsung_background_setup_done',
         'true',
+      );
+      await appStateDao.set(
+        'samsung_background_setup_checked_at_utc',
+        DateTime.now().toUtc().toIso8601String(),
       );
 
       debugPrint(

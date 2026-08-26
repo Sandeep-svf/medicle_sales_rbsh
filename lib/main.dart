@@ -22,6 +22,7 @@ import 'utils/notificationservice/PushNotificationService.dart';
 import 'features/TrackingOptimizedBgLocation/service/tracking_service_manager.dart';
 import 'features/TrackingOptimizedBgLocation/storage/app_state_dao.dart';
 import 'features/TrackingOptimizedBgLocation/utils/device_info_plus.dart';
+import 'features/TrackingOptimizedBgLocation/background/tracking_upload_work_manager.dart';
 
 
 // ============================================================
@@ -221,6 +222,15 @@ Future<void> main() async {
   // =========================================================
 
   await ensureTrackingDeviceId();
+
+  try {
+    await TrackingUploadWorkManager.instance.initialize();
+    await TrackingUploadWorkManager.instance.registerPeriodicFallback();
+    await TrackingUploadWorkManager.instance.scheduleOneOffUpload();
+  } catch (error, stackTrace) {
+    debugPrint('[MAIN] WorkManager initialization failed: $error');
+    debugPrint('$stackTrace');
+  }
 
   // =========================================================
   // TRACKING SERVICE

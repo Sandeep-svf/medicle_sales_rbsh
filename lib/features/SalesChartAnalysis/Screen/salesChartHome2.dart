@@ -179,6 +179,8 @@ class _SalesChartHomeScreenState extends State<SalesChartHomeScreen>
                         index: 0,
                         child: MorningActionCenter(
                           beat: data.todayBeatAssigned,
+                          onHandshakeSubmitted: () =>
+                              _dashboardController.fetchDashboardData(''),
                         ),
                       ),
 

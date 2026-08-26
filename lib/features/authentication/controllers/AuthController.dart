@@ -80,8 +80,8 @@ class AuthController extends GetxController {
       final response = await http.post(
         Uri.parse("$_baseUrl/auth/login"),
         headers: {"Content-Type": "application/json"},
-       // body: jsonEncode({"email": email, "password": password, "deviceId" : deviceID}),
-        body: jsonEncode({"email": email, "password": password}),
+        body: jsonEncode({"email": email, "password": password, "deviceId" : deviceID}),
+       // body: jsonEncode({"email": email, "password": password}),
       );
 
       print("AuthController: deviceID  - deviceID: ${deviceID}");

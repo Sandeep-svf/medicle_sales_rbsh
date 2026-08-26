@@ -239,17 +239,13 @@
 
         <service android:name="com.tekartik.sqflite.SQLitePluginService" android:permission="android.permission.BLUETOOTH" android:exported="true"/>
 
-        <!-- Register WorkManager service -->
+        <!-- Geolocator background service -->
         <service android:name="com.balemaster.flutter_background.GeolocatorService" android:permission="android.permission.BLUETOOTH" android:exported="true"/>
         <service
             android:name="id.flutter.flutter_background_service.BackgroundService"
-            android:permission="android.permission.BLUETOOTH_ADMIN"
-            android:exported="true"
-            android:foregroundServiceType="location">
-            <intent-filter>
-                <action android:name="id.flutter.flutter_background_service.START" />
-            </intent-filter>
-        </service>
+            android:exported="false"
+            android:foregroundServiceType="location"
+            tools:replace="android:exported" />
 
 
         <!-- Optional: Firebase Messaging Service -->
