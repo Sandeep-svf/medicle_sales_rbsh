@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:get/get.dart';
+import 'package:medicle_sales_rbsh/utils/http/http_client.dart';
 // Ensure this import path is correct in your actual project
 import 'package:medicle_sales_rbsh/utils/local_storage/auth_manager.dart';
 
@@ -12,6 +13,7 @@ class TicketController extends GetxController {
   RxBool isLoading = true.obs; // Loading state for tickets list
 
   final String _debugPrefix = '[TicketController]';
+  final baseUrl = THttpHelper.baseUrl;
 
   @override
   void onInit() {
@@ -43,7 +45,7 @@ class TicketController extends GetxController {
       _debug('Fetching tickets with token: $barrierToken');
 
       final response = await http.get(
-        Uri.parse('https://test.gluckscare.com/api/tickets'),
+        Uri.parse('$baseUrl/tickets'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $barrierToken',
@@ -92,7 +94,7 @@ class TicketController extends GetxController {
       _debug('Creating a new ticket...');
 
       final response = await http.post(
-        Uri.parse('https://test.gluckscare.com/api/tickets'),
+        Uri.parse('$baseUrl/tickets'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
