@@ -8,6 +8,7 @@ import 'package:medicle_sales_rbsh/features/addClinic/screen/ClinicList.dart';
 import 'package:medicle_sales_rbsh/features/addDoctor/screens/addDoctor.dart';
 import 'package:medicle_sales_rbsh/features/addProduct/screens/addProduct.dart';
 import 'package:medicle_sales_rbsh/features/approval_management/screen/approval_management_screen.dart';
+import 'package:medicle_sales_rbsh/features/doctor_offline/doctor_offline.dart';
 import 'package:medicle_sales_rbsh/features/expenses/screens/expenses.dart';
 import 'package:medicle_sales_rbsh/features/order/screens/order.dart';
 import 'package:medicle_sales_rbsh/features/report/screens/report.dart';
@@ -58,6 +59,8 @@ class CustomDrawer extends StatefulWidget {
 }
 
 class _CustomDrawerState extends State<CustomDrawer> {
+  static const String _offlineDoctorsLabel = 'Offline Doctors';
+
   bool _isSamsungDevice = false;
 
   @override
@@ -237,6 +240,11 @@ class _CustomDrawerState extends State<CustomDrawer> {
                     isSelected: widget.currentScreen == TTexts.addDoctor,
                   ),
                   _buildDrawerItem(
+                    icon: Icons.offline_pin_outlined,
+                    text: _offlineDoctorsLabel,
+                    onTap: _openOfflineDoctors,
+                  ),
+                  _buildDrawerItem(
                     icon: Icons.local_hospital,
                     text: TTexts.clinic,
                     onTap: () =>
@@ -377,6 +385,23 @@ class _CustomDrawerState extends State<CustomDrawer> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Future<void> _openOfflineDoctors() async {
+    Navigator.of(context).pop();
+    final accountId = await AuthManager().getUserId();
+    if (!mounted) return;
+    if (accountId == null || accountId.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please sign in again to open doctors.')),
+      );
+      return;
+    }
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => DoctorOfflineEntryScreen(accountId: accountId),
       ),
     );
   }

@@ -1,0 +1,10 @@
+export 'bindings/doctor_offline_binding.dart';
+export 'controllers/doctor_offline_controller.dart';
+export 'doctor_offline_exception.dart';
+export 'doctor_offline_module.dart';
+export 'models/doctor.dart';
+export 'models/doctor_scope.dart';
+export 'models/doctor_sync_models.dart';
+export 'ui/doctor_detail_screen.dart';
+export 'ui/doctor_offline_entry_screen.dart';
+export 'ui/doctor_offline_screen.dart';
