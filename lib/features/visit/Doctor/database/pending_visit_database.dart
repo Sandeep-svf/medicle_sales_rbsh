@@ -3,8 +3,7 @@ import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
 class PendingVisitDatabase {
-  static final PendingVisitDatabase instance =
-  PendingVisitDatabase._();
+  static final PendingVisitDatabase instance = PendingVisitDatabase._();
 
   PendingVisitDatabase._();
 
@@ -24,13 +23,21 @@ class PendingVisitDatabase {
       join(dbPath, DBConstants.pendingVisitDatabase),
       version: DBConstants.databaseVersion,
       onCreate: _createDatabase,
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          await db.execute(
+              'ALTER TABLE pending_visits ADD COLUMN localScheduleId TEXT');
+          await db.execute(
+              'ALTER TABLE pending_visits ADD COLUMN serverVisitId TEXT');
+        }
+      },
     );
   }
 
   Future<void> _createDatabase(
-      Database db,
-      int version,
-      ) async {
+    Database db,
+    int version,
+  ) async {
     await db.execute('''
       CREATE TABLE pending_visits(
         visitId TEXT PRIMARY KEY,
@@ -38,7 +45,9 @@ class PendingVisitDatabase {
         userLongitude REAL,
         notes TEXT,
         productIds TEXT,
-        createdAt TEXT
+        createdAt TEXT,
+        localScheduleId TEXT,
+        serverVisitId TEXT
       )
     ''');
   }

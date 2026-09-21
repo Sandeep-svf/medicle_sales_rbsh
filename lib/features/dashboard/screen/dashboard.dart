@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_in_app_messaging/firebase_in_app_messaging.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:medicle_sales_rbsh/features/addDoctor/screens/add_doctro_new_screen.dart';
@@ -30,9 +31,11 @@ import '../../addDoctor/screens/addDoctor.dart';
 import '../../marketing/screen/MarketingScreen.dart';
 import '../../marketing/screen/marketing.dart';
 import '../../notification/screen/NotificatinScreen.dart';
-import '../../visit/Doctor/services/pending_visit_sync_service.dart';
+import '../../visit/Doctor/services/doctor_offline_upload_coordinator.dart';
 import '../attendance/controller/attendance_controller.dart';
 import '../widgets/custrom_drawer.dart';
+import '../../doctor_offline/services/doctor_area_assignment_service.dart';
+import '../../doctor_offline/ui/doctor_area_assignment_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   @override
@@ -40,16 +43,17 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  final PendingVisitSyncService _syncService = PendingVisitSyncService();
+  final DoctorOfflineUploadCoordinator _syncService =
+      DoctorOfflineUploadCoordinator();
   Widget _currentScreen = SalesChartHomeScreen(); // Default screen
   PageController controller = PageController(initialPage: 0);
   int selectedIndex = 0;
   String _currentTitle = TTexts.dashboard; // Initial title
   String? userRole;
-  late final  userData;
+  late final userData;
 
   String? currentVersion;
-  String? playStoreVersion="0.0.0";
+  String? playStoreVersion = "0.0.0";
   Map<String, String>? deviceInfo;
 
   late final AttendanceController attendanceController;
@@ -58,7 +62,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   void initState() {
     super.initState();
-
 
     _syncService.startListening();
 
@@ -73,11 +76,48 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       attendanceController.checkTodayStatus();
+      _checkPendingDoctorAreas();
     });
   }
 
-  Future<void> updateFCMToken() async {
+  Future<void> _checkPendingDoctorAreas() async {
+    try {
+      final connectivity = await Connectivity().checkConnectivity();
+      if (!connectivity.any((result) => result != ConnectivityResult.none))
+        return;
+      final service = DoctorAreaAssignmentService();
+      try {
+        final doctors = await service.fetchDoctorsWithoutArea();
+        if (doctors.isEmpty || !mounted) return;
+        List<DoctorAreaOption> areas = const [];
+        try {
+          areas = await service.fetchAreas();
+        } catch (_) {
+          // The pincode flow can still create an area when the existing-area
+          // list is unavailable.
+        }
+        if (!mounted) return;
+        await showDialog<bool>(
+          context: context,
+          barrierDismissible: false,
+          builder: (_) => Dialog.fullscreen(
+            child: DoctorAreaAssignmentScreen(
+              doctors: doctors,
+              areas: areas,
+              service: service,
+              mandatory: true,
+            ),
+          ),
+        );
+      } finally {
+        await service.close();
+      }
+    } catch (_) {
+      // Dashboard startup remains available when the network/API is unavailable.
+    }
+  }
 
+  Future<void> updateFCMToken() async {
     AuthManager authManager = AuthManager();
     final token = await authManager.getAuthToken();
 
@@ -112,9 +152,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-
-
-
   Future<String?> getFCMToken() async {
     FirebaseMessaging messaging = FirebaseMessaging.instance;
 
@@ -143,7 +180,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-
   @override
   void dispose() {
     controller.dispose();
@@ -151,19 +187,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
     super.dispose();
   }
 
-
   // Function to fetch user role from SharedPreferences
   Future<void> fetchUserRole() async {
     AuthManager authManager = AuthManager();
-    String? role = await authManager.getUserRole();  // Fetch the user role
+    String? role = await authManager.getUserRole(); // Fetch the user role
     setState(() {
-      userRole = role;  // Update the user role state
+      userRole = role; // Update the user role state
     });
-
-
   }
-
-
 
   // Function to navigate to SalesChartHomeScreen
   void _navigateToSalesChartHome() {
@@ -182,53 +213,52 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   List<Widget> _buildScreens() => [
-    SalesChartHomeScreen(),
-    MarketingScreen(),
-    ScheduleVisit(),
-    AddDoctorScreen(),
-    InboxScreen()
-  ];
+        SalesChartHomeScreen(),
+        MarketingScreen(),
+        ScheduleVisit(),
+        AddDoctorScreen(),
+        InboxScreen()
+      ];
 
   // working fine.
 
   List<BottomBarItem> _navBarsItems() => [
-    BottomBarItem(
-      icon: const Icon(Icons.home),
-      selectedIcon: const Icon(Icons.home_filled),
-      selectedColor: TColors.primary,
-      unSelectedColor: Colors.grey,
-      title: const Text('Home'),
-    ),
-    BottomBarItem(
-      icon: const Icon(Icons.folder),
-      selectedIcon: const Icon(Icons.folder_open),
-      selectedColor: TColors.primary,
-      unSelectedColor: Colors.grey,
-      title: const Text('Files & PDFs'),
-    ),
-    BottomBarItem(
-      icon: const Icon(Icons.schedule_outlined),
-      selectedIcon: const Icon(Icons.schedule_sharp),
-      selectedColor: TColors.primary,
-      unSelectedColor: Colors.grey,
-      title: const Text('Appointments'),
-    ),
-    BottomBarItem(
-      icon: const Icon(Icons.medical_services_outlined),
-      selectedIcon: const Icon(Icons.medical_services_outlined),
-      selectedColor: TColors.primary,
-      unSelectedColor: Colors.grey,
-      title: const Text('Add Doctor'),
-    ),
-
-    BottomBarItem(
-      icon: const Icon(Icons.inbox_outlined),
-      selectedIcon: const Icon(Icons.all_inbox),
-      selectedColor: TColors.primary,
-      unSelectedColor: Colors.grey,
-      title: const Text('Inbox'),
-    ),
-  ];
+        BottomBarItem(
+          icon: const Icon(Icons.home),
+          selectedIcon: const Icon(Icons.home_filled),
+          selectedColor: TColors.primary,
+          unSelectedColor: Colors.grey,
+          title: const Text('Home'),
+        ),
+        BottomBarItem(
+          icon: const Icon(Icons.folder),
+          selectedIcon: const Icon(Icons.folder_open),
+          selectedColor: TColors.primary,
+          unSelectedColor: Colors.grey,
+          title: const Text('Files & PDFs'),
+        ),
+        BottomBarItem(
+          icon: const Icon(Icons.schedule_outlined),
+          selectedIcon: const Icon(Icons.schedule_sharp),
+          selectedColor: TColors.primary,
+          unSelectedColor: Colors.grey,
+          title: const Text('Appointments'),
+        ),
+        BottomBarItem(
+          icon: const Icon(Icons.medical_services_outlined),
+          selectedIcon: const Icon(Icons.medical_services_outlined),
+          selectedColor: TColors.primary,
+          unSelectedColor: Colors.grey,
+          title: const Text('Add Doctor'),
+        ),
+        BottomBarItem(
+          icon: const Icon(Icons.inbox_outlined),
+          selectedIcon: const Icon(Icons.all_inbox),
+          selectedColor: TColors.primary,
+          unSelectedColor: Colors.grey,
+          title: const Text('Inbox'),
+        ),
+      ];
 
   @override
   Widget build(BuildContext context) {
@@ -307,7 +337,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       drawer: CustomDrawer(
         onMenuSelected: _onMenuSelected,
         currentScreen: _currentTitle,
-        userRole: userRole ?? '',  // Pass userRole to CustomDrawer
+        userRole: userRole ?? '', // Pass userRole to CustomDrawer
       ),
       body: _currentScreen,
       bottomNavigationBar: StylishBottomBar(
@@ -338,13 +368,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-
-
   Future<void> fetchPlayStoreVersion() async {
     try {
       // Get current installed app version
       PackageInfo packageInfo = await PackageInfo.fromPlatform();
-      String currentVersion = packageInfo.version;  // e.g., 1.2.3
+      String currentVersion = packageInfo.version; // e.g., 1.2.3
       int currentVersionCode = int.parse(packageInfo.buildNumber); // e.g., 12
 
       // Check if update is available (without triggering update)
@@ -369,20 +397,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-
   // Function to fetch version information from the server
   Future<void> fetchVersionInfo() async {
     try {
-
-     // await fetchPlayStoreVersion();
+      // await fetchPlayStoreVersion();
       // Fetch the current app version using `package_info_plus`
       PackageInfo packageInfo = await PackageInfo.fromPlatform();
-     // AppUpdateInfo updateInfo = await InAppUpdate.checkForUpdate();
-     // int playStoreVersionCode = updateInfo.availableVersionCode!;
+      // AppUpdateInfo updateInfo = await InAppUpdate.checkForUpdate();
+      // int playStoreVersionCode = updateInfo.availableVersionCode!;
       setState(() {
-        currentVersion = packageInfo.version;  // Current app version (e.g., 1.2.3)
+        currentVersion =
+            packageInfo.version; // Current app version (e.g., 1.2.3)
 
-       // playStoreVersion = playStoreVersionCode.toString();  // This could be fetched dynamically or hardcoded
+        // playStoreVersion = playStoreVersionCode.toString();  // This could be fetched dynamically or hardcoded
       });
 
       // Fetch device info using `device_info_plus`
@@ -391,9 +418,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
       setState(() {
         deviceInfo = {
-          'deviceId': androidInfo.id ?? 'Unknown ID',  // Android device ID
-          'platform': "android",  // Platform
-          'osVersion': androidInfo.version.release ?? 'Unknown Version',  // OS version (e.g., 11.0)
+          'deviceId': androidInfo.id ?? 'Unknown ID', // Android device ID
+          'platform': "android", // Platform
+          'osVersion': androidInfo.version.release ??
+              'Unknown Version', // OS version (e.g., 11.0)
         };
       });
 
@@ -402,15 +430,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
       // Sending version and device info to the server
       AuthManager authManager = AuthManager();
-      final token = await authManager.getAuthToken();  // Get the token
-
-
+      final token = await authManager.getAuthToken(); // Get the token
 
       final response = await http.post(
         Uri.parse('${THttpHelper.baseUrl}/version/check'),
         headers: {
-          "Authorization": "Bearer $token",  // Add Bearer token
-          "Accept": "application/json",  // Ensure server expects JSON
+          "Authorization": "Bearer $token", // Add Bearer token
+          "Accept": "application/json", // Ensure server expects JSON
           "Content-Type": "application/json",
         },
         body: jsonEncode({
@@ -424,11 +450,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
         final Map<String, dynamic> jsonResponse = json.decode(response.body);
         print("[DEBUG] Server Response: $jsonResponse");
       } else {
-        print("[DEBUG] Failed to send version info. Status code: ${response.statusCode}");
+        print(
+            "[DEBUG] Failed to send version info. Status code: ${response.statusCode}");
       }
     } catch (e) {
       print("[DEBUG] Error fetching version info: $e");
     }
   }
-
 }

@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
@@ -5,7 +6,7 @@ import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import '../controllers/doctor_offline_controller.dart';
 import 'widgets/doctor_detail_content.dart';
 
-class DoctorOfflineDetailScreen extends StatelessWidget {
+class DoctorOfflineDetailScreen extends StatefulWidget {
   const DoctorOfflineDetailScreen({
     super.key,
     required this.controller,
@@ -16,17 +17,53 @@ class DoctorOfflineDetailScreen extends StatelessWidget {
   final String localId;
 
   @override
+  State<DoctorOfflineDetailScreen> createState() =>
+      _DoctorOfflineDetailScreenState();
+}
+
+class _DoctorOfflineDetailScreenState extends State<DoctorOfflineDetailScreen>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _animationController;
+  late final Animation<double> _fade;
+  late final Animation<Offset> _slide;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 650),
+    );
+    final curve = CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeOutCubic,
+    );
+    _fade = curve;
+    _slide = Tween<Offset>(
+      begin: const Offset(0, 0.045),
+      end: Offset.zero,
+    ).animate(curve);
+    _animationController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return GetBuilder<DoctorOfflineController>(
-      init: controller,
+      init: widget.controller,
       global: false,
       autoRemove: false,
       builder: (doctorController) {
         final doctor = doctorController.allDoctors
-            .where((candidate) => candidate.localId == localId)
+            .where((candidate) => candidate.localId == widget.localId)
             .firstOrNull;
         return Scaffold(
-          backgroundColor: const Color(0xFFF5F5F5),
+          backgroundColor: TColors.light,
           appBar: AppBar(
             title: Text(
               doctor?.displayName ?? 'Doctor Details',
@@ -39,7 +76,39 @@ class DoctorOfflineDetailScreen extends StatelessWidget {
           body: SafeArea(
             child: doctor == null
                 ? const _DoctorUnavailable()
-                : DoctorDetailContent(doctor: doctor),
+                : FadeTransition(
+                    opacity: _fade,
+                    child: SlideTransition(
+                      position: _slide,
+                      child: DoctorDetailContent(
+                        doctor: doctor,
+                        localPhoto: doctorController.creationStore == null
+                            ? null
+                            : FutureBuilder<Uint8List?>(
+                                future: doctorController.creationStore!
+                                    .readImage(doctor.geoImageUploadId),
+                                builder: (context, snapshot) => snapshot.hasData
+                                    ? Padding(
+                                        padding: const EdgeInsets.only(top: 16),
+                                        child: ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(16),
+                                          child: Image.memory(
+                                            snapshot.data!,
+                                            height: 240,
+                                            fit: BoxFit.contain,
+                                            errorBuilder: (_, __, ___) =>
+                                                const Text(
+                                              'Saved photo could not be displayed.',
+                                            ),
+                                          ),
+                                        ),
+                                      )
+                                    : const SizedBox.shrink(),
+                              ),
+                      ),
+                    ),
+                  ),
           ),
         );
       },

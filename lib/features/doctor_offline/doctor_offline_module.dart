@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'services/doctor_creation_store.dart';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/widgets.dart';
@@ -33,6 +34,10 @@ class DoctorOfflineModule {
   });
 
   static final Set<String> _openNamespaces = <String>{};
+  static final Map<String, DoctorOfflineModule> _sharedModules =
+      <String, DoctorOfflineModule>{};
+  static final Map<String, Future<DoctorOfflineModule>> _initializations =
+      <String, Future<DoctorOfflineModule>>{};
 
   final DoctorOfflineScope scope;
   final String namespace;
@@ -41,6 +46,7 @@ class DoctorOfflineModule {
   final DoctorOfflineController controller;
 
   bool _disposed = false;
+  int _leaseCount = 1;
 
   String get getXTag => 'doctor_offline_$namespace';
 
@@ -50,6 +56,72 @@ class DoctorOfflineModule {
 
   Widget screen({Key? key}) {
     return DoctorOfflineScreen(key: key, controller: controller);
+  }
+
+  /// Returns one shared, account-scoped module. Schedule and visit upload
+  /// flows use this so they can share the encrypted doctor cache and creation
+  /// outbox with the Offline Doctors screen instead of opening a second
+  /// database handle.
+  static Future<DoctorOfflineModule> acquire({
+    required String accountId,
+    String? authorizedScopeId,
+    String? deltaHeadOfficeId,
+    String? environment,
+    String baseUrl = THttpHelper.baseUrl,
+    AuthManager? authManager,
+    DoctorAuthTokenProvider? tokenProvider,
+    DoctorEncryptionKeyProvider? encryptionKeyProvider,
+    FlutterSecureStorage? secureStorage,
+    Connectivity? connectivity,
+    http.Client? httpClient,
+    String? supportDirectoryPath,
+    DoctorSyncLog? syncLog,
+  }) async {
+    final parsedBaseUri = Uri.parse(baseUrl);
+    final scope = DoctorOfflineScope(
+      environment: environment ?? _normalizedEnvironment(parsedBaseUri),
+      accountId: accountId,
+      authorizedScopeId: authorizedScopeId,
+    );
+    final namespace = await scope.storageNamespace();
+    final existing = _sharedModules[namespace];
+    if (existing != null && !existing._disposed) {
+      existing._leaseCount++;
+      return existing;
+    }
+
+    final initializing = _initializations[namespace];
+    if (initializing != null) {
+      final module = await initializing;
+      module._leaseCount++;
+      return module;
+    }
+
+    final future = initialize(
+      accountId: accountId,
+      authorizedScopeId: authorizedScopeId,
+      deltaHeadOfficeId: deltaHeadOfficeId,
+      environment: environment,
+      baseUrl: baseUrl,
+      authManager: authManager,
+      tokenProvider: tokenProvider,
+      encryptionKeyProvider: encryptionKeyProvider,
+      secureStorage: secureStorage,
+      connectivity: connectivity,
+      httpClient: httpClient,
+      supportDirectoryPath: supportDirectoryPath,
+      syncLog: syncLog,
+    );
+    _initializations[namespace] = future;
+    try {
+      final module = await future;
+      _sharedModules[namespace] = module;
+      return module;
+    } finally {
+      if (identical(_initializations[namespace], future)) {
+        _initializations.remove(namespace);
+      }
+    }
   }
 
   static Future<DoctorOfflineModule> initialize({
@@ -92,6 +164,7 @@ class DoctorOfflineModule {
     DoctorRemoteDataSource? remoteDataSource;
     DoctorSyncCoordinator? coordinator;
     DoctorOfflineController? controller;
+    DoctorCreationStore? creationStore;
     try {
       final rootPath =
           supportDirectoryPath ?? (await getApplicationSupportDirectory()).path;
@@ -133,7 +206,16 @@ class DoctorOfflineModule {
         },
         log: syncLog,
       );
+      creationStore = DoctorCreationStore(
+        database: await DoctorCreationStore.openDatabaseAt(storagePath),
+        directory: storagePath,
+        encryptionKey: encryptionKey,
+        baseUrl: baseUrl,
+        tokenProvider: tokenProvider?.readToken ?? authentication.getAuthToken,
+        scopeGuard: () async => await authentication.getUserId() == accountId,
+      );
       controller = DoctorOfflineController(
+        creationStore: creationStore,
         repository: repository,
         syncCoordinator: coordinator,
         connectivityMonitor: ConnectivityPlusDoctorConnectivityMonitor(
@@ -150,7 +232,11 @@ class DoctorOfflineModule {
       await controller.initialize();
       return module;
     } catch (error, stackTrace) {
-      await controller?.shutdown();
+      if (controller != null) {
+        await controller.shutdown();
+      } else {
+        await creationStore?.close();
+      }
       await coordinator?.dispose();
       try {
         if (repository != null) {
@@ -167,6 +253,12 @@ class DoctorOfflineModule {
 
   Future<void> dispose() async {
     if (_disposed) return;
+    final shared = _sharedModules[namespace];
+    if (identical(shared, this)) {
+      _leaseCount--;
+      if (_leaseCount > 0) return;
+      _sharedModules.remove(namespace);
+    }
     _disposed = true;
     await controller.shutdown();
     await syncCoordinator.dispose();

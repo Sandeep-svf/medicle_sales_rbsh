@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
@@ -10,13 +8,20 @@ import 'package:http/http.dart' as http;
 import '../../../../utils/local_storage/auth_manager.dart';
 import '../models/pending_visit_model.dart';
 import '../repository/pending_visit_repository.dart';
-import '../../../../utils/http/http_client.dart';
+import 'doctor_offline_upload_coordinator.dart';
 
 class VisitConfirmationService {
-  static const Duration _requestTimeout = Duration(seconds: 20);
+  VisitConfirmationService({
+    PendingVisitRepository? repository,
+    AuthManager? authManager,
+    Future<void> Function()? syncTrigger,
+  })  : _repository = repository ?? PendingVisitRepository(),
+        _authManager = authManager ?? AuthManager(),
+        _syncTrigger = syncTrigger;
 
-  final PendingVisitRepository _repository = PendingVisitRepository();
-  final AuthManager _authManager = AuthManager();
+  final PendingVisitRepository _repository;
+  final AuthManager _authManager;
+  final Future<void> Function()? _syncTrigger;
 
   Future<http.Response> confirmVisit({
     required String visitId,
@@ -24,156 +29,25 @@ class VisitConfirmationService {
     required double doctorLongitude,
     required Position position,
     required List<String> productIds,
-    String notes = "",
+    String notes = '',
+    String? localScheduleId,
     bool forceOffline = false,
   }) async {
-    final token = await _authManager.getAuthToken();
-    var canAttemptOnline = !forceOffline;
-    List<ConnectivityResult> connectivity = const [ConnectivityResult.none];
-
-    if (canAttemptOnline) {
-      try {
-        connectivity = await Connectivity().checkConnectivity();
-        canAttemptOnline = !connectivity.contains(ConnectivityResult.none);
-      } catch (error) {
-        canAttemptOnline = false;
-        debugPrint(
-          'VisitConfirmationService: Connectivity check failed: $error',
-        );
-      }
-    }
-
-    debugPrint(
-        "VisitConfirmationService: ======================================");
-    debugPrint(
-        "VisitConfirmationService: confirmVisit() started");
-    debugPrint(
-        "VisitConfirmationService: Visit ID = $visitId");
-    debugPrint(
-        "VisitConfirmationService: Connectivity = $connectivity");
-
-    debugPrint(
-        "VisitConfirmationService: Latitude = ${position.latitude}");
-    debugPrint(
-        "VisitConfirmationService: Longitude = ${position.longitude}");
-    debugPrint(
-        "VisitConfirmationService: Selected Products = $productIds");
-
-    // ============================
-    // ONLINE
-    // ============================
-    if (canAttemptOnline) {
-      final uri =
-      Uri.parse('${THttpHelper.baseUrl}/doctor-visits/bulk-confirm');
-
-      final requestBody = {
-        "visits": [
-          {
-            "id": visitId,
-            "userLatitude": position.latitude,
-            "userLongitude": position.longitude,
-            "notes": notes,
-            "productIds": productIds,
-          }
-        ]
-      };
-
-      debugPrint("VisitConfirmationService: ONLINE MODE");
-      debugPrint("VisitConfirmationService: URL = $uri");
-      debugPrint(
-          "VisitConfirmationService: Request JSON = ${const JsonEncoder.withIndent('  ').convert(requestBody)}");
-
-      try {
-        final response = await http.put(
-          uri,
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer $token',
-          },
-          body: jsonEncode(requestBody),
-        ).timeout(_requestTimeout);
-
-        debugPrint(
-            "VisitConfirmationService: Response Status = ${response.statusCode}");
-
-        try {
-          final pretty = const JsonEncoder.withIndent('  ')
-              .convert(jsonDecode(response.body));
-          debugPrint(
-              "VisitConfirmationService: Response JSON =\n$pretty");
-        } catch (_) {
-          debugPrint(
-              "VisitConfirmationService: Raw Response = ${response.body}");
-        }
-
-        debugPrint(
-            "VisitConfirmationService: ======================================");
-
-        return response;
-      } on TimeoutException {
-        debugPrint(
-          'VisitConfirmationService: Request timed out. Saving offline.',
-        );
-      } on SocketException {
-        debugPrint(
-          'VisitConfirmationService: Internet unreachable. Saving offline.',
-        );
-      } on http.ClientException {
-        debugPrint(
-          'VisitConfirmationService: API unreachable. Saving offline.',
-        );
-      }
-    }
-
-    return _saveOffline(
-      visitId: visitId,
-      doctorLatitude: doctorLatitude,
-      doctorLongitude: doctorLongitude,
-      position: position,
-      productIds: productIds,
-      notes: notes,
-    );
-  }
-
-  Future<http.Response> _saveOffline({
-    required String visitId,
-    required double doctorLatitude,
-    required double doctorLongitude,
-    required Position position,
-    required List<String> productIds,
-    required String notes,
-  }) async {
-
-    debugPrint("VisitConfirmationService: OFFLINE MODE");
-    debugPrint(
-        "VisitConfirmationService: Saving visit into SQLite...");
-
-    final double distance = Geolocator.distanceBetween(
+    final configuredMeterRange = await _authManager.getMeterRange();
+    final meterRange = configuredMeterRange ?? 200.0;
+    final distance = Geolocator.distanceBetween(
       doctorLatitude,
       doctorLongitude,
       position.latitude,
       position.longitude,
     );
 
-    debugPrint(
-        "VisitConfirmationService: Distance = ${distance.toStringAsFixed(2)} meters");
-
-    if (distance > 200) {
-      final response = {
-        "status": false,
-        "offline": true,
-        "message":
-        "You are ${distance.toStringAsFixed(0)} meters away from the doctor's location. Please move within 200 meters to confirm this visit.",
-      };
-
-      return http.Response(
-        jsonEncode(response),
-        400,
+    if (distance > meterRange) {
+      return _distanceRejectedResponse(
+        distance: distance,
+        meterRange: meterRange,
       );
     }
-
-    debugPrint(
-        "VisitConfirmationService: Distance validation passed. Saving visit into SQLite...");
 
     final pendingVisit = PendingVisitModel(
       visitId: visitId,
@@ -181,31 +55,77 @@ class VisitConfirmationService {
       userLongitude: position.longitude,
       notes: notes,
       productIds: productIds,
-      createdAt: DateTime.now(),
+      createdAt: DateTime.now().toUtc(),
+      localScheduleId: localScheduleId,
+      serverVisitId: localScheduleId == null || visitId != localScheduleId
+          ? visitId
+          : null,
     );
 
+    // The local outbox is the source of truth. The request is durable before
+    // any connectivity check or HTTP call can fail.
     await _repository.insertVisit(pendingVisit);
 
-    debugPrint(
-        "VisitConfirmationService: Visit saved locally");
-    debugPrint(
-        "VisitConfirmationService: Visit ID = $visitId");
-
-    final offlineResponse = {
-      "status": true,
-      "message": "Visit saved offline successfully.",
-      "offline": true,
-    };
-
-    debugPrint(
-        "VisitConfirmationService: Offline Response = ${const JsonEncoder.withIndent('  ').convert(offlineResponse)}");
+    // The sync service owns all uploads and always sends batches of ten. It
+    // safely retries when the device is offline or the request is slow.
+    if (!forceOffline) {
+      // Keep every automatic confirmation behind the same ordered pipeline:
+      // doctors/geo images -> schedules -> visit confirmations. The screen
+      // supplies its lifecycle-managed coordinator; the fallback creates a
+      // short-lived coordinator so callers outside the screen cannot bypass
+      // the doctor and schedule stages.
+      unawaited(_triggerOrderedSync());
+    }
 
     debugPrint(
-        "VisitConfirmationService: ======================================");
+      'VisitConfirmationService: Visit $visitId saved to local outbox',
+    );
+    return _queuedResponse();
+  }
 
+  Future<void> _triggerOrderedSync() async {
+    final trigger = _syncTrigger;
+    if (trigger != null) {
+      await trigger();
+      return;
+    }
+
+    final coordinator = DoctorOfflineUploadCoordinator();
+    try {
+      await coordinator.syncAll();
+    } finally {
+      coordinator.dispose();
+    }
+  }
+
+  http.Response _queuedResponse() {
     return http.Response(
-      jsonEncode(offlineResponse),
+      jsonEncode({
+        'status': true,
+        'message': 'Visit saved locally and queued for sync.',
+        'offline': true,
+        'queued': true,
+      }),
       200,
     );
+  }
+
+  http.Response _distanceRejectedResponse({
+    required double distance,
+    required double meterRange,
+  }) {
+    return http.Response(
+      jsonEncode({
+        'status': false,
+        'offline': true,
+        'message':
+            "You are ${_formatKilometers(distance)} away from the doctor's location. Please move within ${_formatKilometers(meterRange)} to confirm this visit.",
+      }),
+      400,
+    );
+  }
+
+  String _formatKilometers(double meters) {
+    return '${(meters / 1000).toStringAsFixed(2)} km';
   }
 }

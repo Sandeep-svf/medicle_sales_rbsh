@@ -4,8 +4,7 @@ import '../database/pending_visit_database.dart';
 import '../models/pending_visit_model.dart';
 
 class PendingVisitRepository {
-  final PendingVisitDatabase _database =
-      PendingVisitDatabase.instance;
+  final PendingVisitDatabase _database = PendingVisitDatabase.instance;
 
   Future<void> insertVisit(PendingVisitModel visit) async {
     final db = await _database.database;
@@ -22,9 +21,7 @@ class PendingVisitRepository {
 
     final result = await db.query('pending_visits');
 
-    return result
-        .map((e) => PendingVisitModel.fromMap(e))
-        .toList();
+    return result.map((e) => PendingVisitModel.fromMap(e)).toList();
   }
 
   Future<void> deleteVisit(String visitId) async {
@@ -34,6 +31,22 @@ class PendingVisitRepository {
       'pending_visits',
       where: 'visitId = ?',
       whereArgs: [visitId],
+    );
+  }
+
+  Future<void> resolveServerVisitId({
+    required String localScheduleId,
+    required String serverVisitId,
+  }) async {
+    final db = await _database.database;
+    await db.update(
+      'pending_visits',
+      {
+        'visitId': serverVisitId,
+        'serverVisitId': serverVisitId,
+      },
+      where: 'localScheduleId = ?',
+      whereArgs: [localScheduleId],
     );
   }
 

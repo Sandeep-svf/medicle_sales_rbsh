@@ -68,6 +68,8 @@ class DoctorDto {
   final DateTime? updatedAt;
 
   factory DoctorDto.fromJson(Map<String, dynamic> json) {
+    final nestedArea = json['area'];
+    final areaMap = nestedArea is Map ? nestedArea : const <String, dynamic>{};
     return DoctorDto(
       id: DoctorModelParsing.requiredIdentifier(json['id'], 'id'),
       name: DoctorModelParsing.nullableString(json['name'], 'name'),
@@ -143,11 +145,20 @@ class DoctorDto {
         'headOfficeName',
       ),
       areaId: DoctorModelParsing.nullableIdentifier(
-        json['areaId'],
+        _firstNonEmpty([
+          json['areaId'],
+          json['area_id'],
+          areaMap['id'],
+          areaMap['_id'],
+        ]),
         'areaId',
       ),
       areaName: DoctorModelParsing.nullableString(
-        json['areaName'],
+        _firstNonEmpty([
+          json['areaName'],
+          json['area_name'],
+          areaMap['name'],
+        ]),
         'areaName',
       ),
       ucpmpAnnualCap: DoctorModelParsing.nullableNumber(
@@ -172,6 +183,15 @@ class DoctorDto {
         'updatedAt',
       ),
     );
+  }
+
+  static Object? _firstNonEmpty(Iterable<Object?> values) {
+    for (final value in values) {
+      if (value == null) continue;
+      if (value is String && value.trim().isEmpty) continue;
+      return value;
+    }
+    return null;
   }
 
   Map<String, dynamic> toJson() {

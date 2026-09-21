@@ -40,7 +40,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('Samsung tablet landscape uses cards and separate profile', (
+  testWidgets('Samsung tablet landscape uses profile tabs', (
     tester,
   ) async {
     final harness = await _UiHarness.create();
@@ -55,7 +55,14 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Contact Information'), findsOneWidget);
+    expect(find.text('Overview'), findsOneWidget);
+    expect(find.text('Practice'), findsOneWidget);
+    expect(find.text('Location & Media'), findsOneWidget);
+    await tester.tap(find.text('Practice'));
+    await tester.pumpAndSettle();
     expect(find.text('Practice Details'), findsOneWidget);
+    await tester.tap(find.text('Location & Media'));
+    await tester.pumpAndSettle();
     expect(find.text('Geo Location Image'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });

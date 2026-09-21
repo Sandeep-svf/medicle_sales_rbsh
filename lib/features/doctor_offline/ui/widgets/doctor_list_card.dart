@@ -11,12 +11,22 @@ class DoctorListCard extends StatelessWidget {
     required this.selected,
     required this.onTap,
     this.fillHeight = false,
+    this.imagePending = false,
+    this.imageActionBusy = false,
+    this.onAddGeoImage,
+    this.onRequestLocation,
+    this.onAddArea,
   });
 
   final Doctor doctor;
   final bool selected;
   final VoidCallback onTap;
   final bool fillHeight;
+  final bool imagePending;
+  final bool imageActionBusy;
+  final VoidCallback? onAddGeoImage;
+  final VoidCallback? onRequestLocation;
+  final VoidCallback? onAddArea;
 
   @override
   Widget build(BuildContext context) {
@@ -25,6 +35,10 @@ class DoctorListCard extends StatelessWidget {
       doctor: doctor,
       onTap: onTap,
       fillHeight: fillHeight,
+      onAddGeoImage: onAddGeoImage,
+      imageActionBusy: imageActionBusy,
+      onRequestLocation: onRequestLocation,
+      onAddArea: onAddArea,
     );
     final cardRow = Row(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -38,6 +52,20 @@ class DoctorListCard extends StatelessWidget {
             mainAxisSize: fillHeight ? MainAxisSize.max : MainAxisSize.min,
             children: [
               _CardHeader(doctor: doctor, priority: priority),
+              if (doctor.localSyncState == DoctorLocalSyncState.pendingCreate ||
+                  imagePending)
+                Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    child: Text(
+                        doctor.localSyncState ==
+                                DoctorLocalSyncState.pendingCreate
+                            ? 'Offline stored only'
+                            : 'Photo upload pending',
+                        style: const TextStyle(
+                            color: Colors.deepOrange,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600))),
               if (fillHeight) Expanded(child: cardBody) else cardBody,
             ],
           ),
@@ -187,11 +215,19 @@ class _CardBody extends StatelessWidget {
     required this.doctor,
     required this.onTap,
     required this.fillHeight,
+    this.onAddGeoImage,
+    this.imageActionBusy = false,
+    this.onRequestLocation,
+    this.onAddArea,
   });
 
   final Doctor doctor;
   final VoidCallback onTap;
   final bool fillHeight;
+  final VoidCallback? onAddGeoImage;
+  final bool imageActionBusy;
+  final VoidCallback? onRequestLocation;
+  final VoidCallback? onAddArea;
 
   @override
   Widget build(BuildContext context) {
@@ -248,7 +284,9 @@ class _CardBody extends StatelessWidget {
             value: doctor.displayClinic,
             valueColor: Colors.grey.shade700,
           ),
-          if (fillHeight) const Spacer() else const SizedBox(height: TSizes.md),
+          // Grid cards use a fixed height, but actions should follow the
+          // doctor information instead of being pushed down by a large gap.
+          const SizedBox(height: TSizes.md),
           SizedBox(
             width: double.infinity,
             height: 40,
@@ -268,7 +306,74 @@ class _CardBody extends StatelessWidget {
               ),
             ),
           ),
+          if (onAddGeoImage != null) ...[
+            const SizedBox(height: TSizes.sm),
+            _CardActionButton(
+              icon: Icons.add_a_photo_outlined,
+              label: 'Add Geo Image',
+              onPressed: imageActionBusy ? null : onAddGeoImage!,
+              busy: imageActionBusy,
+            ),
+          ],
+          if (onRequestLocation != null) ...[
+            const SizedBox(height: TSizes.sm),
+            _CardActionButton(
+              icon: Icons.my_location_outlined,
+              label: 'Request Location Update',
+              onPressed: onRequestLocation!,
+            ),
+          ],
+          if (onAddArea != null) ...[
+            const SizedBox(height: TSizes.sm),
+            _CardActionButton(
+              icon: Icons.location_city_outlined,
+              label: 'Assign Area',
+              onPressed: onAddArea!,
+            ),
+          ],
         ],
+      ),
+    );
+  }
+}
+
+class _CardActionButton extends StatelessWidget {
+  const _CardActionButton({
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+    this.busy = false,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback? onPressed;
+  final bool busy;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 40,
+      child: OutlinedButton.icon(
+        onPressed: onPressed,
+        icon: busy
+            ? const SizedBox.square(
+                dimension: 17,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : Icon(icon, size: 17),
+        label: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: TColors.primary,
+          backgroundColor: TColors.primary.withValues(alpha: .04),
+          side: BorderSide(color: TColors.primary.withValues(alpha: .35)),
+          padding: const EdgeInsets.symmetric(horizontal: TSizes.sm),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(TSizes.borderRadiusMd),
+          ),
+          textStyle: const TextStyle(fontWeight: FontWeight.w600),
+        ),
       ),
     );
   }

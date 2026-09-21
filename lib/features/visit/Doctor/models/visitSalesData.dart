@@ -25,6 +25,9 @@ class VisitSalesLogModel {
 
   final VisitDoctor? doctor;
   final VisitUser? user;
+  final String? localScheduleId;
+  final bool schedulePending;
+  final String? scheduleSyncError;
 
   VisitSalesLogModel({
     required this.id,
@@ -43,11 +46,14 @@ class VisitSalesLogModel {
     this.headOfficeId,
     this.doctor,
     this.user,
+    this.localScheduleId,
+    this.schedulePending = false,
+    this.scheduleSyncError,
   });
 
   factory VisitSalesLogModel.fromJson(
-      Map<String, dynamic>? j,
-      ) {
+    Map<String, dynamic>? j,
+  ) {
     if (j == null) {
       return VisitSalesLogModel(
         id: "",
@@ -57,18 +63,14 @@ class VisitSalesLogModel {
       );
     }
 
-    String _s(dynamic v) =>
-        v?.toString() ?? "";
+    String _s(dynamic v) => v?.toString() ?? "";
 
     String? _sn(dynamic v) {
       if (v == null) return null;
 
-      final value =
-      v.toString().trim();
+      final value = v.toString().trim();
 
-      return value.isEmpty
-          ? null
-          : value;
+      return value.isEmpty ? null : value;
     }
 
     double? _d(dynamic v) {
@@ -91,123 +93,97 @@ class VisitSalesLogModel {
       );
     }
 
-    final String? rawDate =
-    _sn(j['date']);
+    final String? rawDate = _sn(j['date']);
 
     DateTime? parsedDate;
 
     if (rawDate != null) {
       try {
-        parsedDate =
-            DateFormat(
-              'yyyy-MM-dd',
-            )
-                .parse(
+        parsedDate = DateFormat(
+          'yyyy-MM-dd',
+        )
+            .parse(
               rawDate,
               true,
             )
-                .toLocal();
+            .toLocal();
       } catch (_) {}
     }
 
     return VisitSalesLogModel(
       id: _s(j['id']).trim(),
-      doctorId:
-      _s(j['doctor_id']).trim(),
-      userId:
-      _s(j['user_id']).trim(),
-
+      doctorId: _s(j['doctor_id']).trim(),
+      userId: _s(j['user_id']).trim(),
       dateStr: rawDate,
       date: parsedDate,
-
       notes: _sn(j['notes']),
-
       latitude: _d(
         j['latitude'],
       ),
-
       longitude: _d(
         j['longitude'],
       ),
-
-      confirmed:
-      j['confirmed'] == true,
-
+      confirmed: j['confirmed'] == true,
       remark: _sn(j['remark']),
-
-      productId:
-      _sn(j['product_id']),
-
-      createdAt:
-      _dt(j['created_at']),
-
-      updatedAt:
-      _dt(j['updated_at']),
-
+      productId: _sn(j['product_id']),
+      createdAt: _dt(j['created_at']),
+      updatedAt: _dt(j['updated_at']),
       headOfficeId: _sn(
-        j['headOfficeId'] ??
-            j['head_office_id'],
+        j['headOfficeId'] ?? j['head_office_id'],
       ),
-
-      doctor:
-      (j['doctor'] is Map)
+      doctor: (j['doctor'] is Map)
           ? VisitDoctor.fromJson(
-        j['doctor'],
-      )
+              j['doctor'],
+            )
           : null,
-
-      user:
-      (j['user'] is Map)
+      user: (j['user'] is Map)
           ? VisitUser.fromJson(
-        j['user'],
-      )
+              j['user'],
+            )
           : null,
+      localScheduleId: _sn(j['localScheduleId']),
+      schedulePending: j['schedulePending'] == true,
+      scheduleSyncError: _sn(j['scheduleSyncError']),
     );
   }
 
   Map<String, dynamic> toJson() => {
-    "id": id,
-    "doctor_id": doctorId,
-    "user_id": userId,
-    "date": dateStr,
-    "notes": notes,
-    "latitude": latitude,
-    "longitude": longitude,
-    "confirmed": confirmed,
-    "remark": remark,
-    "product_id": productId,
-    "created_at":
-    createdAt?.toIso8601String(),
-    "updated_at":
-    updatedAt?.toIso8601String(),
-    "headOfficeId": headOfficeId,
-    "doctor": doctor?.toJson(),
-    "user": user?.toJson(),
-  };
+        "id": id,
+        "doctor_id": doctorId,
+        "user_id": userId,
+        "date": dateStr,
+        "notes": notes,
+        "latitude": latitude,
+        "longitude": longitude,
+        "confirmed": confirmed,
+        "remark": remark,
+        "product_id": productId,
+        "created_at": createdAt?.toIso8601String(),
+        "updated_at": updatedAt?.toIso8601String(),
+        "headOfficeId": headOfficeId,
+        "doctor": doctor?.toJson(),
+        "user": user?.toJson(),
+        "localScheduleId": localScheduleId,
+        "schedulePending": schedulePending,
+        "scheduleSyncError": scheduleSyncError,
+      };
 
-  static List<VisitSalesLogModel>
-  listFromRawJson(String raw) {
+  static List<VisitSalesLogModel> listFromRawJson(String raw) {
     try {
       final data = json.decode(raw);
 
       if (data is List) {
         return data
-            .map<
-            VisitSalesLogModel>(
-              (e) =>
-              VisitSalesLogModel
-                  .fromJson(
-                e as Map<
-                    String,
-                    dynamic>,
+            .map<VisitSalesLogModel>(
+              (e) => VisitSalesLogModel.fromJson(
+                e as Map<String, dynamic>,
               ),
-        )
+            )
             .toList();
       }
     } catch (_) {}
 
-    return const <
-        VisitSalesLogModel>[];
+    return const <VisitSalesLogModel>[];
   }
 }
 
@@ -236,8 +212,8 @@ class VisitDoctor {
   });
 
   factory VisitDoctor.fromJson(
-      Map<String, dynamic>? j,
-      ) {
+    Map<String, dynamic>? j,
+  ) {
     if (j == null) {
       return VisitDoctor(
         id: "",
@@ -265,45 +241,53 @@ class VisitDoctor {
       return double.tryParse(v.toString());
     }
 
+    final nestedArea = j['area'];
+    final areaMap = nestedArea is Map ? nestedArea : const <String, dynamic>{};
+
+    String? _firstNonEmpty(Iterable<dynamic> values) {
+      for (final value in values) {
+        if (value == null) continue;
+        if (value is String && value.trim().isEmpty) continue;
+        return value.toString().trim();
+      }
+      return null;
+    }
+
     return VisitDoctor(
       id: _s(j['id']).trim(),
       name: _s(j['name']).trim(),
-
       specialization: _sn(
         j['specialization'],
       ),
-
-      areaId: _sn(
+      areaId: _firstNonEmpty([
         j['areaId'],
-      ),
-
+        j['area_id'],
+        areaMap['id'],
+        areaMap['_id'],
+      ]),
       headOfficeId: _sn(
         j['headOfficeId'],
       ),
-
       latitude: _d(
         j['latitude'],
       ),
-
       longitude: _d(
         j['longitude'],
       ),
-
-      geoImageStatus:
-      j['geo_image_status'] == true,
+      geoImageStatus: j['geo_image_status'] == true,
     );
   }
 
   Map<String, dynamic> toJson() => {
-    "id": id,
-    "name": name,
-    "specialization": specialization,
-    "areaId": areaId,
-    "headOfficeId": headOfficeId,
-    "latitude": latitude,
-    "longitude": longitude,
-    "geo_image_status": geoImageStatus,
-  };
+        "id": id,
+        "name": name,
+        "specialization": specialization,
+        "areaId": areaId,
+        "headOfficeId": headOfficeId,
+        "latitude": latitude,
+        "longitude": longitude,
+        "geo_image_status": geoImageStatus,
+      };
 }
 
 class VisitUser {
@@ -318,8 +302,8 @@ class VisitUser {
   });
 
   factory VisitUser.fromJson(
-      Map<String, dynamic>? j,
-      ) {
+    Map<String, dynamic>? j,
+  ) {
     if (j == null) {
       return VisitUser(
         id: "",
@@ -327,18 +311,14 @@ class VisitUser {
       );
     }
 
-    String _s(dynamic v) =>
-        v?.toString() ?? "";
+    String _s(dynamic v) => v?.toString() ?? "";
 
     String? _sn(dynamic v) {
       if (v == null) return null;
 
-      final value =
-      v.toString().trim();
+      final value = v.toString().trim();
 
-      return value.isEmpty
-          ? null
-          : value;
+      return value.isEmpty ? null : value;
     }
 
     return VisitUser(
@@ -349,8 +329,8 @@ class VisitUser {
   }
 
   Map<String, dynamic> toJson() => {
-    "id": id,
-    "name": name,
-    "email": email,
-  };
+        "id": id,
+        "name": name,
+        "email": email,
+      };
 }

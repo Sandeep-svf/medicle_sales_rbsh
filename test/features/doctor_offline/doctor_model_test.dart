@@ -63,6 +63,27 @@ void main() {
       expect(doctor.toJson()['syncVersion'], '900719925474099312345');
     });
 
+    test('normalizes area id and name from nested or snake-case responses', () {
+      final nested = fullDoctorJson()
+        ..remove('areaId')
+        ..remove('areaName')
+        ..['area'] = {'id': 'nested-area', 'name': 'Nested Area'};
+
+      final nestedDoctor = DoctorDto.fromJson(nested);
+      expect(nestedDoctor.areaId, 'nested-area');
+      expect(nestedDoctor.areaName, 'Nested Area');
+
+      final snakeCase = fullDoctorJson()
+        ..remove('areaId')
+        ..remove('areaName')
+        ..['area_id'] = 'snake-area'
+        ..['area_name'] = 'Snake Area';
+
+      final snakeCaseDoctor = DoctorDto.fromJson(snakeCase);
+      expect(snakeCaseDoctor.areaId, 'snake-area');
+      expect(snakeCaseDoctor.areaName, 'Snake Area');
+    });
+
     test('normalizes matching client id aliases and rejects conflicts', () {
       final matching = fullDoctorJson(
         clientGeneratedId: 'client-1',

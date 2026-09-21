@@ -3,7 +3,8 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/services.dart';
-import 'package:image/image.dart' as img; // Rename to avoid conflict with Flutter Image
+import 'package:image/image.dart'
+    as img; // Rename to avoid conflict with Flutter Image
 import 'package:http_parser/http_parser.dart'; // For MediaType
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +13,7 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:medicle_sales_rbsh/common/Model/SMResponseModel.dart';
+import 'package:medicle_sales_rbsh/features/doctor_offline/doctor_offline.dart';
 
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -32,8 +34,8 @@ import '../controllers/visitListController.dart';
 import '../models/visitSalesData.dart';
 import '../services/pending_visit_sync_service.dart';
 import '../services/visit_confirmation_service.dart';
+import '../services/doctor_offline_upload_coordinator.dart';
 import 'ScheduleVisitScreen.dart';
-
 
 class VisitDoctorScreen extends StatefulWidget {
   const VisitDoctorScreen({super.key});
@@ -47,15 +49,18 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = "";
 
-  final DoctorListController _doctorListController = Get.put(
-      DoctorListController());
+  final DoctorListController _doctorListController =
+      Get.put(DoctorListController());
 
   late VisitListController _visitListController;
   final AuthManager authManager = AuthManager();
   late DoctorVisitProductController productController;
   late PendingVisitSyncService _pendingVisitSyncService;
+  late DoctorOfflineUploadCoordinator _uploadCoordinator;
   StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
   bool _isRefreshingAfterReconnect = false;
+  bool _refreshQueued = false;
+  bool _queuedRefreshShowsMessage = false;
 
   // Location helper
   String _location = 'Fetching location...';
@@ -74,19 +79,21 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
     // Initialize controller
     _visitListController = VisitListController();
 
-    // Initial Fetch (Default: Today)
-    _visitListController.fetchSalesList(filter: VisitDateFilter.today);
-
     productController = DoctorVisitProductController();
     _pendingVisitSyncService = PendingVisitSyncService();
-    unawaited(productController.loadProducts());
+    _uploadCoordinator = DoctorOfflineUploadCoordinator(
+      visitSyncService: _pendingVisitSyncService,
+    );
+    _uploadCoordinator.startListening();
     _startConnectivityRefresh();
+    // Local cache is loaded first, then visits/products and pending
+    // confirmations are refreshed in the background on every screen open.
+    unawaited(_refreshAll(showMessage: false));
   }
 
   void _startConnectivityRefresh() {
-    _connectivitySubscription = Connectivity()
-        .onConnectivityChanged
-        .listen((connectivity) {
+    _connectivitySubscription =
+        Connectivity().onConnectivityChanged.listen((connectivity) {
       if (!connectivity.contains(ConnectivityResult.none)) {
         unawaited(_refreshAfterReconnect());
       }
@@ -94,29 +101,57 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
   }
 
   Future<void> _refreshAfterReconnect() async {
-    if (_isRefreshingAfterReconnect || _visitListController.offlineMode) {
+    await _refreshAll(showMessage: false);
+  }
+
+  Future<void> _refreshAll({required bool showMessage}) async {
+    if (_isRefreshingAfterReconnect) {
+      _refreshQueued = true;
+      _queuedRefreshShowsMessage = _queuedRefreshShowsMessage || showMessage;
+      debugPrint(
+          'VisitDoctorScreen: refresh already running; queued a follow-up refresh.');
       return;
     }
 
     _isRefreshingAfterReconnect = true;
     try {
+      // Keep cached products visible while checking the server.
+      await productController.loadProducts(refresh: false);
+      // Run the ordered outbox pipeline before refreshing the visit list:
+      // doctors/geo images -> schedules -> visit confirmations.
+      await _uploadCoordinator.syncAll();
       await productController.refreshProducts();
-      await _pendingVisitSyncService.syncPendingVisits();
-
-      if (!mounted) return;
-
       await _visitListController.fetchSalesList(
         filter: _selectedFilter,
         startDate: _selectedDateRange?.start,
         endDate: _selectedDateRange?.end,
       );
-    } catch (error, stackTrace) {
+      await _visitListController.refreshPendingVisits();
       debugPrint(
-        'VisitDoctorScreen: Reconnect refresh failed: $error',
+        'VisitDoctorScreen: UI pending visit IDs after refresh = '
+        '${_visitListController.pendingVisits.toList()}',
       );
+
+      if (showMessage && mounted) {
+        Get.snackbar(
+          'Visits refreshed',
+          'Visits and products are up to date. Pending confirmations sync automatically.',
+          backgroundColor: TColors.success,
+          colorText: Colors.white,
+        );
+      }
+    } catch (error, stackTrace) {
+      debugPrint('VisitDoctorScreen: Refresh failed: $error');
       debugPrintStack(stackTrace: stackTrace);
     } finally {
       _isRefreshingAfterReconnect = false;
+      if (_refreshQueued && mounted) {
+        final showQueuedMessage = _queuedRefreshShowsMessage;
+        _refreshQueued = false;
+        _queuedRefreshShowsMessage = false;
+        debugPrint('VisitDoctorScreen: running queued post-sync refresh.');
+        unawaited(_refreshAll(showMessage: showQueuedMessage));
+      }
     }
   }
 
@@ -132,6 +167,8 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
     WidgetsBinding.instance.removeObserver(this);
     _connectivitySubscription?.cancel();
     productController.dispose();
+    _uploadCoordinator.dispose();
+    _pendingVisitSyncService.dispose();
     _visitListController.dispose();
     _searchController.dispose();
     super.dispose();
@@ -150,12 +187,9 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
         endDate: _selectedDateRange?.end,
       );
 
-      Get.snackbar(
-          "Success",
-          "List updated successfully",
+      Get.snackbar("Success", "List updated successfully",
           backgroundColor: TColors.success.withOpacity(0.1),
-          colorText: TColors.success
-      );
+          colorText: TColors.success);
     }
   }
 
@@ -211,9 +245,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
         return "Last 15 Days";
       case VisitDateFilter.custom:
         if (_selectedDateRange != null) {
-          return "${DateFormat('MMM dd').format(
-              _selectedDateRange!.start)} - ${DateFormat('MMM dd').format(
-              _selectedDateRange!.end)}";
+          return "${DateFormat('MMM dd').format(_selectedDateRange!.start)} - ${DateFormat('MMM dd').format(_selectedDateRange!.end)}";
         }
         return "Custom Range";
     }
@@ -235,14 +267,14 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                 prefixIcon: const Icon(Icons.search, color: TColors.primary),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(
-                  icon: const Icon(Icons.clear),
-                  onPressed: () {
-                    setState(() {
-                      _searchController.clear();
-                      _searchQuery = "";
-                    });
-                  },
-                )
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          setState(() {
+                            _searchController.clear();
+                            _searchQuery = "";
+                          });
+                        },
+                      )
                     : null,
               ),
               onChanged: (value) {
@@ -277,50 +309,37 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
               children: [
-
-                Icon(
-                  _visitListController.offlineMode
-                      ? Icons.cloud_off
-                      : Icons.cloud_done,
-                  color: _visitListController.offlineMode
-                      ? Colors.orange
-                      : Colors.green,
-                ),
-
+                const Icon(Icons.sync_rounded, color: TColors.primary),
                 const SizedBox(width: 8),
-
-                Expanded(
+                const Expanded(
                   child: Text(
-                    _visitListController.offlineMode
-                        ? "Offline Mode"
-                        : "Online Mode",
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                    ),
+                    'Local-first visits • Syncs automatically',
+                    style: TextStyle(fontWeight: FontWeight.w600),
                   ),
                 ),
-
-                Switch(
-                  value: _visitListController.offlineMode,
-                  onChanged: (value) async {
-                    await _visitListController.setOfflineMode(value);
-                    await productController.loadProducts(refresh: !value);
-
-                    if (!value) {
-                      unawaited(_refreshAfterReconnect());
-                    }
-
-                    if (mounted) {
-                      setState(() {});
-                    }
-                  },
+                IconButton(
+                  tooltip: 'Refresh visits and products',
+                  onPressed: _isRefreshingAfterReconnect
+                      ? null
+                      : () => _refreshAll(showMessage: true),
+                  icon: const Icon(Icons.refresh_rounded),
                 ),
               ],
             ),
           ),
 
-          const SizedBox(height: 10),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Pull down to refresh visits and products. Confirmations saved offline sync when internet is available.',
+                style: TextStyle(fontSize: 12, color: Colors.black54),
+              ),
+            ),
+          ),
 
+          const SizedBox(height: 10),
 
           // 3. Main Content List (Includes Status Summary)
           Expanded(
@@ -328,26 +347,44 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
               listenable: _visitListController,
               builder: (context, child) {
                 if (_visitListController.isLoading) {
-                  return const Center(child: CircularProgressIndicator());
+                  return RefreshIndicator(
+                    onRefresh: () => _refreshAll(showMessage: true),
+                    child: ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      children: const [
+                        SizedBox(
+                          height: 260,
+                          child: Center(child: CircularProgressIndicator()),
+                        ),
+                      ],
+                    ),
+                  );
                 } else if (_visitListController.salesList.isEmpty) {
                   // Custom Empty State
-                  return _buildEmptyState();
+                  return RefreshIndicator(
+                    onRefresh: () => _refreshAll(showMessage: true),
+                    child: ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      children: [
+                        SizedBox(height: 260, child: _buildEmptyState()),
+                      ],
+                    ),
+                  );
                 } else {
                   // --- CALCULATE SUMMARY STATS ---
                   final allVisits = _visitListController.salesList;
                   final int totalVisits = allVisits.length;
-                  final int confirmedVisits = allVisits
-                      .where((v) => v.confirmed == true)
-                      .length;
+                  final int confirmedVisits =
+                      allVisits.where((v) => v.confirmed == true).length;
                   final int pendingVisits = totalVisits - confirmedVisits;
 
                   // --- FILTER LOGIC (SEARCH) ---
                   List<VisitSalesLogModel> filteredDoctors = allVisits
                       .where((doctor) =>
-                  doctor.doctor?.name
-                      ?.toLowerCase()
-                      .contains(_searchQuery.toLowerCase()) ??
-                      false)
+                          doctor.doctor?.name
+                              ?.toLowerCase()
+                              .contains(_searchQuery.toLowerCase()) ??
+                          false)
                       .toList();
 
                   // Use a Column to show Summary + List
@@ -360,8 +397,24 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                       const SizedBox(height: 10),
 
                       if (filteredDoctors.isEmpty)
-                        const Expanded(child: Center(child: Text(
-                            "No doctors found matching your search.")))
+                        Expanded(
+                          child: RefreshIndicator(
+                            onRefresh: () => _refreshAll(showMessage: true),
+                            child: ListView(
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              children: const [
+                                SizedBox(
+                                  height: 220,
+                                  child: Center(
+                                    child: Text(
+                                      "No doctors found matching your search.",
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
                       else
                         Expanded(
                           child: LayoutBuilder(
@@ -372,42 +425,54 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                               Widget buildCard(VisitSalesLogModel doctorVisit) {
                                 final doctorName = doctorVisit.doctor?.name ??
                                     "Unknown VisitDoctor";
-                                final String initials = doctorName
-                                    .trim()
-                                    .isNotEmpty
-                                    ? doctorName
-                                    .trim()
-                                    .substring(0, 1)
-                                    .toUpperCase()
-                                    : "?";
+                                final String initials =
+                                    doctorName.trim().isNotEmpty
+                                        ? doctorName
+                                            .trim()
+                                            .substring(0, 1)
+                                            .toUpperCase()
+                                        : "?";
 
                                 // Status Helpers
-                                final isPendingSync =
-                                _visitListController.pendingVisits.contains(doctorVisit.id);
+                                final isPendingSync = _visitListController
+                                    .pendingVisits
+                                    .contains(doctorVisit.id);
+                                final isSchedulePending =
+                                    doctorVisit.schedulePending;
+                                final hasScheduleSyncError =
+                                    isSchedulePending &&
+                                        doctorVisit.scheduleSyncError != null;
 
                                 final isConfirmed =
-                                    doctorVisit.confirmed == true || isPendingSync;
+                                    doctorVisit.confirmed == true ||
+                                        isPendingSync;
 
                                 final statusColor =
-                                doctorVisit.confirmed == true
-                                    ? TColors.success
-                                    : isPendingSync
-                                    ? Colors.orange
-                                    : TColors.primary;
+                                    doctorVisit.confirmed == true
+                                        ? TColors.success
+                                        : isPendingSync
+                                            ? Colors.orange
+                                            : isSchedulePending
+                                                ? Colors.orange
+                                                : TColors.primary;
 
-                                final statusText =
-                                doctorVisit.confirmed == true
+                                final statusText = doctorVisit.confirmed == true
                                     ? "Completed"
                                     : isPendingSync
-                                    ? "Pending Sync"
-                                    : "Action Needed";
+                                        ? "Pending Sync"
+                                        : isSchedulePending
+                                            ? hasScheduleSyncError
+                                                ? "Schedule Sync Error"
+                                                : "Schedule Pending Sync"
+                                            : "Action Needed";
 
-                                final statusIcon =
-                                doctorVisit.confirmed == true
+                                final statusIcon = doctorVisit.confirmed == true
                                     ? Icons.check_circle
                                     : isPendingSync
-                                    ? Icons.sync
-                                    : Icons.pending;
+                                        ? Icons.sync
+                                        : isSchedulePending
+                                            ? Icons.sync_problem
+                                            : Icons.pending;
 
                                 // Priority Logic (Placeholder)
                                 const String priority = "C";
@@ -431,8 +496,8 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                                   clipBehavior: Clip.antiAlias,
                                   child: IntrinsicHeight(
                                     child: Row(
-                                      crossAxisAlignment: CrossAxisAlignment
-                                          .stretch,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.stretch,
                                       children: [
                                         // Left Colored Strip
                                         Container(width: 6, color: statusColor),
@@ -444,38 +509,39 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                                             children: [
                                               // --- Header Section ---
                                               Container(
-                                                padding: const EdgeInsets.all(
-                                                    16.0),
+                                                padding:
+                                                    const EdgeInsets.all(16.0),
                                                 decoration: BoxDecoration(
                                                   color: statusColor
                                                       .withOpacity(0.04),
                                                 ),
                                                 child: Row(
-                                                  crossAxisAlignment: CrossAxisAlignment
-                                                      .start,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
                                                   children: [
                                                     // Avatar
                                                     Container(
-                                                      padding: const EdgeInsets
-                                                          .all(2),
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              2),
                                                       decoration: BoxDecoration(
                                                         shape: BoxShape.circle,
                                                         border: Border.all(
                                                             color: statusColor
                                                                 .withOpacity(
-                                                                0.3),
+                                                                    0.3),
                                                             width: 2),
                                                       ),
                                                       child: CircleAvatar(
                                                         radius: 22,
-                                                        backgroundColor: Colors
-                                                            .white,
+                                                        backgroundColor:
+                                                            Colors.white,
                                                         child: Text(
                                                           initials,
                                                           style: TextStyle(
                                                             fontSize: 18,
-                                                            fontWeight: FontWeight
-                                                                .bold,
+                                                            fontWeight:
+                                                                FontWeight.bold,
                                                             color: statusColor,
                                                           ),
                                                         ),
@@ -486,56 +552,70 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                                                     // Name, Date & Priority
                                                     Expanded(
                                                       child: Column(
-                                                        crossAxisAlignment: CrossAxisAlignment
-                                                            .start,
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
                                                         children: [
                                                           Row(
-                                                            mainAxisAlignment: MainAxisAlignment
-                                                                .spaceBetween,
-                                                            crossAxisAlignment: CrossAxisAlignment
-                                                                .start,
+                                                            mainAxisAlignment:
+                                                                MainAxisAlignment
+                                                                    .spaceBetween,
+                                                            crossAxisAlignment:
+                                                                CrossAxisAlignment
+                                                                    .start,
                                                             children: [
                                                               Expanded(
                                                                 child: Text(
                                                                   doctorName,
-                                                                  style: const TextStyle(
-                                                                    fontSize: 16,
-                                                                    fontWeight: FontWeight
-                                                                        .bold,
+                                                                  style:
+                                                                      const TextStyle(
+                                                                    fontSize:
+                                                                        16,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold,
                                                                     color: Colors
                                                                         .black87,
                                                                   ),
                                                                   maxLines: 1,
-                                                                  overflow: TextOverflow
-                                                                      .ellipsis,
+                                                                  overflow:
+                                                                      TextOverflow
+                                                                          .ellipsis,
                                                                 ),
                                                               ),
                                                               // Priority Badge
                                                               Container(
                                                                 padding: const EdgeInsets
                                                                     .symmetric(
-                                                                    horizontal: 8,
-                                                                    vertical: 4),
-                                                                decoration: BoxDecoration(
+                                                                    horizontal:
+                                                                        8,
+                                                                    vertical:
+                                                                        4),
+                                                                decoration:
+                                                                    BoxDecoration(
                                                                   color: priorityColor
                                                                       .withOpacity(
-                                                                      0.1),
-                                                                  borderRadius: BorderRadius
-                                                                      .circular(
-                                                                      6),
-                                                                  border: Border
-                                                                      .all(
+                                                                          0.1),
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              6),
+                                                                  border: Border.all(
                                                                       color: priorityColor
                                                                           .withOpacity(
-                                                                          0.3)),
+                                                                              0.3)),
                                                                 ),
                                                                 child: Text(
                                                                   "Priority $priority",
-                                                                  style: TextStyle(
-                                                                    fontSize: 10,
-                                                                    fontWeight: FontWeight
-                                                                        .bold,
-                                                                    color: priorityColor,
+                                                                  style:
+                                                                      TextStyle(
+                                                                    fontSize:
+                                                                        10,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold,
+                                                                    color:
+                                                                        priorityColor,
                                                                   ),
                                                                 ),
                                                               ),
@@ -545,29 +625,36 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                                                               height: 6),
                                                           Row(
                                                             children: [
-                                                              Icon(Icons
-                                                                  .calendar_today_rounded,
+                                                              Icon(
+                                                                  Icons
+                                                                      .calendar_today_rounded,
                                                                   size: 14,
                                                                   color: Colors
-                                                                      .grey[600]),
+                                                                          .grey[
+                                                                      600]),
                                                               const SizedBox(
                                                                   width: 4),
                                                               Expanded(
                                                                 child: Text(
                                                                   doctorVisit
-                                                                      .date
-                                                                      ?.toString() ??
+                                                                          .date
+                                                                          ?.toString() ??
                                                                       "Unknown Date",
-                                                                  style: TextStyle(
-                                                                    fontSize: 12,
+                                                                  style:
+                                                                      TextStyle(
+                                                                    fontSize:
+                                                                        12,
                                                                     color: Colors
-                                                                        .grey[600],
-                                                                    fontWeight: FontWeight
-                                                                        .w500,
+                                                                            .grey[
+                                                                        600],
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w500,
                                                                   ),
                                                                   maxLines: 1,
-                                                                  overflow: TextOverflow
-                                                                      .ellipsis,
+                                                                  overflow:
+                                                                      TextOverflow
+                                                                          .ellipsis,
                                                                 ),
                                                               ),
                                                             ],
@@ -581,8 +668,9 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
 
                                               // --- Body Section ---
                                               Padding(
-                                                padding: const EdgeInsets
-                                                    .fromLTRB(16, 16, 16, 12),
+                                                padding:
+                                                    const EdgeInsets.fromLTRB(
+                                                        16, 16, 16, 12),
                                                 child: Column(
                                                   children: [
                                                     // --- Rep Name & Status Row ---
@@ -590,46 +678,56 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                                                       children: [
                                                         Expanded(
                                                           child: Column(
-                                                            crossAxisAlignment: CrossAxisAlignment
-                                                                .start,
+                                                            crossAxisAlignment:
+                                                                CrossAxisAlignment
+                                                                    .start,
                                                             children: [
                                                               Text(
                                                                 "SALES REP",
-                                                                style: TextStyle(
+                                                                style:
+                                                                    TextStyle(
                                                                   fontSize: 10,
                                                                   color: Colors
-                                                                      .grey[500],
-                                                                  fontWeight: FontWeight
-                                                                      .w700,
-                                                                  letterSpacing: 0.5,
+                                                                          .grey[
+                                                                      500],
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w700,
+                                                                  letterSpacing:
+                                                                      0.5,
                                                                 ),
                                                               ),
                                                               const SizedBox(
                                                                   height: 4),
                                                               Row(
                                                                 children: [
-                                                                  Icon(Icons
-                                                                      .person_rounded,
+                                                                  Icon(
+                                                                      Icons
+                                                                          .person_rounded,
                                                                       size: 16,
                                                                       color: Colors
-                                                                          .grey[700]),
+                                                                              .grey[
+                                                                          700]),
                                                                   const SizedBox(
                                                                       width: 6),
                                                                   Expanded(
                                                                     child: Text(
                                                                       doctorVisit
-                                                                          .user
-                                                                          ?.name ??
+                                                                              .user
+                                                                              ?.name ??
                                                                           'N/A',
                                                                       style: const TextStyle(
-                                                                          fontSize: 13,
+                                                                          fontSize:
+                                                                              13,
                                                                           fontWeight: FontWeight
                                                                               .w600,
-                                                                          color: Colors
-                                                                              .black87),
-                                                                      maxLines: 1,
-                                                                      overflow: TextOverflow
-                                                                          .ellipsis,
+                                                                          color:
+                                                                              Colors.black87),
+                                                                      maxLines:
+                                                                          1,
+                                                                      overflow:
+                                                                          TextOverflow
+                                                                              .ellipsis,
                                                                     ),
                                                                   ),
                                                                 ],
@@ -637,35 +735,43 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                                                             ],
                                                           ),
                                                         ),
-
                                                         Container(
-                                                          padding: const EdgeInsets
-                                                              .symmetric(
-                                                              horizontal: 8,
-                                                              vertical: 4),
-                                                          decoration: BoxDecoration(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .symmetric(
+                                                                  horizontal: 8,
+                                                                  vertical: 4),
+                                                          decoration:
+                                                              BoxDecoration(
                                                             color: statusColor
                                                                 .withOpacity(
-                                                                0.1),
-                                                            borderRadius: BorderRadius
-                                                                .circular(8),
+                                                                    0.1),
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        8),
                                                           ),
                                                           child: Row(
-                                                            mainAxisSize: MainAxisSize
-                                                                .min,
+                                                            mainAxisSize:
+                                                                MainAxisSize
+                                                                    .min,
                                                             children: [
                                                               Icon(statusIcon,
                                                                   size: 12,
-                                                                  color: statusColor),
+                                                                  color:
+                                                                      statusColor),
                                                               const SizedBox(
                                                                   width: 4),
                                                               Text(
                                                                 statusText,
-                                                                style: TextStyle(
+                                                                style:
+                                                                    TextStyle(
                                                                   fontSize: 10,
-                                                                  fontWeight: FontWeight
-                                                                      .bold,
-                                                                  color: statusColor,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                  color:
+                                                                      statusColor,
                                                                 ),
                                                               ),
                                                             ],
@@ -679,19 +785,22 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                                                     // --- Notes ---
                                                     Container(
                                                       width: double.infinity,
-                                                      padding: const EdgeInsets
-                                                          .all(12),
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              12),
                                                       decoration: BoxDecoration(
                                                         color: Colors.grey[50],
-                                                        borderRadius: BorderRadius
-                                                            .circular(10),
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(10),
                                                         border: Border.all(
                                                             color: Colors
                                                                 .grey[200]!),
                                                       ),
                                                       child: Column(
-                                                        crossAxisAlignment: CrossAxisAlignment
-                                                            .start,
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
                                                         children: [
                                                           Text(
                                                             "CALL NOTES",
@@ -700,37 +809,40 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                                                               fontSize: 10,
                                                               color: Colors
                                                                   .grey[500],
-                                                              fontWeight: FontWeight
-                                                                  .w700,
-                                                              letterSpacing: 0.5,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w700,
+                                                              letterSpacing:
+                                                                  0.5,
                                                             ),
                                                           ),
                                                           const SizedBox(
                                                               height: 4),
                                                           Text(
                                                             doctorVisit.notes
-                                                                ?.isNotEmpty ==
-                                                                true
+                                                                        ?.isNotEmpty ==
+                                                                    true
                                                                 ? doctorVisit
-                                                                .notes!
+                                                                    .notes!
                                                                 : "No notes provided.",
                                                             style: TextStyle(
                                                               fontSize: 13,
                                                               color: Colors
                                                                   .grey[700],
                                                               height: 1.4,
-                                                              fontStyle:
-                                                              doctorVisit.notes
-                                                                  ?.isNotEmpty ==
-                                                                  true
+                                                              fontStyle: doctorVisit
+                                                                          .notes
+                                                                          ?.isNotEmpty ==
+                                                                      true
                                                                   ? FontStyle
-                                                                  .normal
+                                                                      .normal
                                                                   : FontStyle
-                                                                  .italic,
+                                                                      .italic,
                                                             ),
                                                             maxLines: 1,
-                                                            overflow: TextOverflow
-                                                                .ellipsis,
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
                                                           ),
                                                         ],
                                                       ),
@@ -741,72 +853,119 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                                                     SizedBox(
                                                       width: double.infinity,
                                                       child: ElevatedButton(
-                                                        onPressed: doctorVisit.confirmed == true
+                                                        onPressed: doctorVisit
+                                                                    .confirmed ==
+                                                                true
                                                             ? () {
-                                                          ScaffoldMessenger.of(context).showSnackBar(
-                                                            const SnackBar(
-                                                              content: Text('Visit already confirmed.'),
-                                                              backgroundColor: Colors.green,
-                                                            ),
-                                                          );
-                                                        }
+                                                                ScaffoldMessenger.of(
+                                                                        context)
+                                                                    .showSnackBar(
+                                                                  const SnackBar(
+                                                                    content: Text(
+                                                                        'Visit already confirmed.'),
+                                                                    backgroundColor:
+                                                                        Colors
+                                                                            .green,
+                                                                  ),
+                                                                );
+                                                              }
                                                             : isPendingSync
-                                                            ? () {
-                                                          ScaffoldMessenger.of(context).showSnackBar(
-                                                            const SnackBar(
-                                                              content: Text(
-                                                                'This visit has been saved offline and is waiting to sync.',
-                                                              ),
-                                                              backgroundColor: Colors.orange,
-                                                            ),
-                                                          );
-                                                        }
-                                                            : () {
-                                                          _handleVisitConfirmationFlow(
-                                                            context,
-                                                            doctorVisit,
-                                                          );
-                                                        },
-                                                        style: ElevatedButton.styleFrom(
-                                                          backgroundColor: doctorVisit.confirmed == true
+                                                                ? () {
+                                                                    ScaffoldMessenger.of(
+                                                                            context)
+                                                                        .showSnackBar(
+                                                                      const SnackBar(
+                                                                        content:
+                                                                            Text(
+                                                                          'This visit has been saved offline and is waiting to sync.',
+                                                                        ),
+                                                                        backgroundColor:
+                                                                            Colors.orange,
+                                                                      ),
+                                                                    );
+                                                                  }
+                                                                : () {
+                                                                    _handleVisitConfirmationFlow(
+                                                                      context,
+                                                                      doctorVisit,
+                                                                    );
+                                                                  },
+                                                        style: ElevatedButton
+                                                            .styleFrom(
+                                                          backgroundColor: doctorVisit
+                                                                      .confirmed ==
+                                                                  true
                                                               ? TColors.success
                                                               : isPendingSync
-                                                              ? Colors.orange
-                                                              : TColors.primary,
-                                                          foregroundColor: Colors.white,
-                                                          elevation: doctorVisit.confirmed == true ? 0 : 2,
-                                                          shadowColor: (doctorVisit.confirmed == true
-                                                              ? TColors.success
-                                                              : isPendingSync
-                                                              ? Colors.orange
-                                                              : TColors.primary)
+                                                                  ? Colors
+                                                                      .orange
+                                                                  : TColors
+                                                                      .primary,
+                                                          foregroundColor:
+                                                              Colors.white,
+                                                          elevation: doctorVisit
+                                                                      .confirmed ==
+                                                                  true
+                                                              ? 0
+                                                              : 2,
+                                                          shadowColor: (doctorVisit
+                                                                          .confirmed ==
+                                                                      true
+                                                                  ? TColors
+                                                                      .success
+                                                                  : isPendingSync
+                                                                      ? Colors
+                                                                          .orange
+                                                                      : TColors
+                                                                          .primary)
                                                               .withOpacity(0.4),
-                                                          shape: RoundedRectangleBorder(
-                                                            borderRadius: BorderRadius.circular(12),
+                                                          shape:
+                                                              RoundedRectangleBorder(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        12),
                                                           ),
-                                                          minimumSize: const Size(double.infinity, 44),
+                                                          minimumSize:
+                                                              const Size(
+                                                                  double
+                                                                      .infinity,
+                                                                  44),
                                                         ),
                                                         child: Row(
-                                                          mainAxisAlignment: MainAxisAlignment.center,
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .center,
                                                           children: [
                                                             Icon(
-                                                              doctorVisit.confirmed == true
-                                                                  ? Icons.verified
+                                                              doctorVisit.confirmed ==
+                                                                      true
+                                                                  ? Icons
+                                                                      .verified
                                                                   : isPendingSync
-                                                                  ? Icons.sync
-                                                                  : Icons.touch_app_rounded,
+                                                                      ? Icons
+                                                                          .sync
+                                                                      : Icons
+                                                                          .touch_app_rounded,
                                                               size: 20,
                                                             ),
-                                                            const SizedBox(width: 8),
+                                                            const SizedBox(
+                                                                width: 8),
                                                             Text(
-                                                              doctorVisit.confirmed == true
-                                                                  ? TTexts.visitConfirmed
+                                                              doctorVisit.confirmed ==
+                                                                      true
+                                                                  ? TTexts
+                                                                      .visitConfirmed
                                                                   : isPendingSync
-                                                                  ? "Pending Sync"
-                                                                  : TTexts.confirmVisit,
-                                                              style: const TextStyle(
+                                                                      ? "Pending Sync"
+                                                                      : TTexts
+                                                                          .confirmVisit,
+                                                              style:
+                                                                  const TextStyle(
                                                                 fontSize: 15,
-                                                                fontWeight: FontWeight.bold,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
                                                               ),
                                                             ),
                                                           ],
@@ -826,44 +985,55 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                               }
 
                               if (isTablet) {
-                                final bool isLandscape =
-                                    constraints.maxWidth >
-                                        constraints.maxHeight;
+                                final bool isLandscape = constraints.maxWidth >
+                                    constraints.maxHeight;
                                 final int crossAxisCount = isLandscape ? 3 : 2;
                                 double padding = 16.0;
                                 double spacing = 16.0;
                                 double totalSpacing = (padding * 2) +
                                     ((crossAxisCount - 1) * spacing);
-                                double itemWidth = (constraints.maxWidth -
-                                    totalSpacing) / crossAxisCount;
+                                double itemWidth =
+                                    (constraints.maxWidth - totalSpacing) /
+                                        crossAxisCount;
                                 double requiredHeight = 330.0;
-                                double childAspectRatio = itemWidth /
-                                    requiredHeight;
+                                double childAspectRatio =
+                                    itemWidth / requiredHeight;
 
-                                return GridView.builder(
-                                  padding: EdgeInsets.all(padding),
-                                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                                    crossAxisCount: crossAxisCount,
-                                    crossAxisSpacing: spacing,
-                                    mainAxisSpacing: spacing,
-                                    childAspectRatio: childAspectRatio,
+                                return RefreshIndicator(
+                                  onRefresh: () =>
+                                      _refreshAll(showMessage: true),
+                                  child: GridView.builder(
+                                    physics:
+                                        const AlwaysScrollableScrollPhysics(),
+                                    padding: EdgeInsets.all(padding),
+                                    gridDelegate:
+                                        SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisCount: crossAxisCount,
+                                      crossAxisSpacing: spacing,
+                                      mainAxisSpacing: spacing,
+                                      childAspectRatio: childAspectRatio,
+                                    ),
+                                    itemCount: filteredDoctors.length,
+                                    itemBuilder: (context, index) =>
+                                        buildCard(filteredDoctors[index]),
                                   ),
-                                  itemCount: filteredDoctors.length,
-                                  itemBuilder: (context, index) =>
-                                      buildCard(filteredDoctors[index]),
                                 );
                               } else {
-                                return ListView.builder(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 12),
-                                  itemCount: filteredDoctors.length,
-                                  itemBuilder: (context, index) =>
-                                      Padding(
-                                        padding: const EdgeInsets.only(
-                                            bottom: 16.0),
-                                        child: buildCard(
-                                            filteredDoctors[index]),
-                                      ),
+                                return RefreshIndicator(
+                                  onRefresh: () =>
+                                      _refreshAll(showMessage: true),
+                                  child: ListView.builder(
+                                    physics:
+                                        const AlwaysScrollableScrollPhysics(),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16, vertical: 12),
+                                    itemCount: filteredDoctors.length,
+                                    itemBuilder: (context, index) => Padding(
+                                      padding:
+                                          const EdgeInsets.only(bottom: 16.0),
+                                      child: buildCard(filteredDoctors[index]),
+                                    ),
+                                  ),
                                 );
                               }
                             },
@@ -902,8 +1072,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                 blurRadius: 10,
                 offset: const Offset(0, 2),
               )
-            ]
-        ),
+            ]),
         child: Row(
           children: [
             _buildStatusCard("Total", total.toString(), TColors.primary,
@@ -924,8 +1093,8 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
     );
   }
 
-  Widget _buildStatusCard(String label, String count, Color color,
-      IconData icon) {
+  Widget _buildStatusCard(
+      String label, String count, Color color, IconData icon) {
     return Expanded(
       child: Column(
         children: [
@@ -959,7 +1128,6 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
     );
   }
 
-
   // --- Widget Methods ---
 
   Widget _buildFilterChip(VisitDateFilter filter) {
@@ -981,8 +1149,8 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
       selectedColor: TColors.primary,
       backgroundColor: Colors.grey[200],
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      side: BorderSide(
-          color: isSelected ? TColors.primary : Colors.transparent),
+      side:
+          BorderSide(color: isSelected ? TColors.primary : Colors.transparent),
       showCheckmark: false,
     );
   }
@@ -1059,8 +1227,8 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
 
   // --- Methods from original code (Add Product, Confirm, etc) ---
 
-  void _showProductSelectionBeforeConfirm(BuildContext context,
-      String visitId) async {
+  void _showProductSelectionBeforeConfirm(
+      BuildContext context, String visitId) async {
     // Included via logic flow in cards
   }
 
@@ -1073,103 +1241,111 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
     );
 
     return await showDialog<List<String>>(
-      context: context,
-      builder: (_) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              title: const Text("Select Products (Optional)"),
-              content: SizedBox(
-                height: 500,
-                width: double.maxFinite,
-                child: Obx(() {
-                  if (productController.isLoading.value) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  if (productController.productList.isEmpty) {
-                    return const Center(child: Text("No products available."));
-                  }
+          context: context,
+          builder: (_) {
+            return StatefulBuilder(
+              builder: (context, setState) {
+                return AlertDialog(
+                  title: const Text("Select Products (Optional)"),
+                  content: SizedBox(
+                    height: 500,
+                    width: double.maxFinite,
+                    child: Obx(() {
+                      if (productController.isLoading.value) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      if (productController.productList.isEmpty) {
+                        return const Center(
+                            child: Text("No products available."));
+                      }
 
-                  final filteredList = productController.productList.where((
-                      product) {
-                    return product.name.toLowerCase().contains(
-                        searchQuery.value);
-                  }).toList();
+                      final filteredList =
+                          productController.productList.where((product) {
+                        return product.name
+                            .toLowerCase()
+                            .contains(searchQuery.value);
+                      }).toList();
 
-                  return Column(
-                    children: [
-                      TextField(
-                        decoration: InputDecoration(
-                          prefixIcon: const Icon(Icons.search),
-                          hintText: "Search products...",
-                          border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8)),
-                        ),
-                        onChanged: (value) {
-                          searchQuery.value = value.toLowerCase();
-                        },
-                      ),
-                      const SizedBox(height: 10),
-                      Expanded(
-                        child: filteredList.isEmpty
-                            ? const Center(
-                            child: Text("No matching products found."))
-                            : ListView.builder(
-                          itemCount: filteredList.length,
-                          itemBuilder: (_, i) {
-                            final product = filteredList[i];
-                            final isSelected = selectedProductIds.contains(
-                                product.id);
-                            return CheckboxListTile(
-                              value: isSelected,
-                              title: Text(product.name),
-                              subtitle: Text(product.description ?? ""),
-                              secondary: ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: Image.network(
-                                  product.image ?? '',
-                                  width: 40,
-                                  height: 40,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) =>
-                                  const Icon(Icons.image_not_supported),
-                                ),
-                              ),
-                              onChanged: (val) {
-                                setState(() {
-                                  if (val == true) {
-                                    selectedProductIds.add(product.id);
-                                  } else {
-                                    selectedProductIds.remove(product.id);
-                                  }
-                                });
-                              },
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  );
-                }),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context, <String>[]),
-                  child: const Text("Skip"),
-                ),
-                ElevatedButton(
-                  onPressed: () =>
-                      Navigator.pop(context, selectedProductIds.toList()),
-                  style: ElevatedButton.styleFrom(
-                      backgroundColor: TColors.primary),
-                  child: const Text("Next"),
-                ),
-              ],
+                      return Column(
+                        children: [
+                          TextField(
+                            decoration: InputDecoration(
+                              prefixIcon: const Icon(Icons.search),
+                              hintText: "Search products...",
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8)),
+                            ),
+                            onChanged: (value) {
+                              searchQuery.value = value.toLowerCase();
+                            },
+                          ),
+                          const SizedBox(height: 10),
+                          Expanded(
+                            child: filteredList.isEmpty
+                                ? const Center(
+                                    child: Text("No matching products found."))
+                                : ListView.builder(
+                                    itemCount: filteredList.length,
+                                    itemBuilder: (_, i) {
+                                      final product = filteredList[i];
+                                      final isSelected = selectedProductIds
+                                          .contains(product.id);
+                                      return CheckboxListTile(
+                                        value: isSelected,
+                                        title: Text(product.name),
+                                        subtitle:
+                                            Text(product.description ?? ""),
+                                        secondary: ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                          child: Image.network(
+                                            product.image ?? '',
+                                            width: 40,
+                                            height: 40,
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (_, __, ___) =>
+                                                const Icon(
+                                                    Icons.image_not_supported),
+                                          ),
+                                        ),
+                                        onChanged: (val) {
+                                          setState(() {
+                                            if (val == true) {
+                                              selectedProductIds
+                                                  .add(product.id);
+                                            } else {
+                                              selectedProductIds
+                                                  .remove(product.id);
+                                            }
+                                          });
+                                        },
+                                      );
+                                    },
+                                  ),
+                          ),
+                        ],
+                      );
+                    }),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, <String>[]),
+                      child: const Text("Skip"),
+                    ),
+                    ElevatedButton(
+                      onPressed: () =>
+                          Navigator.pop(context, selectedProductIds.toList()),
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: TColors.primary),
+                      child: const Text("Next"),
+                    ),
+                  ],
+                );
+              },
             );
           },
-        );
-      },
-    ) ?? <String>[];
+        ) ??
+        <String>[];
   }
 
   /* void _confirmVisit(BuildContext context, String visitId, List<String> selectedProducts) async {
@@ -1279,17 +1455,15 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
   // 1. FLOW CONTROLLER
 // --- REPLACED FLOW CONTROLLER ---
   void _handleVisitConfirmationFlow(
-      BuildContext context,
-      VisitSalesLogModel doctorVisit,
-      ) async {
-
+    BuildContext context,
+    VisitSalesLogModel doctorVisit,
+  ) async {
     // ==================================================
     // AREA CHECK
     // ==================================================
 
     if (doctorVisit.doctor?.areaId == null ||
         doctorVisit.doctor!.areaId!.isEmpty) {
-
       await _showAssignAreaBottomSheet(
         context,
         doctorVisit,
@@ -1308,18 +1482,19 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
     // GEO IMAGE CHECK
     // ==================================================
 
-    bool isImageRequired =
-        doctorVisit.doctor?.geoImageStatus == false;
+    final isOffline = await _isDoctorVisitOffline();
+    final hasGeoImage = doctorVisit.doctor?.geoImageStatus == true ||
+        (isOffline && await _hasOfflineDoctorGeoImage(doctorVisit));
+    final isImageRequired = !hasGeoImage;
 
     if (isImageRequired) {
-
-      final bool? success =
-      await Get.to(
-            () => GeoVerificationScreen(
+      final bool? success = await Get.to(
+        () => GeoVerificationScreen(
           doctorId: doctorVisit.doctorId,
-          doctorName:
-          doctorVisit.doctor?.name ??
-              "VisitDoctor",
+          doctorName: doctorVisit.doctor?.name ?? "VisitDoctor",
+          saveOfflineImage: isOffline
+              ? (image) => _saveDoctorGeoImageOffline(doctorVisit, image)
+              : null,
         ),
       );
 
@@ -1334,8 +1509,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
 
     if (!mounted) return;
 
-    List<String> selectedProducts =
-    await _showProductSelectionDialog(
+    List<String> selectedProducts = await _showProductSelectionDialog(
       context,
     );
 
@@ -1346,6 +1520,112 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
       doctorVisit,
       selectedProducts,
     );
+  }
+
+  Future<bool> _hasOfflineDoctorGeoImage(
+    VisitSalesLogModel doctorVisit,
+  ) async {
+    final accountId = await authManager.getUserId();
+    if (accountId == null || accountId.trim().isEmpty) return false;
+
+    DoctorOfflineModule? module;
+    try {
+      module = await DoctorOfflineModule.acquire(accountId: accountId);
+      final ids = <String>{
+        doctorVisit.doctorId.trim(),
+        doctorVisit.doctor?.id.trim() ?? '',
+      }..removeWhere((id) => id.isEmpty);
+
+      for (final doctor in module.controller.allDoctors) {
+        final doctorIds = <String>{
+          doctor.localId,
+          doctor.serverId ?? '',
+          doctor.clientGeneratedId ?? '',
+        }..removeWhere((id) => id.isEmpty);
+        if (!doctorIds.any(ids.contains)) continue;
+
+        if (doctor.geoImageUrl?.trim().isNotEmpty == true) return true;
+        final store = module.controller.creationStore;
+        return store?.hasStoredImage(doctor.geoImageUploadId) ?? false;
+      }
+    } catch (error) {
+      debugPrint('VisitDoctorScreen: Offline geo image lookup failed: $error');
+    } finally {
+      if (module != null) await module.dispose();
+    }
+    return false;
+  }
+
+  Future<bool> _saveDoctorGeoImageOffline(
+    VisitSalesLogModel doctorVisit,
+    File image,
+  ) async {
+    final accountId = await authManager.getUserId();
+    if (accountId == null || accountId.trim().isEmpty) {
+      Get.snackbar(
+        'Authentication required',
+        'Sign in again before saving the geo image.',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      return false;
+    }
+
+    DoctorOfflineModule? module;
+    try {
+      module = await DoctorOfflineModule.acquire(accountId: accountId);
+      final ids = <String>{
+        doctorVisit.doctorId.trim(),
+        doctorVisit.doctor?.id.trim() ?? '',
+      }..removeWhere((id) => id.isEmpty);
+
+      Doctor? cachedDoctor;
+      for (final doctor in module.controller.allDoctors) {
+        final doctorIds = <String>{
+          doctor.localId,
+          doctor.serverId ?? '',
+          doctor.clientGeneratedId ?? '',
+        }..removeWhere((id) => id.isEmpty);
+        if (doctorIds.any(ids.contains)) {
+          cachedDoctor = doctor;
+          break;
+        }
+      }
+
+      final store = module.controller.creationStore;
+      if (cachedDoctor == null || store == null) {
+        Get.snackbar(
+          'Doctor unavailable offline',
+          'This doctor is not present in the offline doctor cache.',
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+        return false;
+      }
+
+      // Reuse the existing encrypted doctor image outbox. Its normal sync
+      // uploads the doctor first when necessary, then posts the image with
+      // the resolved server doctor ID before schedules and confirmations.
+      await store.queueImage(doctor: cachedDoctor, image: image);
+      await module.controller.reloadCreations();
+      return true;
+    } catch (error, stackTrace) {
+      debugPrint('VisitDoctorScreen: Offline geo image save failed: $error');
+      debugPrintStack(stackTrace: stackTrace);
+      return false;
+    } finally {
+      if (module != null) await module.dispose();
+    }
+  }
+
+  Future<bool> _isDoctorVisitOffline() async {
+    if (_visitListController.offlineMode) return true;
+    try {
+      final connectivity = await Connectivity().checkConnectivity();
+      return connectivity.contains(ConnectivityResult.none);
+    } catch (_) {
+      return false;
+    }
   }
 
   // ... [Keep other existing imports] ...
@@ -1404,12 +1684,8 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
             img.Image resizedLogo = img.copyResize(logo, height: logoHeight);
 
             // Draw Logo on the left side
-            img.compositeImage(
-                targetImage,
-                resizedLogo,
-                dstX: 20,
-                dstY: barY + 10
-            );
+            img.compositeImage(targetImage, resizedLogo,
+                dstX: 20, dstY: barY + 10);
           }
         } catch (e) {
           print("Logo not found or could not be loaded: $e");
@@ -1454,7 +1730,8 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
 
         // 7. Save File
         final newImageBytes = img.encodeJpg(targetImage, quality: 90);
-        final File watermarkedFile = File(originalFile.path)..writeAsBytesSync(newImageBytes);
+        final File watermarkedFile = File(originalFile.path)
+          ..writeAsBytesSync(newImageBytes);
 
         return watermarkedFile;
       }
@@ -1466,9 +1743,10 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
       // 8. Close Loader
       Navigator.of(context, rootNavigator: true).pop();
     }
-  }  // 3. API CALL (MULTIPART)
+  } // 3. API CALL (MULTIPART)
+
 // 3. FINAL CONFIRM VISIT (Simplified)
-  void _confirmVisit(BuildContext context,  VisitSalesLogModel doctorVisit,
+  void _confirmVisit(BuildContext context, VisitSalesLogModel doctorVisit,
       List<String> selectedProducts) async {
     bool confirmed = false;
 
@@ -1492,8 +1770,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
     try {
       debugPrint(
           "VisitConfirmationController: ======================================");
-      debugPrint(
-          "VisitConfirmationController: Confirm Visit Started");
+      debugPrint("VisitConfirmationController: Confirm Visit Started");
       debugPrint(
           "VisitConfirmationController: Visit ID = ${doctorVisit.doctorId}");
       debugPrint(
@@ -1512,8 +1789,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
         '${THttpHelper.baseUrl}/doctor-visits/bulk-confirm',
       );
 
-      debugPrint(
-          "VisitConfirmationController: API URL = $uri");
+      debugPrint("VisitConfirmationController: API URL = $uri");
 
       final requestBody = {
         'userLatitude': pos.latitude,
@@ -1525,12 +1801,18 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
       debugPrint(
           "VisitConfirmationController: Request Body = ${jsonEncode(requestBody)}");
 
-      final response = await VisitConfirmationService().confirmVisit(
+      final response = await VisitConfirmationService(
+        // Reuse the screen's listener-backed outbox service so the newly
+        // queued confirmation is uploaded by the same lifecycle-managed
+        // worker and its client is disposed with the screen.
+        syncTrigger: _uploadCoordinator.syncAll,
+      ).confirmVisit(
         visitId: doctorVisit.id,
         doctorLatitude: doctorVisit.doctor!.latitude!,
         doctorLongitude: doctorVisit.doctor!.longitude!,
         position: pos,
         productIds: selectedProducts,
+        localScheduleId: doctorVisit.localScheduleId,
         forceOffline: _visitListController.offlineMode,
       );
 
@@ -1542,8 +1824,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
       debugPrint(
           "VisitConfirmationController: Status Code = ${response.statusCode}");
 
-      debugPrint(
-          "VisitConfirmationController: Response = ${response.body}");
+      debugPrint("VisitConfirmationController: Response = ${response.body}");
 
       if (response.statusCode == 400) {
         final body = jsonDecode(response.body);
@@ -1563,24 +1844,34 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final body = jsonDecode(response.body);
 
-        debugPrint(
-            "VisitConfirmationController: Parsed Response = $body");
+        debugPrint("VisitConfirmationController: Parsed Response = $body");
 
         if (body['status'] != false && body['success'] != false) {
-
           final bool isOffline = body['offline'] == true;
+          final bool isQueued = body['queued'] == true;
 
           Get.snackbar(
-            isOffline ? "Saved Offline" : "Success",
+            isQueued
+                ? "Queued for Sync"
+                : (isOffline ? "Saved Offline" : "Success"),
             body['message'] ??
-                (isOffline
-                    ? "Visit saved offline."
-                    : "Visit Confirmed!"),
+                (isQueued
+                    ? "Visit saved locally and queued for sync."
+                    : (isOffline
+                        ? "Visit saved offline."
+                        : "Visit Confirmed!")),
             backgroundColor: TColors.success,
             colorText: Colors.white,
           );
 
-          if (isOffline) {
+          if (isQueued) {
+            await _visitListController.refreshPendingVisits();
+            await _visitListController.fetchSalesList(
+              filter: _selectedFilter,
+              startDate: _selectedDateRange?.start,
+              endDate: _selectedDateRange?.end,
+            );
+          } else if (isOffline) {
             await _visitListController.refreshPendingVisits();
           } else {
             await _visitListController.fetchSalesList(
@@ -1590,8 +1881,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
             );
           }
         } else {
-          debugPrint(
-              "VisitConfirmationController: API returned status=false");
+          debugPrint("VisitConfirmationController: API returned status=false");
 
           debugPrint(
               "VisitConfirmationController: Message = ${body['message']}");
@@ -1618,11 +1908,9 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
         rootNavigator: true,
       ).pop();
 
-      debugPrint(
-          "VisitConfirmationController: Exception = $e");
+      debugPrint("VisitConfirmationController: Exception = $e");
 
-      debugPrint(
-          "VisitConfirmationController: StackTrace = $stackTrace");
+      debugPrint("VisitConfirmationController: StackTrace = $stackTrace");
 
       QuickAlert.show(
         context: context,
@@ -1631,8 +1919,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
         text: "Visit could not be saved. Please try again.",
       );
     } finally {
-      debugPrint(
-          "VisitConfirmationController: Confirm Visit Finished");
+      debugPrint("VisitConfirmationController: Confirm Visit Finished");
 
       debugPrint(
           "VisitConfirmationController: ======================================");
@@ -1640,7 +1927,8 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
   }
 
   // 2. NEW: UPLOAD DOCTOR GEO IMAGE
-  Future<bool> _uploadDoctorGeoImage(BuildContext context, String doctorId, File imageFile) async {
+  Future<bool> _uploadDoctorGeoImage(
+      BuildContext context, String doctorId, File imageFile) async {
     QuickAlert.show(
       context: context,
       type: QuickAlertType.loading,
@@ -1674,7 +1962,8 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
         stream,
         length,
         filename: 'geo_image.jpg', // Explicit filename
-        contentType: MediaType('image', 'jpeg'), // Explicit Type (Fixes your server error)
+        contentType: MediaType(
+            'image', 'jpeg'), // Explicit Type (Fixes your server error)
       );
 
       request.files.add(multipartFile);
@@ -1685,7 +1974,8 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
       Navigator.of(context, rootNavigator: true).pop(); // Close Loader
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        Get.snackbar("Success", "Photo Uploaded!", backgroundColor: TColors.primary, colorText: Colors.white);
+        Get.snackbar("Success", "Photo Uploaded!",
+            backgroundColor: TColors.primary, colorText: Colors.white);
         return true;
       } else {
         // Show server response for debugging
@@ -1698,22 +1988,29 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
       }
     } catch (e) {
       Navigator.of(context, rootNavigator: true).pop();
-      QuickAlert.show(context: context, type: QuickAlertType.error, text: "Error: $e");
+      QuickAlert.show(
+          context: context, type: QuickAlertType.error, text: "Error: $e");
       return false;
     }
-  }  Future<bool?> _showImagePreviewDialog(BuildContext context, String doctorId, File imageFile) async {
+  }
+
+  Future<bool?> _showImagePreviewDialog(
+      BuildContext context, String doctorId, File imageFile) async {
     return showDialog<bool>(
       context: context,
       barrierDismissible: false, // Force user to choose
       builder: (BuildContext ctx) {
         return Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           child: Padding(
             padding: const EdgeInsets.all(12.0),
             child: Column(
               mainAxisSize: MainAxisSize.min, // Wrap content height
               children: [
-                const Text("Preview", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                const Text("Preview",
+                    style:
+                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 10),
 
                 // --- THE IMAGE PREVIEW ---
@@ -1736,7 +2033,8 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                     Expanded(
                       child: OutlinedButton(
                         onPressed: () {
-                          Navigator.of(ctx).pop(false); // Returns False -> Triggers Retake Loop
+                          Navigator.of(ctx).pop(
+                              false); // Returns False -> Triggers Retake Loop
                         },
                         style: OutlinedButton.styleFrom(
                           foregroundColor: Colors.red,
@@ -1752,10 +2050,12 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                       child: ElevatedButton(
                         onPressed: () async {
                           // Call your existing upload function
-                          bool success = await _uploadDoctorGeoImage(context, doctorId, imageFile);
+                          bool success = await _uploadDoctorGeoImage(
+                              context, doctorId, imageFile);
 
                           if (success) {
-                            Navigator.of(ctx).pop(true); // Returns True -> Moves to Next Step
+                            Navigator.of(ctx).pop(
+                                true); // Returns True -> Moves to Next Step
                           }
                           // If fail, dialog stays open so they can try again
                         },
@@ -1777,18 +2077,14 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
   }
 
   Future<void> _showAssignAreaBottomSheet(
-      BuildContext context,
-      VisitSalesLogModel doctorVisit,
-      ) async {
+    BuildContext context,
+    VisitSalesLogModel doctorVisit,
+  ) async {
+    final allAreas = await _doctorListController.fetchAreas();
 
-    final allAreas =
-    await _doctorListController.fetchAreas();
+    final RxList<dynamic> filteredAreas = allAreas.obs;
 
-    final RxList<dynamic> filteredAreas =
-        allAreas.obs;
-
-    final TextEditingController searchController =
-    TextEditingController();
+    final TextEditingController searchController = TextEditingController();
 
     Get.bottomSheet(
       Container(
@@ -1802,80 +2098,54 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
         ),
         child: Column(
           children: [
-
             TextField(
               controller: searchController,
               decoration: InputDecoration(
                 hintText: "Search Area",
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
-                  borderRadius:
-                  BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12),
                 ),
               ),
               onChanged: (value) {
-
                 filteredAreas.assignAll(
                   allAreas.where(
-                        (e) =>
-                        (e["name"] ?? "")
-                            .toString()
-                            .toLowerCase()
-                            .contains(
+                    (e) => (e["name"] ?? "").toString().toLowerCase().contains(
                           value.toLowerCase(),
                         ),
                   ),
                 );
               },
             ),
-
             const SizedBox(height: 10),
-
             Expanded(
               child: Obx(
-                    () => ListView.builder(
-                  itemCount:
-                  filteredAreas.length,
+                () => ListView.builder(
+                  itemCount: filteredAreas.length,
                   itemBuilder: (_, index) {
-
-                    final area =
-                    filteredAreas[index];
+                    final area = filteredAreas[index];
 
                     return ListTile(
                       title: Text(
                         area["name"] ?? "",
                       ),
                       onTap: () async {
-
                         Get.back();
 
-                        await _doctorListController
-                            .assignAreaToDoctor(
-                          doctorId:
-                          doctorVisit.doctorId,
-                          areaId:
-                          area["id"],
+                        await _doctorListController.assignAreaToDoctor(
+                          doctorId: doctorVisit.doctorId,
+                          areaId: area["id"],
                         );
 
-                        await _visitListController
-                            .fetchSalesList(
-                          filter:
-                          _selectedFilter,
-                          startDate:
-                          _selectedDateRange
-                              ?.start,
-                          endDate:
-                          _selectedDateRange
-                              ?.end,
+                        await _visitListController.fetchSalesList(
+                          filter: _selectedFilter,
+                          startDate: _selectedDateRange?.start,
+                          endDate: _selectedDateRange?.end,
                         );
 
                         final updatedVisit =
-                        _visitListController
-                            .salesList
-                            .firstWhere(
-                              (e) =>
-                          e.id ==
-                              doctorVisit.id,
+                            _visitListController.salesList.firstWhere(
+                          (e) => e.id == doctorVisit.id,
                         );
 
                         _handleVisitConfirmationFlow(
@@ -1888,7 +2158,6 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                 ),
               ),
             ),
-
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
@@ -1897,7 +2166,6 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                   "Area Not Found? Create New",
                 ),
                 onPressed: () {
-
                   Get.back();
 
                   _showAddAreaDialog(
@@ -1913,13 +2181,12 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
     );
   }
 
-
   void _showAreaSelectionSheet(
-      VisitDoctor doctor,
-      String pincode,
-      List offices,
-      VisitSalesLogModel doctorVisit,
-      ) {
+    VisitDoctor doctor,
+    String pincode,
+    List offices,
+    VisitSalesLogModel doctorVisit,
+  ) {
     int selectedIndex = 0;
 
     Get.bottomSheet(
@@ -1936,7 +2203,6 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-
                 const Text(
                   "Select Area",
                   style: TextStyle(
@@ -1944,39 +2210,32 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-
                 const SizedBox(height: 20),
-
                 SizedBox(
                   height: 300,
                   child: ListView.builder(
                     itemCount: offices.length,
                     itemBuilder: (_, index) {
-                      final office =
-                      offices[index];
+                      final office = offices[index];
 
                       return RadioListTile<int>(
                         value: index,
-                        groupValue:
-                        selectedIndex,
+                        groupValue: selectedIndex,
                         title: Text(
                           office['Name'],
                         ),
                         subtitle: Text(
-                          office['Block'] ??
-                              '',
+                          office['Block'] ?? '',
                         ),
                         onChanged: (value) {
                           setState(() {
-                            selectedIndex =
-                            value!;
+                            selectedIndex = value!;
                           });
                         },
                       );
                     },
                   ),
                 ),
-
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -1986,8 +2245,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                     onPressed: () {
                       Get.back();
 
-                      final office =
-                      offices[selectedIndex];
+                      final office = offices[selectedIndex];
 
                       _showCreateAreaForm(
                         doctor,
@@ -2007,11 +2265,11 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
   }
 
   void _showCreateAreaForm(
-      VisitDoctor doctor,
-      Map office,
-      String pincode,
-      VisitSalesLogModel doctorVisit,
-      ) {
+    VisitDoctor doctor,
+    Map office,
+    String pincode,
+    VisitSalesLogModel doctorVisit,
+  ) {
     final areaController = TextEditingController(
       text: office['Name'],
     );
@@ -2030,7 +2288,6 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-
                 Container(
                   height: 90,
                   width: 90,
@@ -2044,9 +2301,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                     size: 50,
                   ),
                 ),
-
                 const SizedBox(height: 20),
-
                 const Text(
                   "Confirm New Area",
                   style: TextStyle(
@@ -2054,9 +2309,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-
                 const SizedBox(height: 8),
-
                 Text(
                   "Review the detected area information before creating it.",
                   textAlign: TextAlign.center,
@@ -2064,9 +2317,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                     color: Colors.grey.shade600,
                   ),
                 ),
-
                 const SizedBox(height: 24),
-
                 TextField(
                   controller: areaController,
                   readOnly: true,
@@ -2078,55 +2329,43 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 20),
-
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: Colors.grey.shade50,
-                    borderRadius:
-                    BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(16),
                     border: Border.all(
                       color: Colors.grey.shade300,
                     ),
                   ),
                   child: Column(
                     children: [
-
                       _infoRow(
                         Icons.pin_drop,
                         "Pincode",
                         pincode,
                       ),
-
                       const Divider(),
-
                       _infoRow(
                         Icons.local_post_office,
                         "Post Office",
                         office['Name'] ?? '',
                       ),
-
                       const Divider(),
-
                       _infoRow(
                         Icons.location_city,
                         "Block",
                         office['Block'] ?? '-',
                       ),
-
                       const Divider(),
-
                       _infoRow(
                         Icons.map,
                         "District",
                         office['District'] ?? '-',
                       ),
-
                       const Divider(),
-
                       _infoRow(
                         Icons.flag,
                         "State",
@@ -2135,12 +2374,9 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                     ],
                   ),
                 ),
-
                 const SizedBox(height: 24),
-
                 Row(
                   children: [
-
                     Expanded(
                       child: OutlinedButton(
                         onPressed: () => Get.back(),
@@ -2149,9 +2385,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                         ),
                       ),
                     ),
-
                     const SizedBox(width: 12),
-
                     Expanded(
                       flex: 2,
                       child: ElevatedButton.icon(
@@ -2162,9 +2396,8 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                           "Create Area",
                         ),
                         onPressed: () async {
-
                           final createdAreaId =
-                          await _doctorListController.createNewArea(
+                              await _doctorListController.createNewArea(
                             name: areaController.text.trim(),
                             pincode: pincode,
                             postOffice: office['Name'],
@@ -2196,8 +2429,8 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
 
 // Find updated visit
                           final updatedVisit =
-                          _visitListController.salesList.firstWhere(
-                                (e) => e.id == doctorVisit.id,
+                              _visitListController.salesList.firstWhere(
+                            (e) => e.id == doctorVisit.id,
                           );
 
 // CONTINUE FLOW
@@ -2221,10 +2454,10 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
   }
 
   Widget _infoRow(
-      IconData icon,
-      String title,
-      String value,
-      ) {
+    IconData icon,
+    String title,
+    String value,
+  ) {
     return Row(
       children: [
         Icon(
@@ -2251,11 +2484,10 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
     );
   }
 
-
   void _showAddAreaDialog(
-      VisitDoctor doctor,
-      VisitSalesLogModel doctorVisit,
-      ){
+    VisitDoctor doctor,
+    VisitSalesLogModel doctorVisit,
+  ) {
     final pinController = TextEditingController();
 
     Get.bottomSheet(
@@ -2271,7 +2503,6 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-
               Container(
                 height: 90,
                 width: 90,
@@ -2285,9 +2516,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                   color: TColors.primary,
                 ),
               ),
-
               const SizedBox(height: 20),
-
               const Text(
                 "Create New Area",
                 style: TextStyle(
@@ -2295,9 +2524,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                   fontWeight: FontWeight.bold,
                 ),
               ),
-
               const SizedBox(height: 8),
-
               Text(
                 "Enter pincode and we'll automatically fetch all available areas and post offices.",
                 textAlign: TextAlign.center,
@@ -2306,9 +2533,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                   height: 1.4,
                 ),
               ),
-
               const SizedBox(height: 20),
-
               Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
@@ -2330,9 +2555,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                   ],
                 ),
               ),
-
               const SizedBox(height: 20),
-
               TextField(
                 controller: pinController,
                 keyboardType: TextInputType.number,
@@ -2350,14 +2573,11 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                     Icons.pin_drop,
                   ),
                   border: OutlineInputBorder(
-                    borderRadius:
-                    BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(16),
                   ),
                 ),
               ),
-
               const SizedBox(height: 20),
-
               SizedBox(
                 width: double.infinity,
                 height: 55,
@@ -2371,9 +2591,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                     ),
                   ),
                   onPressed: () async {
-
-                    final pin =
-                    pinController.text.trim();
+                    final pin = pinController.text.trim();
 
                     if (pin.length != 6) {
                       Get.snackbar(
@@ -2389,14 +2607,11 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                       ),
                     );
 
-                    final data =
-                    jsonDecode(response.body);
+                    final data = jsonDecode(response.body);
 
                     if (data.isEmpty ||
-                        data[0]['Status'] !=
-                            'Success' ||
-                        data[0]['PostOffice'] ==
-                            null) {
+                        data[0]['Status'] != 'Success' ||
+                        data[0]['PostOffice'] == null) {
                       Get.snackbar(
                         "Error",
                         "Invalid Pincode",
@@ -2404,8 +2619,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                       return;
                     }
 
-                    final offices =
-                    data[0]['PostOffice'];
+                    final offices = data[0]['PostOffice'];
 
                     Get.back();
 
@@ -2425,5 +2639,4 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
       isScrollControlled: true,
     );
   }
-  
 }

@@ -25,27 +25,30 @@ const Curve kAnimationCurve = Curves.easeOutQuart;
 class GeoVerificationScreen extends StatefulWidget {
   final String doctorId;
   final String doctorName;
+  final Future<bool> Function(File image)? saveOfflineImage;
 
   const GeoVerificationScreen({
     super.key,
     required this.doctorId,
     this.doctorName = "Doctor",
+    this.saveOfflineImage,
   });
 
   @override
   State<GeoVerificationScreen> createState() => _GeoVerificationScreenState();
 }
 
-class _GeoVerificationScreenState extends State<GeoVerificationScreen> with TickerProviderStateMixin {
+class _GeoVerificationScreenState extends State<GeoVerificationScreen>
+    with TickerProviderStateMixin {
   // Logic Variables
   File? _capturedImage;
   bool _isProcessing = false;
   final AuthManager _authManager = AuthManager();
 
   // Animation Controllers
-  late AnimationController _scanController;     // For the laser scanning effect
-  late AnimationController _pulseController;    // For the capture button pulse
-  late AnimationController _entryController;    // For screen entrance
+  late AnimationController _scanController; // For the laser scanning effect
+  late AnimationController _pulseController; // For the capture button pulse
+  late AnimationController _entryController; // For screen entrance
 
   // Animations
   late Animation<double> _scanAnimation;
@@ -61,17 +64,30 @@ class _GeoVerificationScreenState extends State<GeoVerificationScreen> with Tick
 
   void _setupAnimations() {
     // 1. Scanner Line Animation (Loops)
-    _scanController = AnimationController(vsync: this, duration: const Duration(seconds: 2));
-    _scanAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(parent: _scanController, curve: Curves.easeInOut));
+    _scanController =
+        AnimationController(vsync: this, duration: const Duration(seconds: 2));
+    _scanAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+        CurvedAnimation(parent: _scanController, curve: Curves.easeInOut));
 
     // 2. Pulse Animation (Loops)
-    _pulseController = AnimationController(vsync: this, duration: const Duration(seconds: 2))..repeat(reverse: true);
-    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.05).animate(CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut));
+    _pulseController =
+        AnimationController(vsync: this, duration: const Duration(seconds: 2))
+          ..repeat(reverse: true);
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.05).animate(
+        CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut));
 
     // 3. Entry Animation (One time)
-    _entryController = AnimationController(vsync: this, duration: const Duration(milliseconds: 1200));
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(parent: _entryController, curve: const Interval(0.0, 0.6, curve: Curves.easeOut)));
-    _slideAnimation = Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero).animate(CurvedAnimation(parent: _entryController, curve: const Interval(0.2, 1.0, curve: Curves.easeOutCubic)));
+    _entryController = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 1200));
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+        CurvedAnimation(
+            parent: _entryController,
+            curve: const Interval(0.0, 0.6, curve: Curves.easeOut)));
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero).animate(
+            CurvedAnimation(
+                parent: _entryController,
+                curve: const Interval(0.2, 1.0, curve: Curves.easeOutCubic)));
 
     _entryController.forward();
   }
@@ -111,7 +127,8 @@ class _GeoVerificationScreenState extends State<GeoVerificationScreen> with Tick
         backgroundColor: TColors.primary.withOpacity(0.1), // Pink tint
         colorText: TColors.primary, // Pink text
         snackPosition: SnackPosition.BOTTOM,
-      );    } finally {
+      );
+    } finally {
       _scanController.stop();
       _scanController.reset();
       setState(() => _isProcessing = false);
@@ -129,10 +146,16 @@ class _GeoVerificationScreenState extends State<GeoVerificationScreen> with Tick
       int h = original.height;
       int barHeight = (h * 0.18).toInt();
 
-      img.fillRect(original, x1: 0, y1: h - barHeight, x2: w, y2: h, color: img.ColorRgb8(0, 0, 0));
+      img.fillRect(original,
+          x1: 0,
+          y1: h - barHeight,
+          x2: w,
+          y2: h,
+          color: img.ColorRgb8(0, 0, 0));
 
       try {
-        final ByteData assetData = await rootBundle.load('assets/logos/faviicons_glucks_care_dark.jpg');
+        final ByteData assetData = await rootBundle
+            .load('assets/logos/faviicons_glucks_care_dark.jpg');
         final Uint8List logoBytes = assetData.buffer.asUint8List();
         img.Image? logo = img.decodeImage(logoBytes);
         if (logo != null) {
@@ -153,7 +176,11 @@ class _GeoVerificationScreenState extends State<GeoVerificationScreen> with Tick
       int lineHeight = 40;
 
       void drawLine(String text, int yOffset) {
-        img.drawString(original, text, font: img.arial48, x: textX, y: textYStart + yOffset, color: img.ColorRgb8(255, 255, 255));
+        img.drawString(original, text,
+            font: img.arial48,
+            x: textX,
+            y: textYStart + yOffset,
+            color: img.ColorRgb8(255, 255, 255));
       }
 
       drawLine("$date | $time", 0);
@@ -171,12 +198,16 @@ class _GeoVerificationScreenState extends State<GeoVerificationScreen> with Tick
     HapticFeedback.mediumImpact();
     if (_capturedImage == null) return;
 
+    final saveOfflineImage = widget.saveOfflineImage;
+
     // 1. Loading Popup with Primary Color
     QuickAlert.show(
       context: context,
       type: QuickAlertType.loading,
-      title: "Uploading...",
-      text: "Verifying Location",
+      title: saveOfflineImage == null ? "Uploading..." : "Saving Offline...",
+      text: saveOfflineImage == null
+          ? "Verifying Location"
+          : "Encrypting geo image for sync",
       disableBackBtn: true,
       barrierColor: Colors.black.withOpacity(0.7),
       confirmBtnColor: TColors.primary, // <--- PINK BUTTON
@@ -184,25 +215,51 @@ class _GeoVerificationScreenState extends State<GeoVerificationScreen> with Tick
     );
 
     try {
+      if (saveOfflineImage != null) {
+        final saved = await saveOfflineImage(_capturedImage!);
+        if (mounted) Navigator.pop(context); // Pop Loader
+
+        if (!saved) {
+          QuickAlert.show(
+            context: context,
+            type: QuickAlertType.error,
+            text: "The geo image could not be saved offline.",
+            confirmBtnColor: TColors.primary,
+          );
+          return;
+        }
+
+        Get.back(result: true);
+        Get.snackbar(
+          "Saved Offline",
+          "Geo image saved and will upload when internet returns.",
+          backgroundColor: TColors.primary,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM,
+          margin: const EdgeInsets.all(20),
+          borderRadius: 20,
+          icon: const Icon(Icons.cloud_upload, color: Colors.white),
+          duration: const Duration(seconds: 2),
+        );
+        return;
+      }
+
       String? token = await _authManager.getAuthToken();
       if (token == null) {
         Navigator.pop(context);
         return;
       }
 
-      var uri = Uri.parse('${THttpHelper.baseUrl}/doctors/${widget.doctorId}/geo-image');
+      var uri = Uri.parse(
+          '${THttpHelper.baseUrl}/doctors/${widget.doctorId}/geo-image');
       var request = http.MultipartRequest('POST', uri);
       request.headers.addAll({'Authorization': 'Bearer $token'});
 
       var stream = http.ByteStream(_capturedImage!.openRead());
       var length = await _capturedImage!.length();
-      var multipartFile = http.MultipartFile(
-          'geo_image',
-          stream,
-          length,
+      var multipartFile = http.MultipartFile('geo_image', stream, length,
           filename: 'geo_verification.jpg',
-          contentType: MediaType('image', 'jpeg')
-      );
+          contentType: MediaType('image', 'jpeg'));
       request.files.add(multipartFile);
 
       var response = await http.Response.fromStream(await request.send());
@@ -264,13 +321,16 @@ class _GeoVerificationScreenState extends State<GeoVerificationScreen> with Tick
                 child: SingleChildScrollView(
                   physics: const BouncingScrollPhysics(),
                   child: ConstrainedBox(
-                    constraints: BoxConstraints(minHeight: constraints.maxHeight - MediaQuery.of(context).padding.top),
+                    constraints: BoxConstraints(
+                        minHeight: constraints.maxHeight -
+                            MediaQuery.of(context).padding.top),
                     child: FadeTransition(
                       opacity: _fadeAnimation,
                       child: SlideTransition(
                         position: _slideAnimation,
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 10),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 24.0, vertical: 10),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
@@ -287,7 +347,8 @@ class _GeoVerificationScreenState extends State<GeoVerificationScreen> with Tick
                               // 3. The "Viewfinder" (Camera Area)
                               // This will take available space but have a minimum height
                               SizedBox(
-                                height: constraints.maxHeight * 0.5, // 50% of screen height
+                                height: constraints.maxHeight *
+                                    0.5, // 50% of screen height
                                 child: _buildViewFinder(),
                               ),
 
@@ -342,9 +403,12 @@ class _GeoVerificationScreenState extends State<GeoVerificationScreen> with Tick
             decoration: BoxDecoration(
               color: Colors.white,
               shape: BoxShape.circle,
-              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
+              boxShadow: [
+                BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)
+              ],
             ),
-            child: const Icon(Icons.arrow_back_ios_new, size: 18, color: TColors.primary),
+            child: const Icon(Icons.arrow_back_ios_new,
+                size: 18, color: TColors.primary),
           ),
         ),
         Text(
@@ -370,7 +434,10 @@ class _GeoVerificationScreenState extends State<GeoVerificationScreen> with Tick
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: Colors.white),
         boxShadow: [
-          BoxShadow(color: TColors.primary.withOpacity(0.08), blurRadius: 20, offset: const Offset(0, 10)),
+          BoxShadow(
+              color: TColors.primary.withOpacity(0.08),
+              blurRadius: 20,
+              offset: const Offset(0, 10)),
         ],
       ),
       child: Row(
@@ -381,18 +448,27 @@ class _GeoVerificationScreenState extends State<GeoVerificationScreen> with Tick
               color: TColors.primary_shade50,
               borderRadius: BorderRadius.circular(16),
             ),
-            child: const Icon(Icons.medication_rounded, color: TColors.primary, size: 28),
+            child: const Icon(Icons.medication_rounded,
+                color: TColors.primary, size: 28),
           ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text("VISIT LOCATION", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey, letterSpacing: 1)),
+                const Text("VISIT LOCATION",
+                    style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey,
+                        letterSpacing: 1)),
                 const SizedBox(height: 4),
                 Text(
                   widget.doctorName,
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
+                  style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -403,7 +479,9 @@ class _GeoVerificationScreenState extends State<GeoVerificationScreen> with Tick
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(
-              color: _capturedImage != null ? Colors.green.withOpacity(0.1) : Colors.orange.withOpacity(0.1),
+              color: _capturedImage != null
+                  ? Colors.green.withOpacity(0.1)
+                  : Colors.orange.withOpacity(0.1),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
@@ -411,8 +489,7 @@ class _GeoVerificationScreenState extends State<GeoVerificationScreen> with Tick
               style: TextStyle(
                   color: _capturedImage != null ? Colors.green : Colors.orange,
                   fontWeight: FontWeight.bold,
-                  fontSize: 10
-              ),
+                  fontSize: 10),
             ),
           )
         ],
@@ -428,7 +505,10 @@ class _GeoVerificationScreenState extends State<GeoVerificationScreen> with Tick
         color: Colors.black, // Dark viewfinder background
         borderRadius: BorderRadius.circular(30),
         boxShadow: [
-          BoxShadow(color: TColors.primary.withOpacity(0.2), blurRadius: 30, offset: const Offset(0, 15)),
+          BoxShadow(
+              color: TColors.primary.withOpacity(0.2),
+              blurRadius: 30,
+              offset: const Offset(0, 15)),
         ],
       ),
       child: Stack(
@@ -443,8 +523,7 @@ class _GeoVerificationScreenState extends State<GeoVerificationScreen> with Tick
           ),
 
           // 2. Processing Overlay (Scanning Line)
-          if (_isProcessing)
-            _buildScanningEffect(),
+          if (_isProcessing) _buildScanningEffect(),
 
           // 3. Viewfinder Corners (Custom Paint)
           IgnorePointer(
@@ -470,15 +549,24 @@ class _GeoVerificationScreenState extends State<GeoVerificationScreen> with Tick
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: Colors.white,
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 20)],
+                boxShadow: [
+                  BoxShadow(
+                      color: Colors.black.withOpacity(0.05), blurRadius: 20)
+                ],
               ),
-              child: const Icon(Icons.camera_alt_rounded, size: 50, color: TColors.primary),
+              child: const Icon(Icons.camera_alt_rounded,
+                  size: 50, color: TColors.primary),
             ),
           ),
           const SizedBox(height: 20),
-          Text("CAPTURE EVIDENCE", style: TextStyle(color: TColors.primary_shade800, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
+          Text("CAPTURE EVIDENCE",
+              style: TextStyle(
+                  color: TColors.primary_shade800,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.5)),
           const SizedBox(height: 5),
-          Text("Ensure clear visibility of location", style: TextStyle(color: Colors.grey[500], fontSize: 12)),
+          Text("Ensure clear visibility of location",
+              style: TextStyle(color: Colors.grey[500], fontSize: 12)),
         ],
       ),
     );
@@ -507,16 +595,27 @@ class _GeoVerificationScreenState extends State<GeoVerificationScreen> with Tick
           child: Container(
             height: 70,
             decoration: BoxDecoration(
-              gradient: const LinearGradient(colors: [TColors.primary, TColors.primary_shade400]),
+              gradient: const LinearGradient(
+                  colors: [TColors.primary, TColors.primary_shade400]),
               borderRadius: BorderRadius.circular(20),
-              boxShadow: const [BoxShadow(color: TColors.primary_shadow_dark, blurRadius: 20, offset: Offset(0, 10))],
+              boxShadow: const [
+                BoxShadow(
+                    color: TColors.primary_shadow_dark,
+                    blurRadius: 20,
+                    offset: Offset(0, 10))
+              ],
             ),
             child: const Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(Icons.center_focus_weak, color: Colors.white, size: 28),
                 SizedBox(width: 12),
-                Text("INITIATE CAPTURE", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16, letterSpacing: 1.2)),
+                Text("INITIATE CAPTURE",
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        letterSpacing: 1.2)),
               ],
             ),
           ),
@@ -537,7 +636,7 @@ class _GeoVerificationScreenState extends State<GeoVerificationScreen> with Tick
         Expanded(
           child: _buildPrimaryButton(
             icon: Icons.check_circle_rounded,
-            label: "SUBMIT",
+            label: widget.saveOfflineImage == null ? "SUBMIT" : "SAVE OFFLINE",
             onTap: _submitPhoto,
           ),
         ),
@@ -545,7 +644,10 @@ class _GeoVerificationScreenState extends State<GeoVerificationScreen> with Tick
     );
   }
 
-  Widget _buildPrimaryButton({required IconData icon, required String label, required VoidCallback onTap}) {
+  Widget _buildPrimaryButton(
+      {required IconData icon,
+      required String label,
+      required VoidCallback onTap}) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -553,21 +655,33 @@ class _GeoVerificationScreenState extends State<GeoVerificationScreen> with Tick
         decoration: BoxDecoration(
           color: TColors.success,
           borderRadius: BorderRadius.circular(18),
-          boxShadow: [BoxShadow(color: Colors.green.withOpacity(0.4), blurRadius: 15, offset: const Offset(0, 8))],
+          boxShadow: [
+            BoxShadow(
+                color: Colors.green.withOpacity(0.4),
+                blurRadius: 15,
+                offset: const Offset(0, 8))
+          ],
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(icon, color: Colors.white),
             const SizedBox(width: 8),
-            Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, letterSpacing: 1)),
+            Text(label,
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildSecondaryButton({required IconData icon, required String label, required VoidCallback onTap}) {
+  Widget _buildSecondaryButton(
+      {required IconData icon,
+      required String label,
+      required VoidCallback onTap}) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -582,7 +696,11 @@ class _GeoVerificationScreenState extends State<GeoVerificationScreen> with Tick
           children: [
             Icon(icon, color: TColors.primary),
             const SizedBox(width: 8),
-            Text(label, style: const TextStyle(color: TColors.primary, fontWeight: FontWeight.bold, letterSpacing: 1)),
+            Text(label,
+                style: const TextStyle(
+                    color: TColors.primary,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1)),
           ],
         ),
       ),
@@ -599,7 +717,8 @@ class MeshGradientPainter extends CustomPainter {
   final Color primary;
   final Color secondary;
   final Color tertiary;
-  MeshGradientPainter({required this.primary, required this.secondary, required this.tertiary});
+  MeshGradientPainter(
+      {required this.primary, required this.secondary, required this.tertiary});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -644,25 +763,38 @@ class ViewfinderPainter extends CustomPainter {
 
     // Top Left
     canvas.drawPath(
-      Path()..moveTo(padding, padding + length)..lineTo(padding, padding)..lineTo(padding + length, padding),
+      Path()
+        ..moveTo(padding, padding + length)
+        ..lineTo(padding, padding)
+        ..lineTo(padding + length, padding),
       paint,
     );
     // Top Right
     canvas.drawPath(
-      Path()..moveTo(size.width - padding - length, padding)..lineTo(size.width - padding, padding)..lineTo(size.width - padding, padding + length),
+      Path()
+        ..moveTo(size.width - padding - length, padding)
+        ..lineTo(size.width - padding, padding)
+        ..lineTo(size.width - padding, padding + length),
       paint,
     );
     // Bottom Left
     canvas.drawPath(
-      Path()..moveTo(padding, size.height - padding - length)..lineTo(padding, size.height - padding)..lineTo(padding + length, size.height - padding),
+      Path()
+        ..moveTo(padding, size.height - padding - length)
+        ..lineTo(padding, size.height - padding)
+        ..lineTo(padding + length, size.height - padding),
       paint,
     );
     // Bottom Right
     canvas.drawPath(
-      Path()..moveTo(size.width - padding - length, size.height - padding)..lineTo(size.width - padding, size.height - padding)..lineTo(size.width - padding, size.height - padding - length),
+      Path()
+        ..moveTo(size.width - padding - length, size.height - padding)
+        ..lineTo(size.width - padding, size.height - padding)
+        ..lineTo(size.width - padding, size.height - padding - length),
       paint,
     );
   }
+
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
@@ -698,5 +830,6 @@ class ScannerPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant ScannerPainter oldDelegate) => oldDelegate.scanValue != scanValue;
+  bool shouldRepaint(covariant ScannerPainter oldDelegate) =>
+      oldDelegate.scanValue != scanValue;
 }

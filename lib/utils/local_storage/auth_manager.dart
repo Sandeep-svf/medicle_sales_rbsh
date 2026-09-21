@@ -11,22 +11,19 @@ class AuthManager {
   static const String tokenKey = "token";
   static const String roleKey = "role";
 
-
-
   ///  Save User Data in SharedPreferences
   Future<void> saveUserData(UserModel user) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString(userKey, jsonEncode(user.toJson()));
   }
 
-
-
 // Save list of head offices to SharedPreferences
   Future<void> saveHeadOffices(List<HeadOfficeCustom> headOffices) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
     // Convert the list of HeadOfficeCustom objects to a list of JSON maps
-    List<Map<String, dynamic>> headOfficesJson = headOffices.map((e) => e.toJson()).toList();
+    List<Map<String, dynamic>> headOfficesJson =
+        headOffices.map((e) => e.toJson()).toList();
 
     // Convert the list of JSON maps to a JSON string
     String headOfficesJsonString = jsonEncode(headOfficesJson);
@@ -48,16 +45,14 @@ class AuthManager {
 
       // Convert the list of maps into a list of HeadOfficeCustom objects
       List<HeadOfficeCustom> headOfficesList = decodedList
-          .map((e) => HeadOfficeCustom.fromJson(Map<String, dynamic>.from(e))) // Use HeadOfficeCustom instead of HeadOffice
+          .map((e) => HeadOfficeCustom.fromJson(Map<String, dynamic>.from(
+              e))) // Use HeadOfficeCustom instead of HeadOffice
           .toList();
 
       return headOfficesList;
     }
     return null;
   }
-
-
-
 
   /// Save only User ID
   Future<void> saveUserId(String userId) async {
@@ -77,13 +72,11 @@ class AuthManager {
     await prefs.setString(roleKey, role);
   }
 
-
   /// get user role
   Future<String?> getUserRole() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getString(roleKey);
   }
-
 
   /// Get auth token
   Future<String?> getAuthToken() async {
@@ -91,8 +84,7 @@ class AuthManager {
     return prefs.getString(tokenKey);
   }
 
-
- /* /// Save head office
+  /* /// Save head office
   Future<void> saveHeadOffice(String headOffice) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString(headOfficeKey, headOffice);
@@ -118,6 +110,14 @@ class AuthManager {
       return UserModel.fromJson(jsonDecode(userJson));
     }
     return null;
+  }
+
+  /// Returns the server-configured doctor visit radius in meters.
+  Future<double?> getMeterRange() async {
+    final user = await getUserData();
+    final value = user?.meterRange ?? user?.user?.meterRange;
+    if (value == null || !value.isFinite || value <= 0) return null;
+    return value;
   }
 
   ///  Logout (Clear Data)

@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 
 import '../../../../utils/http/http_client.dart';
+import '../../../../utils/local_storage/auth_manager.dart';
 import '../../../product/model/ProductModel.dart';
 import '../repository/visit_cache_repository.dart';
 
@@ -61,9 +62,14 @@ class DoctorVisitProductController {
     }
 
     try {
-      final response = await _client
-          .get(Uri.parse('${THttpHelper.baseUrl}/products'))
-          .timeout(_requestTimeout);
+      final token = await AuthManager().getAuthToken();
+      final response = await _client.get(
+        Uri.parse('${THttpHelper.baseUrl}/products'),
+        headers: {
+          'Accept': 'application/json',
+          if (token?.isNotEmpty == true) 'Authorization': 'Bearer $token',
+        },
+      ).timeout(_requestTimeout);
 
       if (response.statusCode < 200 || response.statusCode >= 300) {
         debugPrint(

@@ -88,6 +88,11 @@ class Doctor {
     return value == null || value.isEmpty ? 'Unnamed doctor' : value;
   }
 
+  /// Identifier accepted by the geo-image endpoint. Locally-created doctors
+  /// use their client UUID; downloaded doctors use the server ID when the
+  /// backend did not provide a client-generated ID.
+  String get geoImageUploadId => clientGeneratedId ?? serverId ?? localId;
+
   String get displayClinic {
     final value = clinicName?.trim();
     return value == null || value.isEmpty ? 'Clinic not provided' : value;

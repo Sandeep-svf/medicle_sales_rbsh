@@ -1,11 +1,22 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+import '../services/doctor_creation_store.dart';
 
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
+
+import '../../../utils/camera/CameraLocationResult.dart';
+import '../../../utils/camera/image_overlay_utils.dart';
+import '../../../utils/http/http_client.dart';
+import '../../../utils/local_storage/auth_manager.dart';
 
 import '../models/doctor.dart';
+import '../models/pending_doctor_location_request.dart';
 import '../models/doctor_sync_models.dart';
 import '../repositories/doctor_repository.dart';
+import '../repositories/pending_doctor_location_repository.dart';
 import '../repositories/doctor_search_index.dart';
 import '../services/doctor_connectivity_monitor.dart';
 import '../sync/doctor_sync_coordinator.dart';
@@ -20,6 +31,7 @@ class DoctorFilterOption {
 class DoctorOfflineController extends GetxController
     with WidgetsBindingObserver {
   DoctorOfflineController({
+    this.creationStore,
     required DoctorRepository repository,
     required DoctorSyncCoordinator syncCoordinator,
     DoctorConnectivityMonitor? connectivityMonitor,
@@ -31,11 +43,28 @@ class DoctorOfflineController extends GetxController
         _connectivityDebounce = connectivityDebounce,
         _searchIndex = DoctorSearchIndex(const <Doctor>[]);
 
+  final DoctorCreationStore? creationStore;
+  List<Doctor> _downloadedDoctors = const [];
+  List<Doctor> _createdDoctors = const [];
+  Set<String> pendingImageIds = {};
+  String? _capturingImageLocalId;
+  Set<String> _creationIds = {};
+  Timer? _creationTimer;
+  StreamSubscription<void>? _creationSubscription;
+  int _creationRead = 0;
+  String? get uploadMessage => creationStore?.message;
+  bool get isUploading => creationStore?.uploading ?? false;
+  bool get isCapturingImage => _capturingImageLocalId != null;
+
+  bool isCapturingImageFor(Doctor doctor) =>
+      _capturingImageLocalId == doctor.localId;
   final DoctorRepository _repository;
   final DoctorSyncCoordinator _syncCoordinator;
   final DoctorConnectivityMonitor _connectivityMonitor;
   final Duration _connectivityDebounce;
   final DoctorSearchIndex _searchIndex;
+  final PendingDoctorLocationRepository _locationRequestRepository =
+      PendingDoctorLocationRepository();
 
   StreamSubscription<List<Doctor>>? _doctorSubscription;
   StreamSubscription<DoctorSyncStatus>? _statusSubscription;
@@ -91,7 +120,13 @@ class DoctorOfflineController extends GetxController
     if (_initialized || _shutDown) return;
     WidgetsBinding.instance.addObserver(this);
     _syncStatus = _syncCoordinator.status;
+    await reloadCreations();
     _applyDoctors(await _repository.readDoctors());
+    _creationSubscription = creationStore?.changes.listen((_) {
+      _creationTimer?.cancel();
+      _creationTimer = Timer(
+          const Duration(milliseconds: 80), () => unawaited(reloadCreations()));
+    });
 
     _doctorSubscription = _repository.watchDoctors().listen(
       _applyDoctors,
@@ -118,7 +153,7 @@ class DoctorOfflineController extends GetxController
     } catch (_) {}
     _initialized = true;
     _notifyUi();
-    unawaited(_syncCoordinator.synchronize());
+    unawaited(refreshDoctors());
   }
 
   void setSearch(String value) {
@@ -159,14 +194,302 @@ class DoctorOfflineController extends GetxController
     _notifyUi();
   }
 
-  Future<void> refreshDoctors() => _syncCoordinator.synchronize();
+  Future<void> refreshDoctors() async {
+    await _syncCoordinator.synchronize();
+    final store = creationStore;
+    if (store == null || _shutDown) return;
+    try {
+      await store.reconcileDownloaded(await _repository.readDoctors());
+      await store.synchronize();
+      await reloadCreations();
+      await _syncPendingLocationRequests();
+    } catch (_) {
+      if (!_shutDown) {
+        _selectionNotice =
+            'Saved doctors could not be synchronized. Refresh to retry.';
+        _notifyUi();
+      }
+    }
+  }
+
+  Future<void> addGeoImage(Doctor doctor) async {
+    final store = creationStore;
+    if (store == null ||
+        _capturingImageLocalId != null ||
+        doctor.geoImageUrl?.trim().isNotEmpty == true) {
+      return;
+    }
+    _capturingImageLocalId = doctor.localId;
+    _notifyUi();
+    try {
+      final result = await CameraLocationService.captureImageWithLocation();
+      if (result == null) return;
+      final image = await ImageOverlayUtil.addOverlay(
+        original: result.image,
+        lat: result.latitude,
+        lng: result.longitude,
+      );
+      await store.queueImage(doctor: doctor, image: image);
+      await reloadCreations();
+      await store.synchronize();
+      // The upload response is persisted in the local outbox first. Pull the
+      // server delta afterward so the encrypted doctor cache receives the
+      // canonical geoImageUrl and syncVersion before the list is rebuilt.
+      await refreshDoctors();
+    } catch (_) {
+      _selectionNotice = 'The geo image could not be saved. Please try again.';
+      _notifyUi();
+    } finally {
+      _capturingImageLocalId = null;
+      _notifyUi();
+    }
+  }
+
+  Future<void> requestDoctorLocation(Doctor doctor,
+      {required double latitude, required double longitude}) async {
+    final doctorId = doctor.serverId ?? doctor.localId;
+    final accountId = await AuthManager().getUserId() ?? '';
+    try {
+      if (!await _connectivityMonitor.isNetworkAvailable()) {
+        await _queueLocationRequest(
+          doctor: doctor,
+          accountId: accountId,
+          latitude: latitude,
+          longitude: longitude,
+        );
+        return;
+      }
+
+      final approvalRequired = await _sendLocationRequest(
+        doctorId: doctorId,
+        latitude: latitude,
+        longitude: longitude,
+      );
+      _showLocationRequestResult(approvalRequired: approvalRequired);
+    } on TimeoutException {
+      await _queueLocationRequest(
+        doctor: doctor,
+        accountId: accountId,
+        latitude: latitude,
+        longitude: longitude,
+      );
+    } on SocketException {
+      await _queueLocationRequest(
+        doctor: doctor,
+        accountId: accountId,
+        latitude: latitude,
+        longitude: longitude,
+      );
+    } on http.ClientException {
+      await _queueLocationRequest(
+        doctor: doctor,
+        accountId: accountId,
+        latitude: latitude,
+        longitude: longitude,
+      );
+    } on _RetryableDoctorLocationRequest {
+      await _queueLocationRequest(
+        doctor: doctor,
+        accountId: accountId,
+        latitude: latitude,
+        longitude: longitude,
+      );
+    } catch (error) {
+      Get.snackbar(
+        'Location Request Failed',
+        error.toString().replaceFirst('Exception: ', ''),
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
+  }
+
+  Future<void> _queueLocationRequest({
+    required Doctor doctor,
+    required String accountId,
+    required double latitude,
+    required double longitude,
+  }) async {
+    final requestKey = '$accountId:${doctor.localId}';
+    await _locationRequestRepository.upsert(
+      PendingDoctorLocationRequest(
+        requestKey: requestKey,
+        accountId: accountId,
+        localDoctorId: doctor.localId,
+        requestedDoctorId: doctor.serverId ?? doctor.localId,
+        latitude: latitude,
+        longitude: longitude,
+        createdAt: DateTime.now().toUtc(),
+      ),
+    );
+    _selectionNotice =
+        'Location request saved offline. It will be sent when internet is available.';
+    _notifyUi();
+    Get.snackbar(
+      'Saved Offline',
+      'The location request will be sent when internet is available.',
+      backgroundColor: Colors.orange,
+      colorText: Colors.white,
+    );
+  }
+
+  Future<void> _syncPendingLocationRequests() async {
+    final accountId = await AuthManager().getUserId();
+    if (accountId == null || accountId.isEmpty) return;
+    if (!await _connectivityMonitor.isNetworkAvailable()) return;
+
+    final requests = await _locationRequestRepository.getForAccount(accountId);
+    for (final request in requests) {
+      final doctor = _searchIndex.find(request.localDoctorId);
+      // A locally-created doctor must be created first so the location request
+      // can use its server ID instead of the local UUID.
+      final doctorId = doctor?.serverId ?? request.requestedDoctorId;
+      if (doctor?.localSyncState == DoctorLocalSyncState.pendingCreate &&
+          doctor?.serverId == null) {
+        continue;
+      }
+      try {
+        await _sendLocationRequest(
+          doctorId: doctorId,
+          latitude: request.latitude,
+          longitude: request.longitude,
+        );
+        await _locationRequestRepository.delete(request.requestKey);
+        _selectionNotice = 'Location request sent for admin approval.';
+        _notifyUi();
+      } on TimeoutException {
+        break;
+      } on SocketException {
+        break;
+      } on http.ClientException {
+        break;
+      } on _RetryableDoctorLocationRequest {
+        break;
+      } catch (_) {
+        // Keep rejected requests visible for a later retry or manual review.
+      }
+    }
+  }
+
+  Future<bool> _sendLocationRequest({
+    required String doctorId,
+    required double latitude,
+    required double longitude,
+  }) async {
+    final token = await AuthManager().getAuthToken();
+    if (token == null || token.isEmpty) {
+      throw StateError('Authentication failed. Please login again.');
+    }
+    final response = await http
+        .put(
+          Uri.parse('${THttpHelper.baseUrl}/doctors/$doctorId'),
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: jsonEncode({'latitude': latitude, 'longitude': longitude}),
+        )
+        .timeout(const Duration(seconds: 30));
+    Map<String, dynamic> body = const {};
+    try {
+      body = Map<String, dynamic>.from(jsonDecode(response.body) as Map);
+    } catch (_) {}
+    if (response.statusCode == 408 || response.statusCode >= 500) {
+      throw const _RetryableDoctorLocationRequest();
+    }
+    if (response.statusCode != 200 || body['success'] != true) {
+      throw StateError(body['message']?.toString() ??
+          'The location request could not be submitted.');
+    }
+    return body['approvalRequired'] == true;
+  }
+
+  void _showLocationRequestResult({required bool approvalRequired}) {
+    Get.snackbar(
+      approvalRequired ? 'Location Request Submitted' : 'Location Updated',
+      approvalRequired
+          ? 'Doctor location is pending admin approval.'
+          : 'Doctor location updated successfully.',
+      backgroundColor: Colors.green,
+      colorText: Colors.white,
+    );
+    _selectionNotice = approvalRequired
+        ? 'Location update request is pending admin approval.'
+        : 'Doctor location updated successfully.';
+    _notifyUi();
+  }
+
+  Future<void> reloadCreations() async {
+    final store = creationStore;
+    if (store == null || _shutDown) return;
+    final generation = ++_creationRead;
+    try {
+      final records = await store.readDoctors();
+      final images = await store.pendingImages();
+      final ids = await store.localIds();
+      if (_shutDown || generation != _creationRead) return;
+      _createdDoctors = records;
+      pendingImageIds = images;
+      _creationIds = ids;
+      _mergeDoctors();
+    } catch (_) {
+      if (!_shutDown) {
+        _selectionNotice =
+            'Saved doctor data could not be read. Reopen Offline Doctors.';
+        _notifyUi();
+      }
+    }
+  }
 
   Future<void> rebuildOfflineCache() {
     return _syncCoordinator.synchronize(rebuildBootstrap: true);
   }
 
   void _applyDoctors(List<Doctor> doctors) {
+    _downloadedDoctors = doctors;
+    _mergeDoctors();
+  }
+
+  void _mergeDoctors() {
     if (_shutDown) return;
+    final byClient = <String, Doctor>{};
+    final byServer = <String, Doctor>{};
+    for (final local in _createdDoctors) {
+      if (local.clientGeneratedId != null) {
+        byClient[local.clientGeneratedId!] = local;
+      }
+      if (local.serverId != null) byServer[local.serverId!] = local;
+    }
+    final merged = <String, Doctor>{
+      for (final d in _createdDoctors) d.localId: d
+    };
+    for (final remote in _downloadedDoctors) {
+      final local =
+          byClient[remote.clientGeneratedId] ?? byServer[remote.serverId];
+      if (local == null) {
+        final id = _creationIds.contains(remote.clientGeneratedId)
+            ? remote.clientGeneratedId!
+            : remote.localId;
+        merged[id] = remote.copyWith(localId: id);
+      } else if (remote.syncVersion != null &&
+          (local.syncVersion == null ||
+              remote.syncVersion! >= local.syncVersion!)) {
+        // Keep the local navigation identity when the download catches up.
+        final remoteHasImage = remote.geoImageUrl?.trim().isNotEmpty == true;
+        final localHasImage = local.geoImageUrl?.trim().isNotEmpty == true;
+        // Keep a locally confirmed upload visible if the delta page still
+        // contains an older server version without the image. The next delta
+        // replaces it once the server returns the canonical URL.
+        merged[local.localId] = remote.copyWith(
+          localId: local.localId,
+          geoImageUrl: !remoteHasImage && localHasImage
+              ? local.geoImageUrl
+              : remote.geoImageUrl,
+        );
+      }
+    }
+    final doctors = merged.values.toList();
     final previousSelectedId = _selectedLocalId;
     _allDoctors = List<Doctor>.unmodifiable(doctors);
     _searchIndex.rebuild(_allDoctors);
@@ -192,7 +515,7 @@ class DoctorOfflineController extends GetxController
       _connectivityTimer?.cancel();
       _connectivityTimer = Timer(_connectivityDebounce, () {
         if (!_shutDown && _networkAvailable) {
-          unawaited(_syncCoordinator.synchronize());
+          unawaited(refreshDoctors());
         }
       });
     }
@@ -201,7 +524,7 @@ class DoctorOfflineController extends GetxController
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed && !_shutDown) {
-      unawaited(_syncCoordinator.synchronize());
+      unawaited(refreshDoctors());
     }
   }
 
@@ -255,6 +578,9 @@ class DoctorOfflineController extends GetxController
     _shutDown = true;
     WidgetsBinding.instance.removeObserver(this);
     _connectivityTimer?.cancel();
+    _creationTimer?.cancel();
+    await _creationSubscription?.cancel();
+    await creationStore?.close();
     await _doctorSubscription?.cancel();
     await _statusSubscription?.cancel();
     await _connectivitySubscription?.cancel();
@@ -265,4 +591,10 @@ class DoctorOfflineController extends GetxController
     unawaited(shutdown());
     super.onClose();
   }
+}
+
+// A timeout/5xx response is safe to retry from the local outbox. Validation
+// and authorization errors remain visible instead of being retried forever.
+class _RetryableDoctorLocationRequest implements Exception {
+  const _RetryableDoctorLocationRequest();
 }

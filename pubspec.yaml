@@ -104,6 +104,7 @@ dependencies:
   open_filex: ^4.4.0
   stylish_bottom_bar: ^1.1.0
 
+  http_parser: ^4.0.2
   sqflite: ^2.2.0+1
   awesome_dialog: ^3.2.1
   path: ^1.8.3

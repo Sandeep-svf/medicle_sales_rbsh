@@ -42,7 +42,7 @@ class _DoctorOfflineEntryScreenState extends State<DoctorOfflineEntryScreen> {
       _error = null;
     });
     try {
-      final module = await DoctorOfflineModule.initialize(
+      final module = await DoctorOfflineModule.acquire(
         accountId: widget.accountId,
         authorizedScopeId: widget.authorizedScopeId,
         deltaHeadOfficeId: widget.deltaHeadOfficeId,

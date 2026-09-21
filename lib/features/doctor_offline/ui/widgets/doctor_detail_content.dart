@@ -9,17 +9,20 @@ class DoctorDetailContent extends StatelessWidget {
   const DoctorDetailContent({
     super.key,
     required this.doctor,
+    this.localPhoto,
     this.padding = const EdgeInsets.all(TSizes.md),
   });
 
   final Doctor doctor;
+  final Widget? localPhoto;
   final EdgeInsetsGeometry padding;
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final wide = constraints.maxWidth >= 900;
+        final landscapeTablet = constraints.maxWidth >= 700 &&
+            constraints.maxWidth > constraints.maxHeight;
         return SingleChildScrollView(
           key: PageStorageKey<String>('doctor_detail_${doctor.localId}'),
           padding: padding,
@@ -31,11 +34,19 @@ class DoctorDetailContent extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   _ProfileHeader(doctor: doctor),
-                  SizedBox(height: wide ? TSizes.lg : TSizes.md),
-                  if (wide)
-                    _WideDetails(doctor: doctor)
-                  else
+                  const SizedBox(height: TSizes.sm),
+                  _ProfileQuickFacts(doctor: doctor),
+                  SizedBox(height: landscapeTablet ? TSizes.lg : TSizes.md),
+                  if (landscapeTablet)
+                    _LandscapeTabbedDetails(
+                      doctor: doctor,
+                      localPhoto: localPhoto,
+                    )
+                  else ...[
+                    if (localPhoto != null) localPhoto!,
+                    if (localPhoto != null) const SizedBox(height: TSizes.md),
                     _CompactDetails(doctor: doctor),
+                  ],
                   const SizedBox(height: TSizes.lg),
                 ],
               ),
@@ -74,44 +85,221 @@ class _CompactDetails extends StatelessWidget {
   }
 }
 
-class _WideDetails extends StatelessWidget {
-  const _WideDetails({required this.doctor});
+class _ProfileQuickFacts extends StatelessWidget {
+  const _ProfileQuickFacts({required this.doctor});
 
   final Doctor doctor;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          flex: 5,
-          child: Column(
-            children: [
-              _ContactCard(doctor: doctor),
-              const SizedBox(height: TSizes.lg),
-              _BasicInformationCard(doctor: doctor),
-              const SizedBox(height: TSizes.lg),
-              _HeadOfficeCard(doctor: doctor),
-              const SizedBox(height: TSizes.lg),
-              _AccountMetadataCard(doctor: doctor),
-            ],
+    final facts = [
+      _QuickFact(
+        icon: Icons.local_hospital_outlined,
+        label: 'Clinic',
+        value: doctor.displayClinic,
+      ),
+      _QuickFact(
+        icon: Icons.business_outlined,
+        label: 'Head office',
+        value: _valueOrNotAvailable(doctor.headOfficeName),
+      ),
+      _QuickFact(
+        icon: Icons.map_outlined,
+        label: 'Area',
+        value: _valueOrNotAvailable(doctor.areaName),
+      ),
+      _QuickFact(
+        icon: Icons.location_on_outlined,
+        label: 'Coordinates',
+        value: doctor.hasValidCoordinates ? 'Available' : 'Not available',
+      ),
+    ];
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final columns = constraints.maxWidth >= 700 ? 4 : 2;
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: facts.length,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: columns,
+            crossAxisSpacing: TSizes.sm,
+            mainAxisSpacing: TSizes.sm,
+            mainAxisExtent: 76,
           ),
-        ),
-        const SizedBox(width: TSizes.lg),
-        Expanded(
-          flex: 7,
-          child: Column(
-            children: [
-              _LocationCard(doctor: doctor, height: 280),
-              const SizedBox(height: TSizes.lg),
-              _GeoImageCard(doctor: doctor, height: 280),
-              const SizedBox(height: TSizes.lg),
-              _PracticeCard(doctor: doctor),
-            ],
+          itemBuilder: (context, index) => facts[index],
+        );
+      },
+    );
+  }
+}
+
+class _QuickFact extends StatelessWidget {
+  const _QuickFact({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: TSizes.sm, vertical: 10),
+      decoration: BoxDecoration(
+        color: TColors.white,
+        borderRadius: BorderRadius.circular(TSizes.cardRadiusMd),
+        border: Border.all(color: TColors.primary.withValues(alpha: 0.16)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(7),
+            decoration: BoxDecoration(
+              color: TColors.primary.withValues(alpha: 0.09),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, size: 18, color: TColors.primary),
           ),
+          const SizedBox(width: TSizes.sm),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  label.toUpperCase(),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: Colors.grey.shade600,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: .4,
+                      ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: TColors.textPrimary,
+                        fontWeight: FontWeight.w700,
+                      ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LandscapeTabbedDetails extends StatelessWidget {
+  const _LandscapeTabbedDetails({
+    required this.doctor,
+    required this.localPhoto,
+  });
+
+  final Doctor doctor;
+  final Widget? localPhoto;
+
+  @override
+  Widget build(BuildContext context) {
+    return DefaultTabController(
+      length: 4,
+      child: Container(
+        decoration: _cardDecoration(),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Material(
+              color: TColors.primary.withValues(alpha: 0.05),
+              child: TabBar(
+                isScrollable: true,
+                tabAlignment: TabAlignment.start,
+                labelColor: TColors.primary,
+                unselectedLabelColor: Colors.grey.shade600,
+                indicatorColor: TColors.primary,
+                indicatorWeight: 3,
+                indicatorSize: TabBarIndicatorSize.tab,
+                labelStyle: const TextStyle(fontWeight: FontWeight.w800),
+                unselectedLabelStyle:
+                    const TextStyle(fontWeight: FontWeight.w600),
+                labelPadding: const EdgeInsets.symmetric(horizontal: TSizes.md),
+                dividerColor: Colors.transparent,
+                tabs: const [
+                  Tab(icon: Icon(Icons.person_outline), text: 'Overview'),
+                  Tab(
+                      icon: Icon(Icons.local_hospital_outlined),
+                      text: 'Practice'),
+                  Tab(
+                      icon: Icon(Icons.location_on_outlined),
+                      text: 'Location & Media'),
+                  Tab(icon: Icon(Icons.sync_outlined), text: 'System'),
+                ],
+              ),
+            ),
+            SizedBox(
+              height: 680,
+              child: TabBarView(
+                children: [
+                  _DetailsTab(
+                    children: [
+                      _ContactCard(doctor: doctor),
+                      const SizedBox(height: TSizes.md),
+                      _BasicInformationCard(doctor: doctor),
+                    ],
+                  ),
+                  _DetailsTab(
+                    children: [
+                      _PracticeCard(doctor: doctor),
+                      const SizedBox(height: TSizes.md),
+                      _HeadOfficeCard(doctor: doctor),
+                    ],
+                  ),
+                  _DetailsTab(
+                    children: [
+                      _LocationCard(doctor: doctor, height: 250),
+                      const SizedBox(height: TSizes.md),
+                      if (localPhoto != null) localPhoto!,
+                      if (localPhoto != null) const SizedBox(height: TSizes.md),
+                      _GeoImageCard(doctor: doctor, height: 250),
+                    ],
+                  ),
+                  _DetailsTab(
+                    children: [
+                      _AccountMetadataCard(doctor: doctor),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
+    );
+  }
+}
+
+class _DetailsTab extends StatelessWidget {
+  const _DetailsTab({required this.children});
+
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(TSizes.md),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: children,
+      ),
     );
   }
 }
@@ -124,26 +312,60 @@ class _ProfileHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final priority = _PriorityPresentation.from(doctor.priority);
-    return _StyledCard(
+    final synced = doctor.localSyncState == DoctorLocalSyncState.synced;
+    return Container(
+      padding: const EdgeInsets.all(TSizes.lg),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(TSizes.cardRadiusLg),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            TColors.primary.withValues(alpha: 0.14),
+            TColors.primary.withValues(alpha: 0.035),
+            TColors.white,
+          ],
+        ),
+        border: Border.all(color: TColors.primary.withValues(alpha: 0.28)),
+        boxShadow: [
+          BoxShadow(
+            color: TColors.primary.withValues(alpha: 0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.all(3),
+            padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
+              color: TColors.white,
               border: Border.all(
                 color: TColors.primary.withValues(alpha: 0.5),
                 width: 2,
               ),
+              boxShadow: [
+                BoxShadow(
+                  color: TColors.primary.withValues(alpha: 0.16),
+                  blurRadius: 12,
+                ),
+              ],
             ),
-            child: CircleAvatar(
-              radius: 35,
-              backgroundColor: TColors.primary.withValues(alpha: 0.1),
-              child: const Icon(
-                Icons.person,
-                color: TColors.primary,
-                size: 40,
+            child: Hero(
+              tag: 'doctor_avatar_${doctor.localId}',
+              child: CircleAvatar(
+                radius: 38,
+                backgroundColor: TColors.primary.withValues(alpha: 0.1),
+                child: Text(
+                  _initial(doctor.displayName),
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        color: TColors.primary,
+                        fontWeight: FontWeight.w800,
+                      ),
+                ),
               ),
             ),
           ),
@@ -155,52 +377,93 @@ class _ProfileHeader extends StatelessWidget {
                 Wrap(
                   spacing: TSizes.sm,
                   runSpacing: TSizes.sm,
-                  alignment: WrapAlignment.spaceBetween,
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     Text(
                       doctor.displayName,
                       style:
                           Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                color: Colors.black87,
-                                fontWeight: FontWeight.w700,
+                                color: TColors.textPrimary,
+                                fontWeight: FontWeight.w800,
                               ),
                     ),
                     _PriorityBadge(presentation: priority),
                   ],
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: TSizes.xs),
                 Text(
                   _valueOrNotAvailable(doctor.specialization),
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: Colors.grey.shade600,
-                        fontWeight: FontWeight.w500,
+                        color: TColors.primary_shade700,
+                        fontWeight: FontWeight.w700,
                       ),
                 ),
-                const SizedBox(height: TSizes.sm),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                const SizedBox(height: TSizes.md),
+                Wrap(
+                  spacing: TSizes.sm,
+                  runSpacing: TSizes.sm,
                   children: [
-                    Icon(
-                      Icons.location_on,
-                      size: 14,
-                      color: Colors.grey.shade500,
+                    _HeaderStatusChip(
+                      icon: synced
+                          ? Icons.cloud_done_outlined
+                          : Icons.cloud_off_outlined,
+                      label: synced ? 'Synced' : 'Offline pending',
+                      color: synced ? TColors.success : TColors.warning,
                     ),
-                    const SizedBox(width: TSizes.xs),
-                    Expanded(
-                      child: Text(
-                        _valueOrNotAvailable(doctor.location),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Colors.grey.shade600,
-                            ),
-                      ),
+                    _HeaderStatusChip(
+                      icon: Icons.location_on_outlined,
+                      label: _valueOrNotAvailable(doctor.location),
+                      color: TColors.primary,
                     ),
                   ],
                 ),
               ],
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _initial(String value) {
+    final normalized = value.trim();
+    return normalized.isEmpty ? '?' : normalized.substring(0, 1).toUpperCase();
+  }
+}
+
+class _HeaderStatusChip extends StatelessWidget {
+  const _HeaderStatusChip({
+    required this.icon,
+    required this.label,
+    required this.color,
+  });
+
+  final IconData icon;
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: color.withValues(alpha: 0.25)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 15, color: color),
+          const SizedBox(width: 5),
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: color,
+                  fontWeight: FontWeight.w700,
+                ),
           ),
         ],
       ),

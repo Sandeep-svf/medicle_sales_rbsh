@@ -1,4 +1,10 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import '../controllers/offline_doctor_create_controller.dart';
+import 'offline_doctor_create_screen.dart';
+import 'doctor_location_picker.dart';
+import '../services/doctor_area_assignment_service.dart';
+import 'doctor_area_assignment_screen.dart';
 import 'package:get/get.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
@@ -83,6 +89,17 @@ class _DoctorOfflineScreenState extends State<DoctorOfflineScreen> {
               ),
             ],
           ),
+          floatingActionButton: controller.creationStore == null
+              ? null
+              : FloatingActionButton.extended(
+                  onPressed: () => _addDoctor(context, controller),
+                  backgroundColor: TColors.primary,
+                  foregroundColor: TColors.white,
+                  icon: const Icon(Icons.person_add_alt_1),
+                  label: const Text('Add Doctor'),
+                  tooltip: 'Add doctor offline',
+                ),
+          floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
           body: SafeArea(
             child: LayoutBuilder(
               builder: (context, constraints) {
@@ -103,6 +120,13 @@ class _DoctorOfflineScreenState extends State<DoctorOfflineScreen> {
                           child: Column(
                             children: [
                               DoctorSyncBanner(controller: controller),
+                              if (controller.isUploading ||
+                                  controller.uploadMessage != null)
+                                Padding(
+                                    padding: const EdgeInsets.only(top: 8),
+                                    child: Text(controller.isUploading
+                                        ? 'Uploading saved doctors and photos…'
+                                        : controller.uploadMessage!)),
                               const SizedBox(height: TSizes.md),
                               DoctorFilterBar(
                                 controller: controller,
@@ -132,6 +156,12 @@ class _DoctorOfflineScreenState extends State<DoctorOfflineScreen> {
                             ),
                           );
                         },
+                        onAddGeoImage: (doctor) =>
+                            controller.addGeoImage(doctor),
+                        onRequestLocation: (doctor) =>
+                            _requestLocation(context, controller, doctor),
+                        onAddArea: (doctor) =>
+                            _assignArea(context, controller, doctor),
                       ),
                     ],
                   ),
@@ -142,6 +172,67 @@ class _DoctorOfflineScreenState extends State<DoctorOfflineScreen> {
         );
       },
     );
+  }
+
+  Future<void> _addDoctor(
+      BuildContext context, DoctorOfflineController controller) async {
+    final form = OfflineDoctorCreateController(
+        store: controller.creationStore!, cachedDoctors: controller.allDoctors);
+    form.onInit();
+    try {
+      final saved = await Navigator.of(context).push<bool>(MaterialPageRoute(
+          builder: (_) => OfflineDoctorCreateScreen(controller: form)));
+      if (saved == true) {
+        await controller.reloadCreations();
+        unawaited(controller.refreshDoctors());
+      }
+    } finally {
+      form.onClose();
+    }
+  }
+
+  Future<void> _requestLocation(BuildContext context,
+      DoctorOfflineController controller, Doctor doctor) async {
+    final result = await Navigator.of(context).push<Map<String, dynamic>>(
+      MaterialPageRoute(builder: (_) => const OfflineDoctorLocationPicker()),
+    );
+    if (result == null || !context.mounted) return;
+    await controller.requestDoctorLocation(
+      doctor,
+      latitude: (result['latitude'] as num).toDouble(),
+      longitude: (result['longitude'] as num).toDouble(),
+    );
+  }
+
+  Future<void> _assignArea(BuildContext context,
+      DoctorOfflineController controller, Doctor doctor) async {
+    final service = DoctorAreaAssignmentService();
+    try {
+      List<DoctorAreaOption> areas = const [];
+      try {
+        areas = await service.fetchAreas();
+      } catch (_) {
+        // Pincode lookup can still create an area if the existing list fails.
+      }
+      if (!context.mounted) return;
+      await Navigator.of(context).push(MaterialPageRoute(
+        builder: (_) => DoctorAreaAssignmentScreen(
+          doctors: [PendingAreaDoctor.fromDoctor(doctor)],
+          areas: areas,
+          service: service,
+        ),
+      ));
+      await controller.refreshDoctors();
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('Could not load areas. Please try again online.')),
+        );
+      }
+    } finally {
+      await service.close();
+    }
   }
 
   Future<void> _confirmRebuild(
@@ -232,11 +323,17 @@ class _DoctorCollection extends StatelessWidget {
     required this.controller,
     required this.availableWidth,
     required this.onDoctorTap,
+    this.onAddGeoImage,
+    this.onRequestLocation,
+    this.onAddArea,
   });
 
   final DoctorOfflineController controller;
   final double availableWidth;
   final ValueChanged<Doctor> onDoctorTap;
+  final ValueChanged<Doctor>? onAddGeoImage;
+  final ValueChanged<Doctor>? onRequestLocation;
+  final ValueChanged<Doctor>? onAddArea;
 
   @override
   Widget build(BuildContext context) {
@@ -256,9 +353,18 @@ class _DoctorCollection extends StatelessWidget {
           itemBuilder: (context, index) {
             final doctor = doctors[index];
             return DoctorListCard(
+              imagePending:
+                  controller.pendingImageIds.contains(doctor.geoImageUploadId),
+              imageActionBusy: controller.isCapturingImageFor(doctor),
               doctor: doctor,
               selected: controller.selectedDoctor?.localId == doctor.localId,
               onTap: () => onDoctorTap(doctor),
+              onAddGeoImage: doctor.geoImageUrl?.trim().isNotEmpty == true
+                  ? null
+                  : () => onAddGeoImage?.call(doctor),
+              onRequestLocation: () => onRequestLocation?.call(doctor),
+              onAddArea:
+                  doctor.areaId == null ? () => onAddArea?.call(doctor) : null,
             );
           },
           separatorBuilder: (_, __) => const SizedBox(height: TSizes.md),
@@ -267,27 +373,53 @@ class _DoctorCollection extends StatelessWidget {
     }
 
     final columns = availableWidth < 950 ? 2 : 3;
-    final textScale = MediaQuery.textScalerOf(context).scale(1);
-    final extraHeight = ((textScale - 1).clamp(0, 1) * 120).toDouble();
+    final doctorColumns = List.generate(columns, (_) => <Doctor>[]);
+    for (var index = 0; index < doctors.length; index++) {
+      doctorColumns[index % columns].add(doctors[index]);
+    }
+
+    Widget buildCard(Doctor doctor) {
+      return DoctorListCard(
+        imagePending:
+            controller.pendingImageIds.contains(doctor.geoImageUploadId),
+        imageActionBusy: controller.isCapturingImageFor(doctor),
+        doctor: doctor,
+        selected: controller.selectedDoctor?.localId == doctor.localId,
+        onTap: () => onDoctorTap(doctor),
+        onAddGeoImage: doctor.geoImageUrl?.trim().isNotEmpty == true
+            ? null
+            : () => onAddGeoImage?.call(doctor),
+        onRequestLocation: () => onRequestLocation?.call(doctor),
+        onAddArea: doctor.areaId == null ? () => onAddArea?.call(doctor) : null,
+        // The masonry column provides the card's natural height.
+        fillHeight: false,
+      );
+    }
+
     return SliverPadding(
       padding: const EdgeInsets.all(TSizes.md),
-      sliver: SliverGrid.builder(
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: columns,
-          crossAxisSpacing: TSizes.md,
-          mainAxisSpacing: TSizes.md,
-          mainAxisExtent: 300 + extraHeight,
+      sliver: SliverToBoxAdapter(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (var column = 0; column < doctorColumns.length; column++) ...[
+              if (column > 0) const SizedBox(width: TSizes.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    for (var index = 0;
+                        index < doctorColumns[column].length;
+                        index++) ...[
+                      if (index > 0) const SizedBox(height: TSizes.md),
+                      buildCard(doctorColumns[column][index]),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ],
         ),
-        itemCount: doctors.length,
-        itemBuilder: (context, index) {
-          final doctor = doctors[index];
-          return DoctorListCard(
-            doctor: doctor,
-            selected: controller.selectedDoctor?.localId == doctor.localId,
-            onTap: () => onDoctorTap(doctor),
-            fillHeight: true,
-          );
-        },
       ),
     );
   }

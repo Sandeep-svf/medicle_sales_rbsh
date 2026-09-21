@@ -37,7 +37,7 @@ class TTexts {
   static const String doctorVisit = "Schedule Visit";
   static const String addProduct = "Add Product";
   static const String productInfo = "Product Info";
-  static const String order = "Order";
+  static const String order = "Order Management";
   static const String expenses = "Expenses";
   static const String invoiceScreen = "InvoiceScreen";
   static const String report = "Report";

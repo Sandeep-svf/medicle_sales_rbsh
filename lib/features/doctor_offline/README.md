@@ -2,9 +2,35 @@
 
 ## Delivery boundary
 
-This directory is a new, isolated, read-only doctor module. It does not modify the app entry point, route table, existing doctor feature, existing databases, platform files, or dependency manifests. The existing dashboard drawer now exposes it as **Offline Doctors** through `lib/features/dashboard/widgets/custrom_drawer.dart`.
+This directory is an isolated offline doctor module. It does not modify the app entry point, route table, existing doctor feature, existing databases, platform files, or dependency manifests. The existing dashboard drawer now exposes it as **Offline Doctors** through `lib/features/dashboard/widgets/custrom_drawer.dart`.
 
-The current API inventory contains only server-to-device download endpoints. Add Doctor, edit, delete, attachment upload, outbox processing, and automatic local-to-server upload are intentionally not implemented. The local record already reserves `localId`, nullable `serverId`, nullable `clientGeneratedId`, `localSyncState`, and exact nullable `syncVersion` for that later phase.
+Offline creation now uses a separate, account/environment/scope-specific SQLite outbox alongside the existing encrypted Hive download cache. The Add Doctor button opens an isolated copy of the existing addDoctor form styling. Existing addDoctor controllers, screens and legacy databases are unchanged. Edit and delete remain outside this feature.
+
+## Offline creation and photo upload
+
+- Save commits an encrypted JSON payload and record to SQLite, plus a durable AES-GCM-encrypted image file. The UUID and queue flags are SQLite metadata; this is payload encryption, not SQLCipher/page encryption.
+- The list immediately merges local creations with downloaded doctors, displaying **Offline stored only** until a confirmed server creation or a matching downloaded `clientGeneratedId` acknowledges the record.
+- Doctors without `geoImageUrl` show **Add Geo Image** in the list. The action captures the same location-stamped photo, stores it against `clientGeneratedId` (or the stable local ID when the server record has no client ID), and uploads it through the image endpoint when connectivity is available.
+- Every doctor card also shows **Request Location Update**. It opens the current-location map picker and submits `PUT /doctors/{serverId}` with `latitude` and `longitude`; `serverId` is preferred and the stable local ID is used only when no server ID exists. The returned approval-pending response is shown to the user.
+- `POST /doctors` sends JSON with `headOfficeId` (ordinary ASCII spelling) and one stable `clientGeneratedId`. A 201 response must include `success: true`, matching client UUID, server ID and exact sync version.
+- `POST /doctors/{clientGeneratedId}/geo-image` sends multipart `geo_image`, using PNG/JPEG MIME detection. A 200 response must match the doctor identities and contain the uploaded URL. POST is assumed because the supplied image contract did not explicitly name an HTTP method.
+- Doctor creation acknowledgment is persisted before starting the photo upload. A failed photo shows **Photo upload pending** and retries only that stage, including after reopening the module.
+- Pending rows are fetched in chunks of 20 using a sequence cursor, and requests run sequentially. The supplied endpoints accept individual doctors, so chunks are queue-processing batches, not undocumented bulk JSON requests. New rows added during an active successful pass trigger another bounded pass.
+- Uploads run on module open, form save, foreground resume, connectivity restoration and manual refresh. They run while this module is open; no terminated-app/background scheduler is installed.
+- Failed requests retain local data. Subsequent triggers retry with the same UUID. The backend must enforce UUID idempotency for ambiguous/lost create responses; a 409 is retained for retry/reconciliation, not treated as unverified success.
+- A matching server download can recover a lost creation response. Once fully uploaded data reaches the download cache, that cache owns list visibility so future server deletions do not resurrect locally archived doctors. The encrypted photo remains available locally.
+- Cached head-office and area options remain usable offline. Manual address entry is available without postal lookup. GPS coordinates remain selectable if reverse geocoding fails; uncached Google map tiles still need internet. Creating a new area and postal-code lookup require internet.
+
+## Area assignment flow
+
+- When online, the dashboard checks `GET /doctors/my-doctors` for doctors without an assigned area and opens the enterprise area-assignment screen. The same screen is available from **Add Area** on an offline doctor card.
+- Each pending doctor shows the standard message: **This doctor has no area assigned. Kindly assign an area to keep the doctor record complete.** The user can select an existing area or enter a six-digit pincode, choose the returned post office, review the detected address, create the area when needed with `POST /areas`, and assign it with `PUT /doctors/{doctorId}` using `{ "areaId": "..." }`.
+- **Skip for now** closes the workflow without assigning an area. It is available from the dashboard popup and the doctor list action. Pincode lookup uses `https://api.postalpincode.in/pincode/{pincode}` and is available only online.
+- The active user's saved name supplies `created_by_name`; no sample person, UUID, territory or coordinates are hardcoded.
+
+### Verification boundary
+
+`doctor_creation_store_test.dart` tests encryption and reopened-store behavior using an in-memory Database test double, request/response mapping, multipart MIME, failed-image retry, UUID mismatch, account change, 45-record batching, download acknowledgment and form/status widget rendering. Real sqflite platform persistence, camera/GPS/maps and live backend behavior require Android/iOS device verification.
 
 ## Public entry points
 
@@ -85,7 +111,7 @@ Backend confirmation is still required for stable bootstrap snapshots, cursor ex
 - A non-secret HMAC key verifier is stored beside the box so a wrong key fails before Hive opens or attempts recovery. Encrypted-box crash recovery is disabled to prevent a wrong key from being mistaken for corruption and rewritten.
 - If cache files exist but the secure key or verifier is missing/invalid, initialization fails. It never silently generates a replacement key over an inaccessible cache.
 - Doctor names, payloads, phone numbers, addresses, tokens, keys, and cursors are not logged. Debug logs contain only operation categories, counts, durations, and retry timing.
-- Decrypted search indexes exist only in memory. Doctor images are not downloaded or placed in Flutter's disk image cache; the detail screen only reports that a URL reference exists.
+- Decrypted search indexes exist only in memory. Server images are not proactively downloaded. Photos captured for local creation are retained as encrypted files and decrypted for the local detail preview.
 
 This implementation uses the encryption capability already locked in the project. It is not SQLCipher and does not claim SQLite page-level encryption or compliance certification. Adding SQLCipher would require prohibited dependency, native, and migration changes. Android/iOS backup exclusion also needs a host security decision and platform changes; none were applied. On shared devices, decide whether logout should retain the account-scoped encrypted cache for offline re-login or securely purge it. The current module retains it and isolates it by account/scope.
 
@@ -113,7 +139,7 @@ Android WorkManager/background execution is intentionally not added. The supplie
 - Pull-to-refresh works even for an empty list through always-scrollable physics.
 - Cached content is not replaced by a full-screen loader during sync.
 - Missing values have explicit fallbacks, long text wraps, details scroll, and system text scaling is not clamped.
-- No create, edit, delete, or upload control is exposed.
+- An Add Doctor action creates locally and queues uploads. Edit and delete controls are not exposed.
 
 ## Supported runtime boundary
 

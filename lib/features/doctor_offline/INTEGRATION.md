@@ -61,17 +61,13 @@ Do not initialize two module instances for the same namespace. Dispose the old m
 6. Confirm the backend delta deletion and continuation contract listed in `README.md`.
 7. Confirm token-refresh behavior. The current project exposes token retrieval but no refresh callback in `AuthManager`; HTTP 401 therefore becomes a sign-in-required state.
 
-## Deferred Add Doctor contract
+## Offline creation integration
 
-Before implementing offline creation/upload, provide and confirm:
+`DoctorOfflineModule.initialize()` opens a separate `doctor_creations.sqlite` database within the existing scoped cache directory. `DoctorCreationStore` encrypts sensitive payloads, lookup data and images using the same securely stored account cache key. Module disposal stops upload work and closes SQLite.
 
-- Endpoint path, HTTP method, authorization/permission rules, and required fields.
-- Canonical request body and whether `clientGeneratedId` is a durable idempotency key.
-- Success/error response, server-ID reconciliation, duplicate handling, and lost-response behavior.
-- Validation, edit/delete semantics, version/conflict policy, and territory reassignment behavior.
-- Attachment fields, multipart names, size/type limits, optionality, and upload retry rules.
+The offline screen's Add Doctor action owns its form controller directly rather than registering the existing online controller in GetX. The original online doctor feature is unaffected.
 
-The next phase should add an encrypted transactional outbox and preserve one `clientGeneratedId` across retries. Connectivity must not trigger uploads until that contract exists.
+See README for create/image request contracts, batching, reconciliation and verification boundaries. Confirm the assumed image POST method and backend UUID idempotency in device/backend testing. No background worker is registered; synchronization occurs while the module is open and resumes when reopened.
 
 ## Optional SQLCipher migration
 
