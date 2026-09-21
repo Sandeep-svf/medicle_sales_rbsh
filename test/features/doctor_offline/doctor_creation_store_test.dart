@@ -100,6 +100,36 @@ void main() {
     expect((await store.readDoctors()).single.clinicName, 'Local Clinic');
   });
 
+  test('area lookup cache persists the server IDs used by offline creation',
+      () async {
+    await store.saveLookup('areas', [
+      {'id': 'area-1', 'name': 'South Delhi'},
+      {'id': 'area-2', 'name': 'North Delhi'},
+    ]);
+
+    final cached = await store.readLookup('areas');
+
+    expect(cached, hasLength(2));
+    expect(cached.first, {'id': 'area-1', 'name': 'South Delhi'});
+    expect(cached.last['id'], 'area-2');
+  });
+
+  test('offline doctor form binds the selected cached area ID and name', () {
+    final form = OfflineDoctorCreateController(
+      store: store,
+      cachedDoctors: const [],
+    );
+    addTearDown(form.onClose);
+    form.areas.assignAll([
+      {'id': 'area-1', 'name': 'South Delhi'},
+    ]);
+
+    form.selectExistingArea(form.areas.single);
+
+    expect(form.selectedAreaId.value, 'area-1');
+    expect(form.areaNameController.text, 'South Delhi');
+  });
+
   test(
       'create acknowledgment persists before image failure; retry uploads image only',
       () async {
@@ -395,6 +425,42 @@ void main() {
     });
   }
 
+  testWidgets('offline creation exposes cached areas without a create action',
+      (tester) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(430, 900);
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final form = OfflineDoctorCreateController(
+      store: store,
+      cachedDoctors: const [],
+    );
+    form.isOnline.value = false;
+    form.areas.assignAll([
+      {'id': 'area-1', 'name': 'South Delhi'},
+    ]);
+    addTearDown(form.onClose);
+
+    await tester.pumpWidget(
+      GetMaterialApp(home: OfflineDoctorCreateScreen(controller: form)),
+    );
+    await tester.pump();
+
+    expect(
+        find.text('Search existing area', skipOffstage: false), findsOneWidget);
+    expect(find.text('Enter area manually when offline', skipOffstage: false),
+        findsNothing);
+    expect(
+        find.byIcon(Icons.lock_outline, skipOffstage: false), findsOneWidget);
+    expect(find.text('Create ""', skipOffstage: false), findsNothing);
+
+    final cachedArea = find.text('South Delhi', skipOffstage: false);
+    expect(cachedArea, findsOneWidget);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
   testWidgets('offline-only badge clears independently of pending photo',
       (tester) async {
     final doctor = DoctorCreationStore.recordFromApi({
@@ -523,14 +589,19 @@ class _MemoryDatabase implements Database {
       int? limit,
       int? offset}) async {
     Iterable<Map<String, Object?>> result = table == 'lookups' ? lookups : rows;
-    if (where == 'uuid = ?')
+    if (where == 'uuid = ?') {
       result = result.where((r) => r['uuid'] == whereArgs![0]);
-    if (where == 'kind = ?')
+    }
+    if (where == 'kind = ?') {
       result = result.where((r) => r['kind'] == whereArgs![0]);
-    if (where == 'visible = 1') result = result.where((r) => r['visible'] == 1);
-    if (where == 'created = 1 AND image_uploaded = 0')
+    }
+    if (where == 'visible = 1') {
+      result = result.where((r) => r['visible'] == 1);
+    }
+    if (where == 'created = 1 AND image_uploaded = 0') {
       result =
           result.where((r) => r['created'] == 1 && r['image_uploaded'] == 0);
+    }
     if (where?.startsWith('sequence >') ?? false) {
       result = result.where((r) =>
           (r['sequence'] as int) > (whereArgs![0] as int) &&

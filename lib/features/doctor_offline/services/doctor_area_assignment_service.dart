@@ -1,6 +1,9 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:uuid/uuid.dart';
+import '../../visit/Doctor/models/pending_area_assignment_model.dart';
+import '../../visit/Doctor/repository/pending_area_assignment_repository.dart';
 
 import '../../../utils/http/http_client.dart';
 import '../../../utils/local_storage/auth_manager.dart';
@@ -14,6 +17,7 @@ class PendingAreaDoctor {
     this.clinicName,
     this.areaId,
     this.headOfficeId,
+    this.localDoctorId,
   });
 
   final String id;
@@ -22,6 +26,7 @@ class PendingAreaDoctor {
   final String? clinicName;
   final String? areaId;
   final String? headOfficeId;
+  final String? localDoctorId;
 
   factory PendingAreaDoctor.fromDoctor(Doctor doctor) {
     return PendingAreaDoctor(
@@ -31,6 +36,7 @@ class PendingAreaDoctor {
       clinicName: doctor.clinicName,
       areaId: doctor.areaId,
       headOfficeId: doctor.headOfficeId,
+      localDoctorId: doctor.localId,
     );
   }
 }
@@ -43,12 +49,18 @@ class DoctorAreaOption {
 }
 
 class DoctorAreaAssignmentService {
-  DoctorAreaAssignmentService({AuthManager? authManager, http.Client? client})
+  DoctorAreaAssignmentService(
+      {AuthManager? authManager,
+      http.Client? client,
+      PendingAreaAssignmentRepository? assignmentRepository})
       : _authManager = authManager ?? AuthManager(),
+        _assignmentRepository =
+            assignmentRepository ?? PendingAreaAssignmentRepository(),
         _client = client ?? http.Client(),
         _ownsClient = client == null;
 
   final AuthManager _authManager;
+  final PendingAreaAssignmentRepository _assignmentRepository;
   final http.Client _client;
   final bool _ownsClient;
 
@@ -162,8 +174,15 @@ class DoctorAreaAssignmentService {
   }
 
   Future<String?> assignArea(
-      {required String doctorId, required String areaId}) async {
+      {required String doctorId,
+      required String areaId,
+      String? localDoctorId,
+      String? areaName}) async {
+    final userId = await _authManager.getUserId();
     final token = await _authManager.getAuthToken();
+    if (userId == null || userId.isEmpty || token == null || token.isEmpty) {
+      throw StateError('Sign in again before assigning an area.');
+    }
     final response = await _client
         .put(
           Uri.parse('${THttpHelper.baseUrl}/doctors/$doctorId'),
@@ -177,6 +196,18 @@ class DoctorAreaAssignmentService {
         .timeout(const Duration(seconds: 20));
     _ensureSuccess(response);
     final body = _decode(response);
+    // The successful PUT is authoritative even if the delta endpoint still
+    // returns an older doctor. Persist it and notify the live offline list.
+    await _assignmentRepository.upsert(PendingAreaAssignmentModel(
+      localId: const Uuid().v4(),
+      doctorLocalId: localDoctorId ?? doctorId,
+      serverDoctorId: doctorId,
+      userId: userId,
+      areaId: areaId,
+      areaName: areaName ?? '',
+      createdAt: DateTime.now().toUtc(),
+      uploaded: true,
+    ));
     return body['message']?.toString();
   }
 
@@ -190,8 +221,9 @@ class DoctorAreaAssignmentService {
 
   static Map<String, dynamic> _decode(http.Response response) {
     final decoded = jsonDecode(response.body);
-    if (decoded is! Map)
+    if (decoded is! Map) {
       throw const FormatException('Invalid server response.');
+    }
     return Map<String, dynamic>.from(decoded);
   }
 
@@ -200,8 +232,9 @@ class DoctorAreaAssignmentService {
       throw StateError('Request failed with status ${response.statusCode}.');
     }
     final body = _decode(response);
-    if (body['success'] == false)
+    if (body['success'] == false) {
       throw StateError(body['message']?.toString() ?? 'Request failed.');
+    }
   }
 
   Future<void> close() async {

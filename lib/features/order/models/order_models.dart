@@ -60,21 +60,26 @@ class OrderItemDraft {
   int get totalPaise => taxablePaise + taxPaise;
 
   String? validate() {
-    if (productId.trim().isEmpty || productName.trim().isEmpty)
+    if (productId.trim().isEmpty || productName.trim().isEmpty) {
       return 'Choose a valid product.';
-    if (quantity < 1 || quantity > 999999)
+    }
+    if (quantity < 1 || quantity > 999999) {
       return 'Order quantity must be between 1 and 999,999.';
-    if (freeQuantity < 0 || freeQuantity > 999999)
+    }
+    if (freeQuantity < 0 || freeQuantity > 999999) {
       return 'Free quantity must be between 0 and 999,999.';
+    }
     if (!orderUnits.contains(unit)) return 'Choose a valid ordering unit.';
     if (unitRatePaise != null &&
-        (unitRatePaise! < 0 || unitRatePaise! > 999999999))
+        (unitRatePaise! < 0 || unitRatePaise! > 999999999)) {
       return 'Enter a valid unit rate.';
+    }
     if (discountBasisPoints < 0 ||
         discountBasisPoints > 10000 ||
         taxBasisPoints < 0 ||
-        taxBasisPoints > 10000)
+        taxBasisPoints > 10000) {
       return 'Discount and tax must be between 0 and 100%.';
+    }
     return null;
   }
 
@@ -138,30 +143,43 @@ class OrderDraft {
 
   String? validate() {
     if (doctorName.trim().isEmpty) return 'Enter the customer name.';
-    if (!orderCustomerTypes.contains(customerType))
+    if (!orderCustomerTypes.contains(customerType)) {
       return 'Choose a customer type.';
+    }
     if (items.isEmpty) return 'Add at least one product.';
-    if (items.map((e) => e.productId).toSet().length != items.length)
+    if (items.map((e) => e.productId).toSet().length != items.length) {
       return 'Combine duplicate products into one line.';
+    }
     for (final item in items) {
       final error = item.validate();
       if (error != null) return error;
     }
-    if (attachmentBytes.isEmpty || attachmentBytes.length > 20 * 1024 * 1024)
+    if ((attachmentBytes.isEmpty && attachmentName.isNotEmpty) ||
+        attachmentBytes.length > 20 * 1024 * 1024) {
       return 'Attach a PDF or image up to 20 MB.';
-    if (!['application/pdf', 'image/jpeg', 'image/png']
-        .contains(attachmentMime)) return 'Use a PDF, JPG or PNG attachment.';
+    }
+    if (attachmentBytes.isNotEmpty &&
+        ![
+          'application/pdf',
+          'image/jpeg',
+          'image/png'
+        ].contains(attachmentMime)) {
+      return 'Use a PDF, JPG or PNG attachment.';
+    }
     if (requestedDeliveryDate != null &&
         DateTime(requestedDeliveryDate!.year, requestedDeliveryDate!.month,
                 requestedDeliveryDate!.day)
-            .isBefore(DateTime(orderDate.year, orderDate.month, orderDate.day)))
+            .isBefore(DateTime(orderDate.year, orderDate.month, orderDate.day))) {
       return 'Delivery date cannot be before the order date.';
+    }
     if (!['Normal', 'Urgent'].contains(priority) ||
-        !orderPaymentTerms.contains(paymentTerms))
+        !orderPaymentTerms.contains(paymentTerms)) {
       return 'Choose valid order terms.';
+    }
     if (paymentTerms == 'Credit' &&
-        (creditDays == null || creditDays! < 1 || creditDays! > 365))
+        (creditDays == null || creditDays! < 1 || creditDays! > 365)) {
       return 'Enter credit days between 1 and 365.';
+    }
     return null;
   }
 }

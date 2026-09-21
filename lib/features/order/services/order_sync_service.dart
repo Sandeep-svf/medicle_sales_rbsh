@@ -31,15 +31,18 @@ class HttpOrderRemoteDataSource implements OrderRemoteDataSource {
 
   @override
   Future<void> send(LocalOrder order) async {
-    if (!isConfigured)
+    if (!isConfigured) {
       throw const OrderSyncException(
           'Order upload is not available yet. Your order is saved on this device.');
+    }
     final uri = Uri.parse(_endpoint);
-    if (uri.scheme != 'https' || uri.host.isEmpty)
+    if (uri.scheme != 'https' || uri.host.isEmpty) {
       throw const OrderSyncException('The order service address is invalid.');
+    }
     final token = await _tokenProvider();
-    if (token == null || token.isEmpty)
+    if (token == null || token.isEmpty) {
       throw const OrderSyncException('Sign in again to upload your orders.');
+    }
     final request = http.MultipartRequest('POST', uri)
       ..headers['Authorization'] = 'Bearer $token'
       ..headers['Accept'] = 'application/json'
@@ -76,9 +79,10 @@ class HttpOrderRemoteDataSource implements OrderRemoteDataSource {
         .send(request)
         .then(http.Response.fromStream)
         .timeout(const Duration(seconds: 60));
-    if (response.statusCode != 200 && response.statusCode != 201)
+    if (response.statusCode != 200 && response.statusCode != 201) {
       throw OrderSyncException(
           'Upload was not confirmed (${response.statusCode}). Your order is retained.');
+    }
     Object? decoded;
     try {
       decoded = jsonDecode(response.body);
@@ -88,9 +92,10 @@ class HttpOrderRemoteDataSource implements OrderRemoteDataSource {
     }
     if (decoded is! Map ||
         decoded['success'] != true ||
-        decoded['data'] is! Map)
+        decoded['data'] is! Map) {
       throw const OrderSyncException(
           'The server did not confirm this order. Please retry later.');
+    }
     final data = decoded['data'] as Map;
     if (data['clientGeneratedId'] != order.clientGeneratedId ||
         data['id'] is! String ||
@@ -145,8 +150,9 @@ class OrderSyncService {
   bool get isRunning => _inFlight != null;
   void startListening() {
     _subscription ??= _connectivity.onConnectivityChanged.listen((result) {
-      if (!result.contains(ConnectivityResult.none) && !_disposed)
+      if (!result.contains(ConnectivityResult.none) && !_disposed) {
         unawaited(syncPending());
+      }
     });
   }
 
@@ -157,8 +163,9 @@ class OrderSyncService {
 
   Future<OrderSyncResult> _run() async {
     if (remote is HttpOrderRemoteDataSource &&
-        !(remote as HttpOrderRemoteDataSource).isConfigured)
+        !(remote as HttpOrderRemoteDataSource).isConfigured) {
       return const OrderSyncResult(unavailable: true);
+    }
     try {
       final online = await (_isOnline?.call() ??
           _connectivity
@@ -201,8 +208,9 @@ class OrderSyncService {
     _disposed = true;
     await _subscription?.cancel();
     await _inFlight;
-    if (remote is HttpOrderRemoteDataSource)
+    if (remote is HttpOrderRemoteDataSource) {
       (remote as HttpOrderRemoteDataSource).close();
+    }
   }
 }
 

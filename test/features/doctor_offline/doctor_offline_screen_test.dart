@@ -13,9 +13,79 @@ import 'package:medicle_sales_rbsh/features/doctor_offline/ui/widgets/doctor_lis
 import 'package:medicle_sales_rbsh/utils/theam/theme.dart';
 
 import 'doctor_test_fixtures.dart';
+import 'package:medicle_sales_rbsh/features/visit/Doctor/models/pending_area_assignment_model.dart';
+import 'package:medicle_sales_rbsh/features/visit/Doctor/repository/pending_area_assignment_repository.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  testWidgets(
+      'saved area immediately updates doctor list and filters without download',
+      (tester) async {
+    final areas = _AreaRepository();
+    addTearDown(areas.events.close);
+    final harness = await _UiHarness.create(
+        areas: areas,
+        doctors: [fixtureDoctor().copyWith(areaId: null, areaName: null)]);
+    addTearDown(harness.dispose);
+    await tester.pumpWidget(_testApp(harness.controller));
+    await tester.pumpAndSettle();
+    expect(find.text('Assign Area'), findsOneWidget);
+    final original = harness.controller.doctorsForSync.single;
+    harness.controller.selectDoctor(original.localId);
+    areas.assignments = [_area(original.localId, original.serverId)];
+    areas.events.add('account-1');
+    await tester.pumpAndSettle();
+    expect(find.text('Assign Area'), findsNothing);
+    expect(harness.controller.allDoctors.single.areaId, 'new-area');
+    expect(harness.controller.selectedDoctor!.areaName, 'Updated area');
+    expect(harness.controller.areaOptions.map((a) => a.value),
+        contains('new-area'));
+    harness.controller.setArea('new-area');
+    expect(harness.controller.visibleDoctors, hasLength(1));
+    // Local UI data must not make the uploader skip the area PUT.
+    expect(harness.controller.doctorsForSync.single.areaId, original.areaId);
+    expect(
+        harness.controller.doctorsForSync.single.areaName, original.areaName);
+    expect(tester.takeException(), isNull);
+  });
+
+  test(
+      'stored uploaded area survives controller recreation and respects account scope',
+      () async {
+    final doctor = fixtureDoctor();
+    final areas = _AreaRepository()
+      ..assignments = [
+        _area(doctor.localId, doctor.serverId, uploaded: true),
+        PendingAreaAssignmentModel(
+            localId: 'other',
+            doctorLocalId: doctor.localId,
+            userId: 'another-account',
+            areaId: 'wrong-area',
+            areaName: 'Wrong account',
+            createdAt: DateTime.utc(2026, 10)),
+      ];
+    addTearDown(areas.events.close);
+    final first = await _UiHarness.create(areas: areas);
+    expect(first.controller.allDoctors.single.areaName, 'Updated area');
+    await first.dispose();
+    final reopened = await _UiHarness.create(areas: areas);
+    addTearDown(reopened.dispose);
+    expect(reopened.controller.allDoctors.single.areaId, 'new-area');
+  });
+
+  test('newer server area wins over an older completed assignment', () async {
+    final doctor = fixtureDoctor().copyWith(
+        areaId: 'server-new',
+        areaName: 'Newer server area',
+        updatedAt: DateTime.utc(2026, 10));
+    final areas = _AreaRepository()
+      ..assignments = [_area(doctor.localId, doctor.serverId, uploaded: true)];
+    addTearDown(areas.events.close);
+    final harness = await _UiHarness.create(areas: areas, doctors: [doctor]);
+    addTearDown(harness.dispose);
+    expect(harness.controller.allDoctors.single.areaId, 'server-new');
+  });
 
   testWidgets('phone portrait opens a separate read-only detail screen', (
     tester,
@@ -139,10 +209,12 @@ class _UiHarness {
   final DoctorSyncCoordinator coordinator;
   final DoctorOfflineController controller;
 
-  static Future<_UiHarness> create() async {
-    final repository = _StaticRepository([
-      fixtureDoctor().copyWith(geoImageUrl: null),
-    ]);
+  static Future<_UiHarness> create(
+      {_AreaRepository? areas, List<Doctor>? doctors}) async {
+    final repository = _StaticRepository(doctors ??
+        [
+          fixtureDoctor().copyWith(geoImageUrl: null),
+        ]);
     final coordinator = DoctorSyncCoordinator(
       repository: repository,
       scopeGuard: () async => true,
@@ -151,6 +223,8 @@ class _UiHarness {
       log: (_) {},
     );
     final controller = DoctorOfflineController(
+      accountId: areas == null ? null : 'account-1',
+      areaAssignmentRepository: areas,
       repository: repository,
       syncCoordinator: coordinator,
       connectivityMonitor: const _OnlineConnectivityMonitor(),
@@ -168,6 +242,29 @@ class _UiHarness {
     await coordinator.dispose();
     await repository.close();
   }
+}
+
+PendingAreaAssignmentModel _area(String localId, String? serverId,
+        {bool uploaded = false}) =>
+    PendingAreaAssignmentModel(
+      localId: 'area-assignment',
+      doctorLocalId: localId,
+      serverDoctorId: serverId,
+      userId: 'account-1',
+      areaId: 'new-area',
+      areaName: 'Updated area',
+      createdAt: DateTime.utc(2026, 9, 21),
+      uploaded: uploaded,
+    );
+
+class _AreaRepository extends PendingAreaAssignmentRepository {
+  final events = StreamController<String>.broadcast();
+  List<PendingAreaAssignmentModel> assignments = [];
+  @override
+  Stream<String> get changes => events.stream;
+  @override
+  Future<List<PendingAreaAssignmentModel>> getForUser(String userId) async =>
+      assignments;
 }
 
 class _OnlineConnectivityMonitor implements DoctorConnectivityMonitor {

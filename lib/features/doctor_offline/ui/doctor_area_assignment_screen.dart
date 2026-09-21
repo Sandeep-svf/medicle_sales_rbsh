@@ -69,7 +69,11 @@ class _DoctorAreaAssignmentScreenState
     if (areaId == null || _saving.contains(doctor.id)) return;
     setState(() => _saving.add(doctor.id));
     try {
-      await widget.service.assignArea(doctorId: doctor.id, areaId: areaId);
+      await widget.service.assignArea(
+          doctorId: doctor.id,
+          areaId: areaId,
+          localDoctorId: doctor.localDoctorId,
+          areaName: _areaNameFor(areaId));
       if (!mounted) return;
       setState(() {
         _saving.remove(doctor.id);

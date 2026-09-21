@@ -83,23 +83,25 @@ class _OrderScreenState extends State<OrderScreen> with WidgetsBindingObserver {
       await _reload();
       if (mounted) unawaited(_refresh());
     } catch (_) {
-      if (mounted)
+      if (mounted) {
         setState(() {
           _loading = false;
           _loadError = 'Order storage could not be opened. Please try again.';
         });
+      }
     }
   }
 
   Future<void> _reload() async {
     if (!mounted || _repository == null) return;
     final orders = await _repository!.recentOrders(cutoff: _cutoff);
-    if (mounted)
+    if (mounted) {
       setState(() {
         _orders = orders;
         _loading = false;
         _loadError = null;
       });
+    }
   }
 
   Future<List<Product>> _refreshProducts() async {
@@ -114,11 +116,13 @@ class _OrderScreenState extends State<OrderScreen> with WidgetsBindingObserver {
       final results = await Future.wait<dynamic>(
           [_sync!.syncPending(), _refreshProducts()]);
       await _reload();
-      if (notify && mounted)
+      if (notify && mounted) {
         _message((results.first as OrderSyncResult).message);
+      }
     } catch (_) {
-      if (notify && mounted)
+      if (notify && mounted) {
         _message('Refresh was interrupted. Your orders remain on this device.');
+      }
     } finally {
       if (mounted) setState(() => _refreshing = false);
     }
@@ -127,10 +131,13 @@ class _OrderScreenState extends State<OrderScreen> with WidgetsBindingObserver {
   List<LocalOrder> get _visible {
     final query = _search.text.trim().toLowerCase();
     final filtered = _orders.where((o) {
-      if (_filter == 'Needs retry' && o.syncState != OrderSyncState.failed)
+      if (_filter == 'Needs retry' && o.syncState != OrderSyncState.failed) {
         return false;
-      if (_filter == 'Awaiting upload' && o.syncState != OrderSyncState.pending)
+      }
+      if (_filter == 'Awaiting upload' &&
+          o.syncState != OrderSyncState.pending) {
         return false;
+      }
       if (_filter == 'Urgent' && o.priority != 'Urgent') return false;
       return query.isEmpty ||
           [
@@ -210,7 +217,14 @@ class _OrderScreenState extends State<OrderScreen> with WidgetsBindingObserver {
                     final padding = constraints.maxWidth > 1160
                         ? (constraints.maxWidth - 1120) / 2
                         : 20.0;
+                    final columns = constraints.maxWidth >= 760 &&
+                            MediaQuery.textScalerOf(context).scale(14) <= 21
+                        ? 2
+                        : 1;
                     return CustomScrollView(
+                        key: const PageStorageKey('order-management-list'),
+                        keyboardDismissBehavior:
+                            ScrollViewKeyboardDismissBehavior.onDrag,
                         physics: const AlwaysScrollableScrollPhysics(),
                         slivers: [
                           SliverPadding(
@@ -225,7 +239,7 @@ class _OrderScreenState extends State<OrderScreen> with WidgetsBindingObserver {
                                     const SizedBox(height: 20),
                                     Row(children: [
                                       const Expanded(
-                                          child: Text('Your order desk',
+                                          child: Text('Your orders',
                                               style: TextStyle(
                                                   fontSize: 19,
                                                   fontWeight:
@@ -245,10 +259,17 @@ class _OrderScreenState extends State<OrderScreen> with WidgetsBindingObserver {
                                               : const Icon(Icons.sync))
                                     ]),
                                     const Text(
-                                        'Last 10 days · uploaded orders are removed locally',
+                                        'Saved on this device · pending orders stay visible',
                                         style: TextStyle(
                                             color: TColors.textSecondary,
                                             fontSize: 12)),
+                                    const SizedBox(height: 14),
+                                    Text(
+                                        '${orders.length} ${orders.length == 1 ? 'order' : 'orders'}${_filter == 'All orders' ? '' : ' · $_filter'}',
+                                        style: const TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                            color: TColors.textSecondary)),
                                     const SizedBox(height: 14),
                                     TextField(
                                         controller: _search,
@@ -341,7 +362,7 @@ class _OrderScreenState extends State<OrderScreen> with WidgetsBindingObserver {
                                       const SizedBox(height: 10),
                                       Text(
                                           _orders.isEmpty
-                                              ? 'Create an order from your product catalogue. Add quantities and attach the customer’s order proof.'
+                                              ? 'Choose a saved doctor, add medicines and quantities, then save and share your order PDF.'
                                               : 'Try a different search or clear the filters.',
                                           textAlign: TextAlign.center,
                                           style: const TextStyle(
@@ -360,89 +381,231 @@ class _OrderScreenState extends State<OrderScreen> with WidgetsBindingObserver {
                                 padding: EdgeInsets.fromLTRB(
                                     padding, 0, padding, 110),
                                 sliver: SliverList.separated(
-                                    itemCount: orders.length,
+                                    itemCount: (orders.length / columns).ceil(),
                                     separatorBuilder: (_, __) =>
                                         const SizedBox(height: 14),
                                     itemBuilder: (context, index) {
-                                      final order = orders[index];
-                                      return TweenAnimationBuilder<double>(
-                                          key: ValueKey(order.localId),
-                                          tween: Tween(begin: 0, end: 1),
-                                          duration: MediaQuery.disableAnimationsOf(context)
-                                              ? Duration.zero
-                                              : const Duration(
-                                                  milliseconds: 300),
-                                          builder: (context, value, child) => Opacity(
-                                              opacity: value,
-                                              child: Transform.translate(
-                                                  offset: Offset(
-                                                      0, 10 * (1 - value)),
-                                                  child: child)),
-                                          child: OrderListCard(
-                                              order: order,
-                                              onView: () => Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                      builder: (_) => OrderDetailScreen(
-                                                          order: order))),
-                                              onRetry: _refreshing || _sync?.isRunning == true
-                                                  ? null
-                                                  : () => _refresh(notify: true)));
+                                      return Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            for (var column = 0;
+                                                column < columns;
+                                                column++) ...[
+                                              if (column > 0)
+                                                const SizedBox(width: 16),
+                                              Expanded(
+                                                  child: index * columns +
+                                                              column <
+                                                          orders.length
+                                                      ? _orderCard(
+                                                          orders[
+                                                              index * columns +
+                                                                  column],
+                                                          index * columns +
+                                                              column)
+                                                      : const SizedBox
+                                                          .shrink()),
+                                            ],
+                                          ]);
                                     })),
                         ]);
                   }))),
         );
       }));
 
-  Widget _header() => Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(24),
-          gradient: const LinearGradient(
-              colors: [TColors.primary_shade700, TColors.primary],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight)),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const Row(children: [
-          Icon(Icons.local_pharmacy_outlined, size: 20, color: Colors.white70),
-          SizedBox(width: 8),
-          Text('FIELD ORDERS',
-              style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 1.6))
-        ]),
-        const SizedBox(height: 12),
-        const Text('Every order,\nready to move.',
-            style: TextStyle(
-                color: Colors.white,
-                fontSize: 27,
-                height: 1.2,
-                fontWeight: FontWeight.w800)),
-        const SizedBox(height: 10),
-        const Text('Capture products and quantities, even without internet.',
-            style: TextStyle(color: Colors.white70, fontSize: 12, height: 1.5)),
-        const SizedBox(height: 22),
-        Wrap(spacing: 30, runSpacing: 16, children: [
-          _metric('${_orders.length}', 'On this device'),
-          _metric('${_orders.where((o) => o.priority == 'Urgent').length}',
-              'Urgent'),
-          _metric(
-              '${_orders.where((o) => o.syncState == OrderSyncState.failed).length}',
-              'Need retry'),
-        ]),
-      ]));
+  Widget _orderCard(LocalOrder order, int index) {
+    return TweenAnimationBuilder<double>(
+        key: ValueKey(order.localId),
+        tween: Tween(begin: 0, end: 1),
+        duration: MediaQuery.disableAnimationsOf(context)
+            ? Duration.zero
+            : Duration(milliseconds: 300 + (index % 4) * 60),
+        builder: (context, value, child) => Opacity(
+            opacity: value,
+            child: Transform.translate(
+                offset: Offset(0, 10 * (1 - value)), child: child)),
+        child: OrderListCard(
+            order: order,
+            onView: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (_) => OrderDetailScreen(order: order))),
+            onRetry: _refreshing || _sync?.isRunning == true
+                ? null
+                : () => _refresh(notify: true)));
+  }
 
-  Widget _metric(String value, String label) =>
-      Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(value,
-            style: const TextStyle(
-                fontSize: 25,
-                fontWeight: FontWeight.w800,
-                color: Colors.white)),
-        Text(label, style: const TextStyle(fontSize: 11, color: Colors.white70))
-      ]);
+  Widget _header() => TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: 1),
+      duration: MediaQuery.disableAnimationsOf(context)
+          ? Duration.zero
+          : const Duration(milliseconds: 850),
+      curve: Curves.easeOutCubic,
+      builder: (context, progress, _) => Opacity(
+            opacity: progress,
+            child: Transform.translate(
+              offset: Offset(0, 16 * (1 - progress)),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(24),
+                child: DecoratedBox(
+                  decoration: const BoxDecoration(
+                      gradient: LinearGradient(colors: [
+                    TColors.primary_shade900,
+                    TColors.primary_shade700,
+                    TColors.primary
+                  ], begin: Alignment.topLeft, end: Alignment.bottomRight)),
+                  child: Stack(children: [
+                    Positioned(
+                        right: -55 + 20 * progress,
+                        top: -95,
+                        child: IgnorePointer(
+                            child: Container(
+                                width: 260,
+                                height: 260,
+                                decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                        color:
+                                            Colors.white.withValues(alpha: .10),
+                                        width: 36))))),
+                    Positioned(
+                        right: 90,
+                        bottom: -70,
+                        child: IgnorePointer(
+                            child: Container(
+                                width: 170,
+                                height: 170,
+                                decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color:
+                                        Colors.white.withValues(alpha: .04))))),
+                    Padding(
+                        padding: const EdgeInsets.all(22),
+                        child: LayoutBuilder(builder: (context, constraints) {
+                          final wide = constraints.maxWidth >= 650;
+                          final intro = Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Row(children: [
+                                  Icon(Icons.local_pharmacy_outlined,
+                                      size: 18, color: Colors.white70),
+                                  SizedBox(width: 8),
+                                  Text('YOUR ORDER DESK',
+                                      style: TextStyle(
+                                          color: Colors.white70,
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w700,
+                                          letterSpacing: 1.5)),
+                                ]),
+                                const SizedBox(height: 12),
+                                Text('Care in every order.',
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: wide ? 30 : 25,
+                                        height: 1.2,
+                                        fontWeight: FontWeight.w800)),
+                                const SizedBox(height: 8),
+                                const Text(
+                                    'Capture medicines. Save offline. Share a PDF.',
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 13,
+                                        height: 1.5)),
+                                const SizedBox(height: 12),
+                                const Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Icon(Icons.phone_android_rounded,
+                                          size: 15, color: Colors.white70),
+                                      SizedBox(width: 6),
+                                      Expanded(
+                                          child: Text(
+                                              'Stored on this device · upload coming soon',
+                                              style: TextStyle(
+                                                  color: Colors.white70,
+                                                  fontSize: 11,
+                                                  height: 1.5))),
+                                    ]),
+                              ]);
+                          final metrics =
+                              Wrap(spacing: 10, runSpacing: 10, children: [
+                            _metric(_orders.length, 'Saved',
+                                Icons.inventory_2_outlined, 'All orders'),
+                            _metric(
+                                _orders
+                                    .where((o) => o.priority == 'Urgent')
+                                    .length,
+                                'Urgent',
+                                Icons.bolt_outlined,
+                                'Urgent'),
+                            _metric(
+                                _orders
+                                    .where((o) =>
+                                        o.syncState == OrderSyncState.failed)
+                                    .length,
+                                'Need retry',
+                                Icons.sync_problem_outlined,
+                                'Needs retry'),
+                          ]);
+                          return wide
+                              ? Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                      Expanded(child: intro),
+                                      const SizedBox(width: 24),
+                                      SizedBox(width: 320, child: metrics),
+                                    ])
+                              : Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                      intro,
+                                      const SizedBox(height: 20),
+                                      metrics,
+                                    ]);
+                        })),
+                  ]),
+                ),
+              ),
+            ),
+          ));
+
+  Widget _metric(int value, String label, IconData icon, String filter) =>
+      Semantics(
+          button: true,
+          label: '$value $label orders. Filter $filter',
+          child: Material(
+            color: Colors.white.withValues(alpha: .10),
+            borderRadius: BorderRadius.circular(14),
+            child: InkWell(
+              onTap: () => setState(() => _filter = filter),
+              borderRadius: BorderRadius.circular(14),
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(icon, size: 18, color: Colors.white70),
+                      const SizedBox(height: 6),
+                      AnimatedSwitcher(
+                          duration: MediaQuery.disableAnimationsOf(context)
+                              ? Duration.zero
+                              : const Duration(milliseconds: 250),
+                          child: Text('$value',
+                              key: ValueKey(value),
+                              style: const TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w800,
+                                  color: Colors.white))),
+                      Text(label,
+                          style: const TextStyle(
+                              fontSize: 11, color: Colors.white70)),
+                    ]),
+              ),
+            ),
+          ));
 }
 
 class OrderListCard extends StatelessWidget {

@@ -20,12 +20,16 @@ class _OrderProductPickerState extends State<OrderProductPicker> {
     final products = {
       for (final product in widget.products)
         if (product.id.isNotEmpty) product.id: product
-    }
-        .values
-        .where((p) => '${p.name} ${p.salt ?? ''} ${p.dosage ?? ''}'
-            .toLowerCase()
-            .contains(_query.trim().toLowerCase()))
-        .toList()
+    }.values.where((p) {
+      final searchable =
+          '${p.name} ${p.salt ?? ''} ${p.dosage ?? ''} ${p.description ?? ''}'
+              .toLowerCase();
+      return _query
+          .trim()
+          .toLowerCase()
+          .split(RegExp(r'\s+'))
+          .every(searchable.contains);
+    }).toList()
       ..sort((a, b) => a.name.compareTo(b.name));
     return Theme(
         data: orderTheme(context),

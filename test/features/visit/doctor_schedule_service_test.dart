@@ -48,6 +48,27 @@ void main() {
     await Future<void>.delayed(Duration.zero);
     expect(syncTriggerCount, 1);
   });
+
+  test('rejects malformed schedule dates before writing to the outbox',
+      () async {
+    final repository = FakePendingScheduleRepository();
+    final service = DoctorScheduleService(repository: repository);
+
+    await expectLater(
+      service.queueSchedule(
+        doctorLocalId: 'doctor-1',
+        serverDoctorId: 'server-doctor-1',
+        userId: 'user-1',
+        date: '31-02-2026',
+        notes: 'Invalid date',
+        doctorName: 'Dr. Offline',
+        syncTrigger: () async {},
+      ),
+      throwsFormatException,
+    );
+
+    expect(repository.schedules, isEmpty);
+  });
 }
 
 class FakePendingScheduleRepository extends PendingScheduleRepository {

@@ -215,6 +215,7 @@ class DoctorOfflineModule {
         scopeGuard: () async => await authentication.getUserId() == accountId,
       );
       controller = DoctorOfflineController(
+        accountId: accountId,
         creationStore: creationStore,
         repository: repository,
         syncCoordinator: coordinator,

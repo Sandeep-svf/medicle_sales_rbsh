@@ -115,11 +115,11 @@ class DoctorOfflineUploadCoordinator {
       final assignedAreas =
           await _areaAssignmentSyncService.syncPendingAssignments(
         userId: accountId,
-        doctors: module.controller.allDoctors,
+        doctors: module.controller.doctorsForSync,
       );
       await _syncSchedules(
         accountId,
-        module.controller.allDoctors,
+        module.controller.doctorsForSync,
         assignedAreas,
       );
       debugPrint(

@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'dart:typed_data';
+import 'dart:async';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,6 +11,11 @@ import '../repositories/order_repository.dart';
 import '../widgets/order_widgets.dart';
 import '../widgets/order_line_editor.dart';
 import '../widgets/order_product_picker.dart';
+import '../widgets/order_doctor_picker.dart';
+import '../../doctor_offline/doctor_offline_module.dart';
+import '../../doctor_offline/models/doctor.dart';
+import '../../../utils/local_storage/auth_manager.dart';
+import 'order_detail.dart';
 
 class OrderAttachment {
   const OrderAttachment(this.bytes, this.name, this.mime);
@@ -24,11 +29,13 @@ class OrderCreateScreen extends StatefulWidget {
       required this.products,
       this.refreshProducts,
       this.pickAttachment,
+      this.loadDoctors,
       super.key});
   final OrderRepository repository;
   final List<Product> products;
   final Future<List<Product>> Function()? refreshProducts;
   final Future<OrderAttachment?> Function()? pickAttachment;
+  final Future<List<Doctor>> Function()? loadDoctors;
   @override
   State<OrderCreateScreen> createState() => _OrderCreateScreenState();
 }
@@ -57,6 +64,67 @@ class _OrderCreateScreenState extends State<OrderCreateScreen> {
   int _step = 0;
   bool _saving = false, _picking = false, _refreshing = false, _saved = false;
   String? _error;
+  List<Doctor> _doctors = [];
+  Doctor? _doctor;
+  bool _loadingDoctors = true;
+  String? _doctorError;
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_loadDoctors());
+  }
+
+  Future<void> _loadDoctors() async {
+    DoctorOfflineModule? module;
+    if (mounted) {
+      setState(() {
+        _loadingDoctors = true;
+        _doctorError = null;
+      });
+    }
+    try {
+      List<Doctor> doctors;
+      if (widget.loadDoctors != null) {
+        doctors = await widget.loadDoctors!();
+      } else {
+        final userId = await AuthManager().getUserId();
+        if (userId == null || userId.isEmpty) {
+          throw StateError('Missing account');
+        }
+        module = await DoctorOfflineModule.acquire(accountId: userId);
+        doctors = List.of(module.controller.allDoctors);
+      }
+      if (mounted) setState(() => _doctors = doctors);
+    } catch (_) {
+      if (mounted) {
+        setState(() => _doctorError =
+            'Your saved doctor list could not be opened. Retry or enter customer details.');
+      }
+    } finally {
+      await module?.dispose();
+      if (mounted) setState(() => _loadingDoctors = false);
+    }
+  }
+
+  Future<void> _selectDoctor() async {
+    final doctor = await showModalBottomSheet<Doctor>(
+        context: context,
+        isScrollControlled: true,
+        useSafeArea: true,
+        builder: (_) => OrderDoctorPicker(doctors: _doctors));
+    if (!mounted || doctor == null) return;
+    setState(() {
+      _doctor = doctor;
+      _name.text = doctor.name ?? '';
+      _clinic.text = doctor.clinicName ?? '';
+      _phone.text = doctor.phone ?? '';
+      _area.text = doctor.areaName ?? '';
+      _office.text = doctor.headOfficeName ?? '';
+      _address.text = doctor.clinicAddress ?? doctor.location ?? '';
+    });
+  }
+
   bool get _dirty =>
       _lines.isNotEmpty ||
       _attachment != null ||
@@ -127,9 +195,10 @@ class _OrderCreateScreenState extends State<OrderCreateScreen> {
       } else if (camera) {
         final image = await ImagePicker().pickImage(
             source: ImageSource.camera, imageQuality: 85, maxWidth: 2200);
-        if (image != null)
+        if (image != null) {
           picked = OrderAttachment(
               await image.readAsBytes(), image.name, 'image/jpeg');
+        }
       } else {
         final result = await FilePicker.platform.pickFiles(
             type: FileType.custom,
@@ -137,8 +206,9 @@ class _OrderCreateScreenState extends State<OrderCreateScreen> {
             withData: false);
         if (result != null) {
           final file = result.files.single;
-          if (file.size > 20 * 1024 * 1024)
+          if (file.size > 20 * 1024 * 1024) {
             throw const FormatException('Choose a file smaller than 20 MB.');
+          }
           final extension = (file.extension ?? '').toLowerCase();
           final mime = {
             'pdf': 'application/pdf',
@@ -148,22 +218,25 @@ class _OrderCreateScreenState extends State<OrderCreateScreen> {
           }[extension];
           final bytes = file.bytes ??
               (file.path == null ? null : await File(file.path!).readAsBytes());
-          if (mime == null || bytes == null)
+          if (mime == null || bytes == null) {
             throw const FormatException(
                 'Choose a readable PDF, JPG or PNG file.');
+          }
           picked = OrderAttachment(bytes, file.name, mime);
         }
       }
       if (picked != null &&
-          (picked.bytes.isEmpty || picked.bytes.length > 20 * 1024 * 1024))
+          (picked.bytes.isEmpty || picked.bytes.length > 20 * 1024 * 1024)) {
         throw const FormatException(
             'Attach a non-empty PDF or image up to 20 MB.');
+      }
       if (mounted && picked != null) setState(() => _attachment = picked);
     } catch (error) {
-      if (mounted)
+      if (mounted) {
         setState(() => _error = error is FormatException
             ? error.message
             : 'Could not open the attachment. Please try again.');
+      }
     } finally {
       if (mounted) setState(() => _picking = false);
     }
@@ -184,13 +257,14 @@ class _OrderCreateScreenState extends State<OrderCreateScreen> {
     if (!mounted || selected == null) return;
     setState(() {
       for (final p in selected) {
-        if (_lines.every((e) => e.productId != p.id))
+        if (_lines.every((e) => e.productId != p.id)) {
           _lines.add(OrderItemDraft(
               productId: p.id,
               productName: p.name,
               salt: p.salt,
               dosage: p.dosage,
               quantity: 1));
+        }
       }
       _error = null;
     });
@@ -219,7 +293,7 @@ class _OrderCreateScreenState extends State<OrderCreateScreen> {
       builder: (context, child) =>
           Theme(data: orderTheme(context), child: child!),
     );
-    if (picked != null && mounted)
+    if (picked != null && mounted) {
       setState(() {
         if (delivery) {
           _delivery = picked;
@@ -228,6 +302,7 @@ class _OrderCreateScreenState extends State<OrderCreateScreen> {
           if (_delivery?.isBefore(picked) == true) _delivery = null;
         }
       });
+    }
   }
 
   void _go(int step) {
@@ -254,14 +329,11 @@ class _OrderCreateScreenState extends State<OrderCreateScreen> {
   }
 
   Future<void> _save() async {
-    if (_saving || _picking) return;
-    if (_attachment == null) {
-      setState(
-          () => _error = 'Attach a PDF or image of the order before saving.');
-      return;
-    }
+    if (_saving || _picking || _saved) return;
     final draft = OrderDraft(
       doctorName: _name.text.trim(),
+      doctorId: _doctor?.localId,
+      specialization: _doctor?.specialization,
       clinicName: _clinic.text.trim(),
       contactPhone: _phone.text.trim(),
       customerType: _customerType,
@@ -277,9 +349,9 @@ class _OrderCreateScreenState extends State<OrderCreateScreen> {
       orderDate: _date,
       notes: _notes.text.trim(),
       items: List.of(_lines),
-      attachmentBytes: _attachment!.bytes,
-      attachmentName: _attachment!.name,
-      attachmentMime: _attachment!.mime,
+      attachmentBytes: _attachment?.bytes ?? Uint8List(0),
+      attachmentName: _attachment?.name ?? '',
+      attachmentMime: _attachment?.mime ?? '',
     );
     final error = draft.validate();
     if (error != null) {
@@ -291,15 +363,31 @@ class _OrderCreateScreenState extends State<OrderCreateScreen> {
       _error = null;
     });
     try {
-      await widget.repository.create(draft);
+      final id = await widget.repository.create(draft);
+      _saved = true;
+      final order = await widget.repository.findById(id);
       if (mounted) {
-        _saved = true;
+        if (order != null) {
+          await Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (_) => OrderDetailScreen(order: order)));
+        }
+        if (!mounted) return;
         Navigator.pop(context, true);
       }
     } catch (_) {
-      if (mounted)
+      if (_saved && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text(
+                'Order saved. Open it from your order list to view the PDF.')));
+        Navigator.pop(context, true);
+        return;
+      }
+      if (mounted) {
         setState(() => _error =
             'The order could not be saved. Your entries are still here; please try again.');
+      }
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -497,18 +585,56 @@ class _OrderCreateScreenState extends State<OrderCreateScreen> {
               )));
 
   Widget _customer() => Column(children: [
+        if (_customerType == 'Doctor') ...[
+          OrderSection(
+              title: 'Choose from your doctors',
+              subtitle:
+                  'Fill clinic, phone, area and delivery address in one step.',
+              icon: Icons.person_search_outlined,
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (_loadingDoctors) const LinearProgressIndicator(),
+                    if (_doctorError != null) Text(_doctorError!),
+                    Wrap(spacing: 12, runSpacing: 8, children: [
+                      FilledButton.icon(
+                          onPressed: _loadingDoctors ? null : _selectDoctor,
+                          icon: const Icon(Icons.search),
+                          label: Text(_doctor == null
+                              ? 'Search saved doctors'
+                              : 'Change doctor')),
+                      if (_doctorError != null)
+                        TextButton(
+                            onPressed: _loadDoctors,
+                            child: const Text('Retry')),
+                    ]),
+                    if (_doctor != null)
+                      Padding(
+                          padding: const EdgeInsets.only(top: 12),
+                          child: Text(
+                              '${_doctor!.name ?? 'Doctor'} · details filled from your offline list',
+                              style: const TextStyle(
+                                  color: TColors.primary,
+                                  fontWeight: FontWeight.w600))),
+                  ])),
+          const SizedBox(height: 18),
+        ],
         OrderSection(
             title: 'Who is this order for?',
             subtitle: 'Customer and delivery information',
             icon: Icons.person_outline,
             child: OrderFields(children: [
               DropdownButtonFormField<String>(
+                  isExpanded: true,
                   value: _customerType,
                   decoration: const InputDecoration(labelText: 'Customer type'),
                   items: orderCustomerTypes
                       .map((e) => DropdownMenuItem(value: e, child: Text(e)))
                       .toList(),
-                  onChanged: (v) => setState(() => _customerType = v!)),
+                  onChanged: (v) => setState(() {
+                        _customerType = v!;
+                        _doctor = null;
+                      })),
               _field(_name, 'Customer name *',
                   required: true, key: const Key('order-customer-name')),
               _field(
@@ -543,6 +669,7 @@ class _OrderCreateScreenState extends State<OrderCreateScreen> {
                   'Requested delivery', _delivery, () => _chooseDate(true)),
               _field(_po, 'Customer PO / reference (optional)'),
               DropdownButtonFormField<String>(
+                  isExpanded: true,
                   value: _priority,
                   decoration: const InputDecoration(labelText: 'Priority'),
                   items: ['Normal', 'Urgent']
@@ -550,6 +677,7 @@ class _OrderCreateScreenState extends State<OrderCreateScreen> {
                       .toList(),
                   onChanged: (v) => setState(() => _priority = v!)),
               DropdownButtonFormField<String>(
+                  isExpanded: true,
                   value: _terms,
                   decoration: const InputDecoration(labelText: 'Payment terms'),
                   items: orderPaymentTerms
@@ -651,8 +779,9 @@ class _OrderCreateScreenState extends State<OrderCreateScreen> {
         OrderSummary(items: _lines, showLines: true),
         const SizedBox(height: 18),
         OrderSection(
-            title: 'Attach order proof',
-            subtitle: 'Required · PDF, JPG or PNG · up to 20 MB',
+            title: 'Order document',
+            subtitle:
+                'A shareable PDF is created automatically. Customer proof is optional.',
             icon: Icons.attach_file,
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -716,7 +845,7 @@ class _OrderCreateScreenState extends State<OrderCreateScreen> {
                   maxLines: 3),
               const SizedBox(height: 16),
               const Text(
-                  'The order and attachment are saved on this device first. Keep the app open when uploading. They are removed locally only after the server confirms receipt.',
+                  'Save now, even offline. Preview or share the order PDF after saving. Server upload is not available yet; your order stays on this device.',
                   style: TextStyle(
                       fontSize: 12, color: TColors.textSecondary, height: 1.5)),
             ])),
@@ -727,6 +856,11 @@ class _OrderCreateScreenState extends State<OrderCreateScreen> {
       TextFormField(
           key: key,
           controller: c,
+          onChanged: c == _name
+              ? (_) {
+                  if (_doctor != null) setState(() => _doctor = null);
+                }
+              : null,
           maxLines: maxLines,
           textCapitalization: TextCapitalization.sentences,
           maxLength: maxLines > 1 ? 1000 : 160,

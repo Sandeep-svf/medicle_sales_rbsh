@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:open_filex/open_filex.dart';
+import 'package:printing/printing.dart';
+import '../services/order_pdf_service.dart';
 import '../../../utils/constants/colors.dart';
 import '../models/order_models.dart';
 import '../widgets/order_widgets.dart';
@@ -14,19 +16,62 @@ class OrderDetailScreen extends StatefulWidget {
 
 class _OrderDetailScreenState extends State<OrderDetailScreen> {
   bool _opening = false;
+  bool _sharing = false;
+
+  Future<void> _sharePdf() async {
+    if (_sharing) return;
+    setState(() => _sharing = true);
+    try {
+      final bytes = await OrderPdfService.fromOrder(widget.order);
+      if (!mounted) return;
+      final box = context.findRenderObject() as RenderBox?;
+      await Printing.sharePdf(
+          bytes: bytes,
+          filename: '${widget.order.reference}.pdf',
+          bounds:
+              box == null ? null : box.localToGlobal(Offset.zero) & box.size);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text(
+                'Could not share the PDF. Your order is saved; please try again.')));
+      }
+    } finally {
+      if (mounted) setState(() => _sharing = false);
+    }
+  }
+
+  void _previewPdf() {
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (_) => Scaffold(
+                  appBar: AppBar(title: const Text('Order PDF')),
+                  body: PdfPreview(
+                    build: (_) => OrderPdfService.fromOrder(widget.order),
+                    pdfFileName: '${widget.order.reference}.pdf',
+                    canChangeOrientation: false,
+                    canChangePageFormat: false,
+                    canDebug: false,
+                  ),
+                )));
+  }
+
   Future<void> _openProof() async {
     setState(() => _opening = true);
     try {
       final result = await OpenFilex.open(widget.order.attachmentPath);
-      if (result.type != ResultType.done && mounted)
+      if (result.type != ResultType.done && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
             content: Text(
                 'The attachment could not be opened. Check that a PDF or image viewer is installed.')));
+      }
     } catch (_) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
             content:
                 Text('This attachment is no longer available on the device.')));
+      }
     } finally {
       if (mounted) setState(() => _opening = false);
     }
@@ -47,10 +92,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                     onPressed: () async {
                       await Clipboard.setData(
                           ClipboardData(text: order.clientGeneratedId));
-                      if (context.mounted)
+                      if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                                 content: Text('Order reference copied')));
+                      }
                     },
                     icon: const Icon(Icons.copy_outlined))
               ]),
@@ -61,6 +107,26 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                     child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
+                          OrderSection(
+                              title: 'Your order is saved',
+                              subtitle:
+                                  'Preview, print or share a medicine order PDF. Choose WhatsApp from the share menu if installed.',
+                              icon: Icons.task_alt,
+                              child:
+                                  Wrap(spacing: 12, runSpacing: 8, children: [
+                                FilledButton.icon(
+                                    onPressed: _sharing ? null : _sharePdf,
+                                    icon: const Icon(Icons.share_outlined),
+                                    label: Text(_sharing
+                                        ? 'Preparing PDF…'
+                                        : 'Share PDF')),
+                                OutlinedButton.icon(
+                                    onPressed: _previewPdf,
+                                    icon: const Icon(
+                                        Icons.picture_as_pdf_outlined),
+                                    label: const Text('Preview PDF')),
+                              ])),
+                          const SizedBox(height: 18),
                           OrderSection(
                               title: order.doctorName,
                               subtitle:

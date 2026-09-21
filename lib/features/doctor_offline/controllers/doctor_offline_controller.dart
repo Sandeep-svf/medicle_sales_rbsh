@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import '../services/doctor_creation_store.dart';
+import '../../visit/Doctor/repository/pending_area_assignment_repository.dart';
+import '../../visit/Doctor/models/pending_area_assignment_model.dart';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -32,11 +34,15 @@ class DoctorOfflineController extends GetxController
     with WidgetsBindingObserver {
   DoctorOfflineController({
     this.creationStore,
+    this.accountId,
+    PendingAreaAssignmentRepository? areaAssignmentRepository,
     required DoctorRepository repository,
     required DoctorSyncCoordinator syncCoordinator,
     DoctorConnectivityMonitor? connectivityMonitor,
     Duration connectivityDebounce = const Duration(milliseconds: 900),
-  })  : _repository = repository,
+  })  : _areaAssignments =
+            areaAssignmentRepository ?? PendingAreaAssignmentRepository(),
+        _repository = repository,
         _syncCoordinator = syncCoordinator,
         _connectivityMonitor =
             connectivityMonitor ?? ConnectivityPlusDoctorConnectivityMonitor(),
@@ -44,6 +50,30 @@ class DoctorOfflineController extends GetxController
         _searchIndex = DoctorSearchIndex(const <Doctor>[]);
 
   final DoctorCreationStore? creationStore;
+  final String? accountId;
+  final PendingAreaAssignmentRepository _areaAssignments;
+  List<PendingAreaAssignmentModel> _savedAreas = [];
+  List<Doctor> _doctorsForSync = const [];
+
+  /// Server/cache values before pending local area edits are overlaid for UI.
+  List<Doctor> get doctorsForSync => _doctorsForSync;
+  StreamSubscription<String>? _areaSubscription;
+  int _areaRead = 0;
+
+  Future<void> reloadAreaAssignments() async {
+    if (accountId == null || _shutDown) return;
+    final generation = ++_areaRead;
+    try {
+      final assignments = await _areaAssignments.getForUser(accountId!);
+      if (_shutDown || generation != _areaRead) return;
+      _savedAreas = assignments.where((a) => a.userId == accountId).toList()
+        ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+      _mergeDoctors();
+    } catch (_) {
+      // Keep the last usable doctor list if local assignment storage is busy.
+    }
+  }
+
   List<Doctor> _downloadedDoctors = const [];
   List<Doctor> _createdDoctors = const [];
   Set<String> pendingImageIds = {};
@@ -120,6 +150,10 @@ class DoctorOfflineController extends GetxController
     if (_initialized || _shutDown) return;
     WidgetsBinding.instance.addObserver(this);
     _syncStatus = _syncCoordinator.status;
+    _areaSubscription = _areaAssignments.changes.listen((userId) {
+      if (userId == accountId) unawaited(reloadAreaAssignments());
+    });
+    await reloadAreaAssignments();
     await reloadCreations();
     _applyDoctors(await _repository.readDoctors());
     _creationSubscription = creationStore?.changes.listen((_) {
@@ -195,6 +229,7 @@ class DoctorOfflineController extends GetxController
   }
 
   Future<void> refreshDoctors() async {
+    await reloadAreaAssignments();
     await _syncCoordinator.synchronize();
     final store = creationStore;
     if (store == null || _shutDown) return;
@@ -489,7 +524,36 @@ class DoctorOfflineController extends GetxController
         );
       }
     }
-    final doctors = merged.values.toList();
+    _doctorsForSync = List<Doctor>.unmodifiable(merged.values);
+    final byDoctor = <String, PendingAreaAssignmentModel>{};
+    for (final assignment in _savedAreas) {
+      byDoctor[assignment.doctorLocalId] = assignment;
+      if (assignment.serverDoctorId != null) {
+        byDoctor[assignment.serverDoctorId!] = assignment;
+      }
+    }
+    final doctors = merged.values.map((doctor) {
+      final matches = [
+        byDoctor[doctor.localId],
+        byDoctor[doctor.clientGeneratedId],
+        byDoctor[doctor.serverId]
+      ].whereType<PendingAreaAssignmentModel>().toList();
+      if (matches.isEmpty) return doctor;
+      matches.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      final assignment = matches.first;
+      // A later server edit is authoritative after this assignment was sent.
+      if (assignment.uploaded &&
+          doctor.areaId != assignment.areaId &&
+          doctor.updatedAt?.isAfter(assignment.createdAt) == true) {
+        return doctor;
+      }
+      return doctor.copyWith(
+          areaId: assignment.areaId,
+          areaName: doctor.areaId == assignment.areaId &&
+                  doctor.areaName?.trim().isNotEmpty == true
+              ? doctor.areaName
+              : assignment.areaName);
+    }).toList();
     final previousSelectedId = _selectedLocalId;
     _allDoctors = List<Doctor>.unmodifiable(doctors);
     _searchIndex.rebuild(_allDoctors);
@@ -580,6 +644,7 @@ class DoctorOfflineController extends GetxController
     _connectivityTimer?.cancel();
     _creationTimer?.cancel();
     await _creationSubscription?.cancel();
+    await _areaSubscription?.cancel();
     await creationStore?.close();
     await _doctorSubscription?.cancel();
     await _statusSubscription?.cancel();

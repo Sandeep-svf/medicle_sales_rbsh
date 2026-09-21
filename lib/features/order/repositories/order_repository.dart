@@ -7,6 +7,7 @@ import 'package:uuid/uuid.dart';
 
 import '../database/order_database.dart';
 import '../models/order_models.dart';
+import '../services/order_pdf_service.dart';
 
 class OrderRepository {
   OrderRepository(
@@ -31,11 +32,20 @@ class OrderRepository {
     if (validation != null) throw FormatException(validation);
     final localId = _uuid.v4();
     final now = DateTime.now().toUtc();
+    final generated = draft.attachmentBytes.isEmpty;
+    final attachmentName = generated
+        ? 'order-${localId.substring(0, 8)}.pdf'
+        : draft.attachmentName;
+    final attachmentMime = generated ? 'application/pdf' : draft.attachmentMime;
+    final bytes = generated
+        ? await OrderPdfService.build(
+            draft: draft,
+            reference: 'ORD-${localId.substring(0, 8).toUpperCase()}')
+        : draft.attachmentBytes;
     final directory = await _attachmentsPath();
-    final safeName =
-        draft.attachmentName.replaceAll(RegExp(r'[^A-Za-z0-9._-]'), '_');
+    final safeName = attachmentName.replaceAll(RegExp(r'[^A-Za-z0-9._-]'), '_');
     final attachmentPath = path.join(directory, '${localId}_$safeName');
-    await File(attachmentPath).writeAsBytes(draft.attachmentBytes, flush: true);
+    await File(attachmentPath).writeAsBytes(bytes, flush: true);
 
     try {
       await _database.raw.transaction((transaction) async {
@@ -65,8 +75,8 @@ class OrderRepository {
           'created_at': now.toIso8601String(),
           'updated_at': now.toIso8601String(),
           'sync_state': OrderSyncState.pending.name,
-          'attachment_name': draft.attachmentName,
-          'attachment_mime': draft.attachmentMime,
+          'attachment_name': attachmentName,
+          'attachment_mime': attachmentMime,
           'attachment_path': attachmentPath,
         });
         for (final item in draft.items) {
@@ -101,11 +111,18 @@ class OrderRepository {
   Future<List<LocalOrder>> recentOrders({required DateTime cutoff}) async {
     final rows = await _database.raw.query(
       'orders',
-      where: 'created_at >= ?',
+      where:
+          'created_at >= ? OR sync_state IN (\'pending\', \'failed\', \'syncing\')',
       whereArgs: [cutoff.toUtc().toIso8601String()],
       orderBy: 'created_at DESC',
     );
     return Future.wait(rows.map(_readOrder));
+  }
+
+  Future<LocalOrder?> findById(String id) async {
+    final rows = await _database.raw
+        .query('orders', where: 'local_id = ?', whereArgs: [id], limit: 1);
+    return rows.isEmpty ? null : _readOrder(rows.single);
   }
 
   Future<List<LocalOrder>> pendingOrders(

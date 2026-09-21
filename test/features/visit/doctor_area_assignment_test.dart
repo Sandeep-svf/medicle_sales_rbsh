@@ -105,6 +105,78 @@ void main() {
     expect(repository.uploaded, contains('assignment-1'));
     expect(repository.errors['assignment-2'], contains('500'));
   });
+
+  test('already assigned area is acknowledged without a duplicate PUT',
+      () async {
+    final repository = FakePendingAreaAssignmentRepository()
+      ..assignments.add(
+        assignment(
+          localId: 'assignment-existing',
+          doctorLocalId: 'local-doctor-1',
+          serverDoctorId: 'server-doctor-1',
+          areaId: 'area-1',
+        ),
+      );
+    final requests = <http.Request>[];
+    final service = DoctorAreaAssignmentSyncService(
+      repository: repository,
+      client: MockClient((request) async {
+        requests.add(request);
+        return http.Response(jsonEncode({'success': true}), 200);
+      }),
+      baseUrl: 'https://example.test',
+    );
+
+    final assigned = await service.syncPendingAssignments(
+      userId: 'user-1',
+      doctors: [
+        fixtureDoctor(id: 'server-doctor-1', localId: 'local-doctor-1')
+            .copyWith(areaId: 'area-1', areaName: 'South Delhi'),
+      ],
+    );
+
+    expect(requests, isEmpty);
+    expect(assigned['local-doctor-1'], 'area-1');
+    expect(repository.uploaded, contains('assignment-existing'));
+  });
+
+  test('assignment without a server doctor identity stays pending', () async {
+    final repository = FakePendingAreaAssignmentRepository()
+      ..assignments.add(
+        assignment(
+          localId: 'assignment-waiting',
+          doctorLocalId: 'local-doctor-1',
+          serverDoctorId: null,
+          areaId: 'area-1',
+        ),
+      );
+    var requestCount = 0;
+    final service = DoctorAreaAssignmentSyncService(
+      repository: repository,
+      client: MockClient((_) async {
+        requestCount++;
+        return http.Response(jsonEncode({'success': true}), 200);
+      }),
+      baseUrl: 'https://example.test',
+    );
+
+    await service.syncPendingAssignments(
+      userId: 'user-1',
+      doctors: [
+        fixtureDoctor(id: 'server-doctor-1', localId: 'local-doctor-1')
+            .copyWith(
+          serverId: null,
+          areaId: null,
+          areaName: null,
+        ),
+      ],
+    );
+
+    expect(requestCount, 0);
+    expect(repository.uploaded, isEmpty);
+    expect(repository.errors['assignment-waiting'],
+        'Waiting for doctor synchronization.');
+  });
 }
 
 PendingAreaAssignmentModel assignment({
