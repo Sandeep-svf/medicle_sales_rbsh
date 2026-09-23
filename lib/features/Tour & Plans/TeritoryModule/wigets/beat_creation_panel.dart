@@ -1,279 +1,166 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
-import '../../../../utils/constants/colors.dart';
-import '../../../../utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 import '../controller/territory_controller.dart';
 import '../utils/enumsclass.dart';
-
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class BeatCreationPanel extends GetView<TerritoryController> {
   const BeatCreationPanel({super.key});
 
   @override
   Widget build(BuildContext context) {
-
     return Obx(() {
-
-      if (controller.mapMode.value !=
-          TerritoryMapMode.createBeat) {
+      if (controller.mapMode.value != TerritoryMapMode.createBeat) {
         return const SizedBox.shrink();
       }
 
       return Material(
-
-        elevation: 12,
-
+        elevation: TSizes.v12,
         borderRadius: BorderRadius.circular(20),
-
         child: Container(
-
           margin: const EdgeInsets.all(16),
-
           padding: const EdgeInsets.all(18),
-
           decoration: BoxDecoration(
-
-            color: Colors.white,
-
-            borderRadius:
-            BorderRadius.circular(20),
-
+            color: TColors.white,
+            borderRadius: BorderRadius.circular(20),
           ),
-
           child: Column(
-
             mainAxisSize: MainAxisSize.min,
-
             children: [
-
               Row(
-
                 children: [
-
                   const Icon(
                     Icons.route,
                     color: TColors.primary,
                   ),
-
-                  const SizedBox(width: 12),
-
+                  const SizedBox(width: TSizes.v12),
                   const Expanded(
-
                     child: Text(
-
-                      "Create Beat",
-
+                      TTexts.uiTextCreateBeat,
                       style: TextStyle(
-
                         fontWeight: FontWeight.bold,
-
-                        fontSize:
-                        TSizes.fontSizeLg,
-
+                        fontSize: TSizes.fontSizeLg,
                       ),
-
                     ),
-
                   ),
-
                   IconButton(
-
                     onPressed: () {
-
                       controller.cancelBeatCreation();
-
                     },
-
                     icon: const Icon(
                       Icons.close,
                     ),
-
                   )
-
                 ],
-
               ),
-
-              const SizedBox(height: 18),
-
+              const SizedBox(height: TSizes.v18),
               Row(
-
                 children: [
-
                   Expanded(
                     child: _tile(
                       controller.selectedAreaCount.toString(),
                       "Areas",
                     ),
                   ),
-
                   Expanded(
                     child: _tile(
                       controller.selectedDoctorCount.toString(),
                       "Doctors",
                     ),
                   ),
-
                   Expanded(
                     child: _tile(
                       "${controller.estimatedDistance.toStringAsFixed(1)} km",
                       "Distance",
                     ),
                   ),
-
                 ],
-
               ),
-
-              const SizedBox(height: 20),
-
+              const SizedBox(height: TSizes.v20),
               SizedBox(
-
                 width: double.infinity,
-
                 child: ElevatedButton.icon(
-
                   style: ElevatedButton.styleFrom(
-
-                    backgroundColor:
-                    TColors.primary,
-
+                    backgroundColor: TColors.primary,
                   ),
-
-                  onPressed:
-
-                  controller.canSaveBeat
-
+                  onPressed: controller.canSaveBeat
                       ? () {
-
-                    _showBeatDialog(
-                      context,
-                    );
-
-                  }
-
+                          _showBeatDialog(
+                            context,
+                          );
+                        }
                       : null,
-
                   icon: const Icon(
                     Icons.save,
                   ),
-
                   label: const Text(
-                    "Create Beat",
+                    TTexts.uiTextCreateBeat,
                   ),
-
                 ),
-
               )
-
             ],
-
           ),
-
         ),
-
       );
-
     });
-
   }
 
   Widget _tile(
-      String value,
-      String title,
-      ) {
-
+    String value,
+    String title,
+  ) {
     return Column(
-
       children: [
-
         Text(
-
           value,
-
           style: const TextStyle(
-
             fontWeight: FontWeight.bold,
-
-            fontSize: 20,
-
+            fontSize: TSizes.v20,
           ),
-
         ),
-
-        const SizedBox(height: 4),
-
+        const SizedBox(height: TSizes.v4),
         Text(title),
-
       ],
-
     );
-
   }
 
   void _showBeatDialog(
-      BuildContext context,
-      ) {
-
+    BuildContext context,
+  ) {
     final name = TextEditingController();
 
     Get.dialog(
-
       AlertDialog(
-
         title: const Text(
-          "Create Beat",
+          TTexts.uiTextCreateBeat,
         ),
-
         content: TextField(
-
           controller: name,
-
-          decoration:
-          const InputDecoration(
-
-            labelText: "Beat Name",
-
+          decoration: const InputDecoration(
+            labelText: TTexts.uiTextBeatName,
           ),
-
         ),
-
         actions: [
-
           TextButton(
-
             onPressed: Get.back,
-
             child: const Text(
-              "Cancel",
+              TTexts.cancel,
             ),
-
           ),
-
           ElevatedButton(
-
             onPressed: () {
-
-              controller.createBeat(
-              );
+              controller.createBeat();
 
               Get.back();
-
             },
-
             child: const Text(
-              "Create",
+              TTexts.uiTextCreate,
             ),
-
           )
-
         ],
-
       ),
-
     );
-
   }
-
 }

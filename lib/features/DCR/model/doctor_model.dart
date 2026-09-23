@@ -29,10 +29,8 @@ class DoctorModel {
       name: json['name'] ?? '',
       email: json['email'] ?? '',
       mobileNumber: json['mobile_number'] ?? json['phone'] ?? '',
-      address: json['address'] ??
-          json['clinic_address'] ??
-          json['location'] ??
-          '',
+      address:
+          json['address'] ?? json['clinic_address'] ?? json['location'] ?? '',
     );
   }
 }

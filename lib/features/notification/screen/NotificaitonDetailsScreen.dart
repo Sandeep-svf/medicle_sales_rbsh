@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
-
 import '../model/NotificationModel.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class NotificationDetailsScreen extends StatelessWidget {
   final NotificationModel notification;
 
-  const NotificationDetailsScreen({Key? key, required this.notification}) : super(key: key);
+  const NotificationDetailsScreen({Key? key, required this.notification})
+      : super(key: key);
 
   // Convert time to a more readable format (Date + Time)
   String formatDate(String createdAt) {
@@ -21,7 +22,8 @@ class NotificationDetailsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(notification.title),
-        backgroundColor: TColors.primary, // Choose any color that suits your app
+        backgroundColor:
+            TColors.primary, // Choose any color that suits your app
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -32,29 +34,29 @@ class NotificationDetailsScreen extends StatelessWidget {
             Text(
               notification.title,
               style: TextStyle(
-                fontSize: 24,
+                fontSize: TSizes.v24,
                 fontWeight: FontWeight.bold,
-                color: Colors.black,
+                color: TColors.pureBlack,
               ),
             ),
-            SizedBox(height: 8),
+            SizedBox(height: TSizes.v8),
 
             // Body Section
             Text(
               notification.body,
               style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[700],
+                fontSize: TSizes.v16,
+                color: TColors.materialGrey700,
               ),
             ),
-            SizedBox(height: 20),
+            SizedBox(height: TSizes.v20),
 
             // Date-time Section
             Text(
               "Sent on: ${formatDate(notification.createdAt)}",
               style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[500],
+                fontSize: TSizes.v14,
+                color: TColors.materialGrey500,
               ),
             ),
           ],

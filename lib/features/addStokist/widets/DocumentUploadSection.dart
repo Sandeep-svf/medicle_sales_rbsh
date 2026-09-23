@@ -1,7 +1,8 @@
-// lib/screens/pharma_distributor_form/widgets/document_upload_section.dart
 import 'dart:io';
 import 'package:flutter/material.dart';
-import '../../../utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class DocumentUploadSection extends StatelessWidget {
   final Map<String, File?> documentImages;
@@ -22,12 +23,15 @@ class DocumentUploadSection extends StatelessWidget {
   });
 
   Widget _sectionTitle(String title) => Padding(
-    padding: const EdgeInsets.only(bottom: 8.0),
-    child: Text(
-      title,
-      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: TColors.primary),
-    ),
-  );
+        padding: const EdgeInsets.only(bottom: 8.0),
+        child: Text(
+          title,
+          style: const TextStyle(
+              fontSize: TSizes.v18,
+              fontWeight: FontWeight.bold,
+              color: TColors.primary),
+        ),
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -52,35 +56,41 @@ class DocumentUploadSection extends StatelessWidget {
               alignment: Alignment.center,
               children: [
                 Container(
-                  width: 110,
-                  height: 110,
+                  width: TSizes.v110,
+                  height: TSizes.v110,
                   decoration: BoxDecoration(
                     border: Border.all(
                       color: file != null
-                          ? Colors.green
-                          : (isRequired ? Colors.redAccent : Colors.grey),
-                      width: 2,
+                          ? TColors.materialGreen
+                          : (isRequired
+                              ? TColors.materialRedAccent
+                              : TColors.materialGrey),
+                      width: TSizes.v2,
                     ),
                     borderRadius: BorderRadius.circular(12),
-                    color: Colors.grey.shade100,
+                    color: TColors.materialGrey100,
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(12),
                     child: file != null
                         ? Image.file(file, fit: BoxFit.cover)
                         : Icon(
-                      // Change icon based on type
-                        isGeoImage ? Icons.add_a_photo : Icons.cloud_upload_outlined,
-                        color: isGeoImage ? TColors.primary : Colors.grey,
-                        size: 44
-                    ),
+                            // Change icon based on type
+                            isGeoImage
+                                ? Icons.add_a_photo
+                                : Icons.cloud_upload_outlined,
+                            color: isGeoImage
+                                ? TColors.primary
+                                : TColors.materialGrey,
+                            size: TSizes.v44),
                   ),
                 ),
                 if (isRequired && file == null)
                   const Positioned(
                     top: 6,
                     right: 6,
-                    child: Icon(Icons.error, color: Colors.redAccent, size: 20),
+                    child: Icon(Icons.error,
+                        color: TColors.materialRedAccent, size: TSizes.v20),
                   ),
                 if (file != null)
                   Positioned(
@@ -91,16 +101,17 @@ class DocumentUploadSection extends StatelessWidget {
                   ),
               ],
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: TSizes.v6),
             SizedBox(
-              width: 110,
+              width: TSizes.v110,
               child: Text(
                 title,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 13,
+                  fontSize: TSizes.v13,
                   fontWeight: FontWeight.w600,
-                  color: isRequired ? Colors.black : Colors.grey[700],
+                  color:
+                      isRequired ? TColors.pureBlack : TColors.materialGrey700,
                 ),
               ),
             ),
@@ -112,12 +123,12 @@ class DocumentUploadSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 6),
+        const SizedBox(height: TSizes.v6),
         _sectionTitle("Upload Documents"),
-        const SizedBox(height: 12),
+        const SizedBox(height: TSizes.v12),
         Wrap(
-          spacing: 18,
-          runSpacing: 18,
+          spacing: TSizes.v18,
+          runSpacing: TSizes.v18,
           children: [
             // --- ADDED THIS LINE ---
             buildTile('Stockist Image', true),
@@ -129,7 +140,7 @@ class DocumentUploadSection extends StatelessWidget {
             buildTile('Business Profile', false),
           ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: TSizes.v12),
         Row(
           children: [
             ElevatedButton.icon(
@@ -139,22 +150,28 @@ class DocumentUploadSection extends StatelessWidget {
                   // Validate all except Business Profile
                   if (e.key != 'Business Profile' && e.value == null) {
                     ok = false;
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${e.key} required')));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('${e.key} required')));
                     break;
                   }
                 }
-                if (ok) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('All required documents selected')));
+                if (ok)
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                      content:
+                          Text(TTexts.uiTextAllRequiredDocumentsSelected)));
               },
               icon: const Icon(Icons.check),
-              label: const Text('Validate Uploads '),
+              label: const Text(TTexts.uiTextValidateUploads),
               style: ElevatedButton.styleFrom(backgroundColor: TColors.primary),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: TSizes.v12),
             ElevatedButton.icon(
               onPressed: confirmClearAllDocuments,
               icon: const Icon(Icons.delete_forever),
-              label: const Text('Clear All  '),
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.grey,),
+              label: const Text(TTexts.uiTextClearAll),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: TColors.materialGrey,
+              ),
             ),
           ],
         ),

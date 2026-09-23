@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class PerformanceProgress extends StatelessWidget {
   final double value;
@@ -52,7 +53,7 @@ class PerformanceProgress extends StatelessWidget {
                       boxShadow: [
                         BoxShadow(
                           color: color.withOpacity(.25),
-                          blurRadius: 6,
+                          blurRadius: TSizes.v6,
                           offset: const Offset(0, 2),
                         ),
                       ],
@@ -63,9 +64,8 @@ class PerformanceProgress extends StatelessWidget {
             );
           },
         ),
-
         if (showPercentage) ...[
-          const SizedBox(height: 6),
+          const SizedBox(height: TSizes.v6),
           Align(
             alignment: Alignment.centerRight,
             child: TweenAnimationBuilder<double>(
@@ -77,7 +77,7 @@ class PerformanceProgress extends StatelessWidget {
                   style: TextStyle(
                     fontWeight: FontWeight.w600,
                     color: color,
-                    fontSize: 12,
+                    fontSize: TSizes.v12,
                   ),
                 );
               },

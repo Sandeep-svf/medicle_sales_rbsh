@@ -14,6 +14,7 @@ import '../repository/pending_schedule_repository.dart';
 import '../repository/pending_visit_repository.dart';
 import 'doctor_area_assignment_sync_service.dart';
 import 'pending_visit_sync_service.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class DoctorOfflineUploadCoordinator {
   DoctorOfflineUploadCoordinator({
@@ -176,7 +177,7 @@ class DoctorOfflineUploadCoordinator {
             'DoctorOfflineUploadCoordinator: HOLD schedule=${schedule.localId}; no server doctor ID.');
         await _scheduleRepository.markError(
           localId: schedule.localId,
-          message: 'Waiting for doctor synchronization.',
+          message: TTexts.uiTextWaitingForDoctorSynchronization,
         );
         continue;
       }
@@ -192,7 +193,7 @@ class DoctorOfflineUploadCoordinator {
             'DoctorOfflineUploadCoordinator: HOLD schedule=${schedule.localId}; no area ID.');
         await _scheduleRepository.markError(
           localId: schedule.localId,
-          message: 'Waiting for doctor area assignment.',
+          message: TTexts.uiTextWaitingForDoctorAreaAssignment,
         );
         continue;
       }
@@ -222,7 +223,7 @@ class DoctorOfflineUploadCoordinator {
       for (final item in schedules) {
         await _scheduleRepository.markError(
           localId: item.schedule.localId,
-          message: 'Authentication required before schedule upload.',
+          message: TTexts.uiTextAuthenticationRequiredBeforeScheduleUpload,
         );
       }
       return;

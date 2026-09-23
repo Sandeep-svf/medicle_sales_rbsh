@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../../../utils/constants/colors.dart';
 import '../../../utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class FormDivider extends StatelessWidget {
   const FormDivider({
@@ -19,22 +20,22 @@ class FormDivider extends StatelessWidget {
       children: [
         Flexible(
             child: Divider(
-              color: dark ? TColors.darkGrey : TColors.grey,
-              thickness: 0.5,
-              indent: 60,
-              endIndent: 5,
-            )),
+          color: dark ? TColors.darkGrey : TColors.grey,
+          thickness: TSizes.v0_5,
+          indent: 60,
+          endIndent: 5,
+        )),
         Text(
           "",
           style: Theme.of(context).textTheme.labelMedium,
         ),
         Flexible(
             child: Divider(
-              color: dark ? TColors.darkGrey : TColors.grey,
-              thickness: 0.5,
-              indent: 5,
-              endIndent: 60,
-            )),
+          color: dark ? TColors.darkGrey : TColors.grey,
+          thickness: TSizes.v0_5,
+          indent: 5,
+          endIndent: 60,
+        )),
       ],
     );
   }

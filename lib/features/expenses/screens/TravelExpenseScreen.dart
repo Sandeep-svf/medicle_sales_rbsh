@@ -1,17 +1,14 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
-import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 import 'package:medicle_sales_rbsh/utils/local_storage/auth_manager.dart';
-
 import '../controllers/AllowenceController.dart';
 import '../controllers/ExpanseDefaultValueController.dart';
 import '../controllers/other_expense_controller.dart';
@@ -19,6 +16,7 @@ import '../models/DailyAllowenceRequestModel.dart';
 import '../models/TravelAllowenceRequestModel.dart';
 import '../models/TravelDetails.dart';
 import '../models/other_expense_request.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class AddAllowanceScreen extends StatefulWidget {
   final bool isEditMode;
@@ -36,7 +34,8 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
   bool isLoading = false;
   Map<String, dynamic> payload = {};
 
-  final ScraperSettingsController settingsController = new ScraperSettingsController();
+  final ScraperSettingsController settingsController =
+      new ScraperSettingsController();
 
   final List<String> categories = [
     'Travel Allowance',
@@ -196,9 +195,9 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.BOTTOM,
         timeInSecForIosWeb: 1,
-        backgroundColor: Colors.black,
-        textColor: Colors.white,
-        fontSize: 16.0,
+        backgroundColor: TColors.pureBlack,
+        textColor: TColors.white,
+        fontSize: TSizes.v16,
       );
       return;
     }
@@ -473,15 +472,15 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
           msg: widget.isEditMode
               ? "You can not updated expense more than once."
               : "Failed to submit ${selectedCategory!.toLowerCase()}",
-          backgroundColor: Colors.red,
-          textColor: Colors.white,
+          backgroundColor: TColors.materialRed,
+          textColor: TColors.white,
         );
       }
     } catch (e) {
       Fluttertoast.showToast(
         msg: "Exception: ${e.toString()}",
-        backgroundColor: Colors.red,
-        textColor: Colors.white,
+        backgroundColor: TColors.materialRed,
+        textColor: TColors.white,
       );
     } finally {
       setState(() => isLoading = false);
@@ -492,15 +491,15 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Add Allowance"),
+        title: const Text(TTexts.uiTextAddAllowance),
         backgroundColor: TColors.primary, // Set background color as needed
         titleTextStyle: TextStyle(
-          color: Colors.white, // Set title text color to white
-          fontSize: 20, // Adjust font size if needed
+          color: TColors.white, // Set title text color to white
+          fontSize: TSizes.v20, // Adjust font size if needed
           fontWeight: FontWeight.bold, // Adjust font weight if needed
         ),
         iconTheme: IconThemeData(
-          color: Colors.white, // Set back arrow (leading icon) color to white
+          color: TColors.white, // Set back arrow (leading icon) color to white
         ),
       ),
       body: Padding(
@@ -510,7 +509,8 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
             DropdownButtonFormField<String>(
               value: selectedCategory,
               decoration: const InputDecoration(
-                  labelText: "Category", border: OutlineInputBorder()),
+                  labelText: TTexts.uiTextCategory,
+                  border: OutlineInputBorder()),
               items: categories
                   .map((c) => DropdownMenuItem(value: c, child: Text(c)))
                   .toList(),
@@ -518,22 +518,21 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
                   ? null
                   : (val) => setState(() => selectedCategory = val),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: TSizes.v16),
             if (selectedCategory == 'Travel Allowance') ...[
               Card(
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12)),
-                elevation: 2,
+                elevation: TSizes.v2,
                 child: Padding(
                   padding: const EdgeInsets.all(12.0),
                   child: Column(
                     children: [
-
                       InkWell(
                         onTap: pickExpenseDate,
                         child: InputDecorator(
                           decoration: const InputDecoration(
-                            labelText: "Travel Date",
+                            labelText: TTexts.uiTextTravelDate,
                             border: OutlineInputBorder(),
                           ),
                           child: Text(
@@ -543,12 +542,11 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 12),
-
+                      const SizedBox(height: TSizes.v12),
                       DropdownButtonFormField<String>(
                         value: tripType,
                         decoration: const InputDecoration(
-                            labelText: 'Trip Type',
+                            labelText: TTexts.uiTextTripType,
                             border: OutlineInputBorder()),
                         items: ['One Way', 'Round Trip']
                             .map((type) => DropdownMenuItem(
@@ -556,29 +554,29 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
                             .toList(),
                         onChanged: (val) => setState(() => tripType = val!),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: TSizes.v12),
                       Row(
                         children: [
                           Expanded(
                             child: TextFormField(
                               controller: fromController,
                               decoration: const InputDecoration(
-                                  labelText: 'From',
+                                  labelText: TTexts.uiTextFrom,
                                   border: OutlineInputBorder()),
                             ),
                           ),
-                          const SizedBox(width: 10),
+                          const SizedBox(width: TSizes.v10),
                           Expanded(
                             child: TextFormField(
                               controller: toController,
                               decoration: const InputDecoration(
-                                  labelText: 'To',
+                                  labelText: TTexts.uiTextTo,
                                   border: OutlineInputBorder()),
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: TSizes.v12),
                       TextFormField(
                         controller: kmController,
                         keyboardType: TextInputType.number,
@@ -586,15 +584,15 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
                           FilteringTextInputFormatter.digitsOnly
                         ],
                         decoration: const InputDecoration(
-                            labelText: 'Distance (km)',
+                            labelText: TTexts.uiTextDistanceKm,
                             border: OutlineInputBorder()),
                         onFieldSubmitted: (_) => _addTrip(),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: TSizes.v12),
                       TextFormField(
                         controller: remarkController,
                         decoration: InputDecoration(
-                            labelText: "Remark:",
+                            labelText: TTexts.uiTextRemark_a88f66d2,
                             border: OutlineInputBorder(),
                             prefixText: "$tripType: "),
                       ),
@@ -625,10 +623,10 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
                             ),
                           ),
                           if (editingIndex != null) ...[
-                            const SizedBox(width: 10),
+                            const SizedBox(width: TSizes.v10),
                             TextButton(
                               onPressed: _cancelEdit,
-                              child: const Text("Cancel"),
+                              child: const Text(TTexts.cancel),
                             ),
                           ]
                         ],
@@ -637,10 +635,10 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: TSizes.v16),
               Expanded(
                 child: trips.isEmpty
-                    ? const Center(child: Text('No trips added.'))
+                    ? const Center(child: Text(TTexts.uiTextNoTripsAdded))
                     : ListView.builder(
                         itemCount: trips.length,
                         itemBuilder: (_, i) {
@@ -670,7 +668,7 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
                                   if (!widget.isEditMode)
                                     IconButton(
                                       icon: const Icon(Icons.delete,
-                                          color: Colors.red),
+                                          color: TColors.materialRed),
                                       onPressed: () => _deleteTrip(i),
                                     ),
                                 ],
@@ -680,24 +678,23 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
                         },
                       ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: TSizes.v10),
               Text('Total Fare: ₹${totalFare.toStringAsFixed(2)}',
                   style: const TextStyle(fontWeight: FontWeight.bold)),
             ] else if (selectedCategory == 'Daily Allowance') ...[
               Card(
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12)),
-                elevation: 2,
+                elevation: TSizes.v2,
                 child: Padding(
                   padding: const EdgeInsets.all(12.0),
                   child: Column(
                     children: [
-
                       InkWell(
                         onTap: pickExpenseDate,
                         child: InputDecorator(
                           decoration: const InputDecoration(
-                            labelText: "Allowance Date",
+                            labelText: TTexts.uiTextAllowanceDate,
                             border: OutlineInputBorder(),
                           ),
                           child: Text(
@@ -707,13 +704,10 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
                           ),
                         ),
                       ),
-
-                      const SizedBox(height: 12),
-
-
+                      const SizedBox(height: TSizes.v12),
                       DropdownButtonFormField<String>(
                         decoration: const InputDecoration(
-                            labelText: "Select DA Location",
+                            labelText: TTexts.uiTextSelectDALocation,
                             border: OutlineInputBorder()),
                         value: selectedDAType,
                         items: ['Ex', 'Headquarter', 'Out Of Station']
@@ -723,39 +717,46 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
                         onChanged: (val) {
                           setState(() {
                             selectedDAType = val;
-                            final settings = settingsController.scraperSettings.value;
+                            final settings =
+                                settingsController.scraperSettings.value;
 
                             if (val == 'Ex') {
                               daAmountController.text =
-                                  (settings?.exHeadquartersAmount ?? 0).toStringAsFixed(2);
+                                  (settings?.exHeadquartersAmount ?? 0)
+                                      .toStringAsFixed(2);
 
                               daDescriptionController.text = 'DA for Ex';
                             } else if (val == 'Headquarter') {
                               daAmountController.text =
-                                  (settings?.headOfficeAmount ?? 0).toStringAsFixed(2);
+                                  (settings?.headOfficeAmount ?? 0)
+                                      .toStringAsFixed(2);
 
-                              daDescriptionController.text = 'DA for Headquarter';
+                              daDescriptionController.text =
+                                  'DA for Headquarter';
                             } else {
                               daAmountController.text =
-                                  (settings?.outsideHeadOfficeAmount ?? 0).toStringAsFixed(2);
+                                  (settings?.outsideHeadOfficeAmount ?? 0)
+                                      .toStringAsFixed(2);
 
-                              daDescriptionController.text = 'DA for Out Of Station';
+                              daDescriptionController.text =
+                                  'DA for Out Of Station';
                             }
                           });
                         },
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: TSizes.v12),
                       TextFormField(
                         controller: daAmountController,
                         readOnly: true,
                         decoration: const InputDecoration(
-                            labelText: 'Amount', border: OutlineInputBorder()),
+                            labelText: TTexts.amount,
+                            border: OutlineInputBorder()),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: TSizes.v12),
                       TextFormField(
                         controller: daDescriptionController,
                         decoration: const InputDecoration(
-                            labelText: 'Description',
+                            labelText: TTexts.description,
                             border: OutlineInputBorder()),
                       ),
                     ],
@@ -767,7 +768,7 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                elevation: 2,
+                elevation: TSizes.v2,
                 child: Padding(
                   padding: const EdgeInsets.all(12),
                   child: Column(
@@ -776,7 +777,7 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
                         onTap: pickExpenseDate,
                         child: InputDecorator(
                           decoration: const InputDecoration(
-                            labelText: "Expense Date",
+                            labelText: TTexts.uiTextExpenseDate,
                             border: OutlineInputBorder(),
                           ),
                           child: Text(
@@ -790,25 +791,25 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: TSizes.v12),
                       TextFormField(
                         controller: otherAmountController,
                         keyboardType: TextInputType.number,
                         decoration: const InputDecoration(
-                          labelText: "Amount",
+                          labelText: TTexts.amount,
                           border: OutlineInputBorder(),
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: TSizes.v12),
                       TextFormField(
                         controller: otherDescriptionController,
                         maxLines: 3,
                         decoration: const InputDecoration(
-                          labelText: "Description",
+                          labelText: TTexts.description,
                           border: OutlineInputBorder(),
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: TSizes.v12),
                       ElevatedButton.icon(
                         onPressed: pickBillImage,
                         icon: const Icon(Icons.upload),
@@ -823,7 +824,7 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
                 ),
               ),
             ],
-            const SizedBox(height: 20),
+            const SizedBox(height: TSizes.v20),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -832,11 +833,11 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
                     minimumSize: const Size.fromHeight(48)),
                 child: isLoading
                     ? const SizedBox(
-                        height: 20,
-                        width: 20,
+                        height: TSizes.v20,
+                        width: TSizes.v20,
                         child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
+                          color: TColors.white,
+                          strokeWidth: TSizes.v2,
                         ),
                       )
                     : Text(widget.isEditMode ? "Update" : "Submit"),
@@ -872,7 +873,7 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
           clipBehavior: Clip.antiAlias,
           child: ConstrainedBox(
             constraints: BoxConstraints(
-              maxWidth: 920,
+              maxWidth: TSizes.v920,
               maxHeight: screenSize.height * 0.88,
             ),
             child: Column(
@@ -893,56 +894,53 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
                   child: Row(
                     children: [
                       Container(
-                        width: 44,
-                        height: 44,
+                        width: TSizes.v44,
+                        height: TSizes.v44,
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.15),
+                          color: TColors.white.withOpacity(0.15),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: const Icon(
                           Icons.assessment_outlined,
-                          color: Colors.white,
-                          size: 24,
+                          color: TColors.white,
+                          size: TSizes.v24,
                         ),
                       ),
-
-                      const SizedBox(width: 14),
-
+                      const SizedBox(width: TSizes.v14),
                       const Expanded(
                         child: Column(
-                          crossAxisAlignment:
-                          CrossAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'DCR (Daily Call Report)',
+                              TTexts.uiTextDCRDailyCallReport,
                               style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 21,
+                                color: TColors.white,
+                                fontSize: TSizes.v21,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
-                            SizedBox(height: 3),
+                            SizedBox(height: TSizes.v3),
                             Text(
-                              'Daily call performance and allowance eligibility',
+                              TTexts
+                                  .uiTextDailyCallPerformanceAndAllowanceEligibility,
                               style: TextStyle(
-                                color: Colors.white70,
-                                fontSize: 13,
+                                color: TColors.white70,
+                                fontSize: TSizes.v13,
                                 fontWeight: FontWeight.w400,
                               ),
                             ),
                           ],
                         ),
                       ),
-
                       IconButton(
-                        tooltip: 'Close',
+                        tooltip: TTexts.uiTextClose,
                         onPressed: () {
                           Navigator.of(dialogContext).pop();
                         },
                         icon: const Icon(
                           Icons.close_rounded,
-                          color: Colors.white,
-                          size: 26,
+                          color: TColors.white,
+                          size: TSizes.v26,
                         ),
                       ),
                     ],
@@ -956,40 +954,35 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.all(24),
                     child: Column(
-                      crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Container(
                           padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
-                            color: Colors.blueGrey
-                                .withOpacity(0.06),
-                            borderRadius:
-                            BorderRadius.circular(12),
+                            color: TColors.materialBlueGrey.withOpacity(0.06),
+                            borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: Colors.blueGrey
-                                  .withOpacity(0.12),
+                              color: TColors.materialBlueGrey.withOpacity(0.12),
                             ),
                           ),
                           child: const Row(
-                            crossAxisAlignment:
-                            CrossAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Icon(
                                 Icons.info_outline_rounded,
-                                size: 20,
-                                color: Colors.blueGrey,
+                                size: TSizes.v20,
+                                color: TColors.materialBlueGrey,
                               ),
-                              SizedBox(width: 10),
+                              SizedBox(width: TSizes.v10),
                               Expanded(
                                 child: Text(
-                                  'Allowance eligibility is calculated '
+                                  TTexts.uiTextAllowanceEligibilityIsCalculated +
                                       'based on the number of Doctor and '
-                                      'Chemist calls completed during the day.',
+                                          'Chemist calls completed during the day.',
                                   style: TextStyle(
-                                    fontSize: 13.5,
-                                    height: 1.4,
-                                    color: Colors.black87,
+                                    fontSize: TSizes.v13_5,
+                                    height: TSizes.v1_4,
+                                    color: TColors.black87,
                                   ),
                                 ),
                               ),
@@ -997,80 +990,63 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
                           ),
                         ),
 
-                        const SizedBox(height: 20),
+                        const SizedBox(height: TSizes.v20),
 
                         // Horizontally scrollable for smaller devices.
                         SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
                           child: Container(
-                            width: 800,
+                            width: TSizes.v800,
                             decoration: BoxDecoration(
-                              borderRadius:
-                              BorderRadius.circular(14),
+                              borderRadius: BorderRadius.circular(14),
                               border: Border.all(
-                                color: Colors.grey.shade300,
+                                color: TColors.materialGrey300,
                               ),
                             ),
                             clipBehavior: Clip.antiAlias,
                             child: Column(
                               children: [
                                 _buildDcrTableHeader(),
-
                                 _buildDcrRow(
                                   doctorCall: '12 or more',
                                   chemistCall: '5 or more',
                                   ta: '100%',
                                   da: '100%',
-                                  backgroundColor:
-                                  const Color(0xFFE8F5E1),
-                                  statusColor:
-                                  const Color(0xFF2E7D32),
+                                  backgroundColor: TColors.hex_FFE8F5E1,
+                                  statusColor: TColors.hex_FF2E7D32,
                                 ),
-
                                 _buildDcrRow(
                                   doctorCall: '10 - 11',
                                   chemistCall: '4',
                                   ta: '100%',
                                   da: '100%',
-                                  daNote:
-                                  'Recorded as FLAG',
-                                  backgroundColor:
-                                  const Color(0xFFE5F1FB),
-                                  statusColor:
-                                  const Color(0xFF1565C0),
+                                  daNote: 'Recorded as FLAG',
+                                  backgroundColor: TColors.hex_FFE5F1FB,
+                                  statusColor: TColors.hex_FF1565C0,
                                 ),
-
                                 _buildDcrRow(
                                   doctorCall: '8 - 9',
                                   chemistCall: '3',
                                   ta: '100%',
                                   da: '50%',
-                                  backgroundColor:
-                                  const Color(0xFFFFF5D6),
-                                  statusColor:
-                                  const Color(0xFFF9A825),
+                                  backgroundColor: TColors.hex_FFFFF5D6,
+                                  statusColor: TColors.hex_FFF9A825,
                                 ),
-
                                 _buildDcrRow(
                                   doctorCall: '7',
                                   chemistCall: '2',
                                   ta: '50%',
                                   da: '50%',
-                                  backgroundColor:
-                                  const Color(0xFFFFE9DA),
-                                  statusColor:
-                                  const Color(0xFFEF6C00),
+                                  backgroundColor: TColors.hex_FFFFE9DA,
+                                  statusColor: TColors.hex_FFEF6C00,
                                 ),
-
                                 _buildDcrRow(
                                   doctorCall: 'Less than 7',
                                   chemistCall: '1',
                                   ta: '0%',
                                   da: '0%',
-                                  backgroundColor:
-                                  const Color(0xFFFFE2E2),
-                                  statusColor:
-                                  const Color(0xFFC62828),
+                                  backgroundColor: TColors.hex_FFFFE2E2,
+                                  statusColor: TColors.hex_FFC62828,
                                   isLast: true,
                                 ),
                               ],
@@ -1078,7 +1054,7 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
                           ),
                         ),
 
-                        const SizedBox(height: 18),
+                        const SizedBox(height: TSizes.v18),
 
                         Container(
                           width: double.infinity,
@@ -1087,31 +1063,28 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
                             vertical: 12,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.amber
-                                .withOpacity(0.10),
-                            borderRadius:
-                            BorderRadius.circular(10),
+                            color: TColors.materialAmber.withOpacity(0.10),
+                            borderRadius: BorderRadius.circular(10),
                             border: Border.all(
-                              color: Colors.amber
-                                  .withOpacity(0.30),
+                              color: TColors.materialAmber.withOpacity(0.30),
                             ),
                           ),
                           child: const Row(
                             children: [
                               Icon(
                                 Icons.flag_outlined,
-                                color: Color(0xFFB7791F),
-                                size: 20,
+                                color: TColors.hex_FFB7791F,
+                                size: TSizes.v20,
                               ),
-                              SizedBox(width: 10),
+                              SizedBox(width: TSizes.v10),
                               Expanded(
                                 child: Text(
-                                  '10 - 11 Doctor calls with 4 Chemist '
+                                  TTexts.uiText1011DoctorCallsWith4Chemist +
                                       'calls receives 100% DA, but the entry '
-                                      'is recorded as FLAG.',
+                                          'is recorded as FLAG.',
                                   style: TextStyle(
-                                    fontSize: 13,
-                                    color: Color(0xFF744210),
+                                    fontSize: TSizes.v13,
+                                    color: TColors.hex_FF744210,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
@@ -1135,10 +1108,10 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
                     18,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade50,
+                    color: TColors.materialGrey50,
                     border: Border(
                       top: BorderSide(
-                        color: Colors.grey.shade200,
+                        color: TColors.materialGrey200,
                       ),
                     ),
                   ),
@@ -1146,39 +1119,36 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
                     children: [
                       const Expanded(
                         child: Text(
-                          'Please review the DCR criteria before '
+                          TTexts.uiTextPleaseReviewTheDCRCriteriaBefore +
                               'submitting your allowance.',
                           style: TextStyle(
-                            fontSize: 12.5,
-                            color: Colors.black54,
+                            fontSize: TSizes.v12_5,
+                            color: TColors.black54,
                           ),
                         ),
                       ),
-
-                      const SizedBox(width: 20),
-
+                      const SizedBox(width: TSizes.v20),
                       ElevatedButton.icon(
                         onPressed: () {
                           Navigator.of(dialogContext).pop();
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: TColors.primary,
-                          foregroundColor: Colors.white,
+                          foregroundColor: TColors.white,
                           padding: const EdgeInsets.symmetric(
                             horizontal: 22,
                             vertical: 13,
                           ),
                           shape: RoundedRectangleBorder(
-                            borderRadius:
-                            BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(10),
                           ),
                         ),
                         icon: const Icon(
                           Icons.check_rounded,
-                          size: 18,
+                          size: TSizes.v18,
                         ),
                         label: const Text(
-                          'Understood',
+                          TTexts.uiTextUnderstood,
                           style: TextStyle(
                             fontWeight: FontWeight.w600,
                           ),
@@ -1197,7 +1167,7 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
 
   Widget _buildDcrTableHeader() {
     return Container(
-      color: const Color(0xFFF1F3F5),
+      color: TColors.hex_FFF1F3F5,
       padding: const EdgeInsets.symmetric(
         vertical: 15,
         horizontal: 12,
@@ -1207,48 +1177,48 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
           Expanded(
             flex: 3,
             child: Text(
-              "Doctor's Call",
+              TTexts.uiTextDoctorSCall,
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 14,
+                fontSize: TSizes.v14,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF263238),
+                color: TColors.hex_FF263238,
               ),
             ),
           ),
           Expanded(
             flex: 3,
             child: Text(
-              'Chemist Call',
+              TTexts.uiTextChemistCall,
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 14,
+                fontSize: TSizes.v14,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF263238),
+                color: TColors.hex_FF263238,
               ),
             ),
           ),
           Expanded(
             flex: 2,
             child: Text(
-              'TA',
+              TTexts.uiTextTA,
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 14,
+                fontSize: TSizes.v14,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF263238),
+                color: TColors.hex_FF263238,
               ),
             ),
           ),
           Expanded(
             flex: 4,
             child: Text(
-              'DA',
+              TTexts.uiTextDA,
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 14,
+                fontSize: TSizes.v14,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF263238),
+                color: TColors.hex_FF263238,
               ),
             ),
           ),
@@ -1277,10 +1247,10 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
         border: isLast
             ? null
             : Border(
-          bottom: BorderSide(
-            color: Colors.black.withOpacity(0.06),
-          ),
-        ),
+                bottom: BorderSide(
+                  color: TColors.pureBlack.withOpacity(0.06),
+                ),
+              ),
       ),
       child: Row(
         children: [
@@ -1290,26 +1260,24 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
               doctorCall,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                fontSize: 15,
+                fontSize: TSizes.v15,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF263238),
+                color: TColors.hex_FF263238,
               ),
             ),
           ),
-
           Expanded(
             flex: 3,
             child: Text(
               chemistCall,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                fontSize: 15,
+                fontSize: TSizes.v15,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF263238),
+                color: TColors.hex_FF263238,
               ),
             ),
           ),
-
           Expanded(
             flex: 2,
             child: Center(
@@ -1319,7 +1287,6 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
               ),
             ),
           ),
-
           Expanded(
             flex: 4,
             child: Column(
@@ -1329,14 +1296,13 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
                   da,
                   statusColor,
                 ),
-
                 if (daNote != null) ...[
-                  const SizedBox(height: 4),
+                  const SizedBox(height: TSizes.v4),
                   Text(
                     daNote,
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 10.5,
+                      fontSize: TSizes.v10_5,
                       fontWeight: FontWeight.w600,
                       color: statusColor,
                     ),
@@ -1351,9 +1317,9 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
   }
 
   Widget _buildPercentageBadge(
-      String value,
-      Color color,
-      ) {
+    String value,
+    Color color,
+  ) {
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: 11,
@@ -1370,12 +1336,10 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
         value,
         style: TextStyle(
           color: color,
-          fontSize: 13.5,
+          fontSize: TSizes.v13_5,
           fontWeight: FontWeight.w700,
         ),
       ),
     );
   }
-
-
 }

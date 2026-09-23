@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import '../model/ticketmodal.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 
 class TicketDetailsScreen extends StatelessWidget {
   final TicketModel ticket;
@@ -10,46 +13,42 @@ class TicketDetailsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.blueAccent,
-        elevation: 8, // A bit more elevation for modern look
+        backgroundColor: TColors.materialBlueAccent,
+        elevation: TSizes.v8, // A bit more elevation for modern look
         title: Text(
-          'Ticket Details',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          TTexts.uiTextTicketDetails,
+          style: TextStyle(fontSize: TSizes.v20, fontWeight: FontWeight.bold),
         ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView(  // Allow scrolling if content overflows
+        child: SingleChildScrollView(
+          // Allow scrolling if content overflows
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildSectionTitle('Ticket Title'),
               _buildCard(ticket.title ?? "No Title"),
-              SizedBox(height: 16),
-
+              SizedBox(height: TSizes.v16),
               _buildSectionTitle('Description'),
-              _buildCard(ticket.description ?? "No Description", isMultiline: true),
-              SizedBox(height: 16),
-
+              _buildCard(ticket.description ?? "No Description",
+                  isMultiline: true),
+              SizedBox(height: TSizes.v16),
               _buildSectionTitle('Status'),
               _buildStatusChip(ticket.status ?? "No Status"),
-              SizedBox(height: 16),
-
+              SizedBox(height: TSizes.v16),
               _buildSectionTitle('Image'),
               _buildCard(ticket.image ?? "No Image", isMultiline: true),
-              SizedBox(height: 16),
-
+              SizedBox(height: TSizes.v16),
               _buildSectionTitle('Created At'),
               _buildCard(ticket.createdAt ?? "No Date"),
-              SizedBox(height: 16),
-
+              SizedBox(height: TSizes.v16),
               _buildSectionTitle('Updated At'),
               _buildCard(ticket.updatedAt ?? "No Date"),
-              SizedBox(height: 16),
-
+              SizedBox(height: TSizes.v16),
               if (ticket.user != null) ...[
                 _buildSectionTitle('User Information'),
-                SizedBox(height: 8),
+                SizedBox(height: TSizes.v8),
                 _buildUserInfo(ticket.user!),
               ],
             ],
@@ -67,8 +66,8 @@ class TicketDetailsScreen extends StatelessWidget {
         title,
         style: TextStyle(
           fontWeight: FontWeight.w600,
-          fontSize: 18,
-          color: Colors.black87,
+          fontSize: TSizes.v18,
+          color: TColors.black87,
         ),
       ),
     );
@@ -79,25 +78,25 @@ class TicketDetailsScreen extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: TColors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black12,
-            blurRadius: 6,
+            color: TColors.black12,
+            blurRadius: TSizes.v6,
             offset: Offset(0, 4),
           ),
         ],
       ),
       child: isMultiline
           ? Text(
-        content,
-        style: TextStyle(color: Colors.black54, fontSize: 16),
-      )
+              content,
+              style: TextStyle(color: TColors.black54, fontSize: TSizes.v16),
+            )
           : Text(
-        content,
-        style: TextStyle(fontSize: 16, color: Colors.black87),
-      ),
+              content,
+              style: TextStyle(fontSize: TSizes.v16, color: TColors.black87),
+            ),
     );
   }
 
@@ -105,17 +104,17 @@ class TicketDetailsScreen extends StatelessWidget {
   Widget _buildStatusChip(String status) {
     Color chipColor;
     if (status == "IN PROGRESS") {
-      chipColor = Colors.orangeAccent;
+      chipColor = TColors.materialOrangeAccent;
     } else if (status == "COMPLETED") {
-      chipColor = Colors.greenAccent;
+      chipColor = TColors.materialGreenAccent;
     } else {
-      chipColor = Colors.redAccent;
+      chipColor = TColors.materialRedAccent;
     }
 
     return Chip(
       label: Text(
         status,
-        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        style: TextStyle(color: TColors.white, fontWeight: FontWeight.bold),
       ),
       backgroundColor: chipColor,
       padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
@@ -143,13 +142,16 @@ class TicketDetailsScreen extends StatelessWidget {
         children: [
           Text(
             '$label:',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87),
+            style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: TSizes.v16,
+                color: TColors.black87),
           ),
-          SizedBox(width: 8),
+          SizedBox(width: TSizes.v8),
           Expanded(
             child: Text(
               value,
-              style: TextStyle(color: Colors.black54, fontSize: 16),
+              style: TextStyle(color: TColors.black54, fontSize: TSizes.v16),
               overflow: TextOverflow.ellipsis,
             ),
           ),

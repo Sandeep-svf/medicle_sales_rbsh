@@ -38,7 +38,4 @@ class AppStateDao {
     await set('tracking_session_id', sessionId);
     return sessionId;
   }
-
 }
-
-

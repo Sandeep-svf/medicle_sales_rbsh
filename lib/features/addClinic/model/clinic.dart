@@ -64,7 +64,8 @@ class Clinic {
       longitude: json['longitude']?.toString() ?? '0.0',
 
       // Safe int parsing
-      yearsInBusiness: int.tryParse(json['years_in_business']?.toString() ?? '0') ?? 0,
+      yearsInBusiness:
+          int.tryParse(json['years_in_business']?.toString() ?? '0') ?? 0,
 
       geoImageUrl: json['geo_image_url']?.toString(),
       headOfficeId: json['head_office_id']?.toString() ?? '',
@@ -80,18 +81,16 @@ class Clinic {
 
       // List Parsing
       annualTurnover: (json['annualTurnover'] as List<dynamic>?)
-          ?.map((e) => AnnualTurnover.fromJson(e))
-          .toList() ?? [],
+              ?.map((e) => AnnualTurnover.fromJson(e))
+              .toList() ??
+          [],
 
       geoImageStatus: json['geo_image_status'] ?? false,
       areaId: json['area_id']?.toString(),
 
-      isAssignedToArea:
-      json['is_assigned_to_area'] ?? false,
+      isAssignedToArea: json['is_assigned_to_area'] ?? false,
 
-      area: json['area'] != null
-          ? Area.fromJson(json['area'])
-          : null,
+      area: json['area'] != null ? Area.fromJson(json['area']) : null,
     );
   }
 }
@@ -108,8 +107,8 @@ class Area {
   });
 
   factory Area.fromJson(
-      Map<String, dynamic> json,
-      ) {
+    Map<String, dynamic> json,
+  ) {
     return Area(
       id: json['id'] ?? '',
       name: json['name'] ?? '',

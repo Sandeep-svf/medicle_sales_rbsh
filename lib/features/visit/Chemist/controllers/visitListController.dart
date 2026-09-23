@@ -23,8 +23,6 @@ class VisitListController with ChangeNotifier {
 
   final String fetchApiUrl = THttpHelper.baseUrl;
 
-
-
   Future<List<dynamic>> fetchAreas() async {
     try {
       final token = await authManager.getAuthToken();
@@ -86,13 +84,10 @@ class VisitListController with ChangeNotifier {
         "CREATE AREA RESPONSE => ${response.body}",
       );
 
-      if (response.statusCode == 200 ||
-          response.statusCode == 201) {
-
+      if (response.statusCode == 200 || response.statusCode == 201) {
         final data = jsonDecode(response.body);
 
-        if (data['data'] != null &&
-            data['data']['id'] != null) {
+        if (data['data'] != null && data['data']['id'] != null) {
           return data['data']['id'];
         }
 
@@ -116,8 +111,7 @@ class VisitListController with ChangeNotifier {
     required String areaId,
   }) async {
     try {
-      final token =
-      await authManager.getAuthToken();
+      final token = await authManager.getAuthToken();
 
       debugPrint(
         "ASSIGN AREA STATUS => ${chemistId}",
@@ -130,7 +124,6 @@ class VisitListController with ChangeNotifier {
       debugPrint(
         "ASSIGN URL => ${THttpHelper.baseUrl}/chemist/$chemistId",
       );
-
 
       final response = await http.put(
         Uri.parse(
@@ -145,11 +138,10 @@ class VisitListController with ChangeNotifier {
         }),
       );
 
-
       debugPrint(
         "ASSIGN BODY => ${jsonEncode({
-          'areaId': areaId,
-        })}",
+              'areaId': areaId,
+            })}",
       );
 
       debugPrint(
@@ -223,7 +215,8 @@ class VisitListController with ChangeNotifier {
       final response = await http.get(Uri.parse(fullUrl));
 
       if (response.statusCode == 200) {
-        final List<dynamic> listJson = json.decode(response.body) as List<dynamic>;
+        final List<dynamic> listJson =
+            json.decode(response.body) as List<dynamic>;
         _visitList = listJson
             .whereType<Map<String, dynamic>>()
             .map((m) => ChemistVisitModel.fromJson(m))

@@ -1,10 +1,12 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
-import 'package:http/http.dart' as http;
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 
 class LocationPickerScreen extends StatefulWidget {
   @override
@@ -25,7 +27,6 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
       _initLocationServices();
     });
   }
-
 
   Future<void> _initLocationServices() async {
     try {
@@ -64,7 +65,8 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
     }
 
     if (permission == LocationPermission.deniedForever) {
-      _showError("Permission permanently denied. Please enable it in settings.");
+      _showError(
+          "Permission permanently denied. Please enable it in settings.");
       return false;
     }
 
@@ -72,14 +74,13 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
         permission == LocationPermission.always;
   }
 
-
-
   Future<void> _updateAddress(LatLng latLng) async {
     try {
       final apiKey = 'AIzaSyCnOFM-k3VOeG6v81O_zhVc1bdl0lY5jQ0';
       final url = Uri.parse(
           'https://maps.googleapis.com/maps/api/geocode/json?latlng=${latLng.latitude},${latLng.longitude}&key=$apiKey');
-    print("googel_map : https://maps.googleapis.com/maps/api/geocode/json?latlng=${latLng.latitude},${latLng.longitude}&key=$apiKey");
+      print(
+          "googel_map : https://maps.googleapis.com/maps/api/geocode/json?latlng=${latLng.latitude},${latLng.longitude}&key=$apiKey");
       final response = await http.get(url);
       final data = json.decode(response.body);
 
@@ -94,7 +95,6 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
 
     setState(() {});
   }
-
 
   void _onCameraMove(CameraPosition position) {
     setState(() {
@@ -125,66 +125,66 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
 
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.red),
+      SnackBar(content: Text(message), backgroundColor: TColors.materialRed),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Select Location")),
+      appBar: AppBar(title: const Text(TTexts.uiTextSelectLocation)),
       body: _loading || _centerLatLng == null
           ? const Center(child: CircularProgressIndicator())
           : Stack(
-        children: [
-          GoogleMap(
-            initialCameraPosition: CameraPosition(
-              target: _centerLatLng!,
-              zoom: 16,
-            ),
-            onMapCreated: (controller) => _mapController = controller,
-            onCameraMove: _onCameraMove,
-            onCameraIdle: _onCameraIdle,
-            myLocationEnabled: true,
-            myLocationButtonEnabled: true,
-          ),
-          // Center marker
-          const Center(
-            child: Icon(Icons.location_pin, size: 40, color: Colors.red),
-          ),
-          // Bottom UI
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              padding: const EdgeInsets.all(12),
-              color: Colors.white,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    _selectedAddress,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(fontWeight: FontWeight.w500),
+              children: [
+                GoogleMap(
+                  initialCameraPosition: CameraPosition(
+                    target: _centerLatLng!,
+                    zoom: 16,
                   ),
-                  const SizedBox(height: 8),
-                  ElevatedButton.icon(
-                    onPressed: _onSelectLocation,
-                    icon: const Icon(Icons.check),
-                    label: const Text("Select Location"),
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(double.infinity, 50),
+                  onMapCreated: (controller) => _mapController = controller,
+                  onCameraMove: _onCameraMove,
+                  onCameraIdle: _onCameraIdle,
+                  myLocationEnabled: true,
+                  myLocationButtonEnabled: true,
+                ),
+                // Center marker
+                const Center(
+                  child: Icon(Icons.location_pin,
+                      size: TSizes.v40, color: TColors.materialRed),
+                ),
+                // Bottom UI
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    color: TColors.white,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          _selectedAddress,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(fontWeight: FontWeight.w500),
+                        ),
+                        const SizedBox(height: TSizes.v8),
+                        ElevatedButton.icon(
+                          onPressed: _onSelectLocation,
+                          icon: const Icon(Icons.check),
+                          label: const Text(TTexts.uiTextSelectLocation),
+                          style: ElevatedButton.styleFrom(
+                            minimumSize: const Size(double.infinity, 50),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ),
-        ],
-      ),
     );
   }
 }
-
 
 /*
 class MapScreen extends StatelessWidget {

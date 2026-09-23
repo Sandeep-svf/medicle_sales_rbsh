@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:medicle_sales_rbsh/utils/local_storage/auth_manager.dart';
 import '../../../utils/http/http_client.dart';
 import '../../../utils/local_storage/storage_utility.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class AddSalesController {
   static const String _baseUrl = THttpHelper.baseUrl;
@@ -43,14 +44,15 @@ class AddSalesController {
       if (response.statusCode == 201) {
         // If the response is successful, show success snack bar
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Sales added successfully!')),
+          const SnackBar(content: Text(TTexts.uiTextSalesAddedSuccessfully)),
         );
         // Close the dialog
         Navigator.pop(context);
       } else {
         // If there's an error, show error snack bar
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Something went wrong.')),
+          const SnackBar(
+              content: Text(TTexts.uiTextSomethingWentWrong_bee54c9c)),
         );
       }
     } catch (e) {

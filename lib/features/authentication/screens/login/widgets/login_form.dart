@@ -4,15 +4,16 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
-import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 import '../../../controllers/AuthController.dart';
 import 'package:flutter/services.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class LoginForm extends StatelessWidget {
   final bool dark;
   final AuthController authController;
 
-  const LoginForm({super.key, required this.dark, required this.authController});
+  const LoginForm(
+      {super.key, required this.dark, required this.authController});
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +22,6 @@ class LoginForm extends StatelessWidget {
 
     // 1. Add a ValueNotifier to track the hidden state
     final ValueNotifier<bool> hidePassword = ValueNotifier<bool>(true);
-
 
     Future<String> _getDeviceId() async {
       final deviceInfo = DeviceInfoPlugin();
@@ -93,10 +93,10 @@ class LoginForm extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () async{
+                onPressed: () async {
                   String email = emailController.text.trim();
                   String password = passwordController.text.trim();
-                //  final deviceId = await _getDeviceId();
+                  //  final deviceId = await _getDeviceId();
                   final deviceId = await getAndroidId();
                   authController.login(email, password, deviceId);
                 },

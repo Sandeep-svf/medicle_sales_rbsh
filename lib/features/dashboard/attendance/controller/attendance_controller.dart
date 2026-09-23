@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import '../model/attendance_status_model.dart';
 import '../services/attendance_service.dart';
 import '../wigets/punch_in_dialog.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class AttendanceController extends GetxController {
   static AttendanceController get to => Get.find();
@@ -46,11 +47,9 @@ class AttendanceController extends GetxController {
 
       attendance.value = response;
 
-      debugPrint(
-          "$_tag Status Loaded -> ${response.status}");
+      debugPrint("$_tag Status Loaded -> ${response.status}");
 
-      debugPrint(
-          "$_tag Needs Punch In -> ${response.needsPunchIn}");
+      debugPrint("$_tag Needs Punch In -> ${response.needsPunchIn}");
 
       if (response.needsPunchIn && !hasShownDialog.value) {
         debugPrint("$_tag Opening Punch In Dialog");
@@ -104,7 +103,7 @@ class AttendanceController extends GetxController {
 
         Get.snackbar(
           "Error",
-          "Unable to punch in.",
+          TTexts.uiTextUnableToPunchIn,
           snackPosition: SnackPosition.BOTTOM,
         );
 
@@ -113,8 +112,7 @@ class AttendanceController extends GetxController {
 
       attendance.value = response;
 
-      debugPrint(
-          "$_tag Punch Successful -> ${response.status}");
+      debugPrint("$_tag Punch Successful -> ${response.status}");
 
       if (response.isPunchedIn) {
         debugPrint("$_tag Closing Punch Dialog");
@@ -125,12 +123,11 @@ class AttendanceController extends GetxController {
 
         Get.snackbar(
           "Success",
-          "Punched in successfully.",
+          TTexts.uiTextPunchedInSuccessfully,
           snackPosition: SnackPosition.BOTTOM,
         );
       } else {
-        debugPrint(
-            "$_tag Unexpected status received -> ${response.status}");
+        debugPrint("$_tag Unexpected status received -> ${response.status}");
       }
     } catch (e, stackTrace) {
       debugPrint("$_tag Punch In Failed");

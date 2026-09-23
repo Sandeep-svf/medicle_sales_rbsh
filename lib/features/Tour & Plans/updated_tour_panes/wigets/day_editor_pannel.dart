@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../../utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import '../DayType.dart';
 import '../controller/tour_plan_controller.dart';
 import '../model/TourDay.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class DayEditorPanel extends StatefulWidget {
   final TourDay day;
@@ -66,7 +68,8 @@ class _DayEditorPanelState extends State<DayEditorPanel> {
   @override
   void didUpdateWidget(covariant DayEditorPanel oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.day.date != widget.day.date || oldWidget.day.type != widget.day.type) {
+    if (oldWidget.day.date != widget.day.date ||
+        oldWidget.day.type != widget.day.type) {
       notesController.dispose();
       _resetFormState();
     }
@@ -97,11 +100,10 @@ class _DayEditorPanelState extends State<DayEditorPanel> {
     final isBeatDay =
         selectedType == DayType.field || selectedType == DayType.jointWork;
 
-    if (isBeatDay &&
-        (selectedBeatId == null || selectedBeatId!.isEmpty)) {
+    if (isBeatDay && (selectedBeatId == null || selectedBeatId!.isEmpty)) {
       Get.snackbar(
         "Validation",
-        "Please select a Beat.",
+        TTexts.uiTextPleaseSelectABeat,
         snackPosition: SnackPosition.BOTTOM,
       );
       return false;
@@ -110,14 +112,13 @@ class _DayEditorPanelState extends State<DayEditorPanel> {
     if (selectedType == DayType.jointWork && selectedUserIds.isEmpty) {
       Get.snackbar(
         "Validation",
-        "Please select at least one Joint Work User.",
+        TTexts.uiTextPleaseSelectAtLeastOneJointWorkUser,
         snackPosition: SnackPosition.BOTTOM,
       );
       return false;
     }
 
-    final requiresRemarks =
-        selectedType == DayType.meeting ||
+    final requiresRemarks = selectedType == DayType.meeting ||
         selectedType == DayType.office ||
         selectedType == DayType.transit ||
         selectedType == DayType.leave;
@@ -125,7 +126,7 @@ class _DayEditorPanelState extends State<DayEditorPanel> {
     if (requiresRemarks && notesController.text.trim().isEmpty) {
       Get.snackbar(
         "Validation",
-        "Remarks are required.",
+        TTexts.uiTextRemarksAreRequired,
         snackPosition: SnackPosition.BOTTOM,
       );
       return false;
@@ -134,7 +135,7 @@ class _DayEditorPanelState extends State<DayEditorPanel> {
     if (selectedBeatId2 != null && selectedBeatId2 == selectedBeatId) {
       Get.snackbar(
         "Validation",
-        "Primary and secondary Beat cannot be the same.",
+        TTexts.uiTextPrimaryAndSecondaryBeatCannotBeTheSame,
         snackPosition: SnackPosition.BOTTOM,
       );
       return false;
@@ -171,9 +172,8 @@ class _DayEditorPanelState extends State<DayEditorPanel> {
         jointWorkUserIds: selectedType == DayType.jointWork
             ? List<String>.from(selectedUserIds)
             : const [],
-        jointWorkUserNames: selectedType == DayType.jointWork
-            ? selectedUserNames
-            : const [],
+        jointWorkUserNames:
+            selectedType == DayType.jointWork ? selectedUserNames : const [],
         notes: requiresRemarks ? notesController.text.trim() : null,
       ),
     );
@@ -214,17 +214,33 @@ class _DayEditorPanelState extends State<DayEditorPanel> {
           children: [
             Container(
               padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(color: TColors.warning.withOpacity(0.1), shape: BoxShape.circle),
-              child: const Icon(Icons.lock_outline, size: 40, color: TColors.warning),
+              decoration: BoxDecoration(
+                  color: TColors.warning.withOpacity(0.1),
+                  shape: BoxShape.circle),
+              child: const Icon(Icons.lock_outline,
+                  size: TSizes.v40, color: TColors.warning),
             ),
-            const SizedBox(height: 20),
-            Text(widget.day.holidayName ?? "System Holiday Block", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: TColors.textPrimary)),
-            const SizedBox(height: 8),
-            const Text("Sundays and national calendar holiday modules are non-editable parameters.", textAlign: TextAlign.center, style: TextStyle(color: TColors.textSecondary, fontSize: 13)),
-            const SizedBox(height: 24),
+            const SizedBox(height: TSizes.v20),
+            Text(widget.day.holidayName ?? "System Holiday Block",
+                style: const TextStyle(
+                    fontSize: TSizes.v18,
+                    fontWeight: FontWeight.bold,
+                    color: TColors.textPrimary)),
+            const SizedBox(height: TSizes.v8),
+            const Text(
+                TTexts.uiTextSundaysAndNationalCalendarHolidayModulesAreNon,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                    color: TColors.textSecondary, fontSize: TSizes.v13)),
+            const SizedBox(height: TSizes.v24),
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton(onPressed: widget.onClose, style: ElevatedButton.styleFrom(backgroundColor: TColors.softGrey, foregroundColor: TColors.textPrimary), child: const Text("Dismiss Panel")),
+              child: ElevatedButton(
+                  onPressed: widget.onClose,
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: TColors.softGrey,
+                      foregroundColor: TColors.textPrimary),
+                  child: const Text(TTexts.uiTextDismissPanel)),
             )
           ],
         ),
@@ -242,29 +258,42 @@ class _DayEditorPanelState extends State<DayEditorPanel> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Day ${widget.day.date.day} Setup", style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: TColors.textPrimary)),
-                  const Text("Configure operational workspace settings", style: TextStyle(fontSize: 12, color: TColors.textSecondary)),
+                  Text("Day ${widget.day.date.day} Setup",
+                      style: const TextStyle(
+                          fontSize: TSizes.v22,
+                          fontWeight: FontWeight.bold,
+                          color: TColors.textPrimary)),
+                  const Text(TTexts.uiTextConfigureOperationalWorkspaceSettings,
+                      style: TextStyle(
+                          fontSize: TSizes.v12, color: TColors.textSecondary)),
                 ],
               ),
-              IconButton(icon: const Icon(Icons.close), style: IconButton.styleFrom(backgroundColor: TColors.softGrey), onPressed: widget.onClose),
+              IconButton(
+                  icon: const Icon(Icons.close),
+                  style:
+                      IconButton.styleFrom(backgroundColor: TColors.softGrey),
+                  onPressed: widget.onClose),
             ],
           ),
-          const SizedBox(height: 20),
-          const Divider(height: 1),
-
+          const SizedBox(height: TSizes.v20),
+          const Divider(height: TSizes.v1),
           Expanded(
             child: ListView(
               padding: const EdgeInsets.symmetric(vertical: 20),
               children: [
-                const Text("SELECT OPERATION TYPE", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: TColors.textSecondary, letterSpacing: 1.2)),
-                const SizedBox(height: 12),
+                const Text(TTexts.uiTextSELECTOPERATIONTYPE,
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: TSizes.v11,
+                        color: TColors.textSecondary,
+                        letterSpacing: 1.2)),
+                const SizedBox(height: TSizes.v12),
                 _buildDayTypeList(),
-
                 if (selectedType == DayType.field ||
                     selectedType == DayType.jointWork) ...[
-                  const SizedBox(height: 24),
+                  const SizedBox(height: TSizes.v24),
                   _buildBeatSelector(
-                    title: "PRIMARY VISITATION BEAT",
+                    title: TTexts.uiTextPRIMARYVISITATIONBEAT,
                     selectedId: selectedBeatId,
                     isRequired: true,
                     onChanged: (value) {
@@ -276,9 +305,9 @@ class _DayEditorPanelState extends State<DayEditorPanel> {
                       });
                     },
                   ),
-                  const SizedBox(height: 18),
+                  const SizedBox(height: TSizes.v18),
                   _buildBeatSelector(
-                    title: "SECONDARY BEAT (OPTIONAL)",
+                    title: TTexts.uiTextSECONDARYBEATOPTIONAL,
                     selectedId: selectedBeatId2,
                     excludeId: selectedBeatId,
                     onChanged: (value) {
@@ -288,11 +317,15 @@ class _DayEditorPanelState extends State<DayEditorPanel> {
                     },
                   ),
                 ],
-
                 if (selectedType == DayType.jointWork) ...[
-                  const SizedBox(height: 24),
-                  const Text("JOINT MANAGEMENT COLLABORATOR", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: TColors.textSecondary, letterSpacing: 1.2)),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: TSizes.v24),
+                  const Text(TTexts.uiTextJOINTMANAGEMENTCOLLABORATOR,
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: TSizes.v11,
+                          color: TColors.textSecondary,
+                          letterSpacing: 1.2)),
+                  const SizedBox(height: TSizes.v10),
                   InkWell(
                     onTap: () async {
                       await controller.loadAvailableUsers(widget.day.date);
@@ -322,17 +355,17 @@ class _DayEditorPanelState extends State<DayEditorPanel> {
                           Expanded(
                             child: selectedUserIds.isEmpty
                                 ? const Text(
-                              "Select Joint Work users",
-                              style: TextStyle(
-                                color: TColors.textSecondary,
-                              ),
-                            )
+                                    TTexts.uiTextSelectJointWorkUsers_65ac855e,
+                                    style: TextStyle(
+                                      color: TColors.textSecondary,
+                                    ),
+                                  )
                                 : Text(
-                              _selectedUserNames(),
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
+                                    _selectedUserNames(),
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
                           ),
                           const Icon(
                             Icons.keyboard_arrow_down,
@@ -342,29 +375,24 @@ class _DayEditorPanelState extends State<DayEditorPanel> {
                     ),
                   ),
                 ],
-
                 if (selectedType != DayType.field &&
                     selectedType != DayType.jointWork) ...[
-
-                  const SizedBox(height: 24),
-
+                  const SizedBox(height: TSizes.v24),
                   const Text(
-                    "REMARKS",
+                    TTexts.uiTextREMARKS,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 11,
+                      fontSize: TSizes.v11,
                       color: TColors.textSecondary,
                       letterSpacing: 1.2,
                     ),
                   ),
-
-                  const SizedBox(height: 10),
-
+                  const SizedBox(height: TSizes.v10),
                   TextFormField(
                     controller: notesController,
                     maxLines: 4,
                     decoration: InputDecoration(
-                      hintText: "Enter remarks...",
+                      hintText: TTexts.uiTextEnterRemarks,
                       filled: true,
                       fillColor: TColors.light,
                       border: OutlineInputBorder(
@@ -377,22 +405,29 @@ class _DayEditorPanelState extends State<DayEditorPanel> {
               ],
             ),
           ),
-
-          const Divider(height: 1),
+          const Divider(height: TSizes.v1),
           Padding(
             padding: const EdgeInsets.only(top: 16),
             child: SizedBox(
               width: double.infinity,
-              height: 52,
+              height: TSizes.v52,
               child: ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(backgroundColor: TColors.primary, foregroundColor: TColors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: TColors.primary,
+                    foregroundColor: TColors.white,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12))),
                 onPressed: () {
                   if (_dispatchChanges()) {
                     widget.onClose();
                   }
                 },
-                icon: const Icon(Icons.check_circle_outline, size: 20),
-                label: const Text("APPLY CHANGES TO CALENDAR", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, letterSpacing: 0.5)),
+                icon: const Icon(Icons.check_circle_outline, size: TSizes.v20),
+                label: const Text(TTexts.uiTextAPPLYCHANGESTOCALENDAR,
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: TSizes.v14,
+                        letterSpacing: 0.5)),
               ),
             ),
           )
@@ -420,12 +455,12 @@ class _DayEditorPanelState extends State<DayEditorPanel> {
             title,
             style: const TextStyle(
               fontWeight: FontWeight.bold,
-              fontSize: 11,
+              fontSize: TSizes.v11,
               color: TColors.textSecondary,
               letterSpacing: 1.2,
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: TSizes.v10),
           InkWell(
             onTap: () async {
               final result = await _showBeatSelectionDialog(
@@ -460,7 +495,7 @@ class _DayEditorPanelState extends State<DayEditorPanel> {
                           Icons.alt_route_outlined,
                           color: TColors.textSecondary,
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: TSizes.v12),
                         Expanded(
                           child: Text(
                             isRequired
@@ -480,8 +515,8 @@ class _DayEditorPanelState extends State<DayEditorPanel> {
                   : Row(
                       children: [
                         Container(
-                          width: 42,
-                          height: 42,
+                          width: TSizes.v42,
+                          height: TSizes.v42,
                           decoration: BoxDecoration(
                             color: TColors.primary.withOpacity(0.10),
                             borderRadius: BorderRadius.circular(10),
@@ -491,7 +526,7 @@ class _DayEditorPanelState extends State<DayEditorPanel> {
                             color: TColors.primary,
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: TSizes.v12),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -501,18 +536,18 @@ class _DayEditorPanelState extends State<DayEditorPanel> {
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
-                                  fontSize: 15,
+                                  fontSize: TSizes.v15,
                                   fontWeight: FontWeight.w700,
                                   color: TColors.textPrimary,
                                 ),
                               ),
-                              const SizedBox(height: 4),
+                              const SizedBox(height: TSizes.v4),
                               Text(
                                 selectedBeat.areas.isEmpty
                                     ? "No areas assigned"
                                     : "${selectedBeat.areas.length} ${selectedBeat.areas.length == 1 ? 'area' : 'areas'} included",
                                 style: const TextStyle(
-                                  fontSize: 12,
+                                  fontSize: TSizes.v12,
                                   color: TColors.textSecondary,
                                 ),
                               ),
@@ -521,9 +556,9 @@ class _DayEditorPanelState extends State<DayEditorPanel> {
                         ),
                         if (!isRequired)
                           IconButton(
-                            tooltip: "Clear secondary Beat",
+                            tooltip: TTexts.uiTextClearSecondaryBeat,
                             onPressed: () => onChanged(null),
-                            icon: const Icon(Icons.close, size: 18),
+                            icon: const Icon(Icons.close, size: TSizes.v18),
                           )
                         else
                           const Icon(
@@ -539,15 +574,15 @@ class _DayEditorPanelState extends State<DayEditorPanel> {
     });
   }
 
-  Widget _buildTypeCard(DayType type, String label, IconData icon, Color themeColor) {
+  Widget _buildTypeCard(
+      DayType type, String label, IconData icon, Color themeColor) {
     final bool isSelected = selectedType == type;
     return GestureDetector(
       onTap: () async {
         setState(() {
           selectedType = type;
 
-          if (type != DayType.field &&
-              type != DayType.jointWork) {
+          if (type != DayType.field && type != DayType.jointWork) {
             selectedBeatId = null;
             selectedBeatId2 = null;
           }
@@ -567,15 +602,29 @@ class _DayEditorPanelState extends State<DayEditorPanel> {
         decoration: BoxDecoration(
           color: isSelected ? themeColor.withOpacity(0.08) : TColors.white,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: isSelected ? themeColor : TColors.borderSecondary, width: isSelected ? 2 : 1),
+          border: Border.all(
+              color: isSelected ? themeColor : TColors.borderSecondary,
+              width: isSelected ? 2 : 1),
         ),
         child: Row(
           children: [
-            Icon(icon, color: isSelected ? themeColor : TColors.darkGrey, size: 22),
-            const SizedBox(width: 14),
-            Text(label, style: TextStyle(fontWeight: isSelected ? FontWeight.bold : FontWeight.normal, color: isSelected ? themeColor : TColors.textPrimary, fontSize: 14)),
+            Icon(icon,
+                color: isSelected ? themeColor : TColors.darkGrey,
+                size: TSizes.v22),
+            const SizedBox(width: TSizes.v14),
+            Text(label,
+                style: TextStyle(
+                    fontWeight:
+                        isSelected ? FontWeight.bold : FontWeight.normal,
+                    color: isSelected ? themeColor : TColors.textPrimary,
+                    fontSize: TSizes.v14)),
             const Spacer(),
-            if (isSelected) Icon(Icons.radio_button_checked, color: themeColor, size: 18) else const Icon(Icons.radio_button_off, color: TColors.grey, size: 18)
+            if (isSelected)
+              Icon(Icons.radio_button_checked,
+                  color: themeColor, size: TSizes.v18)
+            else
+              const Icon(Icons.radio_button_off,
+                  color: TColors.grey, size: TSizes.v18)
           ],
         ),
       ),
@@ -586,11 +635,8 @@ class _DayEditorPanelState extends State<DayEditorPanel> {
     return Obx(() {
       return Column(
         children: controller.dayTypes
-            .where((e) =>
-        e != "Holiday" &&
-            e != "Weekly off")
+            .where((e) => e != "Holiday" && e != "Weekly off")
             .map((type) {
-
           final dayType = mapApiDayType(type);
 
           IconData icon;
@@ -614,12 +660,12 @@ class _DayEditorPanelState extends State<DayEditorPanel> {
 
             case DayType.office:
               icon = Icons.business_center_outlined;
-              color = Colors.indigo;
+              color = TColors.materialIndigo;
               break;
 
             case DayType.transit:
               icon = Icons.route_outlined;
-              color = Colors.orange;
+              color = TColors.materialOrange;
               break;
 
             case DayType.leave:
@@ -638,7 +684,6 @@ class _DayEditorPanelState extends State<DayEditorPanel> {
             icon,
             color,
           );
-
         }).toList(),
       );
     });
@@ -675,58 +720,55 @@ class _DayEditorPanelState extends State<DayEditorPanel> {
           builder: (context, setDialogState) {
             return AlertDialog(
               title: const Text(
-                "Select Joint Work Users",
+                TTexts.uiTextSelectJointWorkUsers,
               ),
               content: SizedBox(
                 width: double.maxFinite,
                 child: controller.availableUsers.isEmpty
                     ? const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(20),
-                    child: Text(
-                      "No users available.",
-                    ),
-                  ),
-                )
-                    : ListView.builder(
-                  shrinkWrap: true,
-                  itemCount:
-                  controller.availableUsers.length,
-                  itemBuilder: (context, index) {
-                    final user =
-                    controller.availableUsers[index];
-
-                    final isSelected =
-                    tempSelectedIds.contains(user.id);
-
-                    return CheckboxListTile(
-                      value: isSelected,
-                      title: Text(
-                        user.name,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
+                        child: Padding(
+                          padding: EdgeInsets.all(20),
+                          child: Text(
+                            TTexts.uiTextNoUsersAvailable_d0900949,
+                          ),
                         ),
+                      )
+                    : ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: controller.availableUsers.length,
+                        itemBuilder: (context, index) {
+                          final user = controller.availableUsers[index];
+
+                          final isSelected = tempSelectedIds.contains(user.id);
+
+                          return CheckboxListTile(
+                            value: isSelected,
+                            title: Text(
+                              user.name,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            subtitle: Text(user.role),
+                            onChanged: (checked) {
+                              setDialogState(() {
+                                if (checked == true) {
+                                  tempSelectedIds.add(user.id);
+                                } else {
+                                  tempSelectedIds.remove(user.id);
+                                }
+                              });
+                            },
+                          );
+                        },
                       ),
-                      subtitle: Text(user.role),
-                      onChanged: (checked) {
-                        setDialogState(() {
-                          if (checked == true) {
-                            tempSelectedIds.add(user.id);
-                          } else {
-                            tempSelectedIds.remove(user.id);
-                          }
-                        });
-                      },
-                    );
-                  },
-                ),
               ),
               actions: [
                 TextButton(
                   onPressed: () {
                     Navigator.pop(context);
                   },
-                  child: const Text("CANCEL"),
+                  child: const Text(TTexts.uiTextCANCEL),
                 ),
                 ElevatedButton(
                   onPressed: () {
@@ -735,7 +777,7 @@ class _DayEditorPanelState extends State<DayEditorPanel> {
                       tempSelectedIds.toList(),
                     );
                   },
-                  child: const Text("DONE"),
+                  child: const Text(TTexts.uiTextDONE),
                 ),
               ],
             );
@@ -755,9 +797,8 @@ class _DayEditorPanelState extends State<DayEditorPanel> {
       builder: (context) {
         final screenSize = MediaQuery.of(context).size;
 
-        final dialogWidth = screenSize.width > 900
-            ? 760.0
-            : screenSize.width * 0.92;
+        final dialogWidth =
+            screenSize.width > 900 ? 760.0 : screenSize.width * 0.92;
 
         final dialogHeight = screenSize.height * 0.82;
 
@@ -789,7 +830,6 @@ class _DayEditorPanelState extends State<DayEditorPanel> {
               ),
               child: Column(
                 children: [
-
                   // ==================================================
                   // HEADER
                   // ==================================================
@@ -797,8 +837,8 @@ class _DayEditorPanelState extends State<DayEditorPanel> {
                   Row(
                     children: [
                       Container(
-                        width: 46,
-                        height: 46,
+                        width: TSizes.v46,
+                        height: TSizes.v46,
                         decoration: BoxDecoration(
                           color: TColors.primary.withOpacity(0.10),
                           borderRadius: BorderRadius.circular(13),
@@ -806,39 +846,33 @@ class _DayEditorPanelState extends State<DayEditorPanel> {
                         child: const Icon(
                           Icons.alt_route_rounded,
                           color: TColors.primary,
-                          size: 25,
+                          size: TSizes.v25,
                         ),
                       ),
-
-                      const SizedBox(width: 12),
-
+                      const SizedBox(width: TSizes.v12),
                       const Expanded(
                         child: Column(
-                          crossAxisAlignment:
-                          CrossAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              "Select Beat",
+                              TTexts.uiTextSelectBeat,
                               style: TextStyle(
-                                fontSize: 19,
+                                fontSize: TSizes.v19,
                                 fontWeight: FontWeight.w700,
                                 color: TColors.textPrimary,
                               ),
                             ),
-
-                            SizedBox(height: 4),
-
+                            SizedBox(height: TSizes.v4),
                             Text(
-                              "Choose a beat to see the areas included in it",
+                              TTexts.uiTextChooseABeatToSeeTheAreasIncluded,
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: TSizes.v12,
                                 color: TColors.textSecondary,
                               ),
                             ),
                           ],
                         ),
                       ),
-
                       IconButton(
                         onPressed: () {
                           Navigator.pop(context);
@@ -850,11 +884,11 @@ class _DayEditorPanelState extends State<DayEditorPanel> {
                     ],
                   ),
 
-                  const SizedBox(height: 14),
+                  const SizedBox(height: TSizes.v14),
 
-                  const Divider(height: 1),
+                  const Divider(height: TSizes.v1),
 
-                  const SizedBox(height: 14),
+                  const SizedBox(height: TSizes.v14),
 
                   // ==================================================
                   // BEAT LIST
@@ -863,277 +897,238 @@ class _DayEditorPanelState extends State<DayEditorPanel> {
                   Expanded(
                     child: visibleBeats.isEmpty
                         ? const Center(
-                      child: Text(
-                        "No beats available.",
-                        style: TextStyle(
-                          color: TColors.textSecondary,
-                        ),
-                      ),
-                    )
-                        : ListView.separated(
-                      padding: const EdgeInsets.only(
-                        bottom: 8,
-                      ),
-                      itemCount: visibleBeats.length,
-                      separatorBuilder: (_, __) =>
-                      const SizedBox(height: 10),
-
-                      itemBuilder: (context, index) {
-                        final beat = visibleBeats[index];
-
-                        final isSelected = beat.id == selectedId;
-
-                        return InkWell(
-                          onTap: () {
-                            Navigator.pop(
-                              context,
-                              beat.id,
-                            );
-                          },
-
-                          borderRadius:
-                          BorderRadius.circular(16),
-
-                          child: Container(
-                            padding:
-                            const EdgeInsets.all(16),
-
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? TColors.primary
-                                  .withOpacity(0.06)
-                                  : TColors.light,
-
-                              borderRadius:
-                              BorderRadius.circular(16),
-
-                              border: Border.all(
-                                color: isSelected
-                                    ? TColors.primary
-                                    : TColors
-                                    .borderSecondary,
-
-                                width:
-                                isSelected ? 1.5 : 1,
+                            child: Text(
+                              TTexts.uiTextNoBeatsAvailable,
+                              style: TextStyle(
+                                color: TColors.textSecondary,
                               ),
                             ),
+                          )
+                        : ListView.separated(
+                            padding: const EdgeInsets.only(
+                              bottom: 8,
+                            ),
+                            itemCount: visibleBeats.length,
+                            separatorBuilder: (_, __) =>
+                                const SizedBox(height: TSizes.v10),
+                            itemBuilder: (context, index) {
+                              final beat = visibleBeats[index];
 
-                            child: Column(
-                              crossAxisAlignment:
-                              CrossAxisAlignment.start,
-                              children: [
+                              final isSelected = beat.id == selectedId;
 
-                                // ==================================
-                                // BEAT HEADER
-                                // ==================================
-
-                                Row(
-                                  crossAxisAlignment:
-                                  CrossAxisAlignment.center,
-                                  children: [
-
-                                    Container(
-                                      width: 44,
-                                      height: 44,
-                                      decoration:
-                                      BoxDecoration(
-                                        color: isSelected
-                                            ? TColors
-                                            .primary
-                                            .withOpacity(
-                                          0.12,
-                                        )
-                                            : TColors.white,
-
-                                        borderRadius:
-                                        BorderRadius
-                                            .circular(
-                                          12,
-                                        ),
-                                      ),
-
-                                      child: Icon(
-                                        Icons
-                                            .alt_route_rounded,
-                                        color: isSelected
-                                            ? TColors
-                                            .primary
-                                            : TColors
-                                            .textSecondary,
-                                        size: 22,
-                                      ),
-                                    ),
-
-                                    const SizedBox(
-                                      width: 13,
-                                    ),
-
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                        CrossAxisAlignment
-                                            .start,
-                                        children: [
-
-                                          Text(
-                                            beat.name,
-                                            maxLines: 1,
-                                            overflow:
-                                            TextOverflow
-                                                .ellipsis,
-                                            style:
-                                            const TextStyle(
-                                              fontSize: 15,
-                                              fontWeight:
-                                              FontWeight
-                                                  .w700,
-                                              color: TColors
-                                                  .textPrimary,
-                                            ),
-                                          ),
-
-                                          const SizedBox(
-                                            height: 5,
-                                          ),
-
-                                          Row(
-                                            children: [
-
-                                              const Icon(
-                                                Icons
-                                                    .location_on_outlined,
-                                                size: 14,
-                                                color: TColors
-                                                    .textSecondary,
-                                              ),
-
-                                              const SizedBox(
-                                                width: 4,
-                                              ),
-
-                                              Text(
-                                                beat.areas.isEmpty
-                                                    ? "No areas assigned"
-                                                    : "${beat.areas.length} "
-                                                    "${beat.areas.length == 1 ? 'area' : 'areas'} included",
-                                                style:
-                                                const TextStyle(
-                                                  fontSize: 12,
-                                                  color: TColors
-                                                      .textSecondary,
-                                                  fontWeight:
-                                                  FontWeight
-                                                      .w500,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-
-                                    if (isSelected)
-                                      const Icon(
-                                        Icons
-                                            .check_circle_rounded,
-                                        color:
-                                        TColors.primary,
-                                        size: 23,
-                                      ),
-                                  ],
-                                ),
-
-                                // ==================================
-                                // AREAS
-                                // ==================================
-
-                                if (beat.areas.isNotEmpty) ...[
-                                  const SizedBox(height: 14),
-
-                                  const Text(
-                                    "AREAS INCLUDED",
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w700,
-                                      letterSpacing: 0.8,
-                                      color: TColors.textSecondary,
+                              return InkWell(
+                                onTap: () {
+                                  Navigator.pop(
+                                    context,
+                                    beat.id,
+                                  );
+                                },
+                                borderRadius: BorderRadius.circular(16),
+                                child: Container(
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: isSelected
+                                        ? TColors.primary.withOpacity(0.06)
+                                        : TColors.light,
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color: isSelected
+                                          ? TColors.primary
+                                          : TColors.borderSecondary,
+                                      width: isSelected ? 1.5 : 1,
                                     ),
                                   ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      // ==================================
+                                      // BEAT HEADER
+                                      // ==================================
 
-                                  const SizedBox(height: 8),
-
-                                  Container(
-                                    width: double.infinity,
-                                    padding: const EdgeInsets.all(12),
-                                    decoration: BoxDecoration(
-                                      color: _parseBeatColor(beat.color)
-                                          .withOpacity(0.05),
-                                      borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(
-                                        color: _parseBeatColor(beat.color)
-                                            .withOpacity(0.12),
-                                      ),
-                                    ),
-                                    child: Wrap(
-                                      spacing: 8,
-                                      runSpacing: 8,
-                                      children: beat.areas.map(
-                                            (area) {
-                                          final areaColor =
-                                          _parseBeatColor(beat.color);
-
-                                          return Container(
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 11,
-                                              vertical: 8,
-                                            ),
+                                      Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          Container(
+                                            width: TSizes.v44,
+                                            height: TSizes.v44,
                                             decoration: BoxDecoration(
-                                              color: areaColor.withOpacity(0.10),
-                                              borderRadius: BorderRadius.circular(9),
-                                              border: Border.all(
-                                                color: areaColor.withOpacity(0.20),
+                                              color: isSelected
+                                                  ? TColors.primary.withOpacity(
+                                                      0.12,
+                                                    )
+                                                  : TColors.white,
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                12,
                                               ),
                                             ),
-                                            child: Row(
-                                              mainAxisSize: MainAxisSize.min,
+                                            child: Icon(
+                                              Icons.alt_route_rounded,
+                                              color: isSelected
+                                                  ? TColors.primary
+                                                  : TColors.textSecondary,
+                                              size: TSizes.v22,
+                                            ),
+                                          ),
+                                          const SizedBox(
+                                            width: TSizes.v13,
+                                          ),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
                                               children: [
-                                                const Icon(
-                                                  Icons.location_on_rounded,
-                                                  size: 15,
-                                                  color: TColors.primary,
-                                                ),
-
-                                                const SizedBox(width: 5),
-
                                                 Text(
-                                                  area.name,
-                                                  style: TextStyle(
-                                                    fontSize: 11,
-                                                    fontWeight: FontWeight.w600,
-                                                    color: areaColor,
+                                                  beat.name,
+                                                  maxLines: 1,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: const TextStyle(
+                                                    fontSize: TSizes.v15,
+                                                    fontWeight: FontWeight.w700,
+                                                    color: TColors.textPrimary,
                                                   ),
+                                                ),
+                                                const SizedBox(
+                                                  height: TSizes.v5,
+                                                ),
+                                                Row(
+                                                  children: [
+                                                    const Icon(
+                                                      Icons
+                                                          .location_on_outlined,
+                                                      size: TSizes.v14,
+                                                      color:
+                                                          TColors.textSecondary,
+                                                    ),
+                                                    const SizedBox(
+                                                      width: TSizes.v4,
+                                                    ),
+                                                    Text(
+                                                      beat.areas.isEmpty
+                                                          ? "No areas assigned"
+                                                          : "${beat.areas.length} "
+                                                              "${beat.areas.length == 1 ? 'area' : 'areas'} included",
+                                                      style: const TextStyle(
+                                                        fontSize: TSizes.v12,
+                                                        color: TColors
+                                                            .textSecondary,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                      ),
+                                                    ),
+                                                  ],
                                                 ),
                                               ],
                                             ),
-                                          );
-                                        },
-                                      ).toList(),
-                                    ),
+                                          ),
+                                          if (isSelected)
+                                            const Icon(
+                                              Icons.check_circle_rounded,
+                                              color: TColors.primary,
+                                              size: TSizes.v23,
+                                            ),
+                                        ],
+                                      ),
+
+                                      // ==================================
+                                      // AREAS
+                                      // ==================================
+
+                                      if (beat.areas.isNotEmpty) ...[
+                                        const SizedBox(height: TSizes.v14),
+                                        const Text(
+                                          TTexts.uiTextAREASINCLUDED,
+                                          style: TextStyle(
+                                            fontSize: TSizes.v10,
+                                            fontWeight: FontWeight.w700,
+                                            letterSpacing: 0.8,
+                                            color: TColors.textSecondary,
+                                          ),
+                                        ),
+                                        const SizedBox(height: TSizes.v8),
+                                        Container(
+                                          width: double.infinity,
+                                          padding: const EdgeInsets.all(12),
+                                          decoration: BoxDecoration(
+                                            color: _parseBeatColor(beat.color)
+                                                .withOpacity(0.05),
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                            border: Border.all(
+                                              color: _parseBeatColor(beat.color)
+                                                  .withOpacity(0.12),
+                                            ),
+                                          ),
+                                          child: Wrap(
+                                            spacing: TSizes.v8,
+                                            runSpacing: TSizes.v8,
+                                            children: beat.areas.map(
+                                              (area) {
+                                                final areaColor =
+                                                    _parseBeatColor(beat.color);
+
+                                                return Container(
+                                                  padding: const EdgeInsets
+                                                      .symmetric(
+                                                    horizontal: 11,
+                                                    vertical: 8,
+                                                  ),
+                                                  decoration: BoxDecoration(
+                                                    color: areaColor
+                                                        .withOpacity(0.10),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            9),
+                                                    border: Border.all(
+                                                      color: areaColor
+                                                          .withOpacity(0.20),
+                                                    ),
+                                                  ),
+                                                  child: Row(
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
+                                                    children: [
+                                                      const Icon(
+                                                        Icons
+                                                            .location_on_rounded,
+                                                        size: TSizes.v15,
+                                                        color: TColors.primary,
+                                                      ),
+                                                      const SizedBox(
+                                                          width: TSizes.v5),
+                                                      Text(
+                                                        area.name,
+                                                        style: TextStyle(
+                                                          fontSize: TSizes.v11,
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                          color: areaColor,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                );
+                                              },
+                                            ).toList(),
+                                          ),
+                                        ),
+                                      ],
+                                    ],
                                   ),
-                                ],
-                              ],
-                            ),
+                                ),
+                              );
+                            },
                           ),
-                        );
-                      },
-                    ),
                   ),
 
-                  const SizedBox(height: 8),
+                  const SizedBox(height: TSizes.v8),
 
-                  const Divider(height: 1),
+                  const Divider(height: TSizes.v1),
 
-                  const SizedBox(height: 10),
+                  const SizedBox(height: TSizes.v10),
 
                   // ==================================================
                   // FOOTER
@@ -1143,27 +1138,24 @@ class _DayEditorPanelState extends State<DayEditorPanel> {
                     children: [
                       const Icon(
                         Icons.info_outline_rounded,
-                        size: 16,
+                        size: TSizes.v16,
                         color: TColors.textSecondary,
                       ),
-
-                      const SizedBox(width: 7),
-
+                      const SizedBox(width: TSizes.v7),
                       Expanded(
                         child: Text(
                           "${controller.beats.length} beats available",
                           style: const TextStyle(
-                            fontSize: 12,
+                            fontSize: TSizes.v12,
                             color: TColors.textSecondary,
                           ),
                         ),
                       ),
-
                       TextButton(
                         onPressed: () {
                           Navigator.pop(context);
                         },
-                        child: const Text("CLOSE"),
+                        child: const Text(TTexts.uiTextCLOSE),
                       ),
                     ],
                   ),
@@ -1201,6 +1193,4 @@ class _DayEditorPanelState extends State<DayEditorPanel> {
 
     return TColors.primary;
   }
-
-  
 }

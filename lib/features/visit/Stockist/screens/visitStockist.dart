@@ -7,20 +7,19 @@ import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
-
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 import '../../../../../../utils/LocationHelper/LocationHelper.dart';
-import '../../../../../../utils/constants/colors.dart';
-import '../../../../../../utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 import '../../../../../../utils/local_storage/auth_manager.dart';
 import '../../../../common/Model/DoctorVisitResponse.dart';
 import '../../../../utils/http/http_client.dart';
-
-// Import Stockist Controller and Model
 import '../../../addStokist/controllers/StokistListController.dart';
 import '../controllers/visitListController.dart';
 import '../models/visitSalesData.dart';
 import 'ScheduleStockistVisitScreen.dart';
+
+// Import Stockist Controller and Model
 
 class VisitStockistScreen extends StatefulWidget {
   const VisitStockistScreen({super.key});
@@ -33,7 +32,8 @@ class _VisitStockistScreenState extends State<VisitStockistScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = "";
 
-  final StokistListController _stokistListController = Get.put(StokistListController());
+  final StokistListController _stokistListController =
+      Get.put(StokistListController());
   late VisitListController _visitListController;
   final AuthManager authManager = AuthManager();
 
@@ -62,7 +62,9 @@ class _VisitStockistScreenState extends State<VisitStockistScreen> {
         startDate: _selectedDateRange?.start,
         endDate: _selectedDateRange?.end,
       );
-      Get.snackbar("Success", "Stockist list updated", backgroundColor: TColors.success.withOpacity(0.1), colorText: TColors.success);
+      Get.snackbar("Success", TTexts.uiTextStockistListUpdated,
+          backgroundColor: TColors.success.withOpacity(0.1),
+          colorText: TColors.success);
     }
   }
 
@@ -78,8 +80,8 @@ class _VisitStockistScreenState extends State<VisitStockistScreen> {
             data: Theme.of(context).copyWith(
               colorScheme: const ColorScheme.light(
                 primary: TColors.primary,
-                onPrimary: Colors.white,
-                onSurface: Colors.black,
+                onPrimary: TColors.white,
+                onSurface: TColors.pureBlack,
               ),
             ),
             child: child!,
@@ -92,7 +94,10 @@ class _VisitStockistScreenState extends State<VisitStockistScreen> {
           _selectedFilter = filter;
           _selectedDateRange = picked;
         });
-        _visitListController.fetchSalesList(filter: VisitDateFilter.custom, startDate: picked.start, endDate: picked.end);
+        _visitListController.fetchSalesList(
+            filter: VisitDateFilter.custom,
+            startDate: picked.start,
+            endDate: picked.end);
       }
     } else {
       setState(() {
@@ -105,9 +110,12 @@ class _VisitStockistScreenState extends State<VisitStockistScreen> {
 
   String _getFilterName(VisitDateFilter filter) {
     switch (filter) {
-      case VisitDateFilter.today: return "Today";
-      case VisitDateFilter.last7Days: return "Last 7 Days";
-      case VisitDateFilter.last15Days: return "Last 15 Days";
+      case VisitDateFilter.today:
+        return "Today";
+      case VisitDateFilter.last7Days:
+        return "Last 7 Days";
+      case VisitDateFilter.last15Days:
+        return "Last 15 Days";
       case VisitDateFilter.custom:
         if (_selectedDateRange != null) {
           return "${DateFormat('MMM dd').format(_selectedDateRange!.start)} - ${DateFormat('MMM dd').format(_selectedDateRange!.end)}";
@@ -119,7 +127,7 @@ class _VisitStockistScreenState extends State<VisitStockistScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: TColors.materialGrey50,
       body: Column(
         children: [
           // 1. Search Bar
@@ -128,15 +136,27 @@ class _VisitStockistScreenState extends State<VisitStockistScreen> {
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                labelText: "Search Stockist",
-                fillColor: Colors.white,
+                labelText: TTexts.uiTextSearchStockist,
+                fillColor: TColors.white,
                 filled: true,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.withOpacity(0.2))),
-                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: TColors.primary)),
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none),
+                enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                        color: TColors.materialGrey.withOpacity(0.2))),
+                focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: TColors.primary)),
                 prefixIcon: const Icon(Icons.search, color: TColors.primary),
                 suffixIcon: _searchQuery.isNotEmpty
-                    ? IconButton(icon: const Icon(Icons.clear), onPressed: () => setState(() { _searchController.clear(); _searchQuery = ""; }))
+                    ? IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () => setState(() {
+                              _searchController.clear();
+                              _searchQuery = "";
+                            }))
                     : null,
               ),
               onChanged: (value) => setState(() => _searchQuery = value),
@@ -145,22 +165,22 @@ class _VisitStockistScreenState extends State<VisitStockistScreen> {
 
           // 2. Horizontal Filter List
           SizedBox(
-            height: 50,
+            height: TSizes.v50,
             child: ListView(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16),
               children: [
                 _buildFilterChip(VisitDateFilter.today),
-                const SizedBox(width: 8),
+                const SizedBox(width: TSizes.v8),
                 _buildFilterChip(VisitDateFilter.last7Days),
-                const SizedBox(width: 8),
+                const SizedBox(width: TSizes.v8),
                 _buildFilterChip(VisitDateFilter.last15Days),
-                const SizedBox(width: 8),
+                const SizedBox(width: TSizes.v8),
                 _buildFilterChip(VisitDateFilter.custom),
               ],
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: TSizes.v10),
 
           // 3. Main Content (Summary + List)
           Expanded(
@@ -175,22 +195,29 @@ class _VisitStockistScreenState extends State<VisitStockistScreen> {
                   // Stats
                   final allVisits = _visitListController.salesList;
                   final int totalVisits = allVisits.length;
-                  final int confirmedVisits = allVisits.where((v) => (v as StockistVisit).confirmed == true).length;
+                  final int confirmedVisits = allVisits
+                      .where((v) => (v as StockistVisit).confirmed == true)
+                      .length;
                   final int pendingVisits = totalVisits - confirmedVisits;
 
                   // Filter List
-                  List<StockistVisit> filteredList = allVisits.cast<StockistVisit>()
+                  List<StockistVisit> filteredList = allVisits
+                      .cast<StockistVisit>()
                       .where((visit) =>
-                      (visit.stockist?.firmName?.toLowerCase() ?? "").contains(_searchQuery.toLowerCase()))
+                          (visit.stockist?.firmName?.toLowerCase() ?? "")
+                              .contains(_searchQuery.toLowerCase()))
                       .toList();
 
                   return Column(
                     children: [
-                      _buildStatusSummaryDashboard(totalVisits, confirmedVisits, pendingVisits),
-                      const SizedBox(height: 10),
-
+                      _buildStatusSummaryDashboard(
+                          totalVisits, confirmedVisits, pendingVisits),
+                      const SizedBox(height: TSizes.v10),
                       if (filteredList.isEmpty)
-                        const Expanded(child: Center(child: Text("No stockists found matching your search.")))
+                        const Expanded(
+                            child: Center(
+                                child: Text(TTexts
+                                    .uiTextNoStockistsFoundMatchingYourSearch)))
                       else
                         Expanded(
                           child: LayoutBuilder(
@@ -198,71 +225,152 @@ class _VisitStockistScreenState extends State<VisitStockistScreen> {
                               bool isTablet = constraints.maxWidth > 600;
 
                               Widget buildCard(StockistVisit visit) {
-                                final stockistName = visit.stockist?.firmName ?? "Unknown Stockist";
-                                final String initials = stockistName.trim().isNotEmpty
-                                    ? stockistName.trim().substring(0, 1).toUpperCase()
-                                    : "S";
+                                final stockistName = visit.stockist?.firmName ??
+                                    "Unknown Stockist";
+                                final String initials =
+                                    stockistName.trim().isNotEmpty
+                                        ? stockistName
+                                            .trim()
+                                            .substring(0, 1)
+                                            .toUpperCase()
+                                        : "S";
 
                                 final isConfirmed = visit.confirmed == true;
-                                final statusColor = isConfirmed ? TColors.success : TColors.primary;
-                                final statusText = isConfirmed ? "Completed" : "Action Needed";
-                                final statusIcon = isConfirmed ? Icons.check_circle : Icons.pending;
+                                final statusColor = isConfirmed
+                                    ? TColors.success
+                                    : TColors.primary;
+                                final statusText =
+                                    isConfirmed ? "Completed" : "Action Needed";
+                                final statusIcon = isConfirmed
+                                    ? Icons.check_circle
+                                    : Icons.pending;
 
                                 return Container(
                                   decoration: BoxDecoration(
-                                    color: Colors.white,
+                                    color: TColors.white,
                                     borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(color: TColors.primary.withOpacity(0.4), width: 1),
+                                    border: Border.all(
+                                        color: TColors.primary.withOpacity(0.4),
+                                        width: TSizes.v1),
                                     boxShadow: [
-                                      BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 15, offset: const Offset(0, 6)),
+                                      BoxShadow(
+                                          color: TColors.pureBlack
+                                              .withOpacity(0.06),
+                                          blurRadius: TSizes.v15,
+                                          offset: const Offset(0, 6)),
                                     ],
                                   ),
                                   clipBehavior: Clip.antiAlias,
                                   child: IntrinsicHeight(
                                     child: Row(
-                                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.stretch,
                                       children: [
-                                        Container(width: 6, color: statusColor),
+                                        Container(
+                                            width: TSizes.v6,
+                                            color: statusColor),
                                         Expanded(
                                           child: Column(
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
                                               // Header
                                               Container(
-                                                padding: const EdgeInsets.all(16.0),
-                                                decoration: BoxDecoration(color: statusColor.withOpacity(0.04)),
+                                                padding:
+                                                    const EdgeInsets.all(16.0),
+                                                decoration: BoxDecoration(
+                                                    color: statusColor
+                                                        .withOpacity(0.04)),
                                                 child: Row(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
                                                   children: [
                                                     Container(
-                                                      padding: const EdgeInsets.all(2),
-                                                      decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: statusColor.withOpacity(0.3), width: 2)),
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              2),
+                                                      decoration: BoxDecoration(
+                                                          shape:
+                                                              BoxShape.circle,
+                                                          border: Border.all(
+                                                              color: statusColor
+                                                                  .withOpacity(
+                                                                      0.3),
+                                                              width:
+                                                                  TSizes.v2)),
                                                       child: CircleAvatar(
-                                                        radius: 22,
-                                                        backgroundColor: Colors.white,
-                                                        child: Text(initials, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: statusColor)),
+                                                        radius: TSizes.v22,
+                                                        backgroundColor:
+                                                            TColors.white,
+                                                        child: Text(initials,
+                                                            style: TextStyle(
+                                                                fontSize:
+                                                                    TSizes.v18,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                color:
+                                                                    statusColor)),
                                                       ),
                                                     ),
-                                                    const SizedBox(width: 12),
+                                                    const SizedBox(
+                                                        width: TSizes.v12),
                                                     Expanded(
                                                       child: Column(
-                                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
                                                         children: [
                                                           Text(
                                                             stockistName,
-                                                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
-                                                            maxLines: 1, overflow: TextOverflow.ellipsis,
+                                                            style: const TextStyle(
+                                                                fontSize:
+                                                                    TSizes.v16,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                color: TColors
+                                                                    .black87),
+                                                            maxLines: 1,
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
                                                           ),
-                                                          const SizedBox(height: 6),
+                                                          const SizedBox(
+                                                              height:
+                                                                  TSizes.v6),
                                                           Row(
                                                             children: [
-                                                              Icon(Icons.calendar_today_rounded, size: 14, color: Colors.grey[600]),
-                                                              const SizedBox(width: 4),
+                                                              Icon(
+                                                                  Icons
+                                                                      .calendar_today_rounded,
+                                                                  size: TSizes
+                                                                      .v14,
+                                                                  color: TColors
+                                                                      .materialGrey600),
+                                                              const SizedBox(
+                                                                  width: TSizes
+                                                                      .v4),
                                                               Expanded(
                                                                 child: Text(
-                                                                  DateFormat('dd MMM, hh:mm a').format(visit.date ?? DateTime.now()),
-                                                                  style: TextStyle(fontSize: 12, color: Colors.grey[600], fontWeight: FontWeight.w500),
-                                                                  maxLines: 1, overflow: TextOverflow.ellipsis,
+                                                                  DateFormat(
+                                                                          'dd MMM, hh:mm a')
+                                                                      .format(visit
+                                                                              .date ??
+                                                                          DateTime
+                                                                              .now()),
+                                                                  style: TextStyle(
+                                                                      fontSize:
+                                                                          TSizes
+                                                                              .v12,
+                                                                      color: TColors
+                                                                          .materialGrey600,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .w500),
+                                                                  maxLines: 1,
+                                                                  overflow:
+                                                                      TextOverflow
+                                                                          .ellipsis,
                                                                 ),
                                                               ),
                                                             ],
@@ -275,67 +383,194 @@ class _VisitStockistScreenState extends State<VisitStockistScreen> {
                                               ),
                                               // Body
                                               Padding(
-                                                padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                                                padding:
+                                                    const EdgeInsets.fromLTRB(
+                                                        16, 16, 16, 12),
                                                 child: Column(
                                                   children: [
                                                     // Info Row (Status)
                                                     Row(
-                                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .spaceBetween,
                                                       children: [
                                                         Container(
-                                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                                          decoration: BoxDecoration(color: statusColor.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .symmetric(
+                                                                  horizontal:
+                                                                      10,
+                                                                  vertical: 6),
+                                                          decoration: BoxDecoration(
+                                                              color: statusColor
+                                                                  .withOpacity(
+                                                                      0.1),
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          8)),
                                                           child: Row(
                                                             children: [
-                                                              Icon(statusIcon, size: 14, color: statusColor),
-                                                              const SizedBox(width: 6),
-                                                              Text(statusText, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: statusColor)),
+                                                              Icon(statusIcon,
+                                                                  size: TSizes
+                                                                      .v14,
+                                                                  color:
+                                                                      statusColor),
+                                                              const SizedBox(
+                                                                  width: TSizes
+                                                                      .v6),
+                                                              Text(statusText,
+                                                                  style: TextStyle(
+                                                                      fontSize:
+                                                                          TSizes
+                                                                              .v11,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .bold,
+                                                                      color:
+                                                                          statusColor)),
                                                             ],
                                                           ),
                                                         ),
                                                       ],
                                                     ),
-                                                    const SizedBox(height: 12),
+                                                    const SizedBox(
+                                                        height: TSizes.v12),
                                                     // Notes
                                                     Container(
                                                       width: double.infinity,
-                                                      padding: const EdgeInsets.all(12),
-                                                      decoration: BoxDecoration(color: Colors.grey[50], borderRadius: BorderRadius.circular(10), border: Border.all(color: Colors.grey[200]!)),
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              12),
+                                                      decoration: BoxDecoration(
+                                                          color: TColors
+                                                              .materialGrey50,
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(10),
+                                                          border: Border.all(
+                                                              color: TColors
+                                                                  .materialGrey200!)),
                                                       child: Column(
-                                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
                                                         children: [
-                                                          Text("CALL NOTES", style: TextStyle(fontSize: 10, color: Colors.grey[500], fontWeight: FontWeight.w700, letterSpacing: 0.5)),
-                                                          const SizedBox(height: 4),
                                                           Text(
-                                                            visit.notes?.isNotEmpty == true ? visit.notes! : "No notes provided.",
-                                                            style: TextStyle(fontSize: 13, color: Colors.grey[700], fontStyle: visit.notes?.isNotEmpty == true ? FontStyle.normal : FontStyle.italic),
-                                                            maxLines: 2, overflow: TextOverflow.ellipsis,
+                                                              TTexts
+                                                                  .uiTextCALLNOTES,
+                                                              style: TextStyle(
+                                                                  fontSize:
+                                                                      TSizes
+                                                                          .v10,
+                                                                  color: TColors
+                                                                      .materialGrey500,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w700,
+                                                                  letterSpacing:
+                                                                      0.5)),
+                                                          const SizedBox(
+                                                              height:
+                                                                  TSizes.v4),
+                                                          Text(
+                                                            visit.notes?.isNotEmpty ==
+                                                                    true
+                                                                ? visit.notes!
+                                                                : "No notes provided.",
+                                                            style: TextStyle(
+                                                                fontSize:
+                                                                    TSizes.v13,
+                                                                color: TColors
+                                                                    .materialGrey700,
+                                                                fontStyle: visit
+                                                                            .notes
+                                                                            ?.isNotEmpty ==
+                                                                        true
+                                                                    ? FontStyle
+                                                                        .normal
+                                                                    : FontStyle
+                                                                        .italic),
+                                                            maxLines: 2,
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
                                                           ),
                                                         ],
                                                       ),
                                                     ),
-                                                    const SizedBox(height: 12),
+                                                    const SizedBox(
+                                                        height: TSizes.v12),
                                                     // Button
                                                     SizedBox(
                                                       width: double.infinity,
                                                       child: ElevatedButton(
                                                         onPressed: isConfirmed
-                                                            ? () { ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Visit already confirmed.'), backgroundColor: Colors.orange)); }
-                                                            : () => _confirmVisitLogic(visit),
-                                                        style: ElevatedButton.styleFrom(
-                                                          backgroundColor: statusColor,
-                                                          foregroundColor: Colors.white,
-                                                          elevation: isConfirmed ? 0 : 2,
-                                                          shadowColor: statusColor.withOpacity(0.4),
-                                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                                          minimumSize: const Size(double.infinity, 44),
+                                                            ? () {
+                                                                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                                                                    content: Text(
+                                                                        TTexts
+                                                                            .uiTextVisitAlreadyConfirmed),
+                                                                    backgroundColor:
+                                                                        TColors
+                                                                            .materialOrange));
+                                                              }
+                                                            : () =>
+                                                                _confirmVisitLogic(
+                                                                    visit),
+                                                        style: ElevatedButton
+                                                            .styleFrom(
+                                                          backgroundColor:
+                                                              statusColor,
+                                                          foregroundColor:
+                                                              TColors.white,
+                                                          elevation: isConfirmed
+                                                              ? 0
+                                                              : 2,
+                                                          shadowColor:
+                                                              statusColor
+                                                                  .withOpacity(
+                                                                      0.4),
+                                                          shape: RoundedRectangleBorder(
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          12)),
+                                                          minimumSize:
+                                                              const Size(
+                                                                  double
+                                                                      .infinity,
+                                                                  44),
                                                         ),
                                                         child: Row(
-                                                          mainAxisAlignment: MainAxisAlignment.center,
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .center,
                                                           children: [
-                                                            Icon(isConfirmed ? Icons.verified : Icons.touch_app_rounded, size: 20),
-                                                            const SizedBox(width: 8),
-                                                            Text(isConfirmed ? TTexts.visitConfirmed : TTexts.confirmVisit, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                                                            Icon(
+                                                                isConfirmed
+                                                                    ? Icons
+                                                                        .verified
+                                                                    : Icons
+                                                                        .touch_app_rounded,
+                                                                size:
+                                                                    TSizes.v20),
+                                                            const SizedBox(
+                                                                width:
+                                                                    TSizes.v8),
+                                                            Text(
+                                                                isConfirmed
+                                                                    ? TTexts
+                                                                        .visitConfirmed
+                                                                    : TTexts
+                                                                        .confirmVisit,
+                                                                style: const TextStyle(
+                                                                    fontSize:
+                                                                        TSizes
+                                                                            .v15,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold)),
                                                           ],
                                                         ),
                                                       ),
@@ -355,20 +590,27 @@ class _VisitStockistScreenState extends State<VisitStockistScreen> {
                               if (isTablet) {
                                 return GridView.builder(
                                   padding: const EdgeInsets.all(16),
-                                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                                      crossAxisCount: 2,
-                                      crossAxisSpacing: 16,
-                                      mainAxisSpacing: 16,
-                                      childAspectRatio: 1.3 // Changed from 2.0 to 1.3 to fix Overflow
-                                  ),
+                                  gridDelegate:
+                                      const SliverGridDelegateWithFixedCrossAxisCount(
+                                          crossAxisCount: 2,
+                                          crossAxisSpacing: TSizes.v16,
+                                          mainAxisSpacing: TSizes.v16,
+                                          childAspectRatio:
+                                              1.3 // Changed from 2.0 to 1.3 to fix Overflow
+                                          ),
                                   itemCount: filteredList.length,
-                                  itemBuilder: (context, index) => buildCard(filteredList[index]),
+                                  itemBuilder: (context, index) =>
+                                      buildCard(filteredList[index]),
                                 );
                               } else {
                                 return ListView.builder(
-                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 12),
                                   itemCount: filteredList.length,
-                                  itemBuilder: (context, index) => Padding(padding: const EdgeInsets.only(bottom: 16.0), child: buildCard(filteredList[index])),
+                                  itemBuilder: (context, index) => Padding(
+                                      padding:
+                                          const EdgeInsets.only(bottom: 16.0),
+                                      child: buildCard(filteredList[index])),
                                 );
                               }
                             },
@@ -385,8 +627,10 @@ class _VisitStockistScreenState extends State<VisitStockistScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _navigateToScheduleScreen,
         backgroundColor: TColors.primary,
-        icon: const Icon(Icons.add, color: Colors.white),
-        label: const Text("New Visit", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        icon: const Icon(Icons.add, color: TColors.white),
+        label: const Text(TTexts.uiTextNewVisit,
+            style:
+                TextStyle(color: TColors.white, fontWeight: FontWeight.bold)),
       ),
     );
   }
@@ -395,24 +639,26 @@ class _VisitStockistScreenState extends State<VisitStockistScreen> {
     QuickAlert.show(
         context: context,
         type: QuickAlertType.confirm,
-        title: "Confirm Visit",
-        text: "Mark this stockist visit as completed?",
-        confirmBtnText: "Yes",
+        title: TTexts.confirmVisit,
+        text: TTexts.uiTextMarkThisStockistVisitAsCompleted,
+        confirmBtnText: TTexts.yes,
         confirmBtnColor: TColors.primary,
         onConfirmBtnTap: () async {
           Navigator.pop(context);
 
           var permission = await Permission.location.request();
           if (!permission.isGranted) {
-            Get.snackbar("Permission", "Location required");
+            Get.snackbar("Permission", TTexts.uiTextLocationRequired);
             return;
           }
 
           try {
-            Position pos = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+            Position pos = await Geolocator.getCurrentPosition(
+                desiredAccuracy: LocationAccuracy.high);
 
             final response = await http.put(
-              Uri.parse('${THttpHelper.baseUrl}/stockist-visits/${visit.id}/confirm'),
+              Uri.parse(
+                  '${THttpHelper.baseUrl}/stockist-visits/${visit.id}/confirm'),
               headers: {'Content-Type': 'application/json'},
               body: json.encode({
                 'userLatitude': pos.latitude,
@@ -425,7 +671,11 @@ class _VisitStockistScreenState extends State<VisitStockistScreen> {
               VisitConfirmResponse res = VisitConfirmResponse.fromJson(body);
 
               if (res.status == true) {
-                QuickAlert.show(context: context, type: QuickAlertType.success, text: res.message, confirmBtnColor: TColors.primary);
+                QuickAlert.show(
+                    context: context,
+                    type: QuickAlertType.success,
+                    text: res.message,
+                    confirmBtnColor: TColors.primary);
                 _visitListController.fetchSalesList(filter: _selectedFilter);
               } else {
                 Get.snackbar("Error", res.message ?? "Failed");
@@ -436,8 +686,7 @@ class _VisitStockistScreenState extends State<VisitStockistScreen> {
           } catch (e) {
             Get.snackbar("Error", e.toString());
           }
-        }
-    );
+        });
   }
 
   Widget _buildStatusSummaryDashboard(int total, int confirmed, int pending) {
@@ -445,38 +694,95 @@ class _VisitStockistScreenState extends State<VisitStockistScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Container(
         padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: Colors.grey.withOpacity(0.2)), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 2))]),
+        decoration: BoxDecoration(
+            color: TColors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: TColors.materialGrey.withOpacity(0.2)),
+            boxShadow: [
+              BoxShadow(
+                  color: TColors.pureBlack.withOpacity(0.03),
+                  blurRadius: TSizes.v10,
+                  offset: const Offset(0, 2))
+            ]),
         child: Row(
           children: [
-            _buildStatusCard("Total", total.toString(), TColors.primary, Icons.inventory_2),
-            Container(width: 1, height: 40, color: Colors.grey.withOpacity(0.2)),
-            _buildStatusCard("Done", confirmed.toString(), TColors.success, Icons.check_circle_outline),
-            Container(width: 1, height: 40, color: Colors.grey.withOpacity(0.2)),
-            _buildStatusCard("Pending", pending.toString(), Colors.orange, Icons.pending_outlined),
+            _buildStatusCard(
+                "Total", total.toString(), TColors.primary, Icons.inventory_2),
+            Container(
+                width: TSizes.v1,
+                height: TSizes.v40,
+                color: TColors.materialGrey.withOpacity(0.2)),
+            _buildStatusCard("Done", confirmed.toString(), TColors.success,
+                Icons.check_circle_outline),
+            Container(
+                width: TSizes.v1,
+                height: TSizes.v40,
+                color: TColors.materialGrey.withOpacity(0.2)),
+            _buildStatusCard("Pending", pending.toString(),
+                TColors.materialOrange, Icons.pending_outlined),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildStatusCard(String label, String count, Color color, IconData icon) {
-    return Expanded(child: Column(children: [Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(icon, size: 16, color: color.withOpacity(0.8)), const SizedBox(width: 6), Text(count, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: color))]), const SizedBox(height: 4), Text(label.toUpperCase(), style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: Colors.grey[600]))]));
+  Widget _buildStatusCard(
+      String label, String count, Color color, IconData icon) {
+    return Expanded(
+        child: Column(children: [
+      Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(icon, size: TSizes.v16, color: color.withOpacity(0.8)),
+        const SizedBox(width: TSizes.v6),
+        Text(count,
+            style: TextStyle(
+                fontSize: TSizes.v18,
+                fontWeight: FontWeight.bold,
+                color: color))
+      ]),
+      const SizedBox(height: TSizes.v4),
+      Text(label.toUpperCase(),
+          style: TextStyle(
+              fontSize: TSizes.v10,
+              fontWeight: FontWeight.w600,
+              color: TColors.materialGrey600))
+    ]));
   }
 
   Widget _buildFilterChip(VisitDateFilter filter) {
     final bool isSelected = _selectedFilter == filter;
     return ChoiceChip(
-      label: Text(_getFilterName(filter), style: TextStyle(color: isSelected ? Colors.white : Colors.black87, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
+      label: Text(_getFilterName(filter),
+          style: TextStyle(
+              color: isSelected ? TColors.white : TColors.black87,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
       selected: isSelected,
-      onSelected: (bool selected) { if (selected) _onFilterChanged(filter); },
+      onSelected: (bool selected) {
+        if (selected) _onFilterChanged(filter);
+      },
       selectedColor: TColors.primary,
-      backgroundColor: Colors.white,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide(color: isSelected ? TColors.primary : Colors.grey.shade300)),
+      backgroundColor: TColors.white,
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(
+              color: isSelected ? TColors.primary : TColors.materialGrey300)),
       showCheckmark: false,
     );
   }
 
   Widget _buildEmptyState() {
-    return Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.inventory_2_outlined, size: 64, color: Colors.grey[300]), const SizedBox(height: 16), Text("No Stockist Visits Found", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey[600])), TextButton(onPressed: _navigateToScheduleScreen, child: const Text("Schedule Now"))]));
+    return Center(
+        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+      Icon(Icons.inventory_2_outlined,
+          size: TSizes.v64, color: TColors.materialGrey300),
+      const SizedBox(height: TSizes.v16),
+      Text(TTexts.uiTextNoStockistVisitsFound,
+          style: TextStyle(
+              fontSize: TSizes.v18,
+              fontWeight: FontWeight.bold,
+              color: TColors.materialGrey600)),
+      TextButton(
+          onPressed: _navigateToScheduleScreen,
+          child: const Text(TTexts.uiTextScheduleNow))
+    ]));
   }
 }

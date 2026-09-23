@@ -3,9 +3,9 @@ import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_state_manager/src/simple/get_controllers.dart';
 import 'package:medicle_sales_rbsh/features/salesActivity/screens/salesActivity.dart';
-
-import '../../../utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 import '../../visit/Doctor/screens/visitDoctor.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class LoginViistScheduleButton extends StatelessWidget {
   const LoginViistScheduleButton({
@@ -19,7 +19,7 @@ class LoginViistScheduleButton extends StatelessWidget {
       children: [
         /// LoginActivityButton
         ElevatedButton(
-            onPressed: ()  => Get.to( const SalesactivityScreen()),
+            onPressed: () => Get.to(const SalesactivityScreen()),
             style: ElevatedButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 10),
             ),
@@ -29,7 +29,7 @@ class LoginViistScheduleButton extends StatelessWidget {
 
         /// Schedule Visit Button
         ElevatedButton(
-            onPressed: () => Get.to( const VisitDoctorScreen()),
+            onPressed: () => Get.to(const VisitDoctorScreen()),
             style: ElevatedButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 10),
             ),

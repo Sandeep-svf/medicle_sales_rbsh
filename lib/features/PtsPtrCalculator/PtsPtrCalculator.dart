@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
-import '../../utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class PtrPtsCalculatorScreen extends StatefulWidget {
   const PtrPtsCalculatorScreen({Key? key}) : super(key: key);
@@ -11,15 +12,17 @@ class PtrPtsCalculatorScreen extends StatefulWidget {
 }
 
 class _PtrPtsCalculatorScreenState extends State<PtrPtsCalculatorScreen> {
-  final _mrpCtrl = TextEditingController();           // keep empty by default
-  final _retailerCtrl = TextEditingController(text: '20');  // default 20
-  final _stockistCtrl = TextEditingController(text: '10');  // default 10
+  final _mrpCtrl = TextEditingController(); // keep empty by default
+  final _retailerCtrl =
+      TextEditingController(text: TTexts.uiText20); // default 20
+  final _stockistCtrl =
+      TextEditingController(text: TTexts.uiText10); // default 10
 
-  double _ptr = 0.0;   // always-visible, start at 0.00
-  double _pts = 0.0;   // always-visible, start at 0.00
+  double _ptr = 0.0; // always-visible, start at 0.00
+  double _pts = 0.0; // always-visible, start at 0.00
 
   final List<int> gstOptions = [5, 12, 18, 28];
-  int _selectedGst = 5;   // default 5%
+  int _selectedGst = 5; // default 5%
 
   @override
   void initState() {
@@ -85,53 +88,53 @@ class _PtrPtsCalculatorScreenState extends State<PtrPtsCalculatorScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final themeBlue = Colors.blue.shade700;
-    final orange = Colors.orange.shade700;
+    final themeBlue = TColors.materialBlue700;
+    final orange = TColors.materialOrange700;
 
     return Scaffold(
       appBar: AppBar(
-
         actions: [
           IconButton(
-            tooltip: 'Reset All',
+            tooltip: TTexts.uiTextResetAll,
             onPressed: _reset,
             icon: const Icon(Icons.refresh),
           )
         ],
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: TColors.white,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
           child: Center(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 560),
+              constraints: const BoxConstraints(maxWidth: TSizes.v560),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   _FormulaCard(themeBlue: themeBlue),
-                  const SizedBox(height: 18),
+                  const SizedBox(height: TSizes.v18),
 
                   _InputField(
                     controller: _mrpCtrl,
-                    label: 'MRP',
+                    label: TTexts.uiTextMRP,
                     hint: 'e.g., 1230',
                     suffix: '₹',
                   ),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: TSizes.v14),
 
                   // GST DROPDOWN (default 5%)
                   InputDecorator(
                     decoration: InputDecoration(
-                      labelText: 'GST',
-                      labelStyle: TextStyle(color: Colors.grey.shade800),
+                      labelText: TTexts.uiTextGST,
+                      labelStyle: TextStyle(color: TColors.materialGrey800),
                       filled: true,
-                      fillColor: Colors.grey.shade100,
+                      fillColor: TColors.materialGrey100,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.grey.shade300),
+                        borderSide: BorderSide(color: TColors.materialGrey300),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 4),
                     ),
                     child: DropdownButtonHideUnderline(
                       child: DropdownButton<int>(
@@ -139,9 +142,9 @@ class _PtrPtsCalculatorScreenState extends State<PtrPtsCalculatorScreen> {
                         isExpanded: true,
                         items: gstOptions
                             .map((g) => DropdownMenuItem(
-                          value: g,
-                          child: Text('$g %'),
-                        ))
+                                  value: g,
+                                  child: Text('$g %'),
+                                ))
                             .toList(),
                         onChanged: (val) {
                           if (val == null) return;
@@ -151,33 +154,39 @@ class _PtrPtsCalculatorScreenState extends State<PtrPtsCalculatorScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: TSizes.v14),
 
                   _InputField(
                     controller: _retailerCtrl,
-                    label: 'Retailer Margin',
+                    label: TTexts.uiTextRetailerMargin,
                     hint: 'Default 20',
                     suffix: '%',
                   ),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: TSizes.v14),
 
                   _InputField(
                     controller: _stockistCtrl,
-                    label: 'Stockist Margin',
+                    label: TTexts.uiTextStockistMargin,
                     hint: 'Default 10',
                     suffix: '%',
                   ),
-                  const SizedBox(height: 22),
+                  const SizedBox(height: TSizes.v22),
 
                   // Always-visible RESULTS (start at 0.00)
                   Row(
                     children: [
                       Expanded(
-                        child: _ResultCard(label: 'PTR', value: _ptr, color: orange),
+                        child: _ResultCard(
+                            label: TTexts.uiTextPTR,
+                            value: _ptr,
+                            color: orange),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: TSizes.v12),
                       Expanded(
-                        child: _ResultCard(label: 'PTS', value: _pts, color: orange),
+                        child: _ResultCard(
+                            label: TTexts.uiTextPTS,
+                            value: _pts,
+                            color: orange),
                       ),
                     ],
                   ),
@@ -199,29 +208,29 @@ class _FormulaCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 2,
-      shadowColor: Colors.black26,
+      elevation: TSizes.v2,
+      shadowColor: TColors.black26,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(14),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
             Icon(Icons.info_outline, color: themeBlue),
-            const SizedBox(width: 8),
+            const SizedBox(width: TSizes.v8),
             Text(
-              'How PTR & PTS are calculated',
+              TTexts.uiTextHowPTRPTSAreCalculated,
               style: TextStyle(
                 color: themeBlue,
                 fontWeight: FontWeight.w700,
-                fontSize: 16,
+                fontSize: TSizes.v16,
               ),
             ),
           ]),
-          const SizedBox(height: 8),
+          const SizedBox(height: TSizes.v8),
           const Text(
-            'PTR = (MRP − (MRP × RetailerMargin/100)) ÷ (1 + GST/100)\n'
+            TTexts.uiTextPTRMRPMRPRetailerMargin1001GST100 +
                 'PTS = PTR − (PTR × StockistMargin/100)',
-            style: TextStyle(color: Colors.black87, height: 1.4),
+            style: TextStyle(color: TColors.black87, height: TSizes.v1_4),
           ),
         ]),
       ),
@@ -247,7 +256,7 @@ class _InputField extends StatelessWidget {
   Widget build(BuildContext context) {
     final border = OutlineInputBorder(
       borderRadius: BorderRadius.circular(12),
-      borderSide: BorderSide(color: Colors.grey.shade300),
+      borderSide: BorderSide(color: TColors.materialGrey300),
     );
 
     return TextField(
@@ -260,14 +269,15 @@ class _InputField extends StatelessWidget {
         labelText: label,
         hintText: hint,
         suffixText: suffix,
-        labelStyle: TextStyle(color: Colors.grey.shade800),
-        hintStyle: TextStyle(color: Colors.grey.shade500),
+        labelStyle: TextStyle(color: TColors.materialGrey800),
+        hintStyle: TextStyle(color: TColors.materialGrey500),
         filled: true,
-        fillColor: Colors.grey.shade100,
+        fillColor: TColors.materialGrey100,
         enabledBorder: border,
-        focusedBorder:
-        border.copyWith(borderSide: BorderSide(color: TColors.primary, width: 1.2)),
-        contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+        focusedBorder: border.copyWith(
+            borderSide: BorderSide(color: TColors.primary, width: TSizes.v1_2)),
+        contentPadding:
+            const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
       ),
     );
   }
@@ -279,13 +289,14 @@ class _ResultCard extends StatelessWidget {
   final double value;
   final Color color;
 
-  const _ResultCard({required this.label, required this.value, required this.color});
+  const _ResultCard(
+      {required this.label, required this.value, required this.color});
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 3,
-      shadowColor: Colors.black26,
+      elevation: TSizes.v3,
+      shadowColor: TColors.black26,
       color: color,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
@@ -295,18 +306,18 @@ class _ResultCard extends StatelessWidget {
             Text(
               value.toStringAsFixed(2),
               style: const TextStyle(
-                fontSize: 22,
+                fontSize: TSizes.v22,
                 fontWeight: FontWeight.w800,
-                color: Colors.white,
+                color: TColors.white,
               ),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: TSizes.v6),
             Text(
               label,
               style: const TextStyle(
-                fontSize: 15.5,
+                fontSize: TSizes.v15_5,
                 fontWeight: FontWeight.w600,
-                color: Colors.white,
+                color: TColors.white,
                 letterSpacing: 0.3,
               ),
             ),

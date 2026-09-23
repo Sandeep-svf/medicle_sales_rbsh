@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
-
 import '../services/doctor_area_assignment_service.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class DoctorAreaAssignmentScreen extends StatefulWidget {
   const DoctorAreaAssignmentScreen({
@@ -80,7 +79,7 @@ class _DoctorAreaAssignmentScreenState
         _pending.removeWhere((item) => item.id == doctor.id);
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Area assigned successfully.')),
+        const SnackBar(content: Text(TTexts.uiTextAreaAssignedSuccessfully)),
       );
     } catch (error) {
       if (!mounted) return;
@@ -146,7 +145,7 @@ class _DoctorAreaAssignmentScreenState
     final area = await showModalBottomSheet<DoctorAreaOption>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor: TColors.transparent,
       builder: (_) => _ExistingAreaPicker(areas: _areas),
     );
     if (!mounted || area == null) return;
@@ -194,16 +193,16 @@ class _DoctorAreaAssignmentScreenState
           }
 
           return AlertDialog(
-            title: const Text('Find area by pincode'),
+            title: const Text(TTexts.uiTextFindAreaByPincode),
             content: SizedBox(
-              width: 460,
+              width: TSizes.v460,
               child: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'Enter the doctor’s pincode to fetch nearby post offices and select the correct area.',
+                      TTexts.uiTextEnterTheDoctorSPincodeToFetchNearby,
                     ),
                     const SizedBox(height: TSizes.md),
                     TextField(
@@ -212,7 +211,7 @@ class _DoctorAreaAssignmentScreenState
                       maxLength: 6,
                       keyboardType: TextInputType.number,
                       decoration: const InputDecoration(
-                        labelText: 'Pincode',
+                        labelText: TTexts.uiTextPincode,
                         prefixIcon: Icon(Icons.pin_drop_outlined),
                         border: OutlineInputBorder(),
                         counterText: '',
@@ -226,10 +225,10 @@ class _DoctorAreaAssignmentScreenState
                         onPressed: loading ? null : lookup,
                         icon: loading
                             ? const SizedBox(
-                                width: 16,
-                                height: 16,
-                                child:
-                                    CircularProgressIndicator(strokeWidth: 2),
+                                width: TSizes.v16,
+                                height: TSizes.v16,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: TSizes.v2),
                               )
                             : const Icon(Icons.search),
                         label: Text(loading
@@ -272,13 +271,13 @@ class _DoctorAreaAssignmentScreenState
             actions: [
               TextButton(
                   onPressed: () => Navigator.of(dialogContext).pop(),
-                  child: const Text('Cancel')),
+                  child: const Text(TTexts.cancel)),
               FilledButton(
                 onPressed: selectedOffice == null
                     ? null
                     : () => Navigator.of(dialogContext)
                         .pop((pincodeController.text.trim(), selectedOffice!)),
-                child: const Text('Use selected post office'),
+                child: const Text(TTexts.uiTextUseSelectedPostOffice),
               ),
             ],
           );
@@ -308,21 +307,23 @@ class _DoctorAreaAssignmentScreenState
                 ? 'An area with this post-office name already exists. Review it before assigning.'
                 : 'Review the detected post office before creating and assigning it.'),
             const SizedBox(height: TSizes.md),
-            _InfoLine(label: 'Area name', value: officeName),
-            _InfoLine(label: 'Pincode', value: pincode),
+            _InfoLine(label: TTexts.uiTextAreaName_01cf5f96, value: officeName),
+            _InfoLine(label: TTexts.uiTextPincode, value: pincode),
             _InfoLine(
-                label: 'Block', value: (office['Block'] ?? '-').toString()),
+                label: TTexts.uiTextBlock,
+                value: (office['Block'] ?? '-').toString()),
             _InfoLine(
-                label: 'District',
+                label: TTexts.uiTextDistrict,
                 value: (office['District'] ?? '-').toString()),
             _InfoLine(
-                label: 'State', value: (office['State'] ?? '-').toString()),
+                label: TTexts.uiTextState,
+                value: (office['State'] ?? '-').toString()),
           ],
         ),
         actions: [
           TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Cancel')),
+              child: const Text(TTexts.cancel)),
           FilledButton(
               onPressed: () => Navigator.of(context).pop(true),
               child: Text(alreadyExists ? 'Assign area' : 'Create & assign')),
@@ -351,24 +352,25 @@ class _DoctorAreaAssignmentScreenState
           titleSpacing: 0,
           backgroundColor: TColors.primary,
           foregroundColor: TColors.white,
-          elevation: 0,
+          elevation: TSizes.v0,
           title: const Row(
             children: [
               CircleAvatar(
-                radius: 17,
-                backgroundColor: Colors.white24,
-                child: Icon(Icons.map_outlined, size: 19, color: TColors.white),
+                radius: TSizes.v17,
+                backgroundColor: TColors.white24,
+                child: Icon(Icons.map_outlined,
+                    size: TSizes.v19, color: TColors.white),
               ),
-              SizedBox(width: 10),
-              Text('Assign Doctor Areas'),
+              SizedBox(width: TSizes.v10),
+              Text(TTexts.uiTextAssignDoctorAreas),
             ],
           ),
           actions: [
             if (!widget.mandatory)
               TextButton(
                 onPressed: _skip,
-                child:
-                    const Text('Skip', style: TextStyle(color: TColors.white)),
+                child: const Text(TTexts.skip,
+                    style: TextStyle(color: TColors.white)),
               ),
           ],
         ),
@@ -380,12 +382,12 @@ class _DoctorAreaAssignmentScreenState
                     ? FilledButton.icon(
                         onPressed: () => Navigator.of(context).pop(true),
                         icon: const Icon(Icons.dashboard_customize_outlined),
-                        label: const Text('Continue to Dashboard'),
+                        label: const Text(TTexts.uiTextContinueToDashboard),
                       )
                     : OutlinedButton.icon(
                         onPressed: _skip,
                         icon: const Icon(Icons.schedule_outlined),
-                        label: const Text('Skip for now'),
+                        label: const Text(TTexts.uiTextSkipForNow),
                       ),
               )
             : null,
@@ -409,12 +411,12 @@ class _DoctorAreaAssignmentScreenState
                     controller: _searchController,
                     onChanged: (value) => setState(() => _search = value),
                     decoration: InputDecoration(
-                      hintText: 'Search by doctor, specialty or clinic',
+                      hintText: TTexts.uiTextSearchByDoctorSpecialtyOrClinic,
                       prefixIcon: const Icon(Icons.search_rounded),
                       suffixIcon: _search.isEmpty
                           ? null
                           : IconButton(
-                              tooltip: 'Clear search',
+                              tooltip: TTexts.uiTextClearSearch,
                               onPressed: () {
                                 _searchController.clear();
                                 setState(() => _search = '');
@@ -431,7 +433,7 @@ class _DoctorAreaAssignmentScreenState
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
                         borderSide: const BorderSide(
-                            color: TColors.primary, width: 1.4),
+                            color: TColors.primary, width: TSizes.v1_4),
                       ),
                     ),
                   ),
@@ -508,7 +510,7 @@ class _AssignmentHero extends StatelessWidget {
             boxShadow: [
               BoxShadow(
                 color: TColors.primary.withValues(alpha: .22),
-                blurRadius: 18,
+                blurRadius: TSizes.v18,
                 offset: const Offset(0, 8),
               ),
             ],
@@ -541,7 +543,7 @@ class _AssignmentHero extends StatelessWidget {
                           style:
                               Theme.of(context).textTheme.bodyMedium?.copyWith(
                                     color: TColors.white.withValues(alpha: .84),
-                                    height: 1.35,
+                                    height: TSizes.v1_35,
                                   ),
                         ),
                       ],
@@ -549,8 +551,8 @@ class _AssignmentHero extends StatelessWidget {
                   ),
                   const SizedBox(width: TSizes.md),
                   Container(
-                    width: 62,
-                    height: 62,
+                    width: TSizes.v62,
+                    height: TSizes.v62,
                     decoration: BoxDecoration(
                       color: TColors.white.withValues(alpha: .16),
                       shape: BoxShape.circle,
@@ -562,7 +564,7 @@ class _AssignmentHero extends StatelessWidget {
                         '${(value * 100).round()}%',
                         style: const TextStyle(
                             color: TColors.white,
-                            fontSize: 16,
+                            fontSize: TSizes.v16,
                             fontWeight: FontWeight.w800),
                       ),
                     ),
@@ -574,7 +576,7 @@ class _AssignmentHero extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
                 child: LinearProgressIndicator(
                   value: value,
-                  minHeight: 8,
+                  minHeight: TSizes.v8,
                   backgroundColor: TColors.white.withValues(alpha: .22),
                   valueColor:
                       const AlwaysStoppedAnimation<Color>(TColors.white),
@@ -590,7 +592,7 @@ class _AssignmentHero extends StatelessWidget {
                   Text('${total - completed} remaining',
                       style: TextStyle(
                           color: TColors.white.withValues(alpha: .78),
-                          fontSize: 12)),
+                          fontSize: TSizes.v12)),
                 ],
               ),
             ],
@@ -617,16 +619,16 @@ class _NoSearchResults extends StatelessWidget {
               decoration: const BoxDecoration(
                   color: TColors.primary_shade50, shape: BoxShape.circle),
               child: const Icon(Icons.person_search_outlined,
-                  size: 34, color: TColors.primary),
+                  size: TSizes.v34, color: TColors.primary),
             ),
             const SizedBox(height: TSizes.md),
-            Text('No doctors found',
+            Text(TTexts.uiTextNoDoctorsFound,
                 style: Theme.of(context)
                     .textTheme
                     .titleMedium
                     ?.copyWith(fontWeight: FontWeight.w800)),
             const SizedBox(height: TSizes.xs),
-            Text('Try a different name, specialty or clinic search.',
+            Text(TTexts.uiTextTryADifferentNameSpecialtyOrClinicSearch,
                 textAlign: TextAlign.center,
                 style: Theme.of(context)
                     .textTheme
@@ -685,8 +687,8 @@ class _DoctorAssignmentTile extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withValues(alpha: .045),
-              blurRadius: 12,
+              color: TColors.pureBlack.withValues(alpha: .045),
+              blurRadius: TSizes.v12,
               offset: const Offset(0, 5)),
         ],
       ),
@@ -696,7 +698,7 @@ class _DoctorAssignmentTile extends StatelessWidget {
           Row(
             children: [
               CircleAvatar(
-                radius: 25,
+                radius: TSizes.v25,
                 backgroundColor: TColors.primary_shade50,
                 child: Text(initials.isEmpty ? '?' : initials,
                     style: const TextStyle(
@@ -717,7 +719,7 @@ class _DoctorAssignmentTile extends StatelessWidget {
                                 fontWeight: FontWeight.w800,
                                 color: TColors.textPrimary)),
                     if (details.isNotEmpty) ...[
-                      const SizedBox(height: 3),
+                      const SizedBox(height: TSizes.v3),
                       Text(details,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -754,7 +756,7 @@ class _DoctorAssignmentTile extends StatelessWidget {
                   color: selectedAreaName == null
                       ? TColors.warning
                       : TColors.success,
-                  size: 19,
+                  size: TSizes.v19,
                 ),
                 const SizedBox(width: TSizes.sm),
                 Expanded(
@@ -762,10 +764,8 @@ class _DoctorAssignmentTile extends StatelessWidget {
                     selectedAreaName == null
                         ? 'No area assigned yet. Choose an existing area or find one using the doctor’s pincode.'
                         : 'Area selected: $selectedAreaName. Assign it to finish this doctor.',
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodySmall
-                        ?.copyWith(color: TColors.textPrimary, height: 1.3),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: TColors.textPrimary, height: TSizes.v1_3),
                   ),
                 ),
               ],
@@ -777,8 +777,8 @@ class _DoctorAssignmentTile extends StatelessWidget {
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: saving ? null : onPincodeArea,
-                  icon: const Icon(Icons.pin_drop_outlined, size: 18),
-                  label: const Text('Find by pincode'),
+                  icon: const Icon(Icons.pin_drop_outlined, size: TSizes.v18),
+                  label: const Text(TTexts.uiTextFindByPincode),
                   style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 12)),
                 ),
@@ -787,8 +787,8 @@ class _DoctorAssignmentTile extends StatelessWidget {
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: saving ? null : onSelectExistingArea,
-                  icon: const Icon(Icons.list_alt_outlined, size: 18),
-                  label: const Text('Choose existing'),
+                  icon: const Icon(Icons.list_alt_outlined, size: TSizes.v18),
+                  label: const Text(TTexts.uiTextChooseExisting),
                   style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 12)),
                 ),
@@ -802,10 +802,10 @@ class _DoctorAssignmentTile extends StatelessWidget {
               onPressed: selectedAreaId == null || saving ? null : onAssign,
               icon: saving
                   ? const SizedBox(
-                      width: 17,
-                      height: 17,
+                      width: TSizes.v17,
+                      height: TSizes.v17,
                       child: CircularProgressIndicator(
-                          strokeWidth: 2, color: TColors.white))
+                          strokeWidth: TSizes.v2, color: TColors.white))
                   : const Icon(Icons.check_circle_outline),
               label: Text(saving ? 'Assigning…' : 'Assign Area'),
               style: FilledButton.styleFrom(
@@ -836,11 +836,13 @@ class _StatusPill extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(ready ? Icons.check_rounded : Icons.priority_high_rounded,
-              size: 14, color: color),
-          const SizedBox(width: 4),
+              size: TSizes.v14, color: color),
+          const SizedBox(width: TSizes.v4),
           Text(label,
               style: TextStyle(
-                  color: color, fontSize: 11, fontWeight: FontWeight.w800)),
+                  color: color,
+                  fontSize: TSizes.v11,
+                  fontWeight: FontWeight.w800)),
         ],
       ),
     );
@@ -861,7 +863,7 @@ class _InfoLine extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 86,
+            width: TSizes.v86,
             child: Text(label,
                 style: const TextStyle(fontWeight: FontWeight.w600)),
           ),
@@ -920,8 +922,8 @@ class _ExistingAreaPickerState extends State<_ExistingAreaPicker> {
           children: [
             const SizedBox(height: TSizes.sm),
             Container(
-              width: 52,
-              height: 5,
+              width: TSizes.v52,
+              height: TSizes.v5,
               decoration: BoxDecoration(
                 color: TColors.grey,
                 borderRadius: BorderRadius.circular(20),
@@ -946,12 +948,12 @@ class _ExistingAreaPickerState extends State<_ExistingAreaPicker> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Select existing area',
+                        Text(TTexts.uiTextSelectExistingArea,
                             style: Theme.of(context)
                                 .textTheme
                                 .titleLarge
                                 ?.copyWith(fontWeight: FontWeight.w700)),
-                        const SizedBox(height: 2),
+                        const SizedBox(height: TSizes.v2),
                         Text(
                             '${filtered.length} area${filtered.length == 1 ? '' : 's'} available',
                             style: Theme.of(context).textTheme.bodySmall),
@@ -972,7 +974,7 @@ class _ExistingAreaPickerState extends State<_ExistingAreaPicker> {
                 controller: _searchController,
                 onChanged: (value) => setState(() => _query = value),
                 decoration: InputDecoration(
-                  hintText: 'Search area by name',
+                  hintText: TTexts.uiTextSearchAreaByName,
                   prefixIcon: const Icon(Icons.search, color: TColors.primary),
                   suffixIcon: _query.isEmpty
                       ? null
@@ -991,8 +993,8 @@ class _ExistingAreaPickerState extends State<_ExistingAreaPicker> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
-                    borderSide:
-                        const BorderSide(color: TColors.primary, width: 1.4),
+                    borderSide: const BorderSide(
+                        color: TColors.primary, width: TSizes.v1_4),
                   ),
                 ),
               ),
@@ -1007,7 +1009,7 @@ class _ExistingAreaPickerState extends State<_ExistingAreaPicker> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             const Icon(Icons.location_off_outlined,
-                                size: 48, color: TColors.darkGrey),
+                                size: TSizes.v48, color: TColors.darkGrey),
                             const SizedBox(height: TSizes.sm),
                             Text(
                               widget.areas.isEmpty
@@ -1026,15 +1028,15 @@ class _ExistingAreaPickerState extends State<_ExistingAreaPicker> {
                           TSizes.md, TSizes.xs, TSizes.md, TSizes.lg),
                       itemCount: filtered.length,
                       separatorBuilder: (_, __) =>
-                          const Divider(height: 1, indent: 56),
+                          const Divider(height: TSizes.v1, indent: 56),
                       itemBuilder: (_, index) {
                         final area = filtered[index];
                         return ListTile(
                           contentPadding: const EdgeInsets.symmetric(
                               horizontal: TSizes.sm, vertical: TSizes.xs),
                           leading: Container(
-                            width: 40,
-                            height: 40,
+                            width: TSizes.v40,
+                            height: TSizes.v40,
                             decoration: BoxDecoration(
                               color: TColors.primary_shade50,
                               borderRadius: BorderRadius.circular(12),
@@ -1045,8 +1047,8 @@ class _ExistingAreaPickerState extends State<_ExistingAreaPicker> {
                           title: Text(area.name,
                               style:
                                   const TextStyle(fontWeight: FontWeight.w600)),
-                          subtitle:
-                              const Text('Tap to select and assign this area'),
+                          subtitle: const Text(
+                              TTexts.uiTextTapToSelectAndAssignThisArea),
                           trailing: const Icon(Icons.chevron_right,
                               color: TColors.primary),
                           onTap: () => Navigator.of(context).pop(area),
@@ -1071,12 +1073,13 @@ class _CompleteState extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(TSizes.lg),
         child: Column(mainAxisSize: MainAxisSize.min, children: [
-          const Icon(Icons.verified_rounded, color: TColors.success, size: 58),
+          const Icon(Icons.verified_rounded,
+              color: TColors.success, size: TSizes.v58),
           const SizedBox(height: TSizes.md),
           Text(mandatory ? 'All areas assigned' : 'No pending assignments',
               style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: TSizes.sm),
-          const Text('Doctor records are ready for the dashboard.',
+          const Text(TTexts.uiTextDoctorRecordsAreReadyForTheDashboard,
               textAlign: TextAlign.center),
         ]),
       ),

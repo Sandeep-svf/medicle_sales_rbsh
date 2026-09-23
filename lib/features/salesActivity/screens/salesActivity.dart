@@ -4,8 +4,9 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:medicle_sales_rbsh/features/salesActivity/controllers/addSalesController.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:provider/provider.dart';
-import '../../../utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 import '../controllers/SalesController.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class SalesactivityScreen extends StatefulWidget {
   const SalesactivityScreen({super.key});
@@ -23,7 +24,9 @@ class _SalesactivityScreenState extends State<SalesactivityScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<SalesController>(context, listen: false).fetchSalesList().then((_) {
+      Provider.of<SalesController>(context, listen: false)
+          .fetchSalesList()
+          .then((_) {
         setState(() {});
       });
     });
@@ -41,7 +44,7 @@ class _SalesactivityScreenState extends State<SalesactivityScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text("Add Sales Data"),
+          title: const Text(TTexts.uiTextAddSalesData),
           content: Form(
             key: _formKey, // Assign the form key
             child: Column(
@@ -50,7 +53,8 @@ class _SalesactivityScreenState extends State<SalesactivityScreen> {
                 // Doctor Name Field
                 TextFormField(
                   controller: nameController,
-                  decoration: const InputDecoration(labelText: "Doctor Name"),
+                  decoration:
+                      const InputDecoration(labelText: TTexts.uiTextDoctorName),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'This field is required';
@@ -61,7 +65,8 @@ class _SalesactivityScreenState extends State<SalesactivityScreen> {
                 // Sales Rep Field
                 TextFormField(
                   controller: salesRepController,
-                  decoration: const InputDecoration(labelText: "Sales Rep"),
+                  decoration:
+                      const InputDecoration(labelText: TTexts.uiTextSalesRep),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'This field is required';
@@ -72,7 +77,8 @@ class _SalesactivityScreenState extends State<SalesactivityScreen> {
                 // Call Notes Field
                 TextFormField(
                   controller: callNotesController,
-                  decoration: const InputDecoration(labelText: "Call Notes"),
+                  decoration:
+                      const InputDecoration(labelText: TTexts.callNotes),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'This field is required';
@@ -86,7 +92,7 @@ class _SalesactivityScreenState extends State<SalesactivityScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text("Cancel"),
+              child: const Text(TTexts.cancel),
             ),
             ElevatedButton(
               onPressed: () async {
@@ -103,13 +109,15 @@ class _SalesactivityScreenState extends State<SalesactivityScreen> {
                 } else {
                   // If form is not valid, show an error snack bar
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Please fill in all required fields')),
+                    const SnackBar(
+                        content:
+                            Text(TTexts.uiTextPleaseFillInAllRequiredFields)),
                   );
                 }
               },
               child: const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16.0),
-                child: Text("Add Data"),
+                child: Text(TTexts.uiTextAddData),
               ),
             ),
           ],
@@ -117,7 +125,6 @@ class _SalesactivityScreenState extends State<SalesactivityScreen> {
       },
     );
   }
-
 
   /*void _showAddDataDialog(BuildContext context) {
     final TextEditingController nameController = TextEditingController();
@@ -165,10 +172,10 @@ class _SalesactivityScreenState extends State<SalesactivityScreen> {
             ),
             ElevatedButton(
               onPressed: () async {
-                *//*Get.snackbar("Note", "This feature is in maintenance.");
+                */ /*Get.snackbar("Note", "This feature is in maintenance.");
                 await Provider.of<SalesController>(context, listen: false).fetchSalesList();
                 setState(() {});
-                Navigator.pop(context);*//*
+                Navigator.pop(context);*/ /*
 
                 addSalesController.addSales(
                   context: context,
@@ -195,7 +202,7 @@ class _SalesactivityScreenState extends State<SalesactivityScreen> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: TColors.primary,
         onPressed: () => _showAddDataDialog(context),
-        child: const Icon(Icons.add, color: Colors.white),
+        child: const Icon(Icons.add, color: TColors.white),
       ),
       body: Consumer<SalesController>(
         builder: (context, salesController, child) {
@@ -204,11 +211,13 @@ class _SalesactivityScreenState extends State<SalesactivityScreen> {
           }
 
           if (salesController.salesList.isEmpty) {
-            return const Center(child: Text("No Sales Data Available"));
+            return const Center(child: Text(TTexts.uiTextNoSalesDataAvailable));
           }
 
           final filteredSales = salesController.salesList
-              .where((sale) => sale.doctorName.toLowerCase().contains(_searchQuery.toLowerCase()))
+              .where((sale) => sale.doctorName
+                  .toLowerCase()
+                  .contains(_searchQuery.toLowerCase()))
               .toList();
 
           return Column(
@@ -220,17 +229,20 @@ class _SalesactivityScreenState extends State<SalesactivityScreen> {
                   decoration: InputDecoration(
                     labelText: TTexts.searchDoctor,
                     border: OutlineInputBorder(),
-                    prefixIcon: const Icon(Icons.search,color: TColors.primary,),
+                    prefixIcon: const Icon(
+                      Icons.search,
+                      color: TColors.primary,
+                    ),
                     suffixIcon: _searchQuery.isNotEmpty
                         ? IconButton(
-                      icon: const Icon(Icons.clear),
-                      onPressed: () {
-                        setState(() {
-                          _searchController.clear();
-                          _searchQuery = "";
-                        });
-                      },
-                    )
+                            icon: const Icon(Icons.clear),
+                            onPressed: () {
+                              setState(() {
+                                _searchController.clear();
+                                _searchQuery = "";
+                              });
+                            },
+                          )
                         : null,
                   ),
                   onChanged: (value) {
@@ -248,9 +260,11 @@ class _SalesactivityScreenState extends State<SalesactivityScreen> {
                     final sale = filteredSales[index];
 
                     return Card(
-                      elevation: 4,
-                      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      elevation: TSizes.v4,
+                      margin: const EdgeInsets.symmetric(
+                          vertical: 8, horizontal: 12),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16)),
                       child: Padding(
                         padding: const EdgeInsets.all(12),
                         child: Column(
@@ -258,68 +272,81 @@ class _SalesactivityScreenState extends State<SalesactivityScreen> {
                           children: [
                             Row(
                               children: [
-                                Icon(Icons.person, color: TColors.primary, size: 28),
-                                const SizedBox(width: 8),
+                                Icon(Icons.person,
+                                    color: TColors.primary, size: TSizes.v28),
+                                const SizedBox(width: TSizes.v8),
                                 Expanded(
                                   child: Text(
                                     sale.doctorName ?? "Unknown Doctor",
                                     style: const TextStyle(
-                                      fontSize: 18,
+                                      fontSize: TSizes.v18,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.black87,
+                                      color: TColors.black87,
                                     ),
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: TSizes.v8),
                             Row(
                               children: [
-                                const Icon(Icons.business, color: TColors.primary, size: 20),
-                                const SizedBox(width: 8),
+                                const Icon(Icons.business,
+                                    color: TColors.primary, size: TSizes.v20),
+                                const SizedBox(width: TSizes.v8),
                                 Expanded(
                                   child: Text(
                                     "Sales Rep: ${sale.salesRep ?? "N/A"}",
-                                    style: const TextStyle(fontSize: 14, color: Colors.black54),
+                                    style: const TextStyle(
+                                        fontSize: TSizes.v14,
+                                        color: TColors.black54),
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 6),
+                            const SizedBox(height: TSizes.v6),
                             Row(
                               children: [
-                                const Icon(Icons.comment, color: TColors.primary, size: 20),
-                                const SizedBox(width: 8),
+                                const Icon(Icons.comment,
+                                    color: TColors.primary, size: TSizes.v20),
+                                const SizedBox(width: TSizes.v8),
                                 Expanded(
                                   child: Text(
                                     "Call Notes: ${sale.callNotes ?? "No notes"}",
-                                    style: const TextStyle(fontSize: 14, color: Colors.black54),
+                                    style: const TextStyle(
+                                        fontSize: TSizes.v14,
+                                        color: TColors.black54),
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 6),
+                            const SizedBox(height: TSizes.v6),
                             Row(
                               children: [
-                                const Icon(Icons.person_outline, color: TColors.primary, size: 20),
-                                const SizedBox(width: 8),
+                                const Icon(Icons.person_outline,
+                                    color: TColors.primary, size: TSizes.v20),
+                                const SizedBox(width: TSizes.v8),
                                 Expanded(
                                   child: Text(
                                     "User: ${sale.userName ?? "Unknown"}",
-                                    style: const TextStyle(fontSize: 14, color: Colors.black54),
+                                    style: const TextStyle(
+                                        fontSize: TSizes.v14,
+                                        color: TColors.black54),
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 6),
+                            const SizedBox(height: TSizes.v6),
                             Row(
                               children: [
-                                const Icon(Icons.calendar_today, color: TColors.primary, size: 20),
-                                const SizedBox(width: 8),
+                                const Icon(Icons.calendar_today,
+                                    color: TColors.primary, size: TSizes.v20),
+                                const SizedBox(width: TSizes.v8),
                                 Expanded(
                                   child: Text(
                                     "Date: ${sale.dateTime ?? "N/A"}",
-                                    style: const TextStyle(fontSize: 14, color: Colors.black54),
+                                    style: const TextStyle(
+                                        fontSize: TSizes.v14,
+                                        color: TColors.black54),
                                   ),
                                 ),
                               ],
@@ -328,8 +355,6 @@ class _SalesactivityScreenState extends State<SalesactivityScreen> {
                         ),
                       ),
                     );
-
-
                   },
                 ),
               ),

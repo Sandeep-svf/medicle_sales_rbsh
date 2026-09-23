@@ -59,23 +59,15 @@ class BeatModel extends Equatable {
   factory BeatModel.fromJson(Map<String, dynamic> json) {
     return BeatModel(
       id: json["id"] ?? "",
-
       headquarterId: json["headquarterId"] ?? "",
-
       beatName: json["beatName"] ?? "",
-
       color: json["color"] ?? "#FF0000",
-
       doctorCount: json["doctorCount"] ?? 0,
-
       areaCount: json["areaCount"] ?? 0,
-
       createdAt: json["createdAt"] != null
           ? DateTime.parse(json["createdAt"])
           : DateTime.now(),
-
       createdBy: json["createdBy"] ?? "",
-
       active: json["active"] ?? true,
     );
   }
@@ -94,18 +86,16 @@ class BeatModel extends Equatable {
     };
   }
 
-
-
   @override
   List<Object?> get props => [
-    id,
-    headquarterId,
-    beatName,
-    color,
-    doctorCount,
-    areaCount,
-    createdAt,
-    createdBy,
-    active,
-  ];
+        id,
+        headquarterId,
+        beatName,
+        color,
+        doctorCount,
+        areaCount,
+        createdAt,
+        createdBy,
+        active,
+      ];
 }

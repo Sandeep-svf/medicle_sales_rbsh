@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import '../../../../utils/constants/colors.dart';
 import '../../../../utils/constants/sizes.dart';
 
-
-
 class EmptyState extends StatelessWidget {
   const EmptyState({
     super.key,
@@ -25,7 +23,6 @@ class EmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-
             Container(
               padding: const EdgeInsets.all(
                 TSizes.lg,
@@ -36,41 +33,30 @@ class EmptyState extends StatelessWidget {
               ),
               child: Icon(
                 icon,
-                size: 48,
+                size: TSizes.v48,
                 color: TColors.primary,
               ),
             ),
-
             const SizedBox(
               height: TSizes.lg,
             ),
-
             Text(
               title,
-              style: Theme.of(context)
-                  .textTheme
-                  .titleLarge
-                  ?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
             ),
-
             const SizedBox(
               height: TSizes.sm,
             ),
-
             SizedBox(
-              width: 350,
+              width: TSizes.v350,
               child: Text(
                 subtitle,
                 textAlign: TextAlign.center,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(
-                  color:
-                  TColors.textSecondary,
-                ),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: TColors.textSecondary,
+                    ),
               ),
             ),
           ],

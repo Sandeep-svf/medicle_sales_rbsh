@@ -3,7 +3,6 @@ import 'package:sqflite/sqflite.dart';
 import '../core/model/trip.dart';
 import 'app_database.dart';
 
-
 class TripDao {
   final _db = AppDatabase();
 

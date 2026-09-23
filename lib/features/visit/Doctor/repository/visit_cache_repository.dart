@@ -3,15 +3,12 @@ import 'package:sqflite/sqflite.dart';
 import '../database/visit_cache_database.dart';
 
 class VisitCacheRepository {
-
-  final VisitCacheDatabase _database =
-      VisitCacheDatabase.instance;
+  final VisitCacheDatabase _database = VisitCacheDatabase.instance;
 
   Future<void> save({
     required String cacheKey,
     required String json,
   }) async {
-
     final db = await _database.database;
 
     await db.insert(
@@ -19,18 +16,15 @@ class VisitCacheRepository {
       {
         "cacheKey": cacheKey,
         "jsonData": json,
-        "updatedAt":
-        DateTime.now().toIso8601String(),
+        "updatedAt": DateTime.now().toIso8601String(),
       },
-      conflictAlgorithm:
-      ConflictAlgorithm.replace,
+      conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }
 
   Future<String?> get(
-      String cacheKey,
-      ) async {
-
+    String cacheKey,
+  ) async {
     final db = await _database.database;
 
     final result = await db.query(
@@ -48,7 +42,6 @@ class VisitCacheRepository {
   }
 
   Future<void> clear() async {
-
     final db = await _database.database;
 
     await db.delete("visit_cache");

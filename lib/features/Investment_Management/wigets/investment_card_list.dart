@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
 import '../controller/investment_request_controller.dart';
 import '../screen/add_investment_screen.dart';
 import 'investment_card.dart';
 import 'investment_empty.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class InvestmentRequestCardList extends GetView<InvestmentRequestController> {
   const InvestmentRequestCardList({super.key});
@@ -49,8 +49,8 @@ class InvestmentRequestCardList extends GetView<InvestmentRequestController> {
                     itemCount: requests.length,
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: crossAxisCount,
-                      crossAxisSpacing: 18,
-                      mainAxisSpacing: 18,
+                      crossAxisSpacing: TSizes.v18,
+                      mainAxisSpacing: TSizes.v18,
                       childAspectRatio: ratio,
                     ),
                     itemBuilder: (_, index) {

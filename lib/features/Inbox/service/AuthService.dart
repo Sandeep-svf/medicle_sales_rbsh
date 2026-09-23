@@ -7,8 +7,7 @@ class AuthService {
 
   final FlutterAppAuth _appAuth = const FlutterAppAuth();
 
-  static const String _clientId =
-      'f8737deb-e699-47ca-9cba-4d3e930f7a10';
+  static const String _clientId = 'f8737deb-e699-47ca-9cba-4d3e930f7a10';
 
   static const String _redirectUrl =
       'msauth://com.rbsh.medicle_sales_rbsh/auth';

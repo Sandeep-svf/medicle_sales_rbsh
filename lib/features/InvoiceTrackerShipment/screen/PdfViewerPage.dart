@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class PdfViewerPage extends StatefulWidget {
   final String pdfUrl;
@@ -17,28 +19,21 @@ class PdfViewerPage extends StatefulWidget {
   });
 
   @override
-  State<PdfViewerPage> createState() =>
-      _PdfViewerPageState();
+  State<PdfViewerPage> createState() => _PdfViewerPageState();
 }
 
-class _PdfViewerPageState
-    extends State<PdfViewerPage> {
-
+class _PdfViewerPageState extends State<PdfViewerPage> {
   bool downloading = false;
 
   Future<void> downloadPdf() async {
-
     try {
-
       setState(() {
         downloading = true;
       });
 
-      final dir =
-      await getApplicationDocumentsDirectory();
+      final dir = await getApplicationDocumentsDirectory();
 
-      final path =
-          '${dir.path}/${widget.fileName}';
+      final path = '${dir.path}/${widget.fileName}';
 
       await Dio().download(
         widget.pdfUrl,
@@ -50,13 +45,11 @@ class _PdfViewerPageState
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
-            "PDF Downloaded",
+            TTexts.uiTextPDFDownloaded,
           ),
         ),
       );
-
     } finally {
-
       if (mounted) {
         setState(() {
           downloading = false;
@@ -67,33 +60,24 @@ class _PdfViewerPageState
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
-
       appBar: AppBar(
         title: Text(widget.fileName),
-
         actions: [
-
           IconButton(
-            onPressed:
-            downloading
-                ? null
-                : downloadPdf,
+            onPressed: downloading ? null : downloadPdf,
             icon: downloading
                 ? const SizedBox(
-              width: 20,
-              height: 20,
-              child:
-              CircularProgressIndicator(),
-            )
+                    width: TSizes.v20,
+                    height: TSizes.v20,
+                    child: CircularProgressIndicator(),
+                  )
                 : const Icon(
-              Icons.download,
-            ),
+                    Icons.download,
+                  ),
           ),
         ],
       ),
-
       body: SfPdfViewer.network(
         widget.pdfUrl,
       ),

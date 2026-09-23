@@ -4,15 +4,14 @@ import 'package:get/get.dart';
 import '../Screen/tour_plan_details_screen.dart';
 import '../model/tour_plan_model.dart';
 import '../service/TourPlanService.dart';
-
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class TourPlanListController extends GetxController {
   TourPlanListController();
 
   final TourPlanService _service = TourPlanService();
 
-  final RxString currentStatus =
-      "Draft".obs;
+  final RxString currentStatus = "Draft".obs;
 
   ///------------------------------------------------------------
   /// Loading
@@ -30,11 +29,9 @@ class TourPlanListController extends GetxController {
   /// Data
   ///------------------------------------------------------------
 
-  final RxList<TourPlanModel> tourPlans =
-      <TourPlanModel>[].obs;
+  final RxList<TourPlanModel> tourPlans = <TourPlanModel>[].obs;
 
-  final RxList<TourPlanModel> filteredPlans =
-      <TourPlanModel>[].obs;
+  final RxList<TourPlanModel> filteredPlans = <TourPlanModel>[].obs;
 
   @override
   void onInit() {
@@ -48,13 +45,11 @@ class TourPlanListController extends GetxController {
   ///------------------------------------------------------------
 
   Future<void> loadTourPlans({bool showLoadingIndicator = true}) async {
-
     if (showLoadingIndicator) {
       isLoading.value = true;
     }
 
     try {
-
       debugPrint("========== TourPlanListController ==========");
       debugPrint("TourPlanListControllerLoading Tour Plans...");
       debugPrint("===========================================");
@@ -74,21 +69,19 @@ class TourPlanListController extends GetxController {
       tourPlans.assignAll(result);
 
       _syncDisplayedPlans();
-
     } catch (e, stackTrace) {
-
-      debugPrint("TourPlanListController ========== TourPlanListController ==========");
+      debugPrint(
+          "TourPlanListController ========== TourPlanListController ==========");
       debugPrint("TourPlanListController Load Error : $e");
       debugPrint(stackTrace.toString());
-      debugPrint("TourPlanListController ===========================================");
+      debugPrint(
+          "TourPlanListController ===========================================");
 
       Get.snackbar(
         "Error",
         e.toString(),
       );
-
     } finally {
-
       if (showLoadingIndicator) {
         isLoading.value = false;
       }
@@ -100,7 +93,6 @@ class TourPlanListController extends GetxController {
   ///------------------------------------------------------------
 
   Future<void> refreshList() async {
-
     if (isRefreshing.value) {
       return;
     }
@@ -123,20 +115,14 @@ class TourPlanListController extends GetxController {
   ///------------------------------------------------------------
 
   void _syncDisplayedPlans() {
-
-    List<TourPlanModel> list =
-    List.from(tourPlans);
+    List<TourPlanModel> list = List.from(tourPlans);
 
     /// Latest first
 
     list.sort(
-
-          (a, b) =>
-
-          b.updatedAt.compareTo(
-            a.updatedAt,
-          ),
-
+      (a, b) => b.updatedAt.compareTo(
+        a.updatedAt,
+      ),
     );
 
     filteredPlans.assignAll(list);
@@ -146,24 +132,17 @@ class TourPlanListController extends GetxController {
   /// Helpers
   ///------------------------------------------------------------
 
-  bool get hasData =>
-      filteredPlans.isNotEmpty;
+  bool get hasData => filteredPlans.isNotEmpty;
 
-  bool get isEmpty =>
+  bool get isEmpty => !isLoading.value && filteredPlans.isEmpty;
 
-      !isLoading.value &&
-
-          filteredPlans.isEmpty;
-
-  int get totalPlans =>
-      filteredPlans.length;
+  int get totalPlans => filteredPlans.length;
 
   ///------------------------------------------------------------
   /// Navigation
   ///------------------------------------------------------------
 
   Future<void> openDetails(TourPlanModel plan) async {
-
     debugPrint("========== TourPlanListController ==========");
     debugPrint("TourPlanListController Action      : Open Details");
     debugPrint("TourPlanListController Plan ID     : ${plan.id}");
@@ -174,13 +153,12 @@ class TourPlanListController extends GetxController {
     debugPrint("===========================================");
 
     final shouldRefresh = await Get.to<bool>(
-          () => TourPlanDetailsScreen(
+      () => TourPlanDetailsScreen(
         planId: plan.id,
       ),
     );
 
     if (shouldRefresh == true) {
-
       debugPrint("Refreshing Tour Plan List...");
 
       await refreshList();
@@ -247,19 +225,19 @@ class TourPlanListController extends GetxController {
 
     final confirmed = await Get.dialog<bool>(
       AlertDialog(
-        title: const Text("Submit Tour Plan?"),
+        title: const Text(TTexts.uiTextSubmitTourPlan),
         content: Text(
           "Submit ${plan.monthName}? After submission the plan will be read-only.",
         ),
         actions: [
           TextButton(
             onPressed: () => Get.back(result: false),
-            child: const Text("Cancel"),
+            child: const Text(TTexts.cancel),
           ),
           ElevatedButton.icon(
             onPressed: () => Get.back(result: true),
             icon: const Icon(Icons.send),
-            label: const Text("Submit"),
+            label: const Text(TTexts.submit),
           ),
         ],
       ),
@@ -307,11 +285,8 @@ class TourPlanListController extends GetxController {
     }
   }
 
-
-
   @override
   void onClose() {
-
     tourPlans.close();
 
     filteredPlans.close();

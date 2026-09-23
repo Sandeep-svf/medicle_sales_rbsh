@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 
 class OfflineDoctorLocationPicker extends StatefulWidget {
   const OfflineDoctorLocationPicker({super.key});
@@ -128,21 +131,21 @@ class _OfflineDoctorLocationPickerState
   void _showError(String message) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.red),
+      SnackBar(content: Text(message), backgroundColor: TColors.materialRed),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Select Location")),
+      appBar: AppBar(title: const Text(TTexts.uiTextSelectLocation)),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _centerLatLng == null
               ? Center(
                   child: ElevatedButton(
                       onPressed: _initLocationServices,
-                      child: const Text('Retry current location')))
+                      child: const Text(TTexts.uiTextRetryCurrentLocation)))
               : Stack(
                   children: [
                     GoogleMap(
@@ -158,15 +161,15 @@ class _OfflineDoctorLocationPickerState
                     ),
                     // Center marker
                     const Center(
-                      child:
-                          Icon(Icons.location_pin, size: 40, color: Colors.red),
+                      child: Icon(Icons.location_pin,
+                          size: TSizes.v40, color: TColors.materialRed),
                     ),
                     // Bottom UI
                     Align(
                       alignment: Alignment.bottomCenter,
                       child: Container(
                         padding: const EdgeInsets.all(12),
-                        color: Colors.white,
+                        color: TColors.white,
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -176,11 +179,11 @@ class _OfflineDoctorLocationPickerState
                               style:
                                   const TextStyle(fontWeight: FontWeight.w500),
                             ),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: TSizes.v8),
                             ElevatedButton.icon(
                               onPressed: _onSelectLocation,
                               icon: const Icon(Icons.check),
-                              label: const Text("Select Location"),
+                              label: const Text(TTexts.uiTextSelectLocation),
                               style: ElevatedButton.styleFrom(
                                 minimumSize: const Size(double.infinity, 50),
                               ),

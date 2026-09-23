@@ -13,6 +13,7 @@ import '../../../utils/http/http_client.dart';
 import '../../../utils/local_storage/auth_manager.dart';
 import '../controllers/ClinicListController.dart';
 import '../../addDoctor/screens/map.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class AddChemistController extends GetxController {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
@@ -74,14 +75,17 @@ class AddChemistController extends GetxController {
         final Map<String, dynamic> jsonResponse = json.decode(response.body);
         if (jsonResponse['success'] == true) {
           final List<dynamic> data = jsonResponse['data'];
-          headOffices.assignAll(data.map((e) => {
-            'id': e['id'].toString(),
-            'name': e['name'].toString(),
-          }).toList());
+          headOffices.assignAll(data
+              .map((e) => {
+                    'id': e['id'].toString(),
+                    'name': e['name'].toString(),
+                  })
+              .toList());
         }
       }
     } catch (e) {
-      Get.snackbar("Error", "Failed to load Head Offices: $e", backgroundColor: Colors.red, colorText: Colors.white);
+      Get.snackbar("Error", "Failed to load Head Offices: $e",
+          backgroundColor: TColors.materialRed, colorText: TColors.white);
     } finally {
       isLoadingHeadOffices.value = false;
     }
@@ -91,7 +95,8 @@ class AddChemistController extends GetxController {
   Future<void> captureImage() async {
     try {
       isImageProcessing.value = true;
-      final CameraLocationResult? result = await CameraLocationService.captureImageWithLocation();
+      final CameraLocationResult? result =
+          await CameraLocationService.captureImageWithLocation();
       if (result == null) return;
 
       final File layeredImage = await ImageOverlayUtil.addOverlay(
@@ -103,12 +108,13 @@ class AddChemistController extends GetxController {
       chemistImage.value = layeredImage;
 
       // Auto-fill location if empty
-      if(latitude.value == 0.0) {
+      if (latitude.value == 0.0) {
         latitude.value = result.latitude;
         longitude.value = result.longitude;
       }
     } catch (e) {
-      Get.snackbar("Error", "$e", backgroundColor: Colors.red, colorText: Colors.white);
+      Get.snackbar("Error", "$e",
+          backgroundColor: TColors.materialRed, colorText: TColors.white);
     } finally {
       isImageProcessing.value = false;
     }
@@ -124,7 +130,8 @@ class AddChemistController extends GetxController {
       // We fill the address controller so the user can see/edit it
       addressController.text = result['address'].toString();
 
-      Get.snackbar("Location Set", "Coordinates updated.", backgroundColor: Colors.green, colorText: Colors.white);
+      Get.snackbar("Location Set", TTexts.uiTextCoordinatesUpdated,
+          backgroundColor: TColors.materialGreen, colorText: TColors.white);
     }
   }
 
@@ -132,25 +139,32 @@ class AddChemistController extends GetxController {
   Future<void> submitForm() async {
     // 1. Basic Form Validation (Checks Firm Name & Contact Person in UI)
     if (!formKey.currentState!.validate()) {
-      Get.snackbar("Required", "Please fill all mandatory fields (marked with *)", backgroundColor: Colors.orange, colorText: Colors.white);
+      Get.snackbar(
+          "Required", TTexts.uiTextPleaseFillAllMandatoryFieldsMarkedWith,
+          backgroundColor: TColors.materialOrange, colorText: TColors.white);
       return;
     }
 
     // 2. Manual Validation for Non-Form Fields
     if (chemistImage.value == null) {
-      Get.snackbar("Missing Image", "Please capture the Chemist shop photo", backgroundColor: Colors.red, colorText: Colors.white);
+      Get.snackbar(
+          "Missing Image", TTexts.uiTextPleaseCaptureTheChemistShopPhoto,
+          backgroundColor: TColors.materialRed, colorText: TColors.white);
       return;
     }
 
     // Check Head Office
     if (selectedHeadOfficeId.value == null) {
-      Get.snackbar("Required", "Please select a Head Office", backgroundColor: Colors.orange, colorText: Colors.white);
+      Get.snackbar("Required", TTexts.uiTextPleaseSelectAHeadOffice,
+          backgroundColor: TColors.materialOrange, colorText: TColors.white);
       return;
     }
 
     // Check Location (Lat/Lng)
     if (latitude.value == 0.0 || longitude.value == 0.0) {
-      Get.snackbar("Location Required", "Please select the location on the map", backgroundColor: Colors.red, colorText: Colors.white);
+      Get.snackbar(
+          "Location Required", TTexts.uiTextPleaseSelectTheLocationOnTheMap,
+          backgroundColor: TColors.materialRed, colorText: TColors.white);
       return;
     }
 
@@ -178,7 +192,8 @@ class AddChemistController extends GetxController {
       request.fields['mobileNo'] = phoneController.text.trim();
       request.fields['email'] = emailController.text.trim();
       request.fields['designation'] = designationController.text.trim();
-      request.fields['drugLicenseNumber'] = drugLicenseNumberController.text.trim();
+      request.fields['drugLicenseNumber'] =
+          drugLicenseNumberController.text.trim();
       request.fields['gstNo'] = gstController.text.trim();
       request.fields['address'] = addressController.text.trim();
 
@@ -213,30 +228,32 @@ class AddChemistController extends GetxController {
             final listController = Get.find<ClinicListController>();
             await listController.fetchClinicList();
           }
-        } catch(e) {
+        } catch (e) {
           print("List Controller error: $e");
         }
 
         _clearForm();
 
-        Get.snackbar("Success", "Chemist Added Successfully!",
-            backgroundColor: Colors.green, colorText: Colors.white, duration: const Duration(seconds: 2));
+        Get.snackbar("Success", TTexts.uiTextChemistAddedSuccessfully,
+            backgroundColor: TColors.materialGreen,
+            colorText: TColors.white,
+            duration: const Duration(seconds: 2));
 
         await Future.delayed(const Duration(milliseconds: 1500));
 
-        if(Get.context != null && Navigator.canPop(Get.context!)) {
+        if (Get.context != null && Navigator.canPop(Get.context!)) {
           Navigator.of(Get.context!).pop(true);
         } else {
           Get.back(result: true);
         }
-
       } else {
         print("Server Error Body: ${response.body}");
-        Get.snackbar("Failed", "Server Error: ${response.statusCode}", backgroundColor: Colors.red, colorText: Colors.white);
+        Get.snackbar("Failed", "Server Error: ${response.statusCode}",
+            backgroundColor: TColors.materialRed, colorText: TColors.white);
       }
-
     } catch (e) {
-      Get.snackbar("Error", "$e", backgroundColor: Colors.red, colorText: Colors.white);
+      Get.snackbar("Error", "$e",
+          backgroundColor: TColors.materialRed, colorText: TColors.white);
     } finally {
       isLoading.value = false;
     }
@@ -258,15 +275,21 @@ class AddChemistController extends GetxController {
     longitude.value = 0.0;
     selectedLocationAddress.value = "";
     selectedHeadOfficeId.value = null;
-    annualTurnovers.assignAll([{"year": DateTime.now().year, "amount": 0}]);
+    annualTurnovers.assignAll([
+      {"year": DateTime.now().year, "amount": 0}
+    ]);
   }
 
   @override
   void onClose() {
-    firmNameController.dispose(); contactPersonController.dispose();
-    phoneController.dispose(); emailController.dispose();
-    addressController.dispose(); designationController.dispose();
-    drugLicenseNumberController.dispose(); gstController.dispose();
+    firmNameController.dispose();
+    contactPersonController.dispose();
+    phoneController.dispose();
+    emailController.dispose();
+    addressController.dispose();
+    designationController.dispose();
+    drugLicenseNumberController.dispose();
+    gstController.dispose();
     yearsInBusinessController.dispose();
     super.onClose();
   }

@@ -1,6 +1,6 @@
-// lib/screens/pharma_distributor_form/widgets/contact_details_section.dart
 import 'package:flutter/material.dart';
-import '../../../utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class ContactDetailsSection extends StatelessWidget {
   final TextEditingController contactPerson;
@@ -19,12 +19,15 @@ class ContactDetailsSection extends StatelessWidget {
   });
 
   Widget _sectionTitle(String title) => Padding(
-    padding: const EdgeInsets.only(bottom: 8.0),
-    child: Text(
-      title,
-      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: TColors.primary),
-    ),
-  );
+        padding: const EdgeInsets.only(bottom: 8.0),
+        child: Text(
+          title,
+          style: const TextStyle(
+              fontSize: TSizes.v18,
+              fontWeight: FontWeight.bold,
+              color: TColors.primary),
+        ),
+      );
 
   Widget _requiredField(TextEditingController controller, String label,
       {TextInputType inputType = TextInputType.text, int maxLines = 1}) {
@@ -63,12 +66,13 @@ class ContactDetailsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-
         _sectionTitle("Contact Information"),
         _requiredField(contactPerson, "Contact Person"),
         _textField(designation, "Designation"),
-        _requiredField(mobileNumber, "Mobile Number", inputType: TextInputType.phone),
-        _requiredField(emailAddress, "Email Address", inputType: TextInputType.emailAddress),
+        _requiredField(mobileNumber, "Mobile Number",
+            inputType: TextInputType.phone),
+        _requiredField(emailAddress, "Email Address",
+            inputType: TextInputType.emailAddress),
         _textField(website, "Website"),
       ],
     );

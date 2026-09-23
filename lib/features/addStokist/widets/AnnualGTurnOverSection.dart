@@ -1,7 +1,10 @@
-/*
 import 'package:flutter/material.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
-import '../../../utils/constants/colors.dart';
+/*
+
 
 class AnnualTurnoverSection extends StatefulWidget {
   final List<Map<String, dynamic>> turnovers;
@@ -104,7 +107,7 @@ class _AnnualTurnoverSectionState extends State<AnnualTurnoverSection> {
                 ),
                 if (index >= 3)
                   IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red),
+                    icon: const Icon(Icons.delete, color: TColors.materialRed),
                     onPressed: () => _removeEntry(index),
                   )
               ],
@@ -124,8 +127,6 @@ class _AnnualTurnoverSectionState extends State<AnnualTurnoverSection> {
   }
 }
 */
-import 'package:flutter/material.dart';
-import '../../../utils/constants/colors.dart';
 
 class AnnualTurnoverSection extends StatefulWidget {
   final List<Map<String, dynamic>> turnovers;
@@ -208,7 +209,7 @@ class _AnnualTurnoverSectionState extends State<AnnualTurnoverSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 10),
+        const SizedBox(height: TSizes.v10),
         ..._localTurnovers.asMap().entries.map((entry) {
           final index = entry.key;
           final item = entry.value;
@@ -221,28 +222,34 @@ class _AnnualTurnoverSectionState extends State<AnnualTurnoverSection> {
                   flex: 2,
                   child: DropdownButtonFormField<int>(
                     // Safety check: ensure the year exists in options, otherwise null (or add it)
-                    value: yearOptions.contains(item["year"]) ? item["year"] : null,
-                    decoration: const InputDecoration(labelText: "Year", border: OutlineInputBorder()),
+                    value: yearOptions.contains(item["year"])
+                        ? item["year"]
+                        : null,
+                    decoration: const InputDecoration(
+                        labelText: TTexts.uiTextYear,
+                        border: OutlineInputBorder()),
                     items: yearOptions
                         .map((year) => DropdownMenuItem(
-                      value: year,
-                      child: Text(year.toString()),
-                    ))
+                              value: year,
+                              child: Text(year.toString()),
+                            ))
                         .toList(),
                     onChanged: (value) {
                       if (value != null) _updateEntry(index, "year", value);
                     },
                   ),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: TSizes.v10),
                 Expanded(
                   flex: 3,
                   child: TextFormField(
                     // Key is important so Flutter knows which row is which when deleting/adding
                     key: ValueKey(item['year']),
-                    initialValue: item["amount"] == 0 ? '' : item["amount"].toString(),
+                    initialValue:
+                        item["amount"] == 0 ? '' : item["amount"].toString(),
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: "Amount", border: OutlineInputBorder()),
+                    decoration: const InputDecoration(
+                        labelText: TTexts.amount, border: OutlineInputBorder()),
                     onChanged: (value) {
                       _updateEntry(index, "amount", int.tryParse(value) ?? 0);
                     },
@@ -250,7 +257,7 @@ class _AnnualTurnoverSectionState extends State<AnnualTurnoverSection> {
                 ),
                 if (index >= 3)
                   IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red),
+                    icon: const Icon(Icons.delete, color: TColors.materialRed),
                     onPressed: () => _removeEntry(index),
                   )
               ],
@@ -263,7 +270,8 @@ class _AnnualTurnoverSectionState extends State<AnnualTurnoverSection> {
           child: TextButton.icon(
             onPressed: _addNewEntry,
             icon: const Icon(Icons.add_circle, color: TColors.primary),
-            label: const Text("Add More", style: TextStyle(color: TColors.primary)),
+            label: const Text(TTexts.uiTextAddMore,
+                style: TextStyle(color: TColors.primary)),
           ),
         ),
       ],

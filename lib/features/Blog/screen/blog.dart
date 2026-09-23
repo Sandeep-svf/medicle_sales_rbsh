@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class Blogscreen extends StatelessWidget {
   const Blogscreen({super.key});
@@ -20,7 +22,7 @@ class Blogscreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Blog Posts"),
+        title: const Text(TTexts.uiTextBlogPosts),
         centerTitle: true,
       ),
       body: LayoutBuilder(
@@ -31,14 +33,11 @@ class Blogscreen extends StatelessWidget {
               itemCount: blogPosts.length,
               gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
                 maxCrossAxisExtent: 200, // Each item max 250px wide
-                mainAxisSpacing: 16,
-                crossAxisSpacing: 16,
                 childAspectRatio: 0.75, // Controls height vs width
               ),
               itemBuilder: (context, index) {
                 final post = blogPosts[index];
                 return Card(
-                  elevation: 6,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
@@ -48,13 +47,14 @@ class Blogscreen extends StatelessWidget {
                       // Blog Image
                       // Blog Image
                       ClipRRect(
-                        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                        borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(16)),
                         child: SizedBox(
-                          height: 180,
-                          child: const FlutterLogo(size: double.infinity, style: FlutterLogoStyle.markOnly),
+                          child: const FlutterLogo(
+                              size: double.infinity,
+                              style: FlutterLogoStyle.markOnly),
                         ),
                       ),
-
 
                       // Blog Title
                       Padding(
@@ -62,14 +62,12 @@ class Blogscreen extends StatelessWidget {
                         child: Text(
                           post["title"]!,
                           style: const TextStyle(
-                            fontSize: 16,
                             fontWeight: FontWeight.w600,
                           ),
                           textAlign: TextAlign.center,
                           overflow: TextOverflow.ellipsis,
                           maxLines: 1, // Only reserve height for one line
                         ),
-
                       ),
                     ],
                   ),

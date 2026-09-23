@@ -13,7 +13,8 @@ class FadeSlideTransition extends StatelessWidget {
   final Widget child;
   final int delay;
 
-  const FadeSlideTransition({Key? key, required this.child, this.delay = 0}) : super(key: key);
+  const FadeSlideTransition({Key? key, required this.child, this.delay = 0})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {

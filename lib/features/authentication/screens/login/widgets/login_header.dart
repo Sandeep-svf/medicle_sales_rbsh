@@ -4,7 +4,6 @@ import '../../../../../utils/constants/image_strings.dart';
 import '../../../../../utils/constants/sizes.dart';
 import '../../../../../utils/constants/text_strings.dart';
 
-
 class LoginHeader extends StatelessWidget {
   const LoginHeader({
     super.key,
@@ -28,7 +27,7 @@ class LoginHeader extends StatelessWidget {
         Image(
           image: AssetImage(
               dark ? TImages.lightAppLogoSmall : TImages.darkAppLogoSmall),
-          height: 150,
+          height: TSizes.v150,
         ),
         Text(
           "",

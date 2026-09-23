@@ -4,7 +4,6 @@ import 'package:medicle_sales_rbsh/features/MarketingMaterials/Screens/Marketing
 import 'package:medicle_sales_rbsh/features/SalesChartAnalysis/Screen/salesChartHome.dart';
 import 'package:medicle_sales_rbsh/features/StatelevelUser/CheckLocationOfAllUser/Screen/UserListScreen.dart';
 import 'package:medicle_sales_rbsh/features/addClinic/screen/ClinicList.dart';
-
 import 'package:medicle_sales_rbsh/features/addDoctor/screens/addDoctor.dart';
 import 'package:medicle_sales_rbsh/features/addProduct/screens/addProduct.dart';
 import 'package:medicle_sales_rbsh/features/approval_management/screen/approval_management_screen.dart';
@@ -13,7 +12,6 @@ import 'package:medicle_sales_rbsh/features/expenses/screens/expenses.dart';
 import 'package:medicle_sales_rbsh/features/order/screens/order.dart';
 import 'package:medicle_sales_rbsh/features/report/screens/report.dart';
 import 'package:medicle_sales_rbsh/features/salesActivity/screens/salesActivity.dart';
-
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 import 'package:medicle_sales_rbsh/utils/helpers/helper_functions.dart';
@@ -25,16 +23,13 @@ import '../../Blog/screen/blog.dart';
 import '../../DCR/screen/performance_dashboard.dart';
 import '../../Holiday/screen/HolidayScreen.dart';
 import '../../Inbox/Screen/InboxScreen.dart';
-
 import '../../Investment_Management/screen/investment_list_screen.dart';
 import '../../TrackingOptimizedBgLocation/utils/samsung_battery_settings.dart';
 import '../../InvoiceTrackerShipment/screen/InvoiceScreen.dart';
 import '../../PtsPtrCalculator/PtsPtrCalculator.dart';
 import '../../SalesChartAnalysis/Screen/salesChartHome2.dart';
 import '../../Tour & Plans/Screen/tour_plane_doctor_screen.dart';
-
 import '../../Tour & Plans/TeritoryModule/screen/territory_map_screen.dart';
-
 import '../../Tour & Plans/updated_tour_panes/Screen/tour_plan_list_screen.dart';
 import '../../addStokist/screen/StokistList.dart';
 import '../../authentication/models/UserModel.dart';
@@ -44,6 +39,7 @@ import '../../marketing/screen/MarketingScreen.dart';
 import '../../marketing/screen/marketing.dart';
 import '../../ticket/screen/ticketscreen.dart';
 import '../../visit/Doctor/screens/ScheduleVisit.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class CustomDrawer extends StatefulWidget {
   final Function(Widget, String) onMenuSelected;
@@ -102,7 +98,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 350,
+      width: TSizes.v350,
       child: Drawer(
         child: Column(
           children: [
@@ -382,7 +378,8 @@ class _CustomDrawerState extends State<CustomDrawer> {
     if (!mounted) return;
     if (accountId == null || accountId.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please sign in again to open doctors.')),
+        const SnackBar(
+            content: Text(TTexts.uiTextPleaseSignInAgainToOpenDoctors)),
       );
       return;
     }
@@ -403,24 +400,25 @@ class _CustomDrawerState extends State<CustomDrawer> {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return _loadingHeader(dark);
         } else if (snapshot.hasError || !snapshot.hasData) {
-          return Text("Error loading user data");
+          return Text(TTexts.uiTextErrorLoadingUserData);
         }
 
         final user = snapshot.data!;
 
         return Container(
-          color: dark ? Colors.black : Colors.grey[300],
+          color: dark ? TColors.pureBlack : TColors.materialGrey300,
           padding: EdgeInsets.symmetric(vertical: 25, horizontal: 16),
           width: double.infinity,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               CircleAvatar(
-                radius: 27,
+                radius: TSizes.v27,
                 backgroundColor: TColors.primary,
-                child: Icon(Icons.person, size: 50, color: Colors.white),
+                child:
+                    Icon(Icons.person, size: TSizes.v50, color: TColors.white),
               ),
-              SizedBox(width: 16),
+              SizedBox(width: TSizes.v16),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -429,7 +427,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      fontSize: 18,
+                      fontSize: TSizes.v18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -437,7 +435,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                     user.user!.email,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 14),
+                    style: const TextStyle(fontSize: TSizes.v14),
                   ),
                 ],
               ),
@@ -451,18 +449,21 @@ class _CustomDrawerState extends State<CustomDrawer> {
   /// **Loading Header Placeholder**
   Widget _loadingHeader(bool dark) {
     return Container(
-      color: dark ? Colors.black : Colors.grey[300],
+      color: dark ? TColors.pureBlack : TColors.materialGrey300,
       padding: const EdgeInsets.symmetric(vertical: 50, horizontal: 16),
       width: double.infinity,
       child: Row(
         children: [
-          const CircleAvatar(radius: 50, backgroundColor: Colors.grey),
-          const SizedBox(width: 16),
+          const CircleAvatar(
+              radius: TSizes.v50, backgroundColor: TColors.materialGrey),
+          const SizedBox(width: TSizes.v16),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: const [
-              Text("Loading...", style: TextStyle(fontSize: 18)),
-              Text("Please wait", style: TextStyle(fontSize: 14)),
+              Text(TTexts.uiTextLoading,
+                  style: TextStyle(fontSize: TSizes.v18)),
+              Text(TTexts.uiTextPleaseWait,
+                  style: TextStyle(fontSize: TSizes.v14)),
             ],
           ),
         ],
@@ -478,9 +479,9 @@ class _CustomDrawerState extends State<CustomDrawer> {
     bool isSelected = false,
   }) {
     return ListTile(
-      leading: Icon(icon, color: isSelected ? TColors.primary : Colors.grey),
+      leading: Icon(icon, color: isSelected ? TColors.primary : TColors.materialGrey),
       title: Text(text, style: TextStyle(fontSize: 14, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
-      tileColor: isSelected ? Colors.blue.withOpacity(0.1) : Colors.transparent,
+      tileColor: isSelected ? TColors.materialBlue.withOpacity(0.1) : TColors.transparent,
       onTap: onTap,
     );
   }*/
@@ -503,20 +504,20 @@ class _CustomDrawerState extends State<CustomDrawer> {
       ),
       leading: Icon(
         icon,
-        size: 20,
-        color: isSelected ? TColors.primary : Colors.grey,
+        size: TSizes.v20,
+        color: isSelected ? TColors.primary : TColors.materialGrey,
       ),
       title: Text(
         text,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
         style: TextStyle(
-          fontSize: 14,
+          fontSize: TSizes.v14,
           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
         ),
       ),
       tileColor:
-          isSelected ? TColors.primary.withOpacity(0.1) : Colors.transparent,
+          isSelected ? TColors.primary.withOpacity(0.1) : TColors.transparent,
       onTap: onTap,
     );
   }
@@ -706,7 +707,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
         final user = snapshot.data!;
 
         return Container(
-          color: dark ? Colors.black : Colors.grey[300],
+          color: dark ? TColors.pureBlack : TColors.materialGrey300,
           padding: EdgeInsets.symmetric(vertical: 50, horizontal: 16),
           width: double.infinity,
           child: Row(
@@ -715,7 +716,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
               CircleAvatar(
                 radius: 50,
                 backgroundColor: TColors.primary,
-                child: Icon(Icons.person, size: 50, color: Colors.white),
+                child: Icon(Icons.person, size: 50, color: TColors.white),
               ),
               SizedBox(width: 16),
               Column(
@@ -735,12 +736,12 @@ class _CustomDrawerState extends State<CustomDrawer> {
   /// **Loading Header Placeholder**
   Widget _loadingHeader(bool dark) {
     return Container(
-      color: dark ? Colors.black : Colors.grey[300],
+      color: dark ? TColors.pureBlack : TColors.materialGrey300,
       padding: const EdgeInsets.symmetric(vertical: 50, horizontal: 16),
       width: double.infinity,
       child: Row(
         children: [
-          const CircleAvatar(radius: 50, backgroundColor: Colors.grey),
+          const CircleAvatar(radius: 50, backgroundColor: TColors.materialGrey),
           const SizedBox(width: 16),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -762,9 +763,9 @@ class _CustomDrawerState extends State<CustomDrawer> {
     bool isSelected = false,
   }) {
     return ListTile(
-      leading: Icon(icon, color: isSelected ? TColors.primary : Colors.grey),
+      leading: Icon(icon, color: isSelected ? TColors.primary : TColors.materialGrey),
       title: Text(text, style: TextStyle(fontSize: 16, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
-      tileColor: isSelected ? Colors.blue.withOpacity(0.1) : Colors.transparent,
+      tileColor: isSelected ? TColors.materialBlue.withOpacity(0.1) : TColors.transparent,
       onTap: onTap,
     );
   }

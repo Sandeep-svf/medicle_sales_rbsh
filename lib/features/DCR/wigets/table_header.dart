@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 enum SortColumn {
   employee,
@@ -24,7 +26,7 @@ class TableHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 62,
+      height: TSizes.v62,
       decoration: const BoxDecoration(
         color: TColors.primary,
         borderRadius: BorderRadius.only(
@@ -34,36 +36,31 @@ class TableHeader extends StatelessWidget {
       ),
       child: Row(
         children: [
-
           _header(
-            title: "Employee",
+            title: TTexts.uiTextEmployee,
             column: SortColumn.employee,
             flex: 3,
           ),
-
           _header(
-            title: "Doctors",
-            subtitle: "Sch / Conf / %",
+            title: TTexts.uiTextDoctors,
+            subtitle: TTexts.uiTextSchConf,
             column: SortColumn.doctor,
             flex: 2,
           ),
-
           _header(
-            title: "Chemists",
-            subtitle: "Sch / Conf / %",
+            title: TTexts.uiTextChemists,
+            subtitle: TTexts.uiTextSchConf,
             column: SortColumn.chemist,
             flex: 2,
           ),
-
           _header(
-            title: "Stockists",
-            subtitle: "Sch / Conf / %",
+            title: TTexts.uiTextStockists,
+            subtitle: TTexts.uiTextSchConf,
             column: SortColumn.stockist,
             flex: 2,
           ),
-
           _header(
-            title: "Coverage",
+            title: TTexts.uiTextCoverage,
             column: SortColumn.coverage,
             flex: 2,
           ),
@@ -89,45 +86,38 @@ class TableHeader extends StatelessWidget {
           height: double.infinity,
           child: Row(
             children: [
-
               Expanded(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-
                     Text(
                       title,
                       style: const TextStyle(
-                        color: Colors.white,
+                        color: TColors.white,
                         fontWeight: FontWeight.w700,
-                        fontSize: 15,
+                        fontSize: TSizes.v15,
                       ),
                     ),
-
                     if (subtitle != null)
                       Text(
                         subtitle,
                         style: TextStyle(
-                          color: Colors.white.withOpacity(.8),
-                          fontSize: 11,
+                          color: TColors.white.withOpacity(.8),
+                          fontSize: TSizes.v11,
                         ),
                       ),
                   ],
                 ),
               ),
-
               AnimatedRotation(
-                turns: selected
-                    ? (ascending ? 0 : 0.5)
-                    : 0,
+                turns: selected ? (ascending ? 0 : 0.5) : 0,
                 duration: const Duration(milliseconds: 250),
                 child: Icon(
                   Icons.arrow_upward_rounded,
-                  color: selected
-                      ? Colors.white
-                      : Colors.white.withOpacity(.35),
-                  size: 18,
+                  color:
+                      selected ? TColors.white : TColors.white.withOpacity(.35),
+                  size: TSizes.v18,
                 ),
               ),
             ],

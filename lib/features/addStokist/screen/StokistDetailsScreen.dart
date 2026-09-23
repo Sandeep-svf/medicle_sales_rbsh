@@ -1,93 +1,20 @@
-import 'dart:ui' as ui;
-
 import 'package:flutter/material.dart';
+import 'dart:math' as math;
+import 'dart:ui' as ui;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:medicle_sales_rbsh/features/addStokist/model/Stokist.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
+import '../model/Stokist.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'dart:ui';
+import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
-import '../../../utils/constants/colors.dart';
 // new code
 
-import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 // Ensure this import points to your new Model file
-import '../model/Stokist.dart';
-
-import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
-import 'package:url_launcher/url_launcher.dart'; // Ensure this is in pubspec.yaml
-import '../model/Stokist.dart';
-
-import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
-import 'package:url_launcher/url_launcher.dart'; // Ensure this is in pubspec.yaml
-import '../model/Stokist.dart';
-
-import 'dart:ui';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'dart:math' as math;
-import '../model/Stokist.dart';
-
-import 'dart:ui';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'dart:math' as math;
-import '../model/Stokist.dart';
-
-import 'dart:ui';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:intl/intl.dart'; // Add intl to pubspec.yaml for date formatting
-import '../model/Stokist.dart';
-import 'dart:ui';
-import 'dart:math' as math;
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:intl/intl.dart';
-import '../model/Stokist.dart';
-
-import 'dart:ui';
-import 'dart:math' as math;
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:intl/intl.dart';
-import '../model/Stokist.dart';
-import 'dart:ui';
-import 'dart:math' as math;
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:intl/intl.dart';
-import '../model/Stokist.dart';
-import 'dart:ui';
-import 'dart:math' as math;
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
-import 'package:url_launcher/url_launcher.dart'; // Add to pubspec.yaml
-import 'package:intl/intl.dart'; // Add to pubspec.yaml
-import '../model/Stokist.dart';
 
 // ==============================================================================
 // 1. MAIN SCREEN ORCHESTRATOR
@@ -96,13 +23,15 @@ import '../model/Stokist.dart';
 class StokistDetailScreen extends StatefulWidget {
   final Stockist stokist;
 
-  const StokistDetailScreen({Key? key, required this.stokist}) : super(key: key);
+  const StokistDetailScreen({Key? key, required this.stokist})
+      : super(key: key);
 
   @override
   State<StokistDetailScreen> createState() => _StokistDetailScreenState();
 }
 
-class _StokistDetailScreenState extends State<StokistDetailScreen> with TickerProviderStateMixin {
+class _StokistDetailScreenState extends State<StokistDetailScreen>
+    with TickerProviderStateMixin {
   late TabController _tabController;
   late AnimationController _entryAnimationController;
   late Animation<double> _fadeAnimation;
@@ -146,7 +75,7 @@ class _StokistDetailScreenState extends State<StokistDetailScreen> with TickerPr
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F2F5),
+      backgroundColor: TColors.hex_FFF0F2F5,
       body: SizedBox.expand(
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -185,7 +114,7 @@ class _StokistDetailScreenState extends State<StokistDetailScreen> with TickerPr
             // Placeholder for Edit
           },
           backgroundColor: TColors.primary,
-          child: const Icon(Icons.edit_outlined, color: Colors.white),
+          child: const Icon(Icons.edit_outlined, color: TColors.white),
         ),
       ),
     );
@@ -223,9 +152,9 @@ class _PortraitParallaxLayout extends StatelessWidget {
             expandedHeight: headerHeight,
             floating: false,
             pinned: true,
-            elevation: 0,
+            elevation: TSizes.v0,
             backgroundColor: TColors.primary,
-            iconTheme: const IconThemeData(color: Colors.white),
+            iconTheme: const IconThemeData(color: TColors.white),
             flexibleSpace: FlexibleSpaceBar(
               collapseMode: CollapseMode.parallax,
               background: _ParallaxHeaderBackground(
@@ -289,15 +218,17 @@ class _LandscapeSplitLayout extends StatelessWidget {
     final double sidebarWidth = isCompactHeight ? 280 : 350;
 
     return SafeArea(
-      left: true, right: true, bottom: false,
+      left: true,
+      right: true,
+      bottom: false,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch, // Fixes White Screen
         children: [
           SizedBox(
             width: sidebarWidth,
             child: Material(
-              color: Colors.white,
-              elevation: 4,
+              color: TColors.white,
+              elevation: TSizes.v4,
               child: Column(
                 children: [
                   SizedBox(
@@ -307,9 +238,11 @@ class _LandscapeSplitLayout extends StatelessWidget {
                       children: [
                         Container(color: TColors.primary),
                         Positioned(
-                          top: 10, left: 10,
+                          top: 10,
+                          left: 10,
                           child: IconButton(
-                            icon: const Icon(Icons.arrow_back, color: Colors.white),
+                            icon: const Icon(Icons.arrow_back,
+                                color: TColors.white),
                             onPressed: () => Navigator.pop(context),
                           ),
                         ),
@@ -328,19 +261,20 @@ class _LandscapeSplitLayout extends StatelessWidget {
                       child: Column(
                         children: [
                           _QuickActionsGrid(stokist: stokist),
-                          const Divider(height: 30),
+                          const Divider(height: TSizes.v30),
                           _SidebarStatTile(
-                            label: "Experience",
+                            label: TTexts.uiTextExperience,
                             value: "${stokist.yearsInBusiness ?? 0} Yrs",
                             icon: Icons.history_edu,
-                            color: Colors.blue,
+                            color: TColors.materialBlue,
                           ),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: TSizes.v12),
                           _SidebarStatTile(
-                            label: "Sales Reps",
-                            value: "${stokist.numberOfSalesRepresentatives ?? 0}",
+                            label: TTexts.uiTextSalesReps,
+                            value:
+                                "${stokist.numberOfSalesRepresentatives ?? 0}",
                             icon: Icons.groups,
-                            color: Colors.orange,
+                            color: TColors.materialOrange,
                           ),
                         ],
                       ),
@@ -354,7 +288,7 @@ class _LandscapeSplitLayout extends StatelessWidget {
             child: Column(
               children: [
                 Container(
-                  color: Colors.white,
+                  color: TColors.white,
                   child: _GlassmorphicTabBar(
                     controller: tabController,
                     isLightMode: true,
@@ -362,7 +296,7 @@ class _LandscapeSplitLayout extends StatelessWidget {
                 ),
                 Expanded(
                   child: Container(
-                    color: const Color(0xFFF0F2F5),
+                    color: TColors.hex_FFF0F2F5,
                     child: TabBarView(
                       controller: tabController,
                       children: [
@@ -370,11 +304,18 @@ class _LandscapeSplitLayout extends StatelessWidget {
                           stokist: stokist,
                           fadeAnim: entranceAnim,
                           slideAnim: const AlwaysStoppedAnimation(Offset.zero),
-                          showTopSummary: false, // Hidden here because it's in sidebar
+                          showTopSummary:
+                              false, // Hidden here because it's in sidebar
                           isWideLayout: true,
                         ),
-                        _DocumentsTab(stokist: stokist, fadeAnim: entranceAnim, isWideLayout: true),
-                        _FinancialsTab(stokist: stokist, fadeAnim: entranceAnim, isWideLayout: true),
+                        _DocumentsTab(
+                            stokist: stokist,
+                            fadeAnim: entranceAnim,
+                            isWideLayout: true),
+                        _FinancialsTab(
+                            stokist: stokist,
+                            fadeAnim: entranceAnim,
+                            isWideLayout: true),
                         _LocationTab(stokist: stokist),
                       ],
                     ),
@@ -412,7 +353,8 @@ class _OverviewTab extends StatelessWidget {
   Widget build(BuildContext context) {
     // 1. Safe handling of the list (Fixes the Null subtype error)
     // We default to an empty list [] if the data is null
-    final List<String> distributorships = stokist.currentPharmaDistributorships ?? [];
+    final List<String> distributorships =
+        stokist.currentPharmaDistributorships ?? [];
 
     return FadeTransition(
       opacity: fadeAnim,
@@ -424,104 +366,141 @@ class _OverviewTab extends StatelessWidget {
             // TOP SUMMARY SECTION (Portrait Only)
             if (showTopSummary) ...[
               _QuickActionsGrid(stokist: stokist),
-              const SizedBox(height: 24),
+              const SizedBox(height: TSizes.v24),
               Row(
                 children: [
                   _ExpandedStatCard(
-                    label: "Years Exp",
+                    label: TTexts.uiTextYearsExp,
                     value: "${stokist.yearsInBusiness}",
                     icon: Icons.history,
-                    color: Colors.blue,
+                    color: TColors.materialBlue,
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: TSizes.v12),
                   _ExpandedStatCard(
-                    label: "Sales Reps",
+                    label: TTexts.uiTextSalesReps,
                     value: "${stokist.numberOfSalesRepresentatives ?? 0}",
                     icon: Icons.people_outline,
-                    color: Colors.orange,
+                    color: TColors.materialOrange,
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: TSizes.v12),
                   _ExpandedStatCard(
-                    label: "Storage",
+                    label: TTexts.uiTextStorage,
                     value: "${stokist.storageFacilitySize ?? 0}",
                     unit: "sqft",
                     icon: Icons.warehouse_outlined,
-                    color: Colors.green,
+                    color: TColors.materialGreen,
                   ),
                 ],
               ),
-              const SizedBox(height: 30),
+              const SizedBox(height: TSizes.v30),
             ],
 
             // 1. INFRASTRUCTURE
-            _SectionHeader(title: "INFRASTRUCTURE", icon: Icons.domain),
-            const SizedBox(height: 12),
+            _SectionHeader(
+                title: TTexts.uiTextINFRASTRUCTURE, icon: Icons.domain),
+            const SizedBox(height: TSizes.v12),
             Row(
               children: [
                 _FacilityStatusCard(
-                  label: "Warehouse",
+                  label: TTexts.uiTextWarehouse,
                   isActive: stokist.warehouseFacility == true,
                   activeIcon: Icons.check_circle,
                   inactiveIcon: Icons.cancel,
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: TSizes.v12),
                 _FacilityStatusCard(
-                  label: "Cold Storage",
+                  label: TTexts.uiTextColdStorage,
                   isActive: stokist.coldStorageAvailable == true,
                   activeIcon: Icons.ac_unit,
                   inactiveIcon: Icons.ac_unit,
                 ),
               ],
             ),
-            const SizedBox(height: 30),
+            const SizedBox(height: TSizes.v30),
 
             // 2. COMPANY PROFILE
-            _SectionHeader(title: "COMPANY PROFILE", icon: Icons.business),
-            const SizedBox(height: 12),
+            _SectionHeader(
+                title: TTexts.uiTextCOMPANYPROFILE, icon: Icons.business),
+            const SizedBox(height: TSizes.v12),
             _NeumorphicCard(
               children: [
-                _DetailRow(label: "Registered Name", value: stokist.registeredBusinessName),
-                _DetailRow(label: "Head Office", value: stokist.headOffice?.name),
-                _DetailRow(label: "Business Type", value: stokist.natureOfBusiness),
-                const Divider(height: 24),
-                _DetailRow(label: "GST Number", value: stokist.gstNumber, isCopyable: true),
-                _DetailRow(label: "PAN Number", value: stokist.panNumber, isCopyable: true),
-                _DetailRow(label: "Drug License", value: stokist.drugLicenseNumber, isCopyable: true),
+                _DetailRow(
+                    label: TTexts.uiTextRegisteredName,
+                    value: stokist.registeredBusinessName),
+                _DetailRow(
+                    label: TTexts.uiTextHeadOffice,
+                    value: stokist.headOffice?.name),
+                _DetailRow(
+                    label: TTexts.uiTextBusinessType,
+                    value: stokist.natureOfBusiness),
+                const Divider(height: TSizes.v24),
+                _DetailRow(
+                    label: TTexts.uiTextGSTNumber,
+                    value: stokist.gstNumber,
+                    isCopyable: true),
+                _DetailRow(
+                    label: TTexts.uiTextPANNumber,
+                    value: stokist.panNumber,
+                    isCopyable: true),
+                _DetailRow(
+                    label: TTexts.uiTextDrugLicense,
+                    value: stokist.drugLicenseNumber,
+                    isCopyable: true),
               ],
             ),
-            const SizedBox(height: 30),
+            const SizedBox(height: TSizes.v30),
 
             // 3. CONTACT INFO
-            _SectionHeader(title: "CONTACT INFO", icon: Icons.contact_phone),
-            const SizedBox(height: 12),
+            _SectionHeader(
+                title: TTexts.uiTextCONTACTINFO, icon: Icons.contact_phone),
+            const SizedBox(height: TSizes.v12),
             _NeumorphicCard(
               children: [
-                _DetailRow(label: "Contact Person", value: stokist.contactPerson, isBold: true),
-                _DetailRow(label: "Designation", value: stokist.designation),
-                const Divider(height: 24),
-                _DetailRow(label: "Mobile", value: stokist.mobileNumber, isLink: true,
-                    onTap: () => _UrlLauncher.launchPhone(stokist.mobileNumber)),
-                _DetailRow(label: "Email", value: stokist.emailAddress, isLink: true,
-                    onTap: () => _UrlLauncher.launchEmail(stokist.emailAddress)),
-                _DetailRow(label: "Address", value: stokist.registeredOfficeAddress, maxLines: 3),
+                _DetailRow(
+                    label: TTexts.uiTextContactPerson,
+                    value: stokist.contactPerson,
+                    isBold: true),
+                _DetailRow(
+                    label: TTexts.uiTextDesignation,
+                    value: stokist.designation),
+                const Divider(height: TSizes.v24),
+                _DetailRow(
+                    label: TTexts.uiTextMobile,
+                    value: stokist.mobileNumber,
+                    isLink: true,
+                    onTap: () =>
+                        _UrlLauncher.launchPhone(stokist.mobileNumber)),
+                _DetailRow(
+                    label: TTexts.email,
+                    value: stokist.emailAddress,
+                    isLink: true,
+                    onTap: () =>
+                        _UrlLauncher.launchEmail(stokist.emailAddress)),
+                _DetailRow(
+                    label: TTexts.uiTextAddress,
+                    value: stokist.registeredOfficeAddress,
+                    maxLines: 3),
               ],
             ),
-            const SizedBox(height: 30),
+            const SizedBox(height: TSizes.v30),
 
             // 4. DISTRIBUTORSHIPS (Fixed Logic)
             if (distributorships.isNotEmpty) ...[
-              _SectionHeader(title: "DISTRIBUTORSHIPS", icon: Icons.local_shipping),
-              const SizedBox(height: 12),
+              _SectionHeader(
+                  title: TTexts.uiTextDISTRIBUTORSHIPS,
+                  icon: Icons.local_shipping),
+              const SizedBox(height: TSizes.v12),
               Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: distributorships.map((d) => _ModernChip(label: d)).toList(),
+                spacing: TSizes.v8,
+                runSpacing: TSizes.v8,
+                children:
+                    distributorships.map((d) => _ModernChip(label: d)).toList(),
               ),
-              const SizedBox(height: 30),
+              const SizedBox(height: TSizes.v30),
             ],
 
             _BuildFooter(stokist: stokist),
-            const SizedBox(height: 80),
+            const SizedBox(height: TSizes.v80),
           ],
         ),
       ),
@@ -534,7 +513,10 @@ class _DocumentsTab extends StatelessWidget {
   final Animation<double> fadeAnim;
   final bool isWideLayout;
 
-  const _DocumentsTab({required this.stokist, required this.fadeAnim, required this.isWideLayout});
+  const _DocumentsTab(
+      {required this.stokist,
+      required this.fadeAnim,
+      required this.isWideLayout});
 
   @override
   Widget build(BuildContext context) {
@@ -550,8 +532,8 @@ class _DocumentsTab extends StatelessWidget {
     if (docs.isEmpty) {
       return const _EmptyStateWidget(
         icon: Icons.folder_off_outlined,
-        title: "No Documents",
-        subtitle: "No verification documents uploaded.",
+        title: TTexts.uiTextNoDocuments,
+        subtitle: TTexts.uiTextNoVerificationDocumentsUploaded,
       );
     }
 
@@ -564,8 +546,8 @@ class _DocumentsTab extends StatelessWidget {
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: crossAxisCount,
           childAspectRatio: 0.8,
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
+          crossAxisSpacing: TSizes.v16,
+          mainAxisSpacing: TSizes.v16,
         ),
         itemCount: docs.length,
         itemBuilder: (context, index) {
@@ -584,11 +566,10 @@ class _FinancialsTab extends StatelessWidget {
   final Animation<double> fadeAnim;
   final bool isWideLayout;
 
-  const _FinancialsTab({
-    required this.stokist,
-    required this.fadeAnim,
-    required this.isWideLayout
-  });
+  const _FinancialsTab(
+      {required this.stokist,
+      required this.fadeAnim,
+      required this.isWideLayout});
 
   @override
   Widget build(BuildContext context) {
@@ -598,49 +579,57 @@ class _FinancialsTab extends StatelessWidget {
         padding: const EdgeInsets.all(24),
         children: [
           // 1. BANKING DETAILS SECTION
-          _SectionHeader(title: "BANKING DETAILS", icon: Icons.account_balance_wallet),
-          const SizedBox(height: 16),
+          _SectionHeader(
+              title: TTexts.uiTextBANKINGDETAILS,
+              icon: Icons.account_balance_wallet),
+          const SizedBox(height: TSizes.v16),
 
           Center(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 600),
+              constraints: const BoxConstraints(maxWidth: TSizes.v600),
               // New Premium Bank Card
               child: _ManagedBankInfoCard(details: stokist.bankDetails),
             ),
           ),
 
-          const SizedBox(height: 40),
+          const SizedBox(height: TSizes.v40),
 
           // 2. TURNOVER HISTORY SECTION
-          _SectionHeader(title: "ANNUAL TURNOVER", icon: Icons.bar_chart),
-          const SizedBox(height: 20),
+          _SectionHeader(
+              title: TTexts.uiTextANNUALTURNOVER, icon: Icons.bar_chart),
+          const SizedBox(height: TSizes.v20),
 
-          if (stokist.annualTurnover != null && stokist.annualTurnover!.isNotEmpty) ...[
+          if (stokist.annualTurnover != null &&
+              stokist.annualTurnover!.isNotEmpty) ...[
             // New Animated Chart Widget
             SizedBox(
-              height: 280, // Increased height for labels
+              height: TSizes.v280, // Increased height for labels
               child: _AnimatedTurnoverChart(
                 data: stokist.annualTurnover!,
               ),
             ),
-            const SizedBox(height: 30),
+            const SizedBox(height: TSizes.v30),
 
             // Text List Summary
-            ...stokist.annualTurnover!.map((t) => Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 500),
-                child: _TurnoverListItem(year: t.year, amount: t.amount),
-              ),
-            )).toList(),
+            ...stokist.annualTurnover!
+                .map((t) => Center(
+                      child: ConstrainedBox(
+                        constraints:
+                            const BoxConstraints(maxWidth: TSizes.v500),
+                        child:
+                            _TurnoverListItem(year: t.year, amount: t.amount),
+                      ),
+                    ))
+                .toList(),
           ] else
             const _EmptyStateWidget(
               icon: Icons.show_chart,
-              title: "No Financial Data",
-              subtitle: "Turnover history is unavailable.",
+              title: TTexts.uiTextNoFinancialData,
+              subtitle: TTexts.uiTextTurnoverHistoryIsUnavailable,
               isSmall: true,
             ),
 
-          const SizedBox(height: 60),
+          const SizedBox(height: TSizes.v60),
         ],
       ),
     );
@@ -658,8 +647,8 @@ class _ManagedBankInfoCard extends StatelessWidget {
     if (details == null) {
       return const _EmptyStateWidget(
         icon: Icons.account_balance_outlined,
-        title: "No Banking Record",
-        subtitle: "Bank details not yet added",
+        title: TTexts.uiTextNoBankingRecord,
+        subtitle: TTexts.uiTextBankDetailsNotYetAdded,
         isSmall: true,
       );
     }
@@ -683,7 +672,7 @@ class _ManagedBankInfoCard extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: TColors.primary.withOpacity(0.35),
-            blurRadius: 22,
+            blurRadius: TSizes.v22,
             offset: const Offset(0, 10),
           ),
         ],
@@ -694,24 +683,25 @@ class _ManagedBankInfoCard extends StatelessWidget {
           // --- HEADER ---
           Row(
             children: [
-              Icon(Icons.account_balance, color: Colors.white.withOpacity(0.9), size: 22),
-              const SizedBox(width: 10),
+              Icon(Icons.account_balance,
+                  color: TColors.white.withOpacity(0.9), size: TSizes.v22),
+              const SizedBox(width: TSizes.v10),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    "Banking Information",
+                    TTexts.uiTextBankingInformation,
                     style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
+                      color: TColors.white,
+                      fontSize: TSizes.v14,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                   Text(
-                    "Managed & secured by Gluckscare",
+                    TTexts.uiTextManagedSecuredByGluckscare,
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.7),
-                      fontSize: 10,
+                      color: TColors.white.withOpacity(0.7),
+                      fontSize: TSizes.v10,
                       letterSpacing: 0.4,
                     ),
                   ),
@@ -722,25 +712,25 @@ class _ManagedBankInfoCard extends StatelessWidget {
             ],
           ),
 
-          const SizedBox(height: 28),
+          const SizedBox(height: TSizes.v28),
 
           // --- ACCOUNT NUMBER ---
           Text(
-            "ACCOUNT NUMBER",
+            TTexts.uiTextACCOUNTNUMBER,
             style: TextStyle(
-              color: Colors.white.withOpacity(0.6),
-              fontSize: 9,
+              color: TColors.white.withOpacity(0.6),
+              fontSize: TSizes.v9,
               letterSpacing: 1.2,
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: TSizes.v6),
           Row(
             children: [
               Text(
                 maskedAcct,
                 style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 22,
+                  color: TColors.white,
+                  fontSize: TSizes.v22,
                   fontWeight: FontWeight.bold,
                   fontFamily: 'monospace',
                   letterSpacing: 2,
@@ -751,26 +741,26 @@ class _ManagedBankInfoCard extends StatelessWidget {
             ],
           ),
 
-          const SizedBox(height: 26),
+          const SizedBox(height: TSizes.v26),
 
           // --- BANK META DATA ---
           Row(
             children: [
               Expanded(
                 child: _MetaItem(
-                  label: "BANK",
+                  label: TTexts.uiTextBANK,
                   value: details!.bankName,
                 ),
               ),
               Expanded(
                 child: _MetaItem(
-                  label: "BRANCH",
+                  label: TTexts.uiTextBRANCH,
                   value: details!.branch,
                 ),
               ),
               Expanded(
                 child: _MetaItem(
-                  label: "IFSC",
+                  label: TTexts.uiTextIFSC,
                   value: details!.ifscCode,
                   alignRight: true,
                 ),
@@ -781,8 +771,6 @@ class _ManagedBankInfoCard extends StatelessWidget {
       ),
     );
   }
-
-
 
   String _maskAccount(String acc) {
     if (acc.length <= 4) return acc;
@@ -796,23 +784,22 @@ class _StatusChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.18),
+        color: TColors.white.withOpacity(0.18),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
         children: const [
-          Icon(Icons.verified, size: 12, color: Colors.white),
-          SizedBox(width: 4),
+          Icon(Icons.verified, size: TSizes.v12, color: TColors.white),
+          SizedBox(width: TSizes.v4),
           Text(
-            "Verified",
-            style: TextStyle(color: Colors.white, fontSize: 10),
+            TTexts.uiTextVerified,
+            style: TextStyle(color: TColors.white, fontSize: TSizes.v10),
           ),
         ],
       ),
     );
   }
 }
-
 
 class _MetaItem extends StatelessWidget {
   final String label;
@@ -829,24 +816,24 @@ class _MetaItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment:
-      alignRight ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          alignRight ? CrossAxisAlignment.end : CrossAxisAlignment.start,
       children: [
         Text(
           label,
           style: TextStyle(
-            color: Colors.white.withOpacity(0.6),
-            fontSize: 9,
+            color: TColors.white.withOpacity(0.6),
+            fontSize: TSizes.v9,
             letterSpacing: 1.1,
           ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: TSizes.v4),
         Text(
           value ?? "-",
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: const TextStyle(
-            color: Colors.white,
-            fontSize: 12,
+            color: TColors.white,
+            fontSize: TSizes.v12,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -868,7 +855,7 @@ class _CopyButton extends StatelessWidget {
         HapticFeedback.lightImpact();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text("Account number copied"),
+            content: const Text(TTexts.uiTextAccountNumberCopied),
             backgroundColor: TColors.primary,
           ),
         );
@@ -876,16 +863,14 @@ class _CopyButton extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(6),
         decoration: BoxDecoration(
-          color: Colors.white24,
+          color: TColors.white24,
           borderRadius: BorderRadius.circular(6),
         ),
-        child: const Icon(Icons.copy, size: 14, color: Colors.white),
+        child: const Icon(Icons.copy, size: TSizes.v14, color: TColors.white),
       ),
     );
   }
 }
-
-
 
 // Helper Widget for neat columns
 class _CardDetailItem extends StatelessWidget {
@@ -902,18 +887,25 @@ class _CardDetailItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment: isRightAlign ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+      crossAxisAlignment:
+          isRightAlign ? CrossAxisAlignment.end : CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 9, fontWeight: FontWeight.bold),
+          style: TextStyle(
+              color: TColors.white.withOpacity(0.5),
+              fontSize: TSizes.v9,
+              fontWeight: FontWeight.bold),
         ),
-        const SizedBox(height: 2),
+        const SizedBox(height: TSizes.v2),
         Text(
           value ?? "-",
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+          style: const TextStyle(
+              color: TColors.white,
+              fontSize: TSizes.v13,
+              fontWeight: FontWeight.bold),
         ),
       ],
     );
@@ -929,14 +921,16 @@ class _AnimatedTurnoverChart extends StatefulWidget {
   State<_AnimatedTurnoverChart> createState() => _AnimatedTurnoverChartState();
 }
 
-class _AnimatedTurnoverChartState extends State<_AnimatedTurnoverChart> with SingleTickerProviderStateMixin {
+class _AnimatedTurnoverChartState extends State<_AnimatedTurnoverChart>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 1500));
+    _controller = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 1500));
     // Elastic curve gives it a nice "bounce" effect when growing
     _animation = CurvedAnimation(parent: _controller, curve: Curves.elasticOut);
     _controller.forward();
@@ -984,13 +978,13 @@ class _TurnoverChartPainter extends CustomPainter {
 
     // Layout config
     const double bottomPadding = 30.0; // Space for Years
-    const double topPadding = 20.0;    // Space for Amount Labels
+    const double topPadding = 20.0; // Space for Amount Labels
     final double chartHeight = size.height - bottomPadding - topPadding;
     final double w = size.width;
 
     // Grid Paint
     final gridPaint = Paint()
-      ..color = Colors.grey.withOpacity(0.1)
+      ..color = TColors.materialGrey.withOpacity(0.1)
       ..strokeWidth = 1;
 
     // Draw Grid Lines
@@ -1007,7 +1001,7 @@ class _TurnoverChartPainter extends CustomPainter {
     // Bar Layout
     double groupWidth = w / data.length;
     double barWidth = groupWidth * 0.4; // Bar takes 40% of slot
-    double spacing = groupWidth * 0.3;  // Spacing
+    double spacing = groupWidth * 0.3; // Spacing
 
     final Paint barPaint = Paint();
 
@@ -1033,13 +1027,10 @@ class _TurnoverChartPainter extends CustomPainter {
         );
 
         canvas.drawRRect(
-            RRect.fromRectAndCorners(
-                barRect,
+            RRect.fromRectAndCorners(barRect,
                 topLeft: const Radius.circular(6),
-                topRight: const Radius.circular(6)
-            ),
-            barPaint
-        );
+                topRight: const Radius.circular(6)),
+            barPaint);
       }
 
       // Draw Text Labels (Only show when animation is near end)
@@ -1048,18 +1039,22 @@ class _TurnoverChartPainter extends CustomPainter {
         _drawText(
             canvas,
             item.year.toString(),
-            Offset(left + barWidth/2, size.height - 15),
-            const TextStyle(color: Colors.black54, fontSize: 11, fontWeight: FontWeight.bold)
-        );
+            Offset(left + barWidth / 2, size.height - 15),
+            const TextStyle(
+                color: TColors.black54,
+                fontSize: TSizes.v11,
+                fontWeight: FontWeight.bold));
 
         // 2. Amount Label (Top of Bar)
         String formattedAmount = _formatCompact(amount);
         _drawText(
             canvas,
             formattedAmount,
-            Offset(left + barWidth/2, top - 12),
-            TextStyle(color: barColor, fontSize: 10, fontWeight: FontWeight.bold)
-        );
+            Offset(left + barWidth / 2, top - 12),
+            TextStyle(
+                color: barColor,
+                fontSize: TSizes.v10,
+                fontWeight: FontWeight.bold));
       }
     }
   }
@@ -1068,10 +1063,10 @@ class _TurnoverChartPainter extends CustomPainter {
     final tp = TextPainter(
         text: TextSpan(text: text, style: style),
         textAlign: TextAlign.center,
-        textDirection: ui.TextDirection.ltr
-    );
+        textDirection: ui.TextDirection.ltr);
     tp.layout();
-    tp.paint(canvas, Offset(center.dx - tp.width / 2, center.dy - tp.height / 2));
+    tp.paint(
+        canvas, Offset(center.dx - tp.width / 2, center.dy - tp.height / 2));
   }
 
   // Format helper: 1500000 -> 15L or 1.5M depending on preference
@@ -1083,7 +1078,8 @@ class _TurnoverChartPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _TurnoverChartPainter old) => old.animationValue != animationValue;
+  bool shouldRepaint(covariant _TurnoverChartPainter old) =>
+      old.animationValue != animationValue;
 }
 
 class _LocationTab extends StatelessWidget {
@@ -1096,7 +1092,10 @@ class _LocationTab extends StatelessWidget {
     final double? lng = double.tryParse(stokist.longitude ?? "");
 
     if (lat == null || lng == null) {
-      return const _EmptyStateWidget(icon: Icons.location_off, title: "Location Missing", subtitle: "Coordinates not available.");
+      return const _EmptyStateWidget(
+          icon: Icons.location_off,
+          title: TTexts.uiTextLocationMissing,
+          subtitle: TTexts.uiTextCoordinatesNotAvailable);
     }
 
     final LatLng position = LatLng(lat, lng);
@@ -1105,31 +1104,63 @@ class _LocationTab extends StatelessWidget {
       children: [
         GoogleMap(
           initialCameraPosition: CameraPosition(target: position, zoom: 15),
-          markers: { Marker(markerId: const MarkerId('s'), position: position, infoWindow: InfoWindow(title: stokist.firmName)) },
+          markers: {
+            Marker(
+                markerId: const MarkerId('s'),
+                position: position,
+                infoWindow: InfoWindow(title: stokist.firmName))
+          },
           zoomControlsEnabled: false,
           myLocationButtonEnabled: false,
         ),
         Positioned(
-          bottom: 30, left: 20, right: 20,
+          bottom: 30,
+          left: 20,
+          right: 20,
           child: SafeArea(
             child: Container(
               padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 20)]),
+              decoration: BoxDecoration(
+                  color: TColors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(color: TColors.black26, blurRadius: TSizes.v20)
+                  ]),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Row(children: [Icon(Icons.location_on, color: Colors.redAccent), SizedBox(width: 8), Text("REGISTERED OFFICE", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey, fontSize: 12))]),
-                  const SizedBox(height: 10),
-                  Text(stokist.registeredOfficeAddress ?? "Unknown", style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600), maxLines: 2, overflow: TextOverflow.ellipsis),
-                  const SizedBox(height: 20),
+                  const Row(children: [
+                    Icon(Icons.location_on, color: TColors.materialRedAccent),
+                    SizedBox(width: TSizes.v8),
+                    Text(TTexts.uiTextREGISTEREDOFFICE,
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: TColors.materialGrey,
+                            fontSize: TSizes.v12))
+                  ]),
+                  const SizedBox(height: TSizes.v10),
+                  Text(stokist.registeredOfficeAddress ?? "Unknown",
+                      style: const TextStyle(
+                          fontSize: TSizes.v15, fontWeight: FontWeight.w600),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis),
+                  const SizedBox(height: TSizes.v20),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(backgroundColor: TColors.primary, padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-                      onPressed: () => _UrlLauncher.launchMap(stokist.latitude, stokist.longitude),
-                      icon: const Icon(Icons.directions, color: Colors.white),
-                      label: const Text("NAVIGATE", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: TColors.primary,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12))),
+                      onPressed: () => _UrlLauncher.launchMap(
+                          stokist.latitude, stokist.longitude),
+                      icon: const Icon(Icons.directions, color: TColors.white),
+                      label: const Text(TTexts.uiTextNAVIGATE,
+                          style: TextStyle(
+                              color: TColors.white,
+                              fontWeight: FontWeight.bold)),
                     ),
                   )
                 ],
@@ -1150,10 +1181,8 @@ class _ParallaxHeaderBackground extends StatelessWidget {
   final Stockist stokist;
   final bool isCompact;
 
-  const _ParallaxHeaderBackground({
-    required this.stokist,
-    required this.isCompact
-  });
+  const _ParallaxHeaderBackground(
+      {required this.stokist, required this.isCompact});
 
   @override
   Widget build(BuildContext context) {
@@ -1166,7 +1195,7 @@ class _ParallaxHeaderBackground extends StatelessWidget {
           "assets/logos/cover.png", // <--- REPLACE THIS WITH YOUR ASSET PATH
           fit: BoxFit.fitWidth,
           width: double.infinity, // Fills full X-axis
-          height: 119,
+          height: TSizes.v119,
           errorBuilder: (context, error, stackTrace) {
             // Fallback to solid color if image is missing
             return Container(color: TColors.primary);
@@ -1181,8 +1210,8 @@ class _ParallaxHeaderBackground extends StatelessWidget {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Colors.black.withOpacity(0.3), // Lighter at top
-                Colors.black.withOpacity(0.7), // Darker at bottom
+                TColors.pureBlack.withOpacity(0.3), // Lighter at top
+                TColors.pureBlack.withOpacity(0.7), // Darker at bottom
               ],
             ),
           ),
@@ -1209,12 +1238,15 @@ class _ParallaxHeaderContent extends StatelessWidget {
   final bool isCompact;
   final bool disableBackground;
 
-  const _ParallaxHeaderContent({required this.stokist, required this.isCompact, this.disableBackground = false});
+  const _ParallaxHeaderContent(
+      {required this.stokist,
+      required this.isCompact,
+      this.disableBackground = false});
 
   @override
   Widget build(BuildContext context) {
     String init = (stokist.firmName ?? "S").trim();
-    if(init.isNotEmpty) init = init[0].toUpperCase();
+    if (init.isNotEmpty) init = init[0].toUpperCase();
 
     double r = isCompact ? 30 : 40;
     double fontSize = isCompact ? 18 : 22;
@@ -1225,31 +1257,42 @@ class _ParallaxHeaderContent extends StatelessWidget {
       children: [
         Container(
           padding: const EdgeInsets.all(3),
-          decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.white30, width: 2)),
+          decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: TColors.white30, width: TSizes.v2)),
           child: CircleAvatar(
-            radius: r, backgroundColor: Colors.white,
-            child: Text(init, style: TextStyle(fontSize: r * 0.6, fontWeight: FontWeight.w900, color: TColors.primary)),
+            radius: r,
+            backgroundColor: TColors.white,
+            child: Text(init,
+                style: TextStyle(
+                    fontSize: r * 0.6,
+                    fontWeight: FontWeight.w900,
+                    color: TColors.primary)),
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: TSizes.v10),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Text(
-              stokist.firmName ?? "Unknown",
+          child: Text(stokist.firmName ?? "Unknown",
               textAlign: TextAlign.center,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(color: Colors.white, fontSize: fontSize, fontWeight: FontWeight.bold)
-          ),
+              style: TextStyle(
+                  color: TColors.white,
+                  fontSize: fontSize,
+                  fontWeight: FontWeight.bold)),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: TSizes.v6),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-          decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(20)),
-          child: Text(
-              (stokist.natureOfBusiness ?? "DISTRIBUTOR").toUpperCase(),
-              style: const TextStyle(color: Colors.white, fontSize: 10, letterSpacing: 1, fontWeight: FontWeight.bold)
-          ),
+          decoration: BoxDecoration(
+              color: TColors.white24, borderRadius: BorderRadius.circular(20)),
+          child: Text((stokist.natureOfBusiness ?? "DISTRIBUTOR").toUpperCase(),
+              style: const TextStyle(
+                  color: TColors.white,
+                  fontSize: TSizes.v10,
+                  letterSpacing: 1,
+                  fontWeight: FontWeight.bold)),
         ),
       ],
     );
@@ -1258,9 +1301,24 @@ class _ParallaxHeaderContent extends StatelessWidget {
       return Stack(
         fit: StackFit.expand,
         children: [
-          Container(decoration: BoxDecoration(gradient: LinearGradient(colors: [TColors.primary, TColors.primary.withBlue(140)]))),
-          Positioned(top: -90, right: -60, child: CircleAvatar(radius: 120, backgroundColor: Colors.white.withOpacity(0.04))),
-          Positioned(bottom: 10, left: -40, child: CircleAvatar(radius: 90, backgroundColor: Colors.white.withOpacity(0.04))),
+          Container(
+              decoration: BoxDecoration(
+                  gradient: LinearGradient(colors: [
+            TColors.primary,
+            TColors.primary.withBlue(140)
+          ]))),
+          Positioned(
+              top: -90,
+              right: -60,
+              child: CircleAvatar(
+                  radius: TSizes.v120,
+                  backgroundColor: TColors.white.withOpacity(0.04))),
+          Positioned(
+              bottom: 10,
+              left: -40,
+              child: CircleAvatar(
+                  radius: TSizes.v90,
+                  backgroundColor: TColors.white.withOpacity(0.04))),
           SafeArea(child: Center(child: content)),
         ],
       );
@@ -1272,23 +1330,35 @@ class _ParallaxHeaderContent extends StatelessWidget {
 class _GlassmorphicTabBar extends StatelessWidget {
   final TabController controller;
   final bool isLightMode;
-  const _GlassmorphicTabBar({required this.controller, required this.isLightMode});
+  const _GlassmorphicTabBar(
+      {required this.controller, required this.isLightMode});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: isLightMode ? Colors.white : TColors.primary,
-        border: isLightMode ? const Border(bottom: BorderSide(color: Colors.black12)) : null,
+        color: isLightMode ? TColors.white : TColors.primary,
+        border: isLightMode
+            ? const Border(bottom: BorderSide(color: TColors.black12))
+            : null,
       ),
       child: TabBar(
         controller: controller,
-        labelColor: isLightMode ? TColors.primary : Colors.white,
-        unselectedLabelColor: isLightMode ? Colors.grey : Colors.white60,
-        indicatorColor: isLightMode ? TColors.primary : Colors.white,
+        labelColor: isLightMode ? TColors.primary : TColors.white,
+        unselectedLabelColor:
+            isLightMode ? TColors.materialGrey : TColors.white60,
+        indicatorColor: isLightMode ? TColors.primary : TColors.white,
         indicatorWeight: 3,
-        labelStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 12, letterSpacing: 1),
-        tabs: const [Tab(text: "OVERVIEW"), Tab(text: "DOCS"), Tab(text: "FINANCE"), Tab(text: "MAP")],
+        labelStyle: const TextStyle(
+            fontWeight: FontWeight.w800,
+            fontSize: TSizes.v12,
+            letterSpacing: 1),
+        tabs: const [
+          Tab(text: TTexts.uiTextOVERVIEW),
+          Tab(text: TTexts.uiTextDOCS),
+          Tab(text: TTexts.uiTextFINANCE),
+          Tab(text: TTexts.uiTextMAP)
+        ],
       ),
     );
   }
@@ -1301,7 +1371,8 @@ class _GlassTabBar extends StatelessWidget {
   const _GlassTabBar({required this.tabController, this.isColored = false});
   @override
   Widget build(BuildContext context) {
-    return _GlassmorphicTabBar(controller: tabController, isLightMode: isColored);
+    return _GlassmorphicTabBar(
+        controller: tabController, isLightMode: isColored);
   }
 }
 
@@ -1314,17 +1385,37 @@ class _QuickActionsGrid extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _ActionBubble(icon: Icons.call, label: "Call", color: Colors.green, onTap: () => _UrlLauncher.launchPhone(stokist.mobileNumber)),
-        _ActionBubble(icon: Icons.email, label: "Email", color: Colors.orange, onTap: () => _UrlLauncher.launchEmail(stokist.emailAddress)),
-        _ActionBubble(icon: Icons.near_me, label: "Navigate", color: Colors.blue, onTap: () => _UrlLauncher.launchMap(stokist.latitude, stokist.longitude)),
+        _ActionBubble(
+            icon: Icons.call,
+            label: TTexts.uiTextCall,
+            color: TColors.materialGreen,
+            onTap: () => _UrlLauncher.launchPhone(stokist.mobileNumber)),
+        _ActionBubble(
+            icon: Icons.email,
+            label: TTexts.email,
+            color: TColors.materialOrange,
+            onTap: () => _UrlLauncher.launchEmail(stokist.emailAddress)),
+        _ActionBubble(
+            icon: Icons.near_me,
+            label: TTexts.uiTextNavigate,
+            color: TColors.materialBlue,
+            onTap: () =>
+                _UrlLauncher.launchMap(stokist.latitude, stokist.longitude)),
       ],
     );
   }
 }
 
 class _ActionBubble extends StatelessWidget {
-  final IconData icon; final String label; final Color color; final VoidCallback onTap;
-  const _ActionBubble({required this.icon, required this.label, required this.color, required this.onTap});
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+  const _ActionBubble(
+      {required this.icon,
+      required this.label,
+      required this.color,
+      required this.onTap});
   @override
   Widget build(BuildContext context) {
     return Expanded(
@@ -1332,9 +1423,17 @@ class _ActionBubble extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
         child: Column(children: [
-          Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: color.withOpacity(0.1), shape: BoxShape.circle), child: Icon(icon, color: color, size: 24)),
-          const SizedBox(height: 6),
-          Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black87)),
+          Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                  color: color.withOpacity(0.1), shape: BoxShape.circle),
+              child: Icon(icon, color: color, size: TSizes.v24)),
+          const SizedBox(height: TSizes.v6),
+          Text(label,
+              style: const TextStyle(
+                  fontSize: TSizes.v12,
+                  fontWeight: FontWeight.bold,
+                  color: TColors.black87)),
         ]),
       ),
     );
@@ -1342,29 +1441,56 @@ class _ActionBubble extends StatelessWidget {
 }
 
 class _ExpandedStatCard extends StatelessWidget {
-  final String label, value; final String? unit; final IconData icon; final Color color;
-  const _ExpandedStatCard({required this.label, required this.value, this.unit, required this.icon, required this.color});
+  final String label, value;
+  final String? unit;
+  final IconData icon;
+  final Color color;
+  const _ExpandedStatCard(
+      {required this.label,
+      required this.value,
+      this.unit,
+      required this.icon,
+      required this.color});
   @override
   Widget build(BuildContext context) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: TColors.white,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [BoxShadow(color: color.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4))],
+          boxShadow: [
+            BoxShadow(
+                color: color.withOpacity(0.1),
+                blurRadius: TSizes.v10,
+                offset: const Offset(0, 4))
+          ],
           border: Border.all(color: color.withOpacity(0.1)),
         ),
         child: Column(
           children: [
-            Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: color.withOpacity(0.1), shape: BoxShape.circle), child: Icon(icon, color: color, size: 20)),
-            const SizedBox(height: 12),
+            Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                    color: color.withOpacity(0.1), shape: BoxShape.circle),
+                child: Icon(icon, color: color, size: TSizes.v20)),
+            const SizedBox(height: TSizes.v12),
             Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-              Text(value, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18), maxLines: 1),
-              if(unit!=null) Text(unit!, style: const TextStyle(fontSize: 10, color: Colors.grey)),
+              Text(value,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.w800, fontSize: TSizes.v18),
+                  maxLines: 1),
+              if (unit != null)
+                Text(unit!,
+                    style: const TextStyle(
+                        fontSize: TSizes.v10, color: TColors.materialGrey)),
             ]),
-            const SizedBox(height: 4),
-            Text(label.toUpperCase(), style: const TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.bold)),
+            const SizedBox(height: TSizes.v4),
+            Text(label.toUpperCase(),
+                style: const TextStyle(
+                    fontSize: TSizes.v10,
+                    color: TColors.materialGrey,
+                    fontWeight: FontWeight.bold)),
           ],
         ),
       ),
@@ -1373,12 +1499,46 @@ class _ExpandedStatCard extends StatelessWidget {
 }
 
 class _FacilityStatusCard extends StatelessWidget {
-  final String label; final bool isActive; final IconData activeIcon; final IconData inactiveIcon;
-  const _FacilityStatusCard({required this.label, required this.isActive, required this.activeIcon, required this.inactiveIcon});
+  final String label;
+  final bool isActive;
+  final IconData activeIcon;
+  final IconData inactiveIcon;
+  const _FacilityStatusCard(
+      {required this.label,
+      required this.isActive,
+      required this.activeIcon,
+      required this.inactiveIcon});
   @override
   Widget build(BuildContext context) {
-    final color = isActive ? Colors.green : Colors.grey;
-    return Expanded(child: Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: isActive ? color.withOpacity(0.3) : Colors.grey.shade200)), child: Row(children: [Icon(isActive ? activeIcon : inactiveIcon, color: color, size: 20), const SizedBox(width: 10), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(label, style: const TextStyle(fontSize: 11, color: Colors.grey)), Text(isActive ? "Available" : "No", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: color))]))])));
+    final color = isActive ? TColors.materialGreen : TColors.materialGrey;
+    return Expanded(
+        child: Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+                color: TColors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                    color: isActive
+                        ? color.withOpacity(0.3)
+                        : TColors.materialGrey200)),
+            child: Row(children: [
+              Icon(isActive ? activeIcon : inactiveIcon,
+                  color: color, size: TSizes.v20),
+              const SizedBox(width: TSizes.v10),
+              Expanded(
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                    Text(label,
+                        style: const TextStyle(
+                            fontSize: TSizes.v11, color: TColors.materialGrey)),
+                    Text(isActive ? "Available" : "No",
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: TSizes.v13,
+                            color: color))
+                  ]))
+            ])));
   }
 }
 
@@ -1387,7 +1547,18 @@ class _NeumorphicCard extends StatelessWidget {
   const _NeumorphicCard({required this.children});
   @override
   Widget build(BuildContext context) {
-    return Container(padding: const EdgeInsets.all(20), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 20, offset: const Offset(0, 10))]), child: Column(children: children));
+    return Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+            color: TColors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                  color: TColors.pureBlack.withOpacity(0.04),
+                  blurRadius: TSizes.v20,
+                  offset: const Offset(0, 10))
+            ]),
+        child: Column(children: children));
   }
 }
 
@@ -1400,41 +1571,124 @@ class _DetailCard extends StatelessWidget {
 }
 
 class _DetailRow extends StatelessWidget {
-  final String label; final String? value; final bool isBold, isLink, isCopyable; final int maxLines; final VoidCallback? onTap;
-  const _DetailRow({required this.label, this.value, this.isBold=false, this.isLink=false, this.isCopyable=false, this.maxLines=1, this.onTap});
+  final String label;
+  final String? value;
+  final bool isBold, isLink, isCopyable;
+  final int maxLines;
+  final VoidCallback? onTap;
+  const _DetailRow(
+      {required this.label,
+      this.value,
+      this.isBold = false,
+      this.isLink = false,
+      this.isCopyable = false,
+      this.maxLines = 1,
+      this.onTap});
   @override
   Widget build(BuildContext context) {
-    if(value==null || value!.isEmpty) return const SizedBox.shrink();
-    Widget content = Text(value!, textAlign: TextAlign.right, maxLines: maxLines, overflow: TextOverflow.ellipsis, style: TextStyle(fontWeight: isBold?FontWeight.bold:FontWeight.normal, color: isLink?Colors.blue:Colors.black87, fontSize: 13, decoration: isLink?TextDecoration.underline:null));
-    if(onTap!=null) content = GestureDetector(onTap: onTap, child: content);
-    else if(isCopyable) content = GestureDetector(onTap: () { Clipboard.setData(ClipboardData(text: value!)); ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Copied to clipboard!"), duration: Duration(milliseconds: 600))); }, child: Row(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.center, children: [Flexible(child: content), const SizedBox(width: 6), Icon(Icons.copy, size: 12, color: Colors.grey[400])]));
-    return Padding(padding: const EdgeInsets.symmetric(vertical: 8), child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, crossAxisAlignment: maxLines>1?CrossAxisAlignment.start:CrossAxisAlignment.center, children: [Text(label, style: TextStyle(color: Colors.grey[600], fontSize: 13, fontWeight: FontWeight.w500)), const SizedBox(width: 12), Expanded(child: Align(alignment: Alignment.centerRight, child: content))]));
+    if (value == null || value!.isEmpty) return const SizedBox.shrink();
+    Widget content = Text(value!,
+        textAlign: TextAlign.right,
+        maxLines: maxLines,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+            fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+            color: isLink ? TColors.materialBlue : TColors.black87,
+            fontSize: TSizes.v13,
+            decoration: isLink ? TextDecoration.underline : null));
+    if (onTap != null)
+      content = GestureDetector(onTap: onTap, child: content);
+    else if (isCopyable)
+      content = GestureDetector(
+          onTap: () {
+            Clipboard.setData(ClipboardData(text: value!));
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                content: Text(TTexts.uiTextCopiedToClipboard),
+                duration: Duration(milliseconds: 600)));
+          },
+          child: Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Flexible(child: content),
+                const SizedBox(width: TSizes.v6),
+                Icon(Icons.copy,
+                    size: TSizes.v12, color: TColors.materialGrey400)
+              ]));
+    return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: maxLines > 1
+                ? CrossAxisAlignment.start
+                : CrossAxisAlignment.center,
+            children: [
+              Text(label,
+                  style: TextStyle(
+                      color: TColors.materialGrey600,
+                      fontSize: TSizes.v13,
+                      fontWeight: FontWeight.w500)),
+              const SizedBox(width: TSizes.v12),
+              Expanded(
+                  child:
+                      Align(alignment: Alignment.centerRight, child: content))
+            ]));
   }
 }
 
 class _InfoRow extends StatelessWidget {
   // Alias
-  final String label; final String? value; final bool isBold, isLink, isCopyable; final int maxLines; final VoidCallback? onTap;
-  const _InfoRow({required this.label, this.value, this.isBold=false, this.isLink=false, this.isCopyable=false, this.maxLines=1, this.onTap});
+  final String label;
+  final String? value;
+  final bool isBold, isLink, isCopyable;
+  final int maxLines;
+  final VoidCallback? onTap;
+  const _InfoRow(
+      {required this.label,
+      this.value,
+      this.isBold = false,
+      this.isLink = false,
+      this.isCopyable = false,
+      this.maxLines = 1,
+      this.onTap});
   @override
-  Widget build(BuildContext context) => _DetailRow(label: label, value: value, isBold: isBold, isLink: isLink, isCopyable: isCopyable, maxLines: maxLines, onTap: onTap);
+  Widget build(BuildContext context) => _DetailRow(
+      label: label,
+      value: value,
+      isBold: isBold,
+      isLink: isLink,
+      isCopyable: isCopyable,
+      maxLines: maxLines,
+      onTap: onTap);
 }
 
 class _SectionHeader extends StatelessWidget {
-  final String title; final IconData icon;
+  final String title;
+  final IconData icon;
   const _SectionHeader({required this.title, required this.icon});
   @override
   Widget build(BuildContext context) {
-    return Row(children: [Icon(icon, size: 18, color: TColors.primary), const SizedBox(width: 8), Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Colors.black54, letterSpacing: 1.0))]);
+    return Row(children: [
+      Icon(icon, size: TSizes.v18, color: TColors.primary),
+      const SizedBox(width: TSizes.v8),
+      Text(title,
+          style: const TextStyle(
+              fontSize: TSizes.v14,
+              fontWeight: FontWeight.w800,
+              color: TColors.black54,
+              letterSpacing: 1.0))
+    ]);
   }
 }
 
 class _SectionTitle extends StatelessWidget {
   // Alias
-  final String title; final IconData icon;
+  final String title;
+  final IconData icon;
   const _SectionTitle({required this.title, required this.icon});
   @override
-  Widget build(BuildContext context) => _SectionHeader(title: title, icon: icon);
+  Widget build(BuildContext context) =>
+      _SectionHeader(title: title, icon: icon);
 }
 
 class _ModernChip extends StatelessWidget {
@@ -1442,24 +1696,64 @@ class _ModernChip extends StatelessWidget {
   const _ModernChip({required this.label});
   @override
   Widget build(BuildContext context) {
-    return Container(padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(30), border: Border.all(color: Colors.grey.shade200), boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.05), blurRadius: 4, offset: const Offset(0, 2))]), child: Text(label, style: TextStyle(color: Colors.grey[800], fontSize: 12, fontWeight: FontWeight.w600)));
+    return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+            color: TColors.white,
+            borderRadius: BorderRadius.circular(30),
+            border: Border.all(color: TColors.materialGrey200),
+            boxShadow: [
+              BoxShadow(
+                  color: TColors.materialGrey.withOpacity(0.05),
+                  blurRadius: TSizes.v4,
+                  offset: const Offset(0, 2))
+            ]),
+        child: Text(label,
+            style: TextStyle(
+                color: TColors.materialGrey800,
+                fontSize: TSizes.v12,
+                fontWeight: FontWeight.w600)));
   }
 }
 
 class _TagChip extends StatelessWidget {
   // Alias
-  final String label; final bool isSecondary;
-  const _TagChip({required this.label, this.isSecondary=false});
+  final String label;
+  final bool isSecondary;
+  const _TagChip({required this.label, this.isSecondary = false});
   @override
   Widget build(BuildContext context) => _ModernChip(label: label);
 }
 
 class _SidebarStatTile extends StatelessWidget {
-  final String label, value; final IconData icon; final Color color;
-  const _SidebarStatTile({required this.label, required this.value, required this.icon, required this.color});
+  final String label, value;
+  final IconData icon;
+  final Color color;
+  const _SidebarStatTile(
+      {required this.label,
+      required this.value,
+      required this.icon,
+      required this.color});
   @override
   Widget build(BuildContext context) {
-    return Container(width: double.infinity, padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: Colors.grey.shade50, borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.grey.shade100)), child: Column(children: [Icon(icon, color: color, size: 24), const SizedBox(height: 6), Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14), maxLines: 1), Text(label, style: const TextStyle(fontSize: 10, color: Colors.grey))]));
+    return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+            color: TColors.materialGrey50,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: TColors.materialGrey100)),
+        child: Column(children: [
+          Icon(icon, color: color, size: TSizes.v24),
+          const SizedBox(height: TSizes.v6),
+          Text(value,
+              style: const TextStyle(
+                  fontWeight: FontWeight.bold, fontSize: TSizes.v14),
+              maxLines: 1),
+          Text(label,
+              style: const TextStyle(
+                  fontSize: TSizes.v10, color: TColors.materialGrey))
+        ]));
   }
 }
 
@@ -1468,15 +1762,59 @@ class _PremiumBankCard extends StatelessWidget {
   const _PremiumBankCard({this.details});
   @override
   Widget build(BuildContext context) {
-    if(details==null) return const _EmptyStateWidget(icon: Icons.credit_card_off, title: "No Bank Details", subtitle: "Missing info");
+    if (details == null)
+      return const _EmptyStateWidget(
+          icon: Icons.credit_card_off,
+          title: TTexts.uiTextNoBankDetails,
+          subtitle: TTexts.uiTextMissingInfo);
     return Container(
-      height: 200, padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(24), gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Colors.grey.shade900, const Color(0xFF2C3E50)]), boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 20)]),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Icon(Icons.account_balance, color: Colors.white60), Text("DEBIT", style: TextStyle(color: Colors.white54, fontSize: 10, letterSpacing: 1.5, fontWeight: FontWeight.bold))]),
-        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(details?.bankName?.toUpperCase() ?? "BANK NAME", style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)), const SizedBox(height: 8), Text((details?.accountNumber??"0000").replaceAllMapped(RegExp(r".{4}"), (m)=>"${m.group(0)} "), style: const TextStyle(color: Colors.white, fontSize: 20, fontFamily: 'monospace'))]),
-        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [_BankLabel(label: "IFSC", value: details?.ifscCode), _BankLabel(label: "BRANCH", value: details?.branch, alignRight: true)])
-      ]),
+      height: TSizes.v200,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(24),
+          gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [TColors.materialGrey900, TColors.hex_FF2C3E50]),
+          boxShadow: [
+            BoxShadow(color: TColors.black26, blurRadius: TSizes.v20)
+          ]),
+      child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+              const Icon(Icons.account_balance, color: TColors.white60),
+              Text(TTexts.uiTextDEBIT,
+                  style: TextStyle(
+                      color: TColors.white54,
+                      fontSize: TSizes.v10,
+                      letterSpacing: 1.5,
+                      fontWeight: FontWeight.bold))
+            ]),
+            Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(details?.bankName?.toUpperCase() ?? "BANK NAME",
+                  style: const TextStyle(
+                      color: TColors.white,
+                      fontSize: TSizes.v16,
+                      fontWeight: FontWeight.bold)),
+              const SizedBox(height: TSizes.v8),
+              Text(
+                  (details?.accountNumber ?? "0000").replaceAllMapped(
+                      RegExp(r".{4}"), (m) => "${m.group(0)} "),
+                  style: const TextStyle(
+                      color: TColors.white,
+                      fontSize: TSizes.v20,
+                      fontFamily: 'monospace'))
+            ]),
+            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+              _BankLabel(label: TTexts.uiTextIFSC, value: details?.ifscCode),
+              _BankLabel(
+                  label: TTexts.uiTextBRANCH,
+                  value: details?.branch,
+                  alignRight: true)
+            ])
+          ]),
     );
   }
 }
@@ -1490,11 +1828,25 @@ class _DigitalBankCard extends StatelessWidget {
 }
 
 class _BankLabel extends StatelessWidget {
-  final String label; final String? value; final bool alignRight;
+  final String label;
+  final String? value;
+  final bool alignRight;
   const _BankLabel({required this.label, this.value, this.alignRight = false});
   @override
   Widget build(BuildContext context) {
-    return Column(crossAxisAlignment: alignRight ? CrossAxisAlignment.end : CrossAxisAlignment.start, children: [Text(label, style: const TextStyle(color: Colors.grey, fontSize: 9)), Text(value ?? "-", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12))]);
+    return Column(
+        crossAxisAlignment:
+            alignRight ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        children: [
+          Text(label,
+              style: const TextStyle(
+                  color: TColors.materialGrey, fontSize: TSizes.v9)),
+          Text(value ?? "-",
+              style: const TextStyle(
+                  color: TColors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: TSizes.v12))
+        ]);
   }
 }
 
@@ -1503,7 +1855,40 @@ class _DocumentThumbnailCard extends StatelessWidget {
   const _DocumentThumbnailCard({required this.title, required this.url});
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => _FullScreenViewer(url: url, title: title))), child: Container(decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10)]), child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [Expanded(child: ClipRRect(borderRadius: const BorderRadius.vertical(top: Radius.circular(16)), child: Hero(tag: url, child: Image.network(url, fit: BoxFit.cover, errorBuilder: (c,e,s)=>const Center(child: Icon(Icons.broken_image, color: Colors.grey)))))), Padding(padding: const EdgeInsets.all(12), child: Text(title, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold), maxLines: 1))])));
+    return GestureDetector(
+        onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (_) => _FullScreenViewer(url: url, title: title))),
+        child: Container(
+            decoration: BoxDecoration(
+                color: TColors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(color: TColors.black12, blurRadius: TSizes.v10)
+                ]),
+            child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(
+                      child: ClipRRect(
+                          borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(16)),
+                          child: Hero(
+                              tag: url,
+                              child: Image.network(url,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (c, e, s) => const Center(
+                                      child: Icon(Icons.broken_image,
+                                          color: TColors.materialGrey)))))),
+                  Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Text(title,
+                          style: const TextStyle(
+                              fontSize: TSizes.v11,
+                              fontWeight: FontWeight.bold),
+                          maxLines: 1))
+                ])));
   }
 }
 
@@ -1512,7 +1897,8 @@ class _DocumentThumbnail extends StatelessWidget {
   final String title, url;
   const _DocumentThumbnail({required this.title, required this.url});
   @override
-  Widget build(BuildContext context) => _DocumentThumbnailCard(title: title, url: url);
+  Widget build(BuildContext context) =>
+      _DocumentThumbnailCard(title: title, url: url);
 }
 
 class _DocumentCard extends StatelessWidget {
@@ -1520,7 +1906,8 @@ class _DocumentCard extends StatelessWidget {
   final String title, url;
   const _DocumentCard({required this.title, required this.url});
   @override
-  Widget build(BuildContext context) => _DocumentThumbnailCard(title: title, url: url);
+  Widget build(BuildContext context) =>
+      _DocumentThumbnailCard(title: title, url: url);
 }
 
 class _TurnoverListItem extends StatelessWidget {
@@ -1528,9 +1915,26 @@ class _TurnoverListItem extends StatelessWidget {
   const _TurnoverListItem({this.year, this.amount});
   @override
   Widget build(BuildContext context) {
-    if(amount==null) return const SizedBox.shrink();
-    String fmt = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0).format(amount);
-    return Container(margin: const EdgeInsets.only(bottom: 12), padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.grey.shade200)), child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text("FY $year", style: TextStyle(color: Colors.grey[700], fontWeight: FontWeight.bold)), Text(fmt, style: const TextStyle(color: Colors.green, fontWeight: FontWeight.w900))]));
+    if (amount == null) return const SizedBox.shrink();
+    String fmt =
+        NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0)
+            .format(amount);
+    return Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        decoration: BoxDecoration(
+            color: TColors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: TColors.materialGrey200)),
+        child:
+            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+          Text("FY $year",
+              style: TextStyle(
+                  color: TColors.materialGrey700, fontWeight: FontWeight.bold)),
+          Text(fmt,
+              style: const TextStyle(
+                  color: TColors.materialGreen, fontWeight: FontWeight.w900))
+        ]));
   }
 }
 
@@ -1539,7 +1943,8 @@ class _TurnoverItem extends StatelessWidget {
   final int? year, amount;
   const _TurnoverItem({this.year, this.amount});
   @override
-  Widget build(BuildContext context) => _TurnoverListItem(year: year, amount: amount);
+  Widget build(BuildContext context) =>
+      _TurnoverListItem(year: year, amount: amount);
 }
 
 class _TurnoverRow extends StatelessWidget {
@@ -1547,7 +1952,8 @@ class _TurnoverRow extends StatelessWidget {
   final int? year, amount;
   const _TurnoverRow({this.year, this.amount});
   @override
-  Widget build(BuildContext context) => _TurnoverListItem(year: year, amount: amount);
+  Widget build(BuildContext context) =>
+      _TurnoverListItem(year: year, amount: amount);
 }
 
 class _BuildFooter extends StatelessWidget {
@@ -1562,12 +1968,14 @@ class _BuildFooter extends StatelessWidget {
           Text(
             // Fix: Pass the DateTime object directly, don't cast to String
             "Created: ${_formatDate(stokist.createdAt)}",
-            style: TextStyle(color: Colors.grey[400], fontSize: 11),
+            style:
+                TextStyle(color: TColors.materialGrey400, fontSize: TSizes.v11),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: TSizes.v4),
           Text(
             "ID: ${stokist.id}",
-            style: TextStyle(color: Colors.grey[300], fontSize: 10),
+            style:
+                TextStyle(color: TColors.materialGrey300, fontSize: TSizes.v10),
           ),
         ],
       ),
@@ -1598,20 +2006,50 @@ class _SystemFooter extends StatelessWidget {
 }
 
 class _EmptyStateWidget extends StatelessWidget {
-  final IconData icon; final String title, subtitle; final bool isSmall;
-  const _EmptyStateWidget({required this.icon, required this.title, required this.subtitle, this.isSmall=false});
+  final IconData icon;
+  final String title, subtitle;
+  final bool isSmall;
+  const _EmptyStateWidget(
+      {required this.icon,
+      required this.title,
+      required this.subtitle,
+      this.isSmall = false});
   @override
   Widget build(BuildContext context) {
-    return Center(child: Padding(padding: const EdgeInsets.all(24), child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(icon, size: isSmall?40:60, color: Colors.grey[300]), const SizedBox(height: 16), Text(title, style: TextStyle(color: Colors.grey[600], fontSize: 16, fontWeight: FontWeight.bold)), const SizedBox(height: 4), Text(subtitle, style: TextStyle(color: Colors.grey[400], fontSize: 12))])));
+    return Center(
+        child: Padding(
+            padding: const EdgeInsets.all(24),
+            child:
+                Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+              Icon(icon,
+                  size: isSmall ? 40 : 60, color: TColors.materialGrey300),
+              const SizedBox(height: TSizes.v16),
+              Text(title,
+                  style: TextStyle(
+                      color: TColors.materialGrey600,
+                      fontSize: TSizes.v16,
+                      fontWeight: FontWeight.bold)),
+              const SizedBox(height: TSizes.v4),
+              Text(subtitle,
+                  style: TextStyle(
+                      color: TColors.materialGrey400, fontSize: TSizes.v12))
+            ])));
   }
 }
 
 class _EmptyState extends StatelessWidget {
   // Alias
-  final IconData icon; final String title, subtitle; final bool isSmall;
-  const _EmptyState({required this.icon, required this.title, required this.subtitle, this.isSmall=false});
+  final IconData icon;
+  final String title, subtitle;
+  final bool isSmall;
+  const _EmptyState(
+      {required this.icon,
+      required this.title,
+      required this.subtitle,
+      this.isSmall = false});
   @override
-  Widget build(BuildContext context) => _EmptyStateWidget(icon: icon, title: title, subtitle: subtitle, isSmall: isSmall);
+  Widget build(BuildContext context) => _EmptyStateWidget(
+      icon: icon, title: title, subtitle: subtitle, isSmall: isSmall);
 }
 
 class _FullScreenViewer extends StatelessWidget {
@@ -1619,48 +2057,82 @@ class _FullScreenViewer extends StatelessWidget {
   const _FullScreenViewer({required this.url, required this.title});
   @override
   Widget build(BuildContext context) {
-    return Scaffold(backgroundColor: Colors.black, appBar: AppBar(backgroundColor: Colors.black, title: Text(title, style: const TextStyle(color: Colors.white)), iconTheme: const IconThemeData(color: Colors.white)), body: Center(child: Hero(tag: url, child: InteractiveViewer(child: Image.network(url)))));
+    return Scaffold(
+        backgroundColor: TColors.pureBlack,
+        appBar: AppBar(
+            backgroundColor: TColors.pureBlack,
+            title: Text(title, style: const TextStyle(color: TColors.white)),
+            iconTheme: const IconThemeData(color: TColors.white)),
+        body: Center(
+            child: Hero(
+                tag: url,
+                child: InteractiveViewer(child: Image.network(url)))));
   }
 }
 
 class _SimpleBarChartPainter extends CustomPainter {
-  final List<AnnualTurnover> data; final Color barColor;
+  final List<AnnualTurnover> data;
+  final Color barColor;
   _SimpleBarChartPainter({required this.data, required this.barColor});
   @override
   void paint(Canvas canvas, Size size) {
     if (data.isEmpty) return;
-    final paint = Paint()..color = barColor.withOpacity(0.8)..style = PaintingStyle.fill;
-    final grid = Paint()..color = Colors.grey.withOpacity(0.2)..strokeWidth = 1;
-    int max = data.map((e)=>e.amount??0).reduce(math.max); if(max==0) max=1;
-    double w = (size.width/data.length)*0.5; double sp = (size.width/data.length)*0.5;
-    for(int i=0; i<data.length; i++) {
-      double h = (data[i].amount??0)/max*size.height;
-      double l = (sp/2)+(i*(w+sp));
-      canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(l, size.height-h, w, h), const Radius.circular(4)), paint);
+    final paint = Paint()
+      ..color = barColor.withOpacity(0.8)
+      ..style = PaintingStyle.fill;
+    final grid = Paint()
+      ..color = TColors.materialGrey.withOpacity(0.2)
+      ..strokeWidth = 1;
+    int max = data.map((e) => e.amount ?? 0).reduce(math.max);
+    if (max == 0) max = 1;
+    double w = (size.width / data.length) * 0.5;
+    double sp = (size.width / data.length) * 0.5;
+    for (int i = 0; i < data.length; i++) {
+      double h = (data[i].amount ?? 0) / max * size.height;
+      double l = (sp / 2) + (i * (w + sp));
+      canvas.drawRRect(
+          RRect.fromRectAndRadius(Rect.fromLTWH(l, size.height - h, w, h),
+              const Radius.circular(4)),
+          paint);
     }
-    canvas.drawLine(Offset(0, size.height), Offset(size.width, size.height), grid);
+    canvas.drawLine(
+        Offset(0, size.height), Offset(size.width, size.height), grid);
   }
+
   @override
   bool shouldRepaint(covariant CustomPainter old) => false;
 }
 
 class _BarChartPainter extends CustomPainter {
   // Alias
-  final List<AnnualTurnover> data; final Color barColor;
+  final List<AnnualTurnover> data;
+  final Color barColor;
   _BarChartPainter({required this.data, required this.barColor});
   @override
-  void paint(Canvas c, Size s) => _SimpleBarChartPainter(data: data, barColor: barColor).paint(c, s);
+  void paint(Canvas c, Size s) =>
+      _SimpleBarChartPainter(data: data, barColor: barColor).paint(c, s);
   @override
   bool shouldRepaint(covariant CustomPainter o) => false;
 }
 
 class _InfoCardSmall extends StatelessWidget {
   // Alias for _FeatureCard to avoid confusion
-  final String label, value; final IconData icon; final Color color;
-  const _InfoCardSmall({required this.label, required this.value, required this.icon, required this.color});
+  final String label, value;
+  final IconData icon;
+  final Color color;
+  const _InfoCardSmall(
+      {required this.label,
+      required this.value,
+      required this.icon,
+      required this.color});
   @override
   Widget build(BuildContext context) {
-    return _FeatureCard(label: label, value: value, isActive: true, activeIcon: icon, inactiveIcon: icon);
+    return _FeatureCard(
+        label: label,
+        value: value,
+        isActive: true,
+        activeIcon: icon,
+        inactiveIcon: icon);
   }
 }
 
@@ -1681,50 +2153,44 @@ class _FeatureCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isActive ? Colors.green : Colors.grey;
+    final color = isActive ? TColors.materialGreen : TColors.materialGrey;
 
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-            color: Colors.white,
+            color: TColors.white,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-                color: isActive ? color.withOpacity(0.3) : Colors.grey.shade200
-            ),
+                color: isActive
+                    ? color.withOpacity(0.3)
+                    : TColors.materialGrey200),
             boxShadow: [
               if (isActive)
                 BoxShadow(
                     color: color.withOpacity(0.05),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2)
-                )
-            ]
-        ),
+                    blurRadius: TSizes.v8,
+                    offset: const Offset(0, 2))
+            ]),
         child: Row(
           children: [
-            Icon(
-                isActive ? activeIcon : inactiveIcon,
-                color: color,
-                size: 20
-            ),
-            const SizedBox(width: 10),
+            Icon(isActive ? activeIcon : inactiveIcon,
+                color: color, size: TSizes.v20),
+            const SizedBox(width: TSizes.v10),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                      label,
-                      style: const TextStyle(fontSize: 11, color: Colors.grey)
-                  ),
-                  const SizedBox(height: 2),
+                  Text(label,
+                      style: const TextStyle(
+                          fontSize: TSizes.v11, color: TColors.materialGrey)),
+                  const SizedBox(height: TSizes.v2),
                   Text(
                     value,
                     style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                        color: color
-                    ),
+                        fontSize: TSizes.v12,
+                        color: color),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -1750,9 +2216,9 @@ class _BankAccountCard extends StatelessWidget {
       SnackBar(
         content: Row(
           children: const [
-            Icon(Icons.check_circle, color: Colors.white, size: 16),
-            SizedBox(width: 8),
-            Text("Account number copied!"),
+            Icon(Icons.check_circle, color: TColors.white, size: TSizes.v16),
+            SizedBox(width: TSizes.v8),
+            Text(TTexts.uiTextAccountNumberCopied_0957d643),
           ],
         ),
         backgroundColor: TColors.primary, // Updated to use your primary color
@@ -1768,8 +2234,8 @@ class _BankAccountCard extends StatelessWidget {
     if (details == null) {
       return const _EmptyStateWidget(
         icon: Icons.account_balance,
-        title: "No Banking Info",
-        subtitle: "Bank details not provided",
+        title: TTexts.uiTextNoBankingInfo,
+        subtitle: TTexts.uiTextBankDetailsNotProvided,
         isSmall: true,
       );
     }
@@ -1789,13 +2255,14 @@ class _BankAccountCard extends StatelessWidget {
           end: Alignment.bottomRight,
           colors: [
             TColors.primary,
-            TColors.primary_shadow_light, // Make sure 'secondary' exists in your TColors class
+            TColors
+                .primary_shadow_light, // Make sure 'secondary' exists in your TColors class
           ],
         ),
         boxShadow: [
           BoxShadow(
             color: TColors.primary.withOpacity(0.4), // Matching shadow
-            blurRadius: 20,
+            blurRadius: TSizes.v20,
             offset: const Offset(0, 10),
           ),
         ],
@@ -1807,43 +2274,71 @@ class _BankAccountCard extends StatelessWidget {
             children: [
               Container(
                 padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), shape: BoxShape.circle),
-                child: const Icon(Icons.account_balance, color: Colors.white, size: 20),
+                decoration: BoxDecoration(
+                    color: TColors.white.withOpacity(0.2),
+                    shape: BoxShape.circle),
+                child: const Icon(Icons.account_balance,
+                    color: TColors.white, size: TSizes.v20),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: TSizes.v12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("BANK NAME", style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 10, fontWeight: FontWeight.w600)),
-                    Text(details?.bankName?.toUpperCase() ?? "UNKNOWN", style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
+                    Text(TTexts.uiTextBANKNAME,
+                        style: TextStyle(
+                            color: TColors.white.withOpacity(0.8),
+                            fontSize: TSizes.v10,
+                            fontWeight: FontWeight.w600)),
+                    Text(details?.bankName?.toUpperCase() ?? "UNKNOWN",
+                        style: const TextStyle(
+                            color: TColors.white,
+                            fontSize: TSizes.v16,
+                            fontWeight: FontWeight.bold),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis),
                   ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 24),
-          Text("ACCOUNT NUMBER", style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 10, fontWeight: FontWeight.w600)),
-          const SizedBox(height: 4),
+          const SizedBox(height: TSizes.v24),
+          Text(TTexts.uiTextACCOUNTNUMBER,
+              style: TextStyle(
+                  color: TColors.white.withOpacity(0.8),
+                  fontSize: TSizes.v10,
+                  fontWeight: FontWeight.w600)),
+          const SizedBox(height: TSizes.v4),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(child: Text(formattedAcct, style: const TextStyle(color: Colors.white, fontSize: 24, fontFamily: 'monospace', fontWeight: FontWeight.bold))),
+              Expanded(
+                  child: Text(formattedAcct,
+                      style: const TextStyle(
+                          color: TColors.white,
+                          fontSize: TSizes.v24,
+                          fontFamily: 'monospace',
+                          fontWeight: FontWeight.bold))),
               IconButton(
                 onPressed: () => _copyToClipboard(context, rawAcct),
-                icon: const Icon(Icons.copy_all, color: Colors.white),
-                style: IconButton.styleFrom(backgroundColor: Colors.white.withOpacity(0.1)),
+                icon: const Icon(Icons.copy_all, color: TColors.white),
+                style: IconButton.styleFrom(
+                    backgroundColor: TColors.white.withOpacity(0.1)),
               )
             ],
           ),
-          const SizedBox(height: 24),
-          Container(height: 1, color: Colors.white.withOpacity(0.2)),
-          const SizedBox(height: 16),
+          const SizedBox(height: TSizes.v24),
+          Container(height: TSizes.v1, color: TColors.white.withOpacity(0.2)),
+          const SizedBox(height: TSizes.v16),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _BankDetailColumn(label: "IFSC CODE", value: details?.ifscCode),
-              _BankDetailColumn(label: "BRANCH", value: details?.branch, isRight: true),
+              _BankDetailColumn(
+                  label: TTexts.uiTextIFSCCODE, value: details?.ifscCode),
+              _BankDetailColumn(
+                  label: TTexts.uiTextBRANCH,
+                  value: details?.branch,
+                  isRight: true),
             ],
           ),
         ],
@@ -1856,26 +2351,51 @@ class _BankDetailColumn extends StatelessWidget {
   final String label;
   final String? value;
   final bool isRight;
-  const _BankDetailColumn({required this.label, required this.value, this.isRight = false});
+  const _BankDetailColumn(
+      {required this.label, required this.value, this.isRight = false});
 
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment: isRight ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+      crossAxisAlignment:
+          isRight ? CrossAxisAlignment.end : CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 9, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 2),
-        Text(value?.toUpperCase() ?? "-", style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600)),
+        Text(label,
+            style: TextStyle(
+                color: TColors.white.withOpacity(0.6),
+                fontSize: TSizes.v9,
+                fontWeight: FontWeight.bold)),
+        const SizedBox(height: TSizes.v2),
+        Text(value?.toUpperCase() ?? "-",
+            style: const TextStyle(
+                color: TColors.white,
+                fontSize: TSizes.v13,
+                fontWeight: FontWeight.w600)),
       ],
     );
   }
 }
 
 class _UrlLauncher {
-  static Future<void> launchPhone(String? n) async { if(n!=null) await launchUrl(Uri(scheme: 'tel', path: n)); }
-  static Future<void> launchEmail(String? e) async { if(e!=null) await launchUrl(Uri(scheme: 'mailto', path: e)); }
-  static Future<void> launchUrlStr(String? u) async { if(u!=null) await launchUrl(Uri.parse(u.startsWith('http')?u:'https://$u')); }
-  static Future<void> launchMap(String? lat, String? lng) async { if(lat!=null && lng!=null) { final u = Uri.parse("google.navigation:q=$lat,$lng"); if(await canLaunchUrl(u)) await launchUrl(u); }}
+  static Future<void> launchPhone(String? n) async {
+    if (n != null) await launchUrl(Uri(scheme: 'tel', path: n));
+  }
+
+  static Future<void> launchEmail(String? e) async {
+    if (e != null) await launchUrl(Uri(scheme: 'mailto', path: e));
+  }
+
+  static Future<void> launchUrlStr(String? u) async {
+    if (u != null)
+      await launchUrl(Uri.parse(u.startsWith('http') ? u : 'https://$u'));
+  }
+
+  static Future<void> launchMap(String? lat, String? lng) async {
+    if (lat != null && lng != null) {
+      final u = Uri.parse("google.navigation:q=$lat,$lng");
+      if (await canLaunchUrl(u)) await launchUrl(u);
+    }
+  }
 }
 // old code
 /*class StokistDetailScreen extends StatelessWidget {
@@ -1906,14 +2426,14 @@ class _UrlLauncher {
           style: const TextStyle(
             fontWeight: FontWeight.w600,
             fontSize: 14,
-            color: Colors.black87,
+            color: TColors.black87,
           ),
         ),
         const SizedBox(width: 6),
         Expanded(
           child: Text(
             value?.isNotEmpty == true ? value! : "-",
-            style: const TextStyle(color: Colors.black54),
+            style: const TextStyle(color: TColors.black54),
           ),
         ),
       ],
@@ -1991,12 +2511,12 @@ class _UrlLauncher {
               _infoRow("Sales Reps",
                   stokist.numberOfSalesRepresentatives?.toString() ?? "-"),
             ]),
-            *//*_sectionCard("Bank Details", [
+            */ /*_sectionCard("Bank Details", [
               _infoRow("Bank Name", stokist.bankDetails?.bankName),
               _infoRow("Branch", stokist.bankDetails?.branch),
               _infoRow("Account No.", stokist.bankDetails?.accountNumber),
               _infoRow("IFSC", stokist.bankDetails?.ifscCode),
-            ]),*//*
+            ]),*/ /*
             if (stokist.annualTurnover != null &&
                 stokist.annualTurnover!.isNotEmpty)
               _sectionCard("Annual Turnover", [

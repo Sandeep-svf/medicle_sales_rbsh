@@ -3,7 +3,9 @@ import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import '../models/order_models.dart';
-import '../../../utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 /// Bundled fonts keep PDF generation independent of internet access.
 class OrderPdfService {
@@ -52,7 +54,7 @@ class OrderPdfService {
             : pw.Padding(
                 padding: const pw.EdgeInsets.only(bottom: 5),
                 child: pw.Text('$label: $value',
-                    style: const pw.TextStyle(fontSize: 9)));
+                    style: const pw.TextStyle(fontSize: TSizes.v9)));
     document.addPage(pw.MultiPage(
       pageFormat: PdfPageFormat.a4,
       margin: const pw.EdgeInsets.all(32),
@@ -60,30 +62,33 @@ class OrderPdfService {
       header: (_) =>
           pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
         pw.Row(mainAxisAlignment: pw.MainAxisAlignment.spaceBetween, children: [
-          pw.Text('MEDICINE ORDER',
+          pw.Text(TTexts.uiTextMEDICINEORDER,
               style: pw.TextStyle(
-                  fontSize: 21, fontWeight: pw.FontWeight.bold, color: accent)),
-          pw.Text(reference, style: const pw.TextStyle(fontSize: 9)),
+                  fontSize: TSizes.v21,
+                  fontWeight: pw.FontWeight.bold,
+                  color: accent)),
+          pw.Text(reference, style: const pw.TextStyle(fontSize: TSizes.v9)),
         ]),
         pw.Text(
             'Order request | ${date(draft.orderDate)} | ${draft.priority} priority',
-            style: const pw.TextStyle(fontSize: 9)),
+            style: const pw.TextStyle(fontSize: TSizes.v9)),
         pw.Divider(color: accent),
-        pw.SizedBox(height: 8),
+        pw.SizedBox(height: TSizes.v8),
       ]),
       footer: (context) => pw.Column(children: [
         pw.Divider(color: PdfColors.grey300),
         pw.Row(mainAxisAlignment: pw.MainAxisAlignment.spaceBetween, children: [
-          pw.Text('Order request - not a tax invoice',
-              style: const pw.TextStyle(fontSize: 8)),
+          pw.Text(TTexts.uiTextOrderRequestNotATaxInvoice,
+              style: const pw.TextStyle(fontSize: TSizes.v8)),
           pw.Text('Page ${context.pageNumber} of ${context.pagesCount}',
-              style: const pw.TextStyle(fontSize: 8)),
+              style: const pw.TextStyle(fontSize: TSizes.v8)),
         ])
       ]),
       build: (_) => [
         pw.Text(draft.doctorName,
-            style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold)),
-        pw.SizedBox(height: 8),
+            style: pw.TextStyle(
+                fontSize: TSizes.v16, fontWeight: pw.FontWeight.bold)),
+        pw.SizedBox(height: TSizes.v8),
         detail('Customer type', draft.customerType),
         detail('Clinic / business', draft.clinicName),
         detail('Specialty', draft.specialization),
@@ -103,7 +108,7 @@ class OrderPdfService {
             draft.paymentTerms == 'Credit'
                 ? '${draft.creditDays} days credit'
                 : draft.paymentTerms),
-        pw.SizedBox(height: 16),
+        pw.SizedBox(height: TSizes.v16),
         pw.TableHelper.fromTextArray(
           headers: [
             'No.',
@@ -146,16 +151,16 @@ class OrderPdfService {
             3: const pw.FixedColumnWidth(28)
           },
           headerStyle: pw.TextStyle(
-              fontSize: 7,
+              fontSize: TSizes.v7,
               color: PdfColors.white,
               fontWeight: pw.FontWeight.bold),
           headerDecoration: pw.BoxDecoration(color: accent),
-          cellStyle: const pw.TextStyle(fontSize: 7),
+          cellStyle: const pw.TextStyle(fontSize: TSizes.v7),
           cellPadding: const pw.EdgeInsets.all(5),
           oddRowDecoration: const pw.BoxDecoration(color: PdfColors.grey100),
           border: pw.TableBorder.all(color: PdfColors.grey300, width: .4),
         ),
-        pw.SizedBox(height: 16),
+        pw.SizedBox(height: TSizes.v16),
         pw.Align(
             alignment: pw.Alignment.centerRight,
             child: pw.Column(
@@ -166,20 +171,20 @@ class OrderPdfService {
                   detail('Tax estimate', money(totals.taxPaise)),
                   pw.Text('Estimated total: ${money(totals.totalPaise)}',
                       style: pw.TextStyle(
-                          fontSize: 14,
+                          fontSize: TSizes.v14,
                           fontWeight: pw.FontWeight.bold,
                           color: accent)),
                 ])),
-        pw.SizedBox(height: 12),
+        pw.SizedBox(height: TSizes.v12),
         if (!totals.fullyPriced)
           pw.Text(
               '${totals.unpricedLines} line(s) have no rate. The estimate includes priced lines only.',
-              style: const pw.TextStyle(fontSize: 9)),
-        pw.SizedBox(height: 12),
+              style: const pw.TextStyle(fontSize: TSizes.v9)),
+        pw.SizedBox(height: TSizes.v12),
         detail('Remarks', draft.notes),
-        pw.Text(
-            'Prices, taxes, stock availability and delivery are subject to office confirmation. Sharing this document does not upload or confirm the order.',
-            style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey700)),
+        pw.Text(TTexts.uiTextPricesTaxesStockAvailabilityAndDeliveryAreSubject,
+            style: const pw.TextStyle(
+                fontSize: TSizes.v8, color: PdfColors.grey700)),
       ],
     ));
     return document.save();

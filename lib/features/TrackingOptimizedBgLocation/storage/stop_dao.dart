@@ -3,10 +3,8 @@ import 'package:sqflite/sqflite.dart';
 import '../core/model/stop_point.dart';
 import 'app_database.dart';
 
-
 class StopDao {
   final _db = AppDatabase();
-
 
   Future<List<StopPoint>> fetchRecent(int limit) async {
     final db = await _db.database;
@@ -19,7 +17,6 @@ class StopDao {
 
     return rows.map(StopPoint.fromMap).toList();
   }
-
 
   Future<void> upsert(StopPoint s) async {
     final db = await _db.database;

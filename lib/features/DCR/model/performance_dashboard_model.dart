@@ -26,35 +26,30 @@ class PerformanceDashboardModel {
   });
 
   factory PerformanceDashboardModel.fromJson(
-      Map<String, dynamic> json,
-      ) {
+    Map<String, dynamic> json,
+  ) {
     return PerformanceDashboardModel(
       success: json["success"] ?? false,
-
       message: json["message"] ?? "",
-
       filter: json["filter"] == null
           ? null
           : PerformanceFilterModel.fromJson(
-        json["filter"],
-      ),
-
+              json["filter"],
+            ),
       summary: json["summary"] == null
           ? null
           : PerformanceSummaryModel.fromJson(
-        json["summary"],
-      ),
-
+              json["summary"],
+            ),
       pagination: json["pagination"] == null
           ? null
           : PerformancePaginationModel.fromJson(
-        json["pagination"],
-      ),
-
+              json["pagination"],
+            ),
       visits: (json["data"] as List? ?? [])
           .map(
             (e) => DcrVisitModel.fromJson(e),
-      )
+          )
           .toList(),
     );
   }

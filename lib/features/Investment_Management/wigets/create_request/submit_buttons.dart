@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
-import '../../../../utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import '../../controller/add_investment_controller.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class SubmitButtons extends GetView<AddInvestmentController> {
   const SubmitButtons({super.key});
@@ -27,16 +27,16 @@ class SubmitButtons extends GetView<AddInvestmentController> {
           onPressed: isBusy ? null : controller.submitInvestment,
           icon: isPreparingImage || isSubmitting
               ? const SizedBox(
-                  width: 18,
-                  height: 18,
+                  width: TSizes.v18,
+                  height: TSizes.v18,
                   child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white,
+                    strokeWidth: TSizes.v2,
+                    color: TColors.white,
                   ),
                 )
               : const Icon(
                   Icons.send,
-                  color: Colors.white,
+                  color: TColors.white,
                 ),
           label: Text(
             isPreparingImage
@@ -45,9 +45,9 @@ class SubmitButtons extends GetView<AddInvestmentController> {
                     ? "Submitting..."
                     : controller.submitButtonLabel,
             style: const TextStyle(
-              color: Colors.white,
+              color: TColors.white,
               fontWeight: FontWeight.bold,
-              fontSize: 16,
+              fontSize: TSizes.v16,
             ),
           ),
         ),

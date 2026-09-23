@@ -1,8 +1,8 @@
-// lib/screens/pharma_distributor_form/pharma_distributor_form_screen.dart
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:dio/dio.dart' as dio;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -12,15 +12,12 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:permission_handler_platform_interface/permission_handler_platform_interface.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:dio/dio.dart' as dio;
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:http_parser/http_parser.dart';
-
-// --- Imports specific to your project ---
 import '../../../utils/GlobalPermissionHelper/PermissionHelper.dart';
 import '../../../utils/camera/MediaPermissionHelper.dart';
-import '../../../utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import '../../../utils/http/http_client.dart';
 import '../../../utils/local_storage/auth_manager.dart';
 import '../../../utils/loder/CircularLoaderController.dart';
@@ -33,10 +30,14 @@ import '../widets/BusinessProfileSection.dart';
 import '../widets/ContactDetailsSection.dart';
 import '../widets/DocumentUploadSection.dart';
 import '../widets/FacilitiesSection.dart';
-
-// --- Import for Geo Overlay ---
 import '../../../utils/camera/CameraLocationResult.dart';
 import '../../../utils/camera/image_overlay_utils.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+
+// --- Imports specific to your project ---
+
+// --- Import for Geo Overlay ---
 
 class PharmaDistributorFormScreen extends StatefulWidget {
   const PharmaDistributorFormScreen({super.key});
@@ -62,7 +63,8 @@ class _PharmaDistributorFormScreenState
   final RegExp _emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
   final RegExp _panRegex = RegExp(r'^[A-Z]{5}[0-9]{4}[A-Z]{1}$');
   // GST: 2 digits + 5 chars + 4 digits + 1 char + 1 digit + Z + 1 char
-  final RegExp _gstRegex = RegExp(r'^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$');
+  final RegExp _gstRegex =
+      RegExp(r'^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$');
   // IFSC: 4 Letters + '0' + 6 Alphanumeric characters
   final RegExp _ifscRegex = RegExp(r'^[A-Z]{4}0[A-Z0-9]{6}$');
   // Account Number: Typically 9 to 18 digits in India
@@ -115,7 +117,7 @@ class _PharmaDistributorFormScreenState
   // Turnovers
   List<Map<String, dynamic>> _annualTurnovers = List.generate(
     3,
-        (index) => {
+    (index) => {
       "year": DateTime.now().year - index,
       "amount": 0,
     },
@@ -177,11 +179,14 @@ class _PharmaDistributorFormScreenState
     // basic fields
     await prefs.setString('${_kPrefix}firmName', firmName.text);
     await prefs.setString('${_kPrefix}businessName', businessName.text);
-    await prefs.setString('${_kPrefix}selectedHeadOfficeId', selectedHeadOfficeId ?? '');
-    await prefs.setString('${_kPrefix}selectedBusinessType', selectedBusinessType ?? '');
+    await prefs.setString(
+        '${_kPrefix}selectedHeadOfficeId', selectedHeadOfficeId ?? '');
+    await prefs.setString(
+        '${_kPrefix}selectedBusinessType', selectedBusinessType ?? '');
     // business/contact
     await prefs.setString('${_kPrefix}gstNumber', gstNumber.text);
-    await prefs.setString('${_kPrefix}drugLicenseNumber', drugLicenseNumber.text);
+    await prefs.setString(
+        '${_kPrefix}drugLicenseNumber', drugLicenseNumber.text);
     await prefs.setString('${_kPrefix}panNumber', panNumber.text);
     await prefs.setString('${_kPrefix}officeAddress', officeAddress.text);
     await prefs.setString('${_kPrefix}contactPerson', contactPerson.text);
@@ -194,7 +199,8 @@ class _PharmaDistributorFormScreenState
     await prefs.setString('${_kPrefix}distributorships', distributorships.text);
     // facilities
     await prefs.setBool('${_kPrefix}warehouseFacility', warehouseFacility);
-    await prefs.setBool('${_kPrefix}coldStorageAvailable', coldStorageAvailable);
+    await prefs.setBool(
+        '${_kPrefix}coldStorageAvailable', coldStorageAvailable);
     await prefs.setString('${_kPrefix}storageSize', storageSize.text);
     await prefs.setString('${_kPrefix}salesReps', salesReps.text);
     // bank
@@ -203,11 +209,15 @@ class _PharmaDistributorFormScreenState
     await prefs.setString('${_kPrefix}accountNumber', accountNumber.text);
     await prefs.setString('${_kPrefix}ifscCode', ifscCode.text);
     // location
-    await prefs.setString('${_kPrefix}selectedLocation', selectedLocation ?? '');
-    await prefs.setString('${_kPrefix}selectedlatitude', selectedlatitude ?? '');
-    await prefs.setString('${_kPrefix}selectedlongitude', selectedlongitude ?? '');
+    await prefs.setString(
+        '${_kPrefix}selectedLocation', selectedLocation ?? '');
+    await prefs.setString(
+        '${_kPrefix}selectedlatitude', selectedlatitude ?? '');
+    await prefs.setString(
+        '${_kPrefix}selectedlongitude', selectedlongitude ?? '');
     // turnovers
-    await prefs.setString('${_kPrefix}annualTurnovers', jsonEncode(_annualTurnovers));
+    await prefs.setString(
+        '${_kPrefix}annualTurnovers', jsonEncode(_annualTurnovers));
     // active step
     await prefs.setInt('${_kPrefix}activeStep', _activeStep);
 
@@ -239,7 +249,8 @@ class _PharmaDistributorFormScreenState
       selectedBusinessType = prefs.getString('${_kPrefix}selectedBusinessType');
       selectedHeadOfficeId = prefs.getString('${_kPrefix}selectedHeadOfficeId');
       gstNumber.text = prefs.getString('${_kPrefix}gstNumber') ?? '';
-      drugLicenseNumber.text = prefs.getString('${_kPrefix}drugLicenseNumber') ?? '';
+      drugLicenseNumber.text =
+          prefs.getString('${_kPrefix}drugLicenseNumber') ?? '';
       panNumber.text = prefs.getString('${_kPrefix}panNumber') ?? '';
       officeAddress.text = prefs.getString('${_kPrefix}officeAddress') ?? '';
       contactPerson.text = prefs.getString('${_kPrefix}contactPerson') ?? '';
@@ -247,11 +258,16 @@ class _PharmaDistributorFormScreenState
       mobileNumber.text = prefs.getString('${_kPrefix}mobileNumber') ?? '';
       emailAddress.text = prefs.getString('${_kPrefix}emailAddress') ?? '';
       website.text = prefs.getString('${_kPrefix}website') ?? '';
-      yearsInBusiness.text = prefs.getString('${_kPrefix}yearsInBusiness') ?? '';
-      areasOfOperation.text = prefs.getString('${_kPrefix}areasOfOperation') ?? '';
-      distributorships.text = prefs.getString('${_kPrefix}distributorships') ?? '';
-      warehouseFacility = prefs.getBool('${_kPrefix}warehouseFacility') ?? false;
-      coldStorageAvailable = prefs.getBool('${_kPrefix}coldStorageAvailable') ?? false;
+      yearsInBusiness.text =
+          prefs.getString('${_kPrefix}yearsInBusiness') ?? '';
+      areasOfOperation.text =
+          prefs.getString('${_kPrefix}areasOfOperation') ?? '';
+      distributorships.text =
+          prefs.getString('${_kPrefix}distributorships') ?? '';
+      warehouseFacility =
+          prefs.getBool('${_kPrefix}warehouseFacility') ?? false;
+      coldStorageAvailable =
+          prefs.getBool('${_kPrefix}coldStorageAvailable') ?? false;
       storageSize.text = prefs.getString('${_kPrefix}storageSize') ?? '';
       salesReps.text = prefs.getString('${_kPrefix}salesReps') ?? '';
       bankName.text = prefs.getString('${_kPrefix}bankName') ?? '';
@@ -265,7 +281,9 @@ class _PharmaDistributorFormScreenState
       if (turnoversJson != null && turnoversJson.isNotEmpty) {
         try {
           final parsed = jsonDecode(turnoversJson) as List<dynamic>;
-          _annualTurnovers = parsed.map((e) => {"year": e["year"], "amount": e["amount"]}).toList();
+          _annualTurnovers = parsed
+              .map((e) => {"year": e["year"], "amount": e["amount"]})
+              .toList();
         } catch (e) {
           if (kDebugMode) print('turnovers parse error: $e');
         }
@@ -300,7 +318,10 @@ class _PharmaDistributorFormScreenState
     try {
       final token = await AuthManager().getAuthToken();
       final res = await _dio.get('${THttpHelper.baseUrl}/users/my-head-offices',
-          options: dio.Options(headers: {"Authorization": "Bearer $token", "Accept": "application/json"}));
+          options: dio.Options(headers: {
+            "Authorization": "Bearer $token",
+            "Accept": "application/json"
+          }));
       if (res.statusCode == 200) {
         final List<dynamic> data = res.data['data'] ?? [];
         setState(() {
@@ -324,7 +345,7 @@ class _PharmaDistributorFormScreenState
         file.absolute.path,
         targetPath,
         quality: 70,
-        minWidth: 1080,
+        minWidth: TSizes.i1080,
         keepExif: false,
       );
 
@@ -352,7 +373,6 @@ class _PharmaDistributorFormScreenState
   }
 
   Future<void> _pickImageForKey(String key, {bool forceCamera = false}) async {
-
     final granted = await MediaPermissionHelper.requestCameraAndGallery();
 
     if (!granted) {
@@ -404,12 +424,12 @@ class _PharmaDistributorFormScreenState
           children: [
             ListTile(
               leading: const Icon(Icons.camera_alt),
-              title: const Text("Take Photo"),
+              title: const Text(TTexts.uiTextTakePhoto),
               onTap: () => Navigator.pop(context, ImageSource.camera),
             ),
             ListTile(
               leading: const Icon(Icons.photo_library),
-              title: const Text("Choose from Gallery"),
+              title: const Text(TTexts.uiTextChooseFromGallery),
               onTap: () => Navigator.pop(context, ImageSource.gallery),
             ),
           ],
@@ -434,23 +454,23 @@ class _PharmaDistributorFormScreenState
     await _saveFormDraft();
   }
 
-
-
   void _showSettingsDialog() {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text("Permission Required"),
-        content: const Text("You have previously denied permissions. Please enable Camera and Photos in App Settings to continue."),
+        title: const Text(TTexts.uiTextPermissionRequired),
+        content: const Text(
+            TTexts.uiTextYouHavePreviouslyDeniedPermissionsPleaseEnableCamera),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Cancel")),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text(TTexts.cancel)),
           TextButton(
               onPressed: () {
                 Navigator.pop(ctx);
                 openAppSettings(); // Function from permission_handler
               },
-              child: const Text("Settings")
-          ),
+              child: const Text(TTexts.settings)),
         ],
       ),
     );
@@ -465,17 +485,19 @@ class _PharmaDistributorFormScreenState
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text("Permission Required"),
-        content: const Text("To upload documents, please allow Camera and Storage permissions in the next screen or in App Settings."),
+        title: const Text(TTexts.uiTextPermissionRequired),
+        content: const Text(
+            TTexts.uiTextToUploadDocumentsPleaseAllowCameraAndStorage),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Cancel")),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text(TTexts.cancel)),
           TextButton(
               onPressed: () {
                 Navigator.pop(ctx);
                 PermissionHelper.openAppSettingsIfDenied();
               },
-              child: const Text("Settings")
-          ),
+              child: const Text(TTexts.settings)),
         ],
       ),
     );
@@ -494,14 +516,15 @@ class _PharmaDistributorFormScreenState
     if (!mounted) return;
     await showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
       builder: (ctx) {
         return SafeArea(
           child: Wrap(
             children: [
               ListTile(
                 leading: const Icon(Icons.visibility),
-                title: const Text('View Image'),
+                title: const Text(TTexts.uiTextViewImage),
                 onTap: () {
                   Navigator.pop(ctx);
                   _viewImage(file);
@@ -509,31 +532,33 @@ class _PharmaDistributorFormScreenState
               ),
               ListTile(
                 leading: const Icon(Icons.photo_camera),
-                title: const Text('Replace (Camera)'),
+                title: const Text(TTexts.uiTextReplaceCamera),
                 onTap: () {
                   Navigator.pop(ctx);
                   _pickImageForKey(key, forceCamera: true);
                 },
               ),
-              if(key != 'Stockist Image') // Hide gallery for Stockist Image (Force Camera)
+              if (key !=
+                  'Stockist Image') // Hide gallery for Stockist Image (Force Camera)
                 ListTile(
                   leading: const Icon(Icons.photo_library),
-                  title: const Text('Replace (Gallery)'),
+                  title: const Text(TTexts.uiTextReplaceGallery),
                   onTap: () {
                     Navigator.pop(ctx);
                     _pickImageForKey(key, forceCamera: false);
                   },
                 ),
               ListTile(
-                leading: const Icon(Icons.delete, color: Colors.red),
-                title: const Text('Remove', style: TextStyle(color: Colors.red)),
+                leading: const Icon(Icons.delete, color: TColors.materialRed),
+                title: const Text(TTexts.uiTextRemove,
+                    style: TextStyle(color: TColors.materialRed)),
                 onTap: () {
                   Navigator.pop(ctx);
                   _removeImageForKey(key);
                 },
               ),
               ListTile(
-                title: const Center(child: Text('Cancel')),
+                title: const Center(child: Text(TTexts.cancel)),
                 onTap: () => Navigator.pop(ctx),
               ),
             ],
@@ -548,19 +573,21 @@ class _PharmaDistributorFormScreenState
     await showDialog(
       context: context,
       builder: (_) => Dialog(
-        backgroundColor: Colors.black,
+        backgroundColor: TColors.pureBlack,
         insetPadding: const EdgeInsets.all(8),
         child: Stack(
           children: [
             PhotoView(
               imageProvider: FileImage(file),
-              backgroundDecoration: const BoxDecoration(color: Colors.black),
+              backgroundDecoration:
+                  const BoxDecoration(color: TColors.pureBlack),
             ),
             Positioned(
               right: 6,
               top: 6,
               child: IconButton(
-                icon: const Icon(Icons.close, color: Colors.white, size: 28),
+                icon: const Icon(Icons.close,
+                    color: TColors.white, size: TSizes.v28),
                 onPressed: () => Navigator.pop(context),
               ),
             ),
@@ -679,7 +706,8 @@ class _PharmaDistributorFormScreenState
         await _clearFormDraft();
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Distributor registered successfully')),
+            const SnackBar(
+                content: Text(TTexts.uiTextDistributorRegisteredSuccessfully)),
           );
           Navigator.pop(context, true);
         }
@@ -717,22 +745,69 @@ class _PharmaDistributorFormScreenState
     String ifscVal = ifscCode.text.trim().toUpperCase();
     String accVal = accountNumber.text.trim();
     if (finalValidation) {
-      if (firmName.text.trim().isEmpty) { _showStepError(0, 'Firm Name required'); return false; }
-      if (businessName.text.trim().isEmpty) { _showStepError(0, 'Business Name required'); return false; }
-      if (selectedHeadOfficeId == null || selectedHeadOfficeId!.isEmpty) { _showStepError(0, 'Select Head Office'); return false; }
-      if (contactPerson.text.trim().isEmpty) { _showStepError(1, 'Contact Person required'); return false; }
-      if (mobileNumber.text.trim().isEmpty) { _showStepError(1, 'Mobile Number required'); return false; }
-      if (emailAddress.text.trim().isEmpty) { _showStepError(1, 'Email Address required'); return false; }
-      if (gstNumber.text.trim().isEmpty) { _showStepError(2, 'GST Number required'); return false; }
-      if (drugLicenseNumber.text.trim().isEmpty) { _showStepError(2, 'Drug License required'); return false; }
-      if (panNumber.text.trim().isEmpty) { _showStepError(2, 'PAN Number required'); return false; }
-      if (officeAddress.text.trim().isEmpty) { _showStepError(2, 'Office Address required'); return false; }
+      if (firmName.text.trim().isEmpty) {
+        _showStepError(0, 'Firm Name required');
+        return false;
+      }
+      if (businessName.text.trim().isEmpty) {
+        _showStepError(0, 'Business Name required');
+        return false;
+      }
+      if (selectedHeadOfficeId == null || selectedHeadOfficeId!.isEmpty) {
+        _showStepError(0, 'Select Head Office');
+        return false;
+      }
+      if (contactPerson.text.trim().isEmpty) {
+        _showStepError(1, 'Contact Person required');
+        return false;
+      }
+      if (mobileNumber.text.trim().isEmpty) {
+        _showStepError(1, 'Mobile Number required');
+        return false;
+      }
+      if (emailAddress.text.trim().isEmpty) {
+        _showStepError(1, 'Email Address required');
+        return false;
+      }
+      if (gstNumber.text.trim().isEmpty) {
+        _showStepError(2, 'GST Number required');
+        return false;
+      }
+      if (drugLicenseNumber.text.trim().isEmpty) {
+        _showStepError(2, 'Drug License required');
+        return false;
+      }
+      if (panNumber.text.trim().isEmpty) {
+        _showStepError(2, 'PAN Number required');
+        return false;
+      }
+      if (officeAddress.text.trim().isEmpty) {
+        _showStepError(2, 'Office Address required');
+        return false;
+      }
       if (!_validateTurnovers()) return false;
-      if (bankName.text.trim().isEmpty) { _showStepError(5, 'Bank name required'); return false; }
-      if (branch.text.trim().isEmpty) { _showStepError(5, 'Branch required'); return false; }
-      if (accountNumber.text.trim().isEmpty) { _showStepError(5, 'Account Number required'); return false; }
-      if (ifscCode.text.trim().isEmpty) { _showStepError(5, 'IFSC required'); return false; }
-      if (selectedlatitude == null || selectedlongitude == null || selectedLocation == null) { _showSnack('Select location before submit'); return false; }
+      if (bankName.text.trim().isEmpty) {
+        _showStepError(5, 'Bank name required');
+        return false;
+      }
+      if (branch.text.trim().isEmpty) {
+        _showStepError(5, 'Branch required');
+        return false;
+      }
+      if (accountNumber.text.trim().isEmpty) {
+        _showStepError(5, 'Account Number required');
+        return false;
+      }
+      if (ifscCode.text.trim().isEmpty) {
+        _showStepError(5, 'IFSC required');
+        return false;
+      }
+      if (selectedlatitude == null ||
+          selectedlongitude == null ||
+          selectedLocation == null) {
+        _showSnack('Select location before submit');
+        return false;
+      }
 
       // Check Document Images
       for (final entry in _documentImages.entries) {
@@ -755,45 +830,87 @@ class _PharmaDistributorFormScreenState
 
     switch (step) {
       case 0:
-        if (firmName.text.trim().isEmpty || businessName.text.trim().isEmpty) { _showSnack('Firm & Business name required'); return false; }
-        if (selectedHeadOfficeId == null || selectedHeadOfficeId!.isEmpty) { _showSnack('Please select Head Office'); return false; }
+        if (firmName.text.trim().isEmpty || businessName.text.trim().isEmpty) {
+          _showSnack('Firm & Business name required');
+          return false;
+        }
+        if (selectedHeadOfficeId == null || selectedHeadOfficeId!.isEmpty) {
+          _showSnack('Please select Head Office');
+          return false;
+        }
         if (!_gstRegex.hasMatch(gstNumber.text.trim().toUpperCase())) {
-          _showSnack('Invalid GST number'); return false;
+          _showSnack('Invalid GST number');
+          return false;
         }
         if (!_panRegex.hasMatch(panNumber.text.trim().toUpperCase())) {
-          _showSnack('Invalid PAN number'); return false;
+          _showSnack('Invalid PAN number');
+          return false;
         }
         if (drugLicenseNumber.text.trim().isEmpty) {
-          _showSnack('Drug License required'); return false;
+          _showSnack('Drug License required');
+          return false;
         }
         return true;
       case 1:
-        if (contactPerson.text.trim().isEmpty || mobileNumber.text.trim().isEmpty || emailAddress.text.trim().isEmpty) { _showSnack('Contact person, mobile & email are required'); return false; }
+        if (contactPerson.text.trim().isEmpty ||
+            mobileNumber.text.trim().isEmpty ||
+            emailAddress.text.trim().isEmpty) {
+          _showSnack('Contact person, mobile & email are required');
+          return false;
+        }
         if (!_mobileRegex.hasMatch(mobileNumber.text.trim())) {
-          _showSnack('Enter valid 10-digit mobile number'); return false;
+          _showSnack('Enter valid 10-digit mobile number');
+          return false;
         }
         if (!_emailRegex.hasMatch(emailAddress.text.trim())) {
-          _showSnack('Enter valid email address'); return false;
+          _showSnack('Enter valid email address');
+          return false;
         }
         return true;
       case 2:
-        if (yearsInBusiness.text.trim().isEmpty || officeAddress.text.trim().isEmpty) { _showSnack('Years in business and office address required'); return false; }
-        if(selectedLocation!.isEmpty){ _showSnack('Please select address on map'); return false; };
+        if (yearsInBusiness.text.trim().isEmpty ||
+            officeAddress.text.trim().isEmpty) {
+          _showSnack('Years in business and office address required');
+          return false;
+        }
+        if (selectedLocation!.isEmpty) {
+          _showSnack('Please select address on map');
+          return false;
+        }
+        ;
         return true;
       case 3:
         return _validateTurnovers();
       case 4:
         return true;
       case 5:
-        if (bankName.text.trim().isEmpty) { _showSnack('Bank Name required'); return false; }
-        if (branch.text.trim().isEmpty) { _showSnack('Branch Name required'); return false; }
-        if (accVal.isEmpty) { _showSnack('Account Number required'); return false; }
-        if (!_accountNumberRegex.hasMatch(accVal)) { _showSnack('Invalid Account Number (9-18 digits)'); return false; }
-        if (ifscVal.isEmpty) { _showSnack('IFSC Code required'); return false; }
-        if (!_ifscRegex.hasMatch(ifscVal)) { _showSnack('Invalid IFSC Code format (e.g. SBIN0123456)'); return false; }
+        if (bankName.text.trim().isEmpty) {
+          _showSnack('Bank Name required');
+          return false;
+        }
+        if (branch.text.trim().isEmpty) {
+          _showSnack('Branch Name required');
+          return false;
+        }
+        if (accVal.isEmpty) {
+          _showSnack('Account Number required');
+          return false;
+        }
+        if (!_accountNumberRegex.hasMatch(accVal)) {
+          _showSnack('Invalid Account Number (9-18 digits)');
+          return false;
+        }
+        if (ifscVal.isEmpty) {
+          _showSnack('IFSC Code required');
+          return false;
+        }
+        if (!_ifscRegex.hasMatch(ifscVal)) {
+          _showSnack('Invalid IFSC Code format (e.g. SBIN0123456)');
+          return false;
+        }
         return true;
       case 6:
-      // Ensure Stockist Image is captured before submitting
+        // Ensure Stockist Image is captured before submitting
         if (_documentImages['Stockist Image'] == null) {
           _showSnack('Please capture the Stockist Geo Image');
           return false;
@@ -819,11 +936,17 @@ class _PharmaDistributorFormScreenState
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Clear all documents?'),
-        content: const Text('This will remove all selected documents from this form (local only). Continue?'),
+        title: const Text(TTexts.uiTextClearAllDocuments),
+        content:
+            const Text(TTexts.uiTextThisWillRemoveAllSelectedDocumentsFromThis),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Clear', style: TextStyle(color: Colors.red))),
+          TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text(TTexts.cancel)),
+          TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text(TTexts.uiTextClear,
+                  style: TextStyle(color: TColors.materialRed))),
         ],
       ),
     );
@@ -869,10 +992,12 @@ class _PharmaDistributorFormScreenState
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Distributor Registration", style: TextStyle(fontWeight: FontWeight.bold,color: Colors.white)),
+        title: const Text(TTexts.uiTextDistributorRegistration,
+            style:
+                TextStyle(fontWeight: FontWeight.bold, color: TColors.white)),
         backgroundColor: TColors.primary,
         iconTheme: const IconThemeData(
-          color: Colors.white,
+          color: TColors.white,
         ),
       ),
       body: SafeArea(
@@ -881,25 +1006,40 @@ class _PharmaDistributorFormScreenState
           child: Column(
             children: [
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 12),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 12.0, horizontal: 12),
                 child: EasyStepper(
                   activeStep: _activeStep,
                   finishedStepTextColor: TColors.primary,
                   activeStepTextColor: TColors.primary,
-                  unreachedStepIconColor: Colors.grey,
+                  unreachedStepIconColor: TColors.materialGrey,
                   finishedStepBackgroundColor: TColors.primary,
                   activeStepBackgroundColor: TColors.primary,
-                  unreachedStepBackgroundColor: Colors.grey.shade300,
+                  unreachedStepBackgroundColor: TColors.materialGrey300,
                   internalPadding: 8,
                   borderThickness: 2,
                   steps: const [
-                    EasyStep(icon: Icon(Icons.details, color: Colors.white), title: 'Applicant'),
-                    EasyStep(icon: Icon(Icons.contact_phone, color: Colors.white), title: 'Contact'),
-                    EasyStep(icon: Icon(Icons.business, color: Colors.white), title: 'Business'),
-                    EasyStep(icon: Icon(Icons.trending_up, color: Colors.white), title: 'Turnover'),
-                    EasyStep(icon: Icon(Icons.inventory_2, color: Colors.white), title: 'Facilities'),
-                    EasyStep(icon: Icon(Icons.account_balance, color: Colors.white), title: 'Bank'),
-                    EasyStep(icon: Icon(Icons.upload, color: Colors.white), title: 'Media'),
+                    EasyStep(
+                        icon: Icon(Icons.details, color: TColors.white),
+                        title: TTexts.uiTextApplicant),
+                    EasyStep(
+                        icon: Icon(Icons.contact_phone, color: TColors.white),
+                        title: TTexts.uiTextContact),
+                    EasyStep(
+                        icon: Icon(Icons.business, color: TColors.white),
+                        title: TTexts.uiTextBusiness),
+                    EasyStep(
+                        icon: Icon(Icons.trending_up, color: TColors.white),
+                        title: TTexts.uiTextTurnover),
+                    EasyStep(
+                        icon: Icon(Icons.inventory_2, color: TColors.white),
+                        title: TTexts.uiTextFacilities),
+                    EasyStep(
+                        icon: Icon(Icons.account_balance, color: TColors.white),
+                        title: TTexts.uiTextBank),
+                    EasyStep(
+                        icon: Icon(Icons.upload, color: TColors.white),
+                        title: TTexts.uiTextMedia),
                   ],
                   onStepReached: (index) async {
                     if (index < _activeStep) {
@@ -914,10 +1054,10 @@ class _PharmaDistributorFormScreenState
                   },
                 ),
               ),
-
               Expanded(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                   child: IndexedStack(
                     index: _activeStep,
                     children: [
@@ -956,26 +1096,29 @@ class _PharmaDistributorFormScreenState
                           try {
                             final result = await Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (_) => LocationPickerScreen()),
+                              MaterialPageRoute(
+                                  builder: (_) => LocationPickerScreen()),
                             );
                             if (result != null) {
                               setState(() {
-                                selectedlatitude = result['latitude'].toString();
-                                selectedlongitude = result['longitude'].toString();
+                                selectedlatitude =
+                                    result['latitude'].toString();
+                                selectedlongitude =
+                                    result['longitude'].toString();
                                 selectedLocation = result['address'].toString();
                               });
                               Get.snackbar(
                                 "📍 Location Selected",
                                 "$selectedLocation\nLat: $selectedlatitude, Lng: $selectedlongitude",
-                                backgroundColor: Colors.green,
+                                backgroundColor: TColors.materialGreen,
                                 duration: const Duration(seconds: 4),
                               );
                               await _saveFormDraft();
                             } else {
                               Get.snackbar(
                                 "Location Not Selected",
-                                "Please try again or cancel",
-                                backgroundColor: Colors.orange,
+                                TTexts.uiTextPleaseTryAgainOrCancel,
+                                backgroundColor: TColors.materialOrange,
                               );
                             }
                           } catch (e) {
@@ -987,12 +1130,15 @@ class _PharmaDistributorFormScreenState
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const SizedBox(height: 4),
+                          const SizedBox(height: TSizes.v4),
                           const Padding(
                             padding: EdgeInsets.only(bottom: 8.0),
                             child: Text(
-                              "Annual Turnover",
-                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: TColors.primary),
+                              TTexts.uiTextAnnualTurnover,
+                              style: TextStyle(
+                                  fontSize: TSizes.v18,
+                                  fontWeight: FontWeight.bold,
+                                  color: TColors.primary),
                             ),
                           ),
                           AnnualTurnoverSection(
@@ -1024,7 +1170,8 @@ class _PharmaDistributorFormScreenState
                         accountNumber: accountNumber,
                         ifscCode: ifscCode,
                         onSubmitNow: () async {
-                          if (!_validateStep(_activeStep, finalValidation: true)) return;
+                          if (!_validateStep(_activeStep,
+                              finalValidation: true)) return;
                           await _saveFormDraft();
                           await _submitDistributorForm();
                         },
@@ -1041,9 +1188,9 @@ class _PharmaDistributorFormScreenState
                   ),
                 ),
               ),
-
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
                 child: Row(
                   children: [
                     if (_activeStep > 0)
@@ -1052,14 +1199,16 @@ class _PharmaDistributorFormScreenState
                           setState(() => _activeStep--);
                           await _saveFormDraft();
                         },
-                        child: const Text('Back'),
+                        child: const Text(TTexts.uiTextBack),
                       ),
                     const Spacer(),
                     ElevatedButton(
-                      style: ElevatedButton.styleFrom(backgroundColor: TColors.primary),
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: TColors.primary),
                       onPressed: () async {
                         if (_activeStep == _totalSteps - 1) {
-                          if (!_validateStep(_activeStep, finalValidation: true)) return;
+                          if (!_validateStep(_activeStep,
+                              finalValidation: true)) return;
                           await _saveFormDraft();
                           await _submitDistributorForm();
                         } else {
@@ -1069,7 +1218,8 @@ class _PharmaDistributorFormScreenState
                           }
                         }
                       },
-                      child: Text(_activeStep == _totalSteps - 1 ? 'Submit' : 'Next'),
+                      child: Text(
+                          _activeStep == _totalSteps - 1 ? 'Submit' : 'Next'),
                     ),
                   ],
                 ),

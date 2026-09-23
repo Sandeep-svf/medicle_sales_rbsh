@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:cryptography/cryptography.dart';
 
-
 class CryptoBox {
   static final _algo = AesGcm.with256bits();
 
@@ -20,9 +19,7 @@ class CryptoBox {
     );
 
     return base64Encode(
-      nonce +
-          secretBox.cipherText +
-          secretBox.mac.bytes,
+      nonce + secretBox.cipherText + secretBox.mac.bytes,
     );
   }
 

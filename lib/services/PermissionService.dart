@@ -20,7 +20,9 @@ class PermissionService {
     final fine = await Permission.location.status;
     final bg = await Permission.locationAlways.status;
     final notif = await Permission.notification.status;
-    return fine.isGranted && bg.isGranted && (notif.isGranted || notif.isLimited || notif.isProvisional);
+    return fine.isGranted &&
+        bg.isGranted &&
+        (notif.isGranted || notif.isLimited || notif.isProvisional);
   }
 
   /// Optional: navigate user to settings if permanently denied.

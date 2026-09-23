@@ -1,9 +1,11 @@
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:flutter/material.dart';
 
 import 'investment_toggle.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class InvestmentHeader extends StatelessWidget {
-
   final bool table;
 
   final ValueChanged<bool> onToggle;
@@ -16,46 +18,34 @@ class InvestmentHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return Row(
-
       children: [
-
         const Expanded(
-
           child: Column(
-
             crossAxisAlignment: CrossAxisAlignment.start,
-
             children: [
-
               Text(
-                "My Investment Requests",
+                TTexts.uiTextMyInvestmentRequests,
                 style: TextStyle(
-                  fontSize: 28,
+                  fontSize: TSizes.v28,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-
-              SizedBox(height:6),
-
+              SizedBox(height: TSizes.v6),
               Text(
-                "Track every request through approval & payout",
+                TTexts.uiTextTrackEveryRequestThroughApprovalPayout,
                 style: TextStyle(
-                  color: Colors.grey,
-                  fontSize: 15,
+                  color: TColors.materialGrey,
+                  fontSize: TSizes.v15,
                 ),
               )
-
             ],
           ),
         ),
-
         InvestmentToggle(
           table: table,
           onChanged: onToggle,
         )
-
       ],
     );
   }

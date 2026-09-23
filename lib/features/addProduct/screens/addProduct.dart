@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:intl/intl.dart';
-import '../../../utils/constants/colors.dart';
-import '../../../utils/constants/sizes.dart';
-import '../../../utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 import '../../../utils/helpers/zoom_in_out_anim.dart';
 
 class AddproductScreen extends StatefulWidget {
@@ -30,7 +30,7 @@ class _AddproductScreenState extends State<AddproductScreen> {
       "description":
           "Paracetamol is a medicine used for mild to moderate pain.",
       "dosage":
-      "One or two 500mg tablets at a time, up to 4 times in 24 hours.",
+          "One or two 500mg tablets at a time, up to 4 times in 24 hours.",
       "brochureUrl": "www.google.com",
     },
     {
@@ -38,7 +38,7 @@ class _AddproductScreenState extends State<AddproductScreen> {
       "description":
           "Paracetamol is a medicine used for mild to moderate pain.",
       "dosage":
-      "One or two 500mg tablets at a time, up to 4 times in 24 hours.",
+          "One or two 500mg tablets at a time, up to 4 times in 24 hours.",
       "brochureUrl": "www.google.com",
     },
   ];
@@ -52,9 +52,7 @@ class _AddproductScreenState extends State<AddproductScreen> {
     TextEditingController dosesController = TextEditingController();
     TextEditingController brochureController = TextEditingController();
 
-
     showDialog(
-
       context: context,
       builder: (BuildContext context) {
         return ZoomInOutDialog(
@@ -72,7 +70,7 @@ class _AddproductScreenState extends State<AddproductScreen> {
                     border: OutlineInputBorder(),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: TSizes.v12),
                 TextField(
                   controller: descriptionController,
                   decoration: const InputDecoration(
@@ -80,7 +78,7 @@ class _AddproductScreenState extends State<AddproductScreen> {
                     border: OutlineInputBorder(),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: TSizes.v12),
                 TextField(
                   controller: dosesController,
                   decoration: const InputDecoration(
@@ -88,7 +86,7 @@ class _AddproductScreenState extends State<AddproductScreen> {
                     border: OutlineInputBorder(),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: TSizes.v12),
                 TextField(
                   controller: brochureController,
                   decoration: const InputDecoration(
@@ -109,7 +107,6 @@ class _AddproductScreenState extends State<AddproductScreen> {
                       descriptionController.text.isNotEmpty &&
                       dosesController.text.isNotEmpty &&
                       brochureController.text.isNotEmpty) {
-
                     setState(() {
                       _productInfo.add({
                         "productName": productNameController.text,
@@ -119,12 +116,13 @@ class _AddproductScreenState extends State<AddproductScreen> {
                       });
                     });
                     Navigator.pop(context);
-                  }else{
-                    Get.snackbar("Error", "Field can not be empty.");
+                  } else {
+                    Get.snackbar("Error", TTexts.uiTextFieldCanNotBeEmpty);
                   }
                 },
-                child:const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.0), // Adjust the value as needed
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(
+                      horizontal: 16.0), // Adjust the value as needed
                   child: Text(TTexts.submit),
                 ),
               ),
@@ -147,8 +145,8 @@ class _AddproductScreenState extends State<AddproductScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child:
-                  const Text(TTexts.no, style: TextStyle(color: Colors.grey)),
+              child: const Text(TTexts.no,
+                  style: TextStyle(color: TColors.materialGrey)),
             ),
             ElevatedButton(
               onPressed: () {
@@ -168,8 +166,9 @@ class _AddproductScreenState extends State<AddproductScreen> {
   @override
   Widget build(BuildContext context) {
     List<Map<String, String>> filteredDoctors = _productInfo
-        .where((doctor) =>
-            doctor["productName"]!.toLowerCase().contains(_searchQuery.toLowerCase()))
+        .where((doctor) => doctor["productName"]!
+            .toLowerCase()
+            .contains(_searchQuery.toLowerCase()))
         .toList();
 
     return Scaffold(
@@ -182,7 +181,10 @@ class _AddproductScreenState extends State<AddproductScreen> {
               decoration: InputDecoration(
                 labelText: TTexts.searchDoctor,
                 border: OutlineInputBorder(),
-                prefixIcon: const Icon(Icons.search,color: TColors.primary,),
+                prefixIcon: const Icon(
+                  Icons.search,
+                  color: TColors.primary,
+                ),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(
                         icon: const Icon(Icons.clear),
@@ -212,8 +214,9 @@ class _AddproductScreenState extends State<AddproductScreen> {
                       final doctor = filteredDoctors[index];
 
                       return Card(
-                        elevation: 4,
-                        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                        elevation: TSizes.v4,
+                        margin: const EdgeInsets.symmetric(
+                            vertical: 8, horizontal: 12),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(15),
                         ),
@@ -225,52 +228,60 @@ class _AddproductScreenState extends State<AddproductScreen> {
                               // Doctor Name with Icon
                               Row(
                                 children: [
-                                  Icon(Icons.person, color: TColors.primary,),
-                                  const SizedBox(width: 8),
+                                  Icon(
+                                    Icons.person,
+                                    color: TColors.primary,
+                                  ),
+                                  const SizedBox(width: TSizes.v8),
                                   Expanded(
                                     child: Text(
                                       doctor["name"] ?? "Unknown Doctor",
                                       style: const TextStyle(
-                                        fontSize: 18,
+                                        fontSize: TSizes.v18,
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.black87,
+                                        color: TColors.black87,
                                       ),
                                     ),
                                   ),
                                 ],
                               ),
 
-                              const Divider(thickness: 1, height: 16),
+                              const Divider(
+                                  thickness: TSizes.v1, height: TSizes.v16),
 
                               // Product Name
                               Row(
                                 children: [
-                                  Icon(Icons.medical_services, color: TColors.primary),
-                                  const SizedBox(width: 8),
+                                  Icon(Icons.medical_services,
+                                      color: TColors.primary),
+                                  const SizedBox(width: TSizes.v8),
                                   Expanded(
                                     child: Text(
                                       doctor["productName"] ?? "No Product",
                                       style: const TextStyle(
-                                        fontSize: 16,
+                                        fontSize: TSizes.v16,
                                         fontWeight: FontWeight.w500,
-                                        color: Colors.black54,
+                                        color: TColors.black54,
                                       ),
                                     ),
                                   ),
                                 ],
                               ),
 
-                              const SizedBox(height: 8),
+                              const SizedBox(height: TSizes.v8),
 
                               // Description
                               Row(
                                 children: [
-                                  Icon(Icons.description, color: TColors.primary),
-                                  const SizedBox(width: 8),
+                                  Icon(Icons.description,
+                                      color: TColors.primary),
+                                  const SizedBox(width: TSizes.v8),
                                   Expanded(
                                     child: Text(
                                       doctor["description"] ?? "No Description",
-                                      style: const TextStyle(fontSize: 14, color: Colors.black54),
+                                      style: const TextStyle(
+                                          fontSize: TSizes.v14,
+                                          color: TColors.black54),
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
                                     ),
@@ -278,48 +289,57 @@ class _AddproductScreenState extends State<AddproductScreen> {
                                 ],
                               ),
 
-                              const SizedBox(height: 8),
+                              const SizedBox(height: TSizes.v8),
 
                               // Dosage Information
                               Row(
                                 children: [
-                                  Icon(Icons.local_hospital, color: TColors.primary),
-                                  const SizedBox(width: 8),
+                                  Icon(Icons.local_hospital,
+                                      color: TColors.primary),
+                                  const SizedBox(width: TSizes.v8),
                                   Expanded(
                                     child: Text(
                                       "Dosage: ${doctor["dosage"] ?? "N/A"}",
-                                      style: const TextStyle(fontSize: 14, color: Colors.black54),
+                                      style: const TextStyle(
+                                          fontSize: TSizes.v14,
+                                          color: TColors.black54),
                                     ),
                                   ),
                                 ],
                               ),
 
-                              const SizedBox(height: 8),
+                              const SizedBox(height: TSizes.v8),
 
                               // Brochure URL (Clickable)
-                              if (doctor["brochureUrl"] != null && doctor["brochureUrl"]!.isNotEmpty)
+                              if (doctor["brochureUrl"] != null &&
+                                  doctor["brochureUrl"]!.isNotEmpty)
                                 Row(
                                   children: [
-                                    Icon(Icons.insert_link, color: TColors.primary),
-                                    const SizedBox(width: 8),
+                                    Icon(Icons.insert_link,
+                                        color: TColors.primary),
+                                    const SizedBox(width: TSizes.v8),
                                     Expanded(
                                       child: GestureDetector(
-                                        onTap: () {
-                                          Get.snackbar("Note","This brochure is not available.");
-                                        },
-                                        child:const Text(
-                                          "View Brochure",
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            color: TColors.primary, // Text color
-                                            decoration: TextDecoration.underline,
-                                            decorationColor: Colors.red, // Underline color
-                                            decorationThickness: 2, // Optional: Adjust thickness
-                                          ),
-                                        )
-
-
-                                      ),
+                                          onTap: () {
+                                            Get.snackbar(
+                                                "Note",
+                                                TTexts
+                                                    .uiTextThisBrochureIsNotAvailable);
+                                          },
+                                          child: const Text(
+                                            TTexts.uiTextViewBrochure,
+                                            style: TextStyle(
+                                              fontSize: TSizes.v14,
+                                              color:
+                                                  TColors.primary, // Text color
+                                              decoration:
+                                                  TextDecoration.underline,
+                                              decorationColor: TColors
+                                                  .materialRed, // Underline color
+                                              decorationThickness:
+                                                  2, // Optional: Adjust thickness
+                                            ),
+                                          )),
                                     ),
                                   ],
                                 ),
@@ -327,7 +347,6 @@ class _AddproductScreenState extends State<AddproductScreen> {
                           ),
                         ),
                       );
-
                     },
                   ),
           ),
@@ -336,7 +355,7 @@ class _AddproductScreenState extends State<AddproductScreen> {
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddDoctorDialog,
         backgroundColor: TColors.primary,
-        child: const Icon(Icons.add, color: Colors.white),
+        child: const Icon(Icons.add, color: TColors.white),
       ),
     );
   }

@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import '../../../../utils/constants/colors.dart';
 import '../../../../utils/constants/sizes.dart';
 
-
-
 class LoadingView extends StatelessWidget {
   const LoadingView({
     super.key,
@@ -21,7 +19,6 @@ class LoadingView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-
             const SizedBox(
               height: TSizes.loadingIndicatorSize,
               width: TSizes.loadingIndicatorSize,
@@ -29,19 +26,14 @@ class LoadingView extends StatelessWidget {
                 color: TColors.primary,
               ),
             ),
-
             const SizedBox(
               height: TSizes.lg,
             ),
-
             Text(
               message,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium
-                  ?.copyWith(
-                color: TColors.textSecondary,
-              ),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: TColors.textSecondary,
+                  ),
             ),
           ],
         ),

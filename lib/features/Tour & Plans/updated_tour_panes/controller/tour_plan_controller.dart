@@ -16,41 +16,31 @@ import '../service/TourPlanService.dart';
 import '../utils/month_selector.dart';
 import '../wigets/draft_saved_dialog.dart';
 import '../wigets/tour_plan_validation_dialog.dart';
-
-
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class TourPlanController extends GetxController {
-
-  final TourPlanService service =
-  TourPlanService();
+  final TourPlanService service = TourPlanService();
 
   final RxString currentStatus = "Draft".obs;
 
   bool get readOnly =>
       tourPlan.value?.status == "Submitted" ||
-          tourPlan.value?.status == "Approved";
+      tourPlan.value?.status == "Approved";
 
   bool get canSubmit =>
-      tourPlan.value?.status == "Draft" ||
-          tourPlan.value?.status == "Returned";
-
-
+      tourPlan.value?.status == "Draft" || tourPlan.value?.status == "Returned";
 
   /// -------------------------------------------------------
   /// Loading States
   /// -------------------------------------------------------
 
-  final RxBool isLoading =
-      false.obs;
+  final RxBool isLoading = false.obs;
 
-  final RxBool isSavingDraft =
-      false.obs;
+  final RxBool isSavingDraft = false.obs;
 
-  final RxBool isSubmitting =
-      false.obs;
+  final RxBool isSubmitting = false.obs;
 
-  final RxBool isReadOnly =
-      false.obs;
+  final RxBool isReadOnly = false.obs;
 
   final RxBool hasUnsavedChanges = false.obs;
 
@@ -58,48 +48,35 @@ class TourPlanController extends GetxController {
   /// Tour Plan
   /// -------------------------------------------------------
 
-  final Rx<TourPlanModel?> tourPlan =
-  Rx<TourPlanModel?>(null);
+  final Rx<TourPlanModel?> tourPlan = Rx<TourPlanModel?>(null);
 
-  final RxString draftId =
-      ''.obs;
+  final RxString draftId = ''.obs;
 
   /// -------------------------------------------------------
   /// Calendar
   /// -------------------------------------------------------
 
-  final RxList<TourDay> monthDays =
-      <TourDay>[].obs;
+  final RxList<TourDay> monthDays = <TourDay>[].obs;
 
-  final Rx<TourDay?> selectedDay =
-  Rx<TourDay?>(null);
+  final Rx<TourDay?> selectedDay = Rx<TourDay?>(null);
 
   /// Currently opened tour plan
-  final Rxn<TourPlanModel> currentPlan =
-  Rxn<TourPlanModel>();
+  final Rxn<TourPlanModel> currentPlan = Rxn<TourPlanModel>();
 
   /// Remarks from ASM
   final RxString remarks = "".obs;
-
-
 
   /// -------------------------------------------------------
   /// Masters
   /// -------------------------------------------------------
 
-  final RxList<String> dayTypes =
-      <String>[].obs;
+  final RxList<String> dayTypes = <String>[].obs;
 
-  final RxList<String>
-  collaborationStatus =
-      <String>[].obs;
+  final RxList<String> collaborationStatus = <String>[].obs;
 
-  final RxList<BeatModel> beats =
-      <BeatModel>[].obs;
+  final RxList<BeatModel> beats = <BeatModel>[].obs;
 
-  final RxList<AvailableUserModel>
-  availableUsers =
-      <AvailableUserModel>[].obs;
+  final RxList<AvailableUserModel> availableUsers = <AvailableUserModel>[].obs;
 
   DateTime? _availableUsersDate;
 
@@ -107,11 +84,9 @@ class TourPlanController extends GetxController {
   /// Month
   /// -------------------------------------------------------
 
-  final Rx<DateTime> selectedMonth =
-      _defaultPlanningMonth().obs;
+  final Rx<DateTime> selectedMonth = _defaultPlanningMonth().obs;
 
-  static DateTime
-  _defaultPlanningMonth() {
+  static DateTime _defaultPlanningMonth() {
     final now = DateTime.now();
 
     if (now.month == 12) {
@@ -129,57 +104,36 @@ class TourPlanController extends GetxController {
 
   String get monthTitle {
     const months = [
-
       '',
-
       'January',
-
       'February',
-
       'March',
-
       'April',
-
       'May',
-
       'June',
-
       'July',
-
       'August',
-
       'September',
-
       'October',
-
       'November',
-
       'December'
-
     ];
 
-    return
-
-      "${months[selectedMonth.value.month]} "
-          "${selectedMonth.value.year}";
+    return "${months[selectedMonth.value.month]} "
+        "${selectedMonth.value.year}";
   }
 
   /// -------------------------------------------------------
   /// Status
   /// -------------------------------------------------------
 
-  bool get isDraft =>
-      tourPlan.value?.status == "Draft";
+  bool get isDraft => tourPlan.value?.status == "Draft";
 
-  bool get isSubmitted =>
-      tourPlan.value?.status == "Submitted";
+  bool get isSubmitted => tourPlan.value?.status == "Submitted";
 
-  bool get isApproved =>
-      tourPlan.value?.status == "Approved";
+  bool get isApproved => tourPlan.value?.status == "Approved";
 
-  bool get isReturned =>
-      tourPlan.value?.status == "Returned";
-
+  bool get isReturned => tourPlan.value?.status == "Returned";
 
   /// -------------------------------------------------------
   /// Editability
@@ -194,35 +148,27 @@ class TourPlanController extends GetxController {
     return isDraft || isReturned;
   }
 
-
   /// -------------------------------------------------------
   /// New / Existing Plan
   /// -------------------------------------------------------
 
-  bool get isNewTourPlan =>
-      tourPlan.value == null;
-
+  bool get isNewTourPlan => tourPlan.value == null;
 
   /// -------------------------------------------------------
   /// Existing plan status helpers
   /// -------------------------------------------------------
 
   bool get isReturnedTourPlan =>
-      tourPlan.value != null &&
-          tourPlan.value!.status == "Returned";
+      tourPlan.value != null && tourPlan.value!.status == "Returned";
 
   bool get isSubmittedTourPlan =>
-      tourPlan.value != null &&
-          tourPlan.value!.status == "Submitted";
+      tourPlan.value != null && tourPlan.value!.status == "Submitted";
 
   bool get isApprovedTourPlan =>
-      tourPlan.value != null &&
-          tourPlan.value!.status == "Approved";
+      tourPlan.value != null && tourPlan.value!.status == "Approved";
 
   bool get isDraftTourPlan =>
-      tourPlan.value != null &&
-          tourPlan.value!.status == "Draft";
-
+      tourPlan.value != null && tourPlan.value!.status == "Draft";
 
   /// -------------------------------------------------------
   /// Current Plan Edit Mode
@@ -235,19 +181,14 @@ class TourPlanController extends GetxController {
       return true;
     }
 
-    return isDraftTourPlan ||
-        isReturnedTourPlan;
+    return isDraftTourPlan || isReturnedTourPlan;
   }
-
 
   /// -------------------------------------------------------
   /// View Mode
   /// -------------------------------------------------------
 
-  bool get isViewMode =>
-      !canEditCurrentPlan;
-
-
+  bool get isViewMode => !canEditCurrentPlan;
 
   void _syncPlanState(TourPlanModel? plan) {
     tourPlan.value = plan;
@@ -286,8 +227,7 @@ class TourPlanController extends GetxController {
       TourPlanModel? matchingPlan;
 
       for (final plan in plans) {
-        if (plan.month == month &&
-            plan.year == year) {
+        if (plan.month == month && plan.year == year) {
           matchingPlan = plan;
           break;
         }
@@ -300,9 +240,9 @@ class TourPlanController extends GetxController {
       if (matchingPlan != null) {
         debugPrint(
           "Existing plan found: "
-              "${matchingPlan.id} | "
-              "${matchingPlan.month}/${matchingPlan.year} | "
-              "${matchingPlan.status}",
+          "${matchingPlan.id} | "
+          "${matchingPlan.month}/${matchingPlan.year} | "
+          "${matchingPlan.status}",
         );
 
         // Load complete details. Keep the current month intact if details fail.
@@ -323,7 +263,7 @@ class TourPlanController extends GetxController {
 
       debugPrint(
         "No Tour Plan found for "
-            "$month/$year",
+        "$month/$year",
       );
 
       // Clear previous month's plan and reset state for a new draft.
@@ -336,9 +276,7 @@ class TourPlanController extends GetxController {
 
       // Create empty calendar for the selected month.
       generateCalendar();
-
     } catch (e, stackTrace) {
-
       debugPrint(
         "TourPlanController loadPlanForSelectedMonth ERROR: $e",
       );
@@ -349,7 +287,6 @@ class TourPlanController extends GetxController {
 
       rethrow;
     } finally {
-
       isLoading.value = false;
     }
   }
@@ -424,9 +361,8 @@ class TourPlanController extends GetxController {
   }
 
   Future<void> changePlanningMonth(
-      BuildContext context,
-      ) async {
-
+    BuildContext context,
+  ) async {
     final picked = await showDialog<DateTime>(
       context: context,
       builder: (_) {
@@ -455,7 +391,7 @@ class TourPlanController extends GetxController {
       final discard = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text("Discard Unsaved Changes?"),
+          title: const Text(TTexts.uiTextDiscardUnsavedChanges),
           content: Text(
             "You have unsaved changes in $monthTitle. "
             "Switching months will discard those changes.",
@@ -463,11 +399,11 @@ class TourPlanController extends GetxController {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text("Stay"),
+              child: const Text(TTexts.uiTextStay),
             ),
             ElevatedButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text("Discard & Switch"),
+              child: const Text(TTexts.uiTextDiscardSwitch),
             ),
           ],
         ),
@@ -490,10 +426,11 @@ class TourPlanController extends GetxController {
       selectedMonth.value = previousMonth;
       Get.snackbar(
         "Unable to Change Month",
-        "Could not load the selected month. Please try again.",
+        TTexts.uiTextCouldNotLoadTheSelectedMonthPleaseTry,
       );
     }
   }
+
   /// -------------------------------------------------------
   /// Init
   /// -------------------------------------------------------
@@ -501,8 +438,6 @@ class TourPlanController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-
-
   }
 
   Future<void> initialize({
@@ -551,8 +486,7 @@ class TourPlanController extends GetxController {
 
   Future<void> loadMasterEnums() async {
     try {
-      final response =
-      await THttpHelper.authGet(
+      final response = await THttpHelper.authGet(
         "master/enums",
       );
 
@@ -560,24 +494,15 @@ class TourPlanController extends GetxController {
         final data = response["data"];
 
         dayTypes.assignAll(
-
           List<String>.from(
-
             data["TourPlanDay"]["day_type"],
-
           ),
-
         );
 
         collaborationStatus.assignAll(
-
           List<String>.from(
-
-            data["TourPlanDay"]
-            ["collaboration_status"],
-
+            data["TourPlanDay"]["collaboration_status"],
           ),
-
         );
       }
     } catch (e) {
@@ -589,7 +514,6 @@ class TourPlanController extends GetxController {
     String tourPlanId, {
     bool showError = true,
   }) async {
-
     debugPrint("========== TourPlanController ==========");
     debugPrint("TourPlanController loadTourPlan()");
     debugPrint("TourPlanController Plan Id : $tourPlanId");
@@ -598,7 +522,6 @@ class TourPlanController extends GetxController {
     isLoading.value = true;
 
     try {
-
       debugPrint("========== TourPlanController ==========");
       debugPrint("TourPlanController Calling Details API...");
       debugPrint("========================================");
@@ -615,7 +538,7 @@ class TourPlanController extends GetxController {
         if (showError) {
           Get.snackbar(
             "Error",
-            "Unable to load Tour Plan details.",
+            TTexts.uiTextUnableToLoadTourPlanDetails,
           );
         }
         return false;
@@ -625,7 +548,7 @@ class TourPlanController extends GetxController {
         if (showError) {
           Get.snackbar(
             "Invalid Tour Plan",
-            "The server returned an invalid planning month.",
+            TTexts.uiTextTheServerReturnedAnInvalidPlanningMonth,
           );
         }
         return false;
@@ -640,8 +563,10 @@ class TourPlanController extends GetxController {
         response.month,
       );
 
-      debugPrint("TourPlanController Selected Month : ${selectedMonth.value.month}");
-      debugPrint("TourPlanController Selected Year  : ${selectedMonth.value.year}");
+      debugPrint(
+          "TourPlanController Selected Month : ${selectedMonth.value.month}");
+      debugPrint(
+          "TourPlanController Selected Year  : ${selectedMonth.value.year}");
       debugPrint("=================================");
 
       debugPrint("========== TourPlanController ==========");
@@ -667,17 +592,17 @@ class TourPlanController extends GetxController {
       generateCalendar();
 
       debugPrint("========== TourPlanController ==========");
-      debugPrint("TourPlanController Month Days Before Populate : ${monthDays.length}");
+      debugPrint(
+          "TourPlanController Month Days Before Populate : ${monthDays.length}");
       debugPrint("========================================");
 
       populateExistingDays();
       hasUnsavedChanges.value = false;
 
       debugPrint("========== TourPlanController ==========");
-      debugPrint("TourPlanController Month Days After Populate : ${monthDays.length}");
+      debugPrint(
+          "TourPlanController Month Days After Populate : ${monthDays.length}");
       debugPrint("========================================");
-
-
 
       debugPrint("========== PLAN MODE ==========");
       debugPrint("TourPlanController New        : $isNewTourPlan");
@@ -690,7 +615,6 @@ class TourPlanController extends GetxController {
 
       return true;
     } catch (e, stack) {
-
       debugPrint("========== TourPlanController ==========");
       debugPrint("TourPlanController ERROR");
       debugPrint(e.toString());
@@ -700,12 +624,11 @@ class TourPlanController extends GetxController {
       if (showError) {
         Get.snackbar(
           "Error",
-          "Unable to load Tour Plan details.",
+          TTexts.uiTextUnableToLoadTourPlanDetails,
         );
       }
       return false;
     } finally {
-
       isLoading.value = false;
 
       debugPrint("========== TourPlanController ==========");
@@ -713,8 +636,6 @@ class TourPlanController extends GetxController {
       debugPrint("========================================");
     }
   }
-
-
 
   Future<void> createNewTourPlan() async {
     _syncPlanState(null);
@@ -737,27 +658,24 @@ class TourPlanController extends GetxController {
       selectedMonth.value = previousMonth;
       Get.snackbar(
         "Unable to Change Month",
-        "Could not load the selected month. Please try again.",
+        TTexts.uiTextCouldNotLoadTheSelectedMonthPleaseTry,
       );
     }
   }
 
   void generateCalendar() {
-
     debugPrint("========== TourPlanController ==========");
     debugPrint("TourPlanController generateCalendar()");
-    debugPrint("TourPlanController Calendar Month : ${selectedMonth.value.month}");
-    debugPrint("TourPlanController Calendar Year  : ${selectedMonth.value.year}");
+    debugPrint(
+        "TourPlanController Calendar Month : ${selectedMonth.value.month}");
+    debugPrint(
+        "TourPlanController Calendar Year  : ${selectedMonth.value.year}");
     debugPrint("=================================");
-    final holidayController =
-
-    Get.isRegistered<HolidayController>()
-
+    final holidayController = Get.isRegistered<HolidayController>()
         ? Get.find<HolidayController>()
-
         : Get.put(
-      HolidayController(),
-    );
+            HolidayController(),
+          );
 
     monthDays.clear();
 
@@ -767,11 +685,7 @@ class TourPlanController extends GetxController {
       0,
     ).day;
 
-    for (
-    int day = 1;
-    day <= totalDays;
-    day++
-    ) {
+    for (int day = 1; day <= totalDays; day++) {
       final date = DateTime(
         selectedMonth.value.year,
         selectedMonth.value.month,
@@ -782,19 +696,12 @@ class TourPlanController extends GetxController {
 
       if (date.weekday == DateTime.sunday) {
         monthDays.add(
-
           TourDay(
-
             date: date,
-
             type: DayType.holiday,
-
             holidayName: "Weekly Off",
-
             notes: "Sunday Off",
-
           ),
-
         );
 
         continue;
@@ -802,58 +709,36 @@ class TourPlanController extends GetxController {
 
       /// Holiday
 
-      final Holiday? holiday =
-
-      holidayController.holidays
-
-          .firstWhereOrNull(
-
-            (e) =>
-
-        e.date.year == date.year &&
-
+      final Holiday? holiday = holidayController.holidays.firstWhereOrNull(
+        (e) =>
+            e.date.year == date.year &&
             e.date.month == date.month &&
-
             e.date.day == date.day,
-
       );
 
       if (holiday != null) {
         monthDays.add(
-
           TourDay(
-
             date: date,
-
             type: DayType.holiday,
-
             holidayName: holiday.title,
-
             notes: holiday.title,
-
           ),
-
         );
 
         continue;
       }
 
       monthDays.add(
-
         TourDay(
-
           date: date,
-
           type: DayType.unassigned,
-
         ),
-
       );
     }
   }
 
   void populateExistingDays() {
-
     debugPrint("========== TourPlanController ==========");
     debugPrint("TourPlanController populateExistingDays()");
     debugPrint("========================================");
@@ -868,10 +753,9 @@ class TourPlanController extends GetxController {
     );
 
     for (final apiDay in tourPlan.value!.days) {
-
       final index = monthDays.indexWhere(
-            (e) =>
-        e.date.year == apiDay.date.year &&
+        (e) =>
+            e.date.year == apiDay.date.year &&
             e.date.month == apiDay.date.month &&
             e.date.day == apiDay.date.day,
       );
@@ -881,11 +765,11 @@ class TourPlanController extends GetxController {
       debugPrint("TourPlanController Calendar Idx : $index");
       debugPrint("TourPlanController API Type     : ${apiDay.dayType}");
       debugPrint("TourPlanController Beat Id      : ${apiDay.beatId1}");
-      debugPrint("TourPlanController Beat Name    : ${apiDay.beat1?["beat_name"]}");
+      debugPrint(
+          "TourPlanController Beat Name    : ${apiDay.beat1?["beat_name"]}");
       debugPrint("TourPlanController Notes        : ${apiDay.notes}");
 
       if (index == -1) {
-
         debugPrint(
           "TourPlanController >>> DATE NOT FOUND",
         );
@@ -902,35 +786,29 @@ class TourPlanController extends GetxController {
           apiDay.dayType,
         ),
 
-        apiDayType:
-        apiDay.dayType,
+        apiDayType: apiDay.dayType,
 
         // ----------------------------------------------------------
         // BACKEND IDS
         // ----------------------------------------------------------
 
-        id:
-        apiDay.id,
+        id: apiDay.id,
 
-        tourPlanId:
-        apiDay.tourPlanId,
+        tourPlanId: apiDay.tourPlanId,
 
         // ----------------------------------------------------------
         // COLLABORATION
         // ----------------------------------------------------------
 
-        collaborationStatus:
-        apiDay.collaborationStatus,
+        collaborationStatus: apiDay.collaborationStatus,
 
         // ----------------------------------------------------------
         // BEAT 1
         // ----------------------------------------------------------
 
-        beatId:
-        apiDay.beatId1,
+        beatId: apiDay.beatId1,
 
-        beatName:
-        _getBeatName(
+        beatName: _getBeatName(
           apiDay.beat1,
         ),
 
@@ -938,11 +816,9 @@ class TourPlanController extends GetxController {
         // BEAT 2
         // ----------------------------------------------------------
 
-        beatId2:
-        apiDay.beatId2,
+        beatId2: apiDay.beatId2,
 
-        beatName2:
-        _getBeatName(
+        beatName2: _getBeatName(
           apiDay.beat2,
         ),
 
@@ -950,13 +826,11 @@ class TourPlanController extends GetxController {
         // JOINT WORK
         // ----------------------------------------------------------
 
-        jointWorkUserIds:
-        List<String>.from(
+        jointWorkUserIds: List<String>.from(
           apiDay.jointWorkUserIds,
         ),
 
-        jointWorkUserNames:
-        _getJointWorkUserNames(
+        jointWorkUserNames: _getJointWorkUserNames(
           apiDay.jointWorkUsers,
           apiDay.jointWorkWith,
         ),
@@ -965,17 +839,13 @@ class TourPlanController extends GetxController {
         // NOTES
         // ----------------------------------------------------------
 
-        notes:
-        apiDay.notes,
+        notes: apiDay.notes,
       );
 
-      debugPrint(
-          "TourPlanController Updated Type = ${monthDays[index].type}"
-      );
+      debugPrint("TourPlanController Updated Type = ${monthDays[index].type}");
 
       debugPrint(
-          "TourPlanController Updated Beat = ${monthDays[index].beatName}"
-      );
+          "TourPlanController Updated Beat = ${monthDays[index].beatName}");
 
       debugPrint(
         "TourPlanController UPDATED : ${monthDays[index]}",
@@ -994,16 +864,13 @@ class TourPlanController extends GetxController {
   }
 
   String? _getBeatName(
-      Map<String, dynamic>? beat,
-      ) {
+    Map<String, dynamic>? beat,
+  ) {
     if (beat == null) {
       return null;
     }
 
-    final name =
-        beat["name"] ??
-            beat["beat_name"] ??
-            beat["beatName"];
+    final name = beat["name"] ?? beat["beat_name"] ?? beat["beatName"];
 
     if (name == null) {
       return null;
@@ -1031,8 +898,7 @@ class TourPlanController extends GetxController {
         if (nestedName != null) return nestedName;
       }
 
-      final name =
-          value["name"] ??
+      final name = value["name"] ??
           value["user_name"] ??
           value["userName"] ??
           value["full_name"] ??
@@ -1043,10 +909,7 @@ class TourPlanController extends GetxController {
     }
 
     // Current API shape: joint_work_users: [{...user...}, ...]
-    final names = jointWorkUsers
-        .map(extractName)
-        .whereType<String>()
-        .toList();
+    final names = jointWorkUsers.map(extractName).whereType<String>().toList();
 
     if (names.isNotEmpty) {
       return names;
@@ -1055,10 +918,7 @@ class TourPlanController extends GetxController {
     // Backward-compatible fallback for older jointWorkWith payloads.
     final users = jointWorkWith?["users"];
     if (users is List) {
-      return users
-          .map(extractName)
-          .whereType<String>()
-          .toList();
+      return users.map(extractName).whereType<String>().toList();
     }
 
     final singleName = extractName(jointWorkWith);
@@ -1081,7 +941,6 @@ class TourPlanController extends GetxController {
   }
 
   void selectEditableDay(TourDay day) {
-
     debugPrint("========== selectEditableDay ==========");
     debugPrint("Status : ${currentStatus.value}");
     debugPrint("Editable : $canEditCurrentPlan");
@@ -1090,13 +949,12 @@ class TourPlanController extends GetxController {
     if (!canEditCurrentPlan) {
       Get.snackbar(
         "Read Only",
-        "This Tour Plan cannot be edited.",
+        TTexts.uiTextThisTourPlanCannotBeEdited,
       );
       return;
     }
 
-    if (day.holidayName == "Weekly Off" ||
-        day.type == DayType.holiday) {
+    if (day.holidayName == "Weekly Off" || day.type == DayType.holiday) {
       return;
     }
 
@@ -1110,21 +968,18 @@ class TourPlanController extends GetxController {
     }
   }
 
-  void updateDay(TourDay updatedDay,) {
+  void updateDay(
+    TourDay updatedDay,
+  ) {
     if (!canEditCurrentPlan) {
       return;
     }
 
     final index = monthDays.indexWhere(
-
-          (e) =>
-
-      e.date.year == updatedDay.date.year &&
-
+      (e) =>
+          e.date.year == updatedDay.date.year &&
           e.date.month == updatedDay.date.month &&
-
           e.date.day == updatedDay.date.day,
-
     );
 
     if (index == -1) {
@@ -1144,7 +999,6 @@ class TourPlanController extends GetxController {
   ///------------------------------------------------------------
 
   String? validateDay(TourDay day) {
-
     /// Weekly Off / Holiday
 
     if (!day.isEditable) {
@@ -1174,9 +1028,7 @@ class TourPlanController extends GetxController {
     /// Meeting
 
     if (day.type == DayType.meeting) {
-      if ((day.notes ?? "")
-          .trim()
-          .isEmpty) {
+      if ((day.notes ?? "").trim().isEmpty) {
         return "Meeting remarks are required.";
       }
     }
@@ -1184,9 +1036,7 @@ class TourPlanController extends GetxController {
     /// Office
 
     if (day.type == DayType.office) {
-      if ((day.notes ?? "")
-          .trim()
-          .isEmpty) {
+      if ((day.notes ?? "").trim().isEmpty) {
         return "Office remarks are required.";
       }
     }
@@ -1236,8 +1086,7 @@ class TourPlanController extends GetxController {
   /// Day Summary
 //------------------------------------------------------------
 
-  int get fieldCount =>
-      monthDays.where((e) => e.type == DayType.field).length;
+  int get fieldCount => monthDays.where((e) => e.type == DayType.field).length;
 
   int get jointWorkCount =>
       monthDays.where((e) => e.type == DayType.jointWork).length;
@@ -1251,14 +1100,12 @@ class TourPlanController extends GetxController {
   int get transitCount =>
       monthDays.where((e) => e.type == DayType.transit).length;
 
-  int get leaveCount =>
-      monthDays.where((e) => e.type == DayType.leave).length;
+  int get leaveCount => monthDays.where((e) => e.type == DayType.leave).length;
 
   int get holidayCount =>
       monthDays.where((e) => e.isHoliday && !e.isWeeklyOff).length;
 
-  int get weeklyOffCount =>
-      monthDays.where((e) => e.isWeeklyOff).length;
+  int get weeklyOffCount => monthDays.where((e) => e.isWeeklyOff).length;
 
   ///------------------------------------------------------------
   /// UI Enum -> API
@@ -1266,7 +1113,6 @@ class TourPlanController extends GetxController {
 
   String mapDayType(TourDay day) {
     switch (day.type) {
-
       case DayType.field:
         return "Field";
 
@@ -1286,7 +1132,6 @@ class TourPlanController extends GetxController {
         return "Leave";
 
       case DayType.holiday:
-
         if (day.isWeeklyOff) {
           return "Weekly off";
         }
@@ -1300,21 +1145,18 @@ class TourPlanController extends GetxController {
     }
   }
 
+  int get plannedDaysCount => monthDays
+      .where((e) => e.type != DayType.unassigned && e.type != DayType.holiday)
+      .length;
 
-  int get plannedDaysCount =>
-      monthDays.where((e) =>
-      e.type != DayType.unassigned &&
-          e.type != DayType.holiday).length;
-
-  int get workingDaysCount =>
-      monthDays.where((e) =>
-      e.type == DayType.field ||
+  int get workingDaysCount => monthDays
+      .where((e) =>
+          e.type == DayType.field ||
           e.type == DayType.jointWork ||
           e.type == DayType.meeting ||
           e.type == DayType.office ||
-          e.type == DayType.transit).length;
-
-
+          e.type == DayType.transit)
+      .length;
 
   ///------------------------------------------------------------
   /// Draft Body
@@ -1322,44 +1164,17 @@ class TourPlanController extends GetxController {
 
   Map<String, dynamic> buildDraftBody() {
     return {
-
       "month": selectedMonth.value.month,
-
       "year": selectedMonth.value.year,
-
-      "days":
-
-      monthDays.map(
-
-            (day) {
+      "days": monthDays.map(
+        (day) {
           return {
-
-            "date":
-
-            day.date
-                .toIso8601String()
-                .split("T")
-                .first,
-
-            "day_type":
-
-            mapDayType(day),
-
-            "beat_id_1":
-
-            day.beatId,
-
-            "beat_id_2":
-
-            day.beatId2,
-
-            "joint_work_user_ids":
-
-            day.jointWorkUserIds,
-
-            "notes":
-
-            day.notes ?? "",
+            "date": day.date.toIso8601String().split("T").first,
+            "day_type": mapDayType(day),
+            "beat_id_1": day.beatId,
+            "beat_id_2": day.beatId2,
+            "joint_work_user_ids": day.jointWorkUserIds,
+            "notes": day.notes ?? "",
           };
         },
       ).toList(),
@@ -1370,18 +1185,15 @@ class TourPlanController extends GetxController {
   /// Find Day
   ///------------------------------------------------------------
 
-  TourDay? findDay(DateTime date,) {
+  TourDay? findDay(
+    DateTime date,
+  ) {
     try {
       return monthDays.firstWhere(
-
-            (e) =>
-
-        e.date.year == date.year &&
-
+        (e) =>
+            e.date.year == date.year &&
             e.date.month == date.month &&
-
             e.date.day == date.day,
-
       );
     } catch (_) {
       return null;
@@ -1416,7 +1228,7 @@ class TourPlanController extends GetxController {
     if (!canEditCurrentPlan) {
       Get.snackbar(
         "Read Only",
-        "This Tour Plan cannot be edited.",
+        TTexts.uiTextThisTourPlanCannotBeEdited,
       );
       return null;
     }
@@ -1440,7 +1252,7 @@ class TourPlanController extends GetxController {
       final body = buildDraftBody();
 
       debugPrint(
-        '[TourPlanService] Saving ${monthTitle} with ' 
+        '[TourPlanService] Saving ${monthTitle} with '
         '${(body['days'] as List).length} days',
       );
 
@@ -1449,7 +1261,7 @@ class TourPlanController extends GetxController {
       if (id == null || id.isEmpty) {
         Get.snackbar(
           "Error",
-          "Unable to save draft.",
+          TTexts.uiTextUnableToSaveDraft,
           backgroundColor: TColors.error.withOpacity(.15),
         );
         return null;
@@ -1504,7 +1316,7 @@ class TourPlanController extends GetxController {
 
     Get.snackbar(
       "Success",
-      "Draft saved successfully.",
+      TTexts.uiTextDraftSavedSuccessfully_6600cc90,
     );
     return true;
   }
@@ -1513,11 +1325,10 @@ class TourPlanController extends GetxController {
   /// New Flow : Save + Submit
   /// =======================================================
   Future<void> submitCurrentPlan() async {
-
     if (!canEditCurrentPlan) {
       Get.snackbar(
         "Read Only",
-        "This Tour Plan cannot be edited.",
+        TTexts.uiTextThisTourPlanCannotBeEdited,
       );
       return;
     }
@@ -1537,13 +1348,10 @@ class TourPlanController extends GetxController {
   ///------------------------------------------------------------
 
   Future<bool> submitPlan({bool showSuccessMessage = true}) async {
-
-
-
     if (draftId.value.isEmpty) {
       Get.snackbar(
         "Draft Missing",
-        "Please save draft before submitting.",
+        TTexts.uiTextPleaseSaveDraftBeforeSubmitting,
         backgroundColor: TColors.warning.withOpacity(.15),
       );
       return false;
@@ -1552,13 +1360,12 @@ class TourPlanController extends GetxController {
     isSubmitting.value = true;
 
     try {
-
       final success = await service.submitDraft(draftId.value);
 
       if (!success) {
         Get.snackbar(
           "Failed",
-          "Unable to submit plan.",
+          TTexts.uiTextUnableToSubmitPlan,
         );
         return false;
       }
@@ -1578,24 +1385,20 @@ class TourPlanController extends GetxController {
       if (showSuccessMessage) {
         Get.snackbar(
           "Success",
-          "Tour Plan submitted successfully.",
+          TTexts.uiTextTourPlanSubmittedSuccessfully,
           backgroundColor: TColors.success.withOpacity(.15),
         );
       }
 
       return true;
-
     } catch (e) {
-
       Get.snackbar(
         "Error",
         e.toString(),
       );
 
       return false;
-
     } finally {
-
       isSubmitting.value = false;
     }
   }
@@ -1609,8 +1412,7 @@ class TourPlanController extends GetxController {
       return;
     }
 
-    final result =
-    await service.getTourPlanDetails(
+    final result = await service.getTourPlanDetails(
       draftId.value,
     );
 
@@ -1660,17 +1462,14 @@ class TourPlanController extends GetxController {
     hasUnsavedChanges.value = false;
     _availableUsersDate = null;
 
-    selectedMonth.value =
-        _defaultPlanningMonth();
+    selectedMonth.value = _defaultPlanningMonth();
 
     generateCalendar();
   }
 
   @override
   void onClose() {
-
     debugPrint("TourPlanController disposed");
-
 
     super.onClose();
   }

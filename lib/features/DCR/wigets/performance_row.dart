@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
-
 import '../model/performance_model.dart';
 import 'metric_cell.dart';
 import 'performance_progress.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class PerformanceRow extends StatefulWidget {
   final PerformanceModel employee;
@@ -21,60 +21,42 @@ class PerformanceRow extends StatefulWidget {
 }
 
 class _PerformanceRowState extends State<PerformanceRow> {
-
   bool hovering = false;
 
   @override
   Widget build(BuildContext context) {
-
     final emp = widget.employee;
 
     return MouseRegion(
-
       onEnter: (_) => setState(() => hovering = true),
-
       onExit: (_) => setState(() => hovering = false),
-
       cursor: SystemMouseCursors.click,
-
       child: AnimatedContainer(
-
         duration: const Duration(milliseconds: 220),
-
         curve: Curves.easeOut,
-
         padding: const EdgeInsets.symmetric(
           horizontal: 18,
           vertical: 16,
         ),
-
         decoration: BoxDecoration(
-
-          color: hovering
-              ? TColors.primary_shade50
-              : Colors.white,
-
+          color: hovering ? TColors.primary_shade50 : TColors.white,
           border: Border(
             bottom: BorderSide(
               color: TColors.borderSecondary,
             ),
           ),
-
           boxShadow: hovering
               ? [
-            BoxShadow(
-              color: Colors.black.withOpacity(.05),
-              blurRadius: 12,
-              offset: const Offset(0, 3),
-            )
-          ]
+                  BoxShadow(
+                    color: TColors.pureBlack.withOpacity(.05),
+                    blurRadius: TSizes.v12,
+                    offset: const Offset(0, 3),
+                  )
+                ]
               : [],
         ),
-
         child: Row(
-
           children: [
-
             /// Employee
             Expanded(
               flex: 2,
@@ -87,11 +69,11 @@ class _PerformanceRowState extends State<PerformanceRow> {
               child: MetricCell(
                 scheduled: emp.doctorScheduled,
                 confirmed: emp.doctorConfirmed,
-                color: Colors.blue,
+                color: TColors.materialBlue,
               ),
             ),
 
-            const SizedBox(width: 12),
+            const SizedBox(width: TSizes.v12),
 
             /// Chemist
             Expanded(
@@ -99,11 +81,11 @@ class _PerformanceRowState extends State<PerformanceRow> {
               child: MetricCell(
                 scheduled: emp.chemistScheduled,
                 confirmed: emp.chemistConfirmed,
-                color: Colors.purple,
+                color: TColors.materialPurple,
               ),
             ),
 
-            const SizedBox(width: 12),
+            const SizedBox(width: TSizes.v12),
 
             /// Stockist
             Expanded(
@@ -111,11 +93,11 @@ class _PerformanceRowState extends State<PerformanceRow> {
               child: MetricCell(
                 scheduled: emp.stockistScheduled,
                 confirmed: emp.stockistConfirmed,
-                color: Colors.green,
+                color: TColors.materialGreen,
               ),
             ),
 
-            const SizedBox(width: 20),
+            const SizedBox(width: TSizes.v20),
 
             /// Overall Coverage
             Expanded(
@@ -127,23 +109,20 @@ class _PerformanceRowState extends State<PerformanceRow> {
       ),
     )
         .animate(
-      delay: Duration(
-        milliseconds: widget.index * 70,
-      ),
-    )
+          delay: Duration(
+            milliseconds: widget.index * 70,
+          ),
+        )
         .fade()
         .slideX(begin: .10);
   }
 
   Widget _employeeInfo() {
-
     final emp = widget.employee;
 
     return Row(
-
       children: [
-
-       /* CircleAvatar(
+        /* CircleAvatar(
 
           radius: 26,
 
@@ -163,35 +142,21 @@ class _PerformanceRowState extends State<PerformanceRow> {
         const SizedBox(width: 14),*/
 
         Expanded(
-
           child: Column(
-
             crossAxisAlignment: CrossAxisAlignment.start,
-
             children: [
-
               Text(
-
                 emp.name,
-
                 maxLines: 1,
-
                 overflow: TextOverflow.ellipsis,
-
                 style: const TextStyle(
-
-                  fontSize: 16,
-
+                  fontSize: TSizes.v16,
                   fontWeight: FontWeight.w600,
                 ),
               ),
-
-              const SizedBox(height: 4),
-
+              const SizedBox(height: TSizes.v4),
               Text(
-
                 "ID : ${emp.id}",
-
                 style: const TextStyle(
                   color: TColors.textSecondary,
                 ),
@@ -204,41 +169,26 @@ class _PerformanceRowState extends State<PerformanceRow> {
   }
 
   Widget _coverage() {
-
     final coverage = widget.employee.overallCoverage;
 
     return Column(
-
       crossAxisAlignment: CrossAxisAlignment.start,
-
       children: [
-
         Row(
-
           children: [
-
             Text(
-
               "${(coverage * 100).toStringAsFixed(0)}%",
-
               style: TextStyle(
-
                 color: _coverageColor(coverage),
-
                 fontWeight: FontWeight.bold,
-
-                fontSize: 18,
+                fontSize: TSizes.v18,
               ),
             ),
-
             const Spacer(),
-
             _badge(),
           ],
         ),
-
-        const SizedBox(height: 10),
-
+        const SizedBox(height: TSizes.v10),
         PerformanceProgress(
           value: coverage,
           color: _coverageColor(coverage),
@@ -248,7 +198,6 @@ class _PerformanceRowState extends State<PerformanceRow> {
   }
 
   Widget _badge() {
-
     final coverage = widget.employee.overallCoverage;
 
     String text;
@@ -256,68 +205,50 @@ class _PerformanceRowState extends State<PerformanceRow> {
     Color color;
 
     if (coverage >= .90) {
-
       text = "Excellent";
 
       color = TColors.success;
-
     } else if (coverage >= .75) {
-
       text = "Good";
 
-      color = Colors.blue;
-
+      color = TColors.materialBlue;
     } else if (coverage >= .50) {
-
       text = "Average";
 
       color = TColors.warning;
-
     } else {
-
       text = "Poor";
 
       color = TColors.error;
     }
 
     return Container(
-
       padding: const EdgeInsets.symmetric(
         horizontal: 10,
         vertical: 5,
       ),
-
       decoration: BoxDecoration(
-
         color: color.withOpacity(.12),
-
         borderRadius: BorderRadius.circular(20),
       ),
-
       child: Text(
-
         text,
-
         style: TextStyle(
-
           color: color,
-
           fontWeight: FontWeight.w600,
-
-          fontSize: 12,
+          fontSize: TSizes.v12,
         ),
       ),
     );
   }
 
   Color _coverageColor(double coverage) {
-
     if (coverage >= .90) {
       return TColors.success;
     }
 
     if (coverage >= .75) {
-      return Colors.blue;
+      return TColors.materialBlue;
     }
 
     if (coverage >= .50) {

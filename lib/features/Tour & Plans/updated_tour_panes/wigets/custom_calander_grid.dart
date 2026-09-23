@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../../../utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import '../model/TourDay.dart';
 import 'CalendarCell.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class CustomCalendarGrid extends StatelessWidget {
   final List<TourDay> days;
@@ -31,8 +32,7 @@ class CustomCalendarGrid extends StatelessWidget {
     ];
 
     // Empty cells before first day of month
-    final int startIndex =
-    days.isEmpty ? 0 : days.first.date.weekday % 7;
+    final int startIndex = days.isEmpty ? 0 : days.first.date.weekday % 7;
 
     return Column(
       children: [
@@ -55,11 +55,9 @@ class CustomCalendarGrid extends StatelessWidget {
                     dayName,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 12,
+                      fontSize: TSizes.v12,
                       letterSpacing: 1.1,
-                      color: isSunday
-                          ? TColors.error
-                          : TColors.textSecondary,
+                      color: isSunday ? TColors.error : TColors.textSecondary,
                     ),
                   ),
                 ),
@@ -69,7 +67,7 @@ class CustomCalendarGrid extends StatelessWidget {
         ),
 
         const Divider(
-          height: 1,
+          height: TSizes.v1,
           color: TColors.borderSecondary,
         ),
 
@@ -84,13 +82,11 @@ class CustomCalendarGrid extends StatelessWidget {
             // Total cells = blank cells + actual dates
             itemCount: startIndex + days.length,
 
-            gridDelegate:
-            SliverGridDelegateWithFixedCrossAxisCount(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 7,
-              crossAxisSpacing: 10,
-              mainAxisSpacing: 10,
-              childAspectRatio:
-              isPortrait ? 0.90 : 1.20,
+              crossAxisSpacing: TSizes.v10,
+              mainAxisSpacing: TSizes.v10,
+              childAspectRatio: isPortrait ? 0.90 : 1.20,
             ),
 
             itemBuilder: (context, index) {
@@ -108,8 +104,7 @@ class CustomCalendarGrid extends StatelessWidget {
 
               return CalendarCell(
                 day: day,
-                isSelected:
-                selectedDay?.date == day.date,
+                isSelected: selectedDay?.date == day.date,
                 onTap: () => onDaySelected(day),
               );
             },

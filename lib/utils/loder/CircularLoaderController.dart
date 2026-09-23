@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 
 class CircularLoaderController {
   static bool _isLoading = false; // Track whether the loader is running
@@ -24,7 +25,7 @@ class CircularLoaderController {
         return WillPopScope(
           onWillPop: () async => false, // Prevent closing the dialog
           child: const Dialog(
-            backgroundColor: Colors.transparent,
+            backgroundColor: TColors.transparent,
             child: Center(
               child: CircularProgressIndicator(
                 valueColor: AlwaysStoppedAnimation<Color>(TColors.primary),

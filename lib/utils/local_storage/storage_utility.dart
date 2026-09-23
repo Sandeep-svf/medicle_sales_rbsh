@@ -6,8 +6,7 @@ import '../../features/authentication/models/UserModel.dart';
 class TLocalStorage {
   static final TLocalStorage _instance = TLocalStorage._internal();
 
-
- /*static Future<String?> getUserIdFromPrefs() async {
+  /*static Future<String?> getUserIdFromPrefs() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? userData = prefs.getString("userData");
 
@@ -47,7 +46,6 @@ class TLocalStorage {
   }
 }
 
-
 /// *** *** *** *** *** Example *** *** *** *** *** ///
 
 // LocalStorage localStorage = LocalStorage();
@@ -64,4 +62,3 @@ class TLocalStorage {
 //
 // // Clear all data
 // localStorage.clearAll();
-

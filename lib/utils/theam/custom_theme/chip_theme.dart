@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class SChipTheme {
   SChipTheme._();

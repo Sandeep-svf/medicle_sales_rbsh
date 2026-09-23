@@ -3,7 +3,6 @@ import 'package:http/http.dart' as http;
 import '../../../utils/http/http_client.dart';
 import '../model/NotificationModel.dart';
 
-
 class NotificationController {
   final String userId;
   final String token;
@@ -15,7 +14,8 @@ class NotificationController {
 
   // Fetch notifications from API
   Future<List<NotificationModel>> fetchNotifications() async {
-    final url = Uri.parse('${THttpHelper.baseUrl}/notifications?userId=$userId');
+    final url =
+        Uri.parse('${THttpHelper.baseUrl}/notifications?userId=$userId');
     final response = await http.get(url, headers: {
       'Authorization': 'Bearer $token',
     });
@@ -30,13 +30,16 @@ class NotificationController {
 
   // Delete a notification by ID
   Future<void> deleteNotification(String notificationId) async {
-    final url = Uri.parse('${THttpHelper.baseUrl}/notifications/$notificationId');
-    final response = await http.delete(url, headers: {
-      'Authorization': 'Bearer $token',
-      'Content-Type': 'application/json',
-    }, body: json.encode({
-      'userId': userId,
-    }));
+    final url =
+        Uri.parse('${THttpHelper.baseUrl}/notifications/$notificationId');
+    final response = await http.delete(url,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          'userId': userId,
+        }));
 
     if (response.statusCode != 200) {
       throw Exception('Failed to delete the notification');

@@ -4,7 +4,6 @@ import '../enum.dart';
 import '../model/investment_model.dart';
 
 class InvestmentController extends GetxController {
-
   /// Toggle between Table & Card View
   final RxBool tableView = true.obs;
 
@@ -58,7 +57,6 @@ class InvestmentController extends GetxController {
         purpose: "Quarterly Clinic Support",
         status: InvestmentStatus.pending,
       ),
-
       InvestmentModel(
         id: "2",
         doctorName: "Dr. Sharma",
@@ -69,7 +67,6 @@ class InvestmentController extends GetxController {
         status: InvestmentStatus.approved,
         //
       ),
-
       InvestmentModel(
         id: "3",
         doctorName: "Dr. Khan",
@@ -78,9 +75,8 @@ class InvestmentController extends GetxController {
         submittedDate: DateTime(2025, 6, 11),
         purpose: "Derm Atlas",
         status: InvestmentStatus.paid,
-       // 
+        //
       ),
-
       InvestmentModel(
         id: "4",
         doctorName: "Dr. Tyagi",
@@ -89,7 +85,6 @@ class InvestmentController extends GetxController {
         submittedDate: DateTime(2025, 6, 9),
         purpose: "Quarterly Support",
         status: InvestmentStatus.rejected,
-        
       ),
       InvestmentModel(
         id: "1",
@@ -100,7 +95,6 @@ class InvestmentController extends GetxController {
         purpose: "Quarterly Clinic Support",
         status: InvestmentStatus.pending,
       ),
-
       InvestmentModel(
         id: "2",
         doctorName: "Dr. Sharma",
@@ -109,9 +103,7 @@ class InvestmentController extends GetxController {
         submittedDate: DateTime(2025, 6, 14),
         purpose: "CME Speaker Honorarium",
         status: InvestmentStatus.approved,
-        
       ),
-
       InvestmentModel(
         id: "3",
         doctorName: "Dr. Khan",
@@ -120,9 +112,7 @@ class InvestmentController extends GetxController {
         submittedDate: DateTime(2025, 6, 11),
         purpose: "Derm Atlas",
         status: InvestmentStatus.paid,
-        
       ),
-
       InvestmentModel(
         id: "4",
         doctorName: "Dr. Tyagi",
@@ -131,7 +121,6 @@ class InvestmentController extends GetxController {
         submittedDate: DateTime(2025, 6, 9),
         purpose: "Quarterly Support",
         status: InvestmentStatus.rejected,
-        
       ),
       InvestmentModel(
         id: "1",
@@ -142,7 +131,6 @@ class InvestmentController extends GetxController {
         purpose: "Quarterly Clinic Support",
         status: InvestmentStatus.pending,
       ),
-
       InvestmentModel(
         id: "2",
         doctorName: "Dr. Sharma",
@@ -151,9 +139,7 @@ class InvestmentController extends GetxController {
         submittedDate: DateTime(2025, 6, 14),
         purpose: "CME Speaker Honorarium",
         status: InvestmentStatus.approved,
-        
       ),
-
       InvestmentModel(
         id: "3",
         doctorName: "Dr. Khan",
@@ -162,9 +148,7 @@ class InvestmentController extends GetxController {
         submittedDate: DateTime(2025, 6, 11),
         purpose: "Derm Atlas",
         status: InvestmentStatus.paid,
-        
       ),
-
       InvestmentModel(
         id: "4",
         doctorName: "Dr. Tyagi",
@@ -173,7 +157,6 @@ class InvestmentController extends GetxController {
         submittedDate: DateTime(2025, 6, 9),
         purpose: "Quarterly Support",
         status: InvestmentStatus.rejected,
-        
       ),
     ]);
   }

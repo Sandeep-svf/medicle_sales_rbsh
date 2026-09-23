@@ -8,14 +8,12 @@ import '../background/location_service.dart';
 class TrackingServiceManager {
   TrackingServiceManager._();
 
-  static final TrackingServiceManager instance =
-  TrackingServiceManager._();
+  static final TrackingServiceManager instance = TrackingServiceManager._();
 
   static const String notificationChannelId = 'tracking_channel';
   static const int notificationId = 1001;
 
-  final FlutterBackgroundService _service =
-  FlutterBackgroundService();
+  final FlutterBackgroundService _service = FlutterBackgroundService();
 
   bool _configured = false;
 
@@ -50,8 +48,7 @@ class TrackingServiceManager {
 
           notificationChannelId: notificationChannelId,
           initialNotificationTitle: 'Tracking active',
-          initialNotificationContent:
-          'Sales location tracking is running',
+          initialNotificationContent: 'Sales location tracking is running',
 
           foregroundServiceNotificationId: notificationId,
 
@@ -59,7 +56,6 @@ class TrackingServiceManager {
             AndroidForegroundType.location,
           ],
         ),
-
         iosConfiguration: IosConfiguration(
           autoStart: false,
         ),
@@ -144,17 +140,15 @@ class TrackingServiceManager {
     const channel = AndroidNotificationChannel(
       notificationChannelId,
       'Location Tracking',
-      description:
-      'Shows when background sales location tracking is active.',
+      description: 'Shows when background sales location tracking is active.',
       importance: Importance.low,
     );
 
-    final notifications =
-    FlutterLocalNotificationsPlugin();
+    final notifications = FlutterLocalNotificationsPlugin();
 
     await notifications
         .resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>()
+            AndroidFlutterLocalNotificationsPlugin>()
         ?.createNotificationChannel(channel);
   }
 }

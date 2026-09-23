@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 
 import '../../../utils/http/http_client.dart';
 import '../../../utils/local_storage/auth_manager.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class AddExpenseController with ChangeNotifier {
   final String apiUrl = "${THttpHelper.baseUrl}/expenses";
@@ -29,7 +30,7 @@ class AddExpenseController with ChangeNotifier {
         debugPrint("[AddExpenseController] User ID is NULL. Cannot proceed.");
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Error: User not logged in')),
+            const SnackBar(content: Text(TTexts.uiTextErrorUserNotLoggedIn)),
           );
         }
         return;
@@ -59,7 +60,8 @@ class AddExpenseController with ChangeNotifier {
         debugPrint("[AddExpenseController] Success!");
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Expense added successfully!')),
+            const SnackBar(
+                content: Text(TTexts.uiTextExpenseAddedSuccessfully)),
           );
           Navigator.pop(context); // Go back if successful
         }

@@ -1,9 +1,12 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'dart:math';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 void main() {
   runApp(const MyApp());
@@ -28,7 +31,6 @@ class RouteMapScreen extends StatefulWidget {
   State<RouteMapScreen> createState() => _RouteMapScreenState();
 }
 
-
 class _RouteMapScreenState extends State<RouteMapScreen> {
   final MapController _mapController = MapController();
 
@@ -43,8 +45,7 @@ class _RouteMapScreenState extends State<RouteMapScreen> {
   }
 
   Future<void> loadCsvAndDraw() async {
-    final rawData =
-    await rootBundle.loadString('assets/upload_queue.csv');
+    final rawData = await rootBundle.loadString('assets/upload_queue.csv');
 
     final lines = LineSplitter.split(rawData).toList();
 
@@ -58,18 +59,13 @@ class _RouteMapScreenState extends State<RouteMapScreen> {
       if (parts.length < 4) continue;
 
       try {
-        final timestampMillis =
-        int.parse(parts[parts.length - 3]);
+        final timestampMillis = int.parse(parts[parts.length - 3]);
 
-        final lat =
-        double.parse(parts[parts.length - 2]);
+        final lat = double.parse(parts[parts.length - 2]);
 
-        final lon =
-        double.parse(parts[parts.length - 1]);
+        final lon = double.parse(parts[parts.length - 1]);
 
-        final timestamp =
-        DateTime.fromMillisecondsSinceEpoch(
-            timestampMillis);
+        final timestamp = DateTime.fromMillisecondsSinceEpoch(timestampMillis);
 
         gpsPoints.add(
           GpsPoint(
@@ -103,8 +99,7 @@ class _RouteMapScreenState extends State<RouteMapScreen> {
 
   void _detectStops() {
     const double radiusThreshold = 30; // meters
-    const Duration minStopDuration =
-    Duration(minutes: 2);
+    const Duration minStopDuration = Duration(minutes: 2);
 
     stopPoints.clear();
 
@@ -121,8 +116,7 @@ class _RouteMapScreenState extends State<RouteMapScreen> {
       if (distance > radiusThreshold) {
         final duration = gpsPoints[i - 1]
             .timestamp
-            .difference(
-            gpsPoints[startIndex].timestamp);
+            .difference(gpsPoints[startIndex].timestamp);
 
         if (duration >= minStopDuration) {
           stopPoints.add(
@@ -139,8 +133,7 @@ class _RouteMapScreenState extends State<RouteMapScreen> {
     }
   }
 
-  double _calculateDistance(
-      GpsPoint p1, GpsPoint p2) {
+  double _calculateDistance(GpsPoint p1, GpsPoint p2) {
     const R = 6371000;
 
     final dLat = _degToRad(p2.lat - p1.lat);
@@ -157,14 +150,12 @@ class _RouteMapScreenState extends State<RouteMapScreen> {
     return R * c;
   }
 
-  double _degToRad(double deg) =>
-      deg * (pi / 180);
+  double _degToRad(double deg) => deg * (pi / 180);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar:
-      AppBar(title: const Text("Offline Route Viewer (OSM)")),
+      appBar: AppBar(title: const Text(TTexts.uiTextOfflineRouteViewerOSM)),
       body: FlutterMap(
         mapController: _mapController,
         options: MapOptions(
@@ -175,72 +166,57 @@ class _RouteMapScreenState extends State<RouteMapScreen> {
         ),
         children: [
           TileLayer(
-            urlTemplate:
-            'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-            userAgentPackageName:
-            'com.rbsh.medicle_sales_rbsh',
+            urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+            userAgentPackageName: 'com.rbsh.medicle_sales_rbsh',
           ),
-
           PolylineLayer(
             polylines: [
               Polyline(
                 points: routePoints,
-                strokeWidth: 4,
-                color: Colors.blue,
+                strokeWidth: TSizes.v4,
+                color: TColors.materialBlue,
               ),
             ],
           ),
-
           MarkerLayer(
             markers: [
               if (routePoints.isNotEmpty)
                 Marker(
                   point: routePoints.first,
-                  width: 40,
-                  height: 40,
-                  child: const Icon(
-                      Icons.location_on,
-                      color: Colors.green,
-                      size: 40),
+                  width: TSizes.v40,
+                  height: TSizes.v40,
+                  child: const Icon(Icons.location_on,
+                      color: TColors.materialGreen, size: TSizes.v40),
                 ),
-
               if (routePoints.isNotEmpty)
                 Marker(
                   point: routePoints.last,
-                  width: 40,
-                  height: 40,
-                  child: const Icon(
-                      Icons.flag,
-                      color: Colors.red,
-                      size: 40),
+                  width: TSizes.v40,
+                  height: TSizes.v40,
+                  child: const Icon(Icons.flag,
+                      color: TColors.materialRed, size: TSizes.v40),
                 ),
-
               ...stopPoints.map(
-                    (stop) => Marker(
-                  point:
-                  LatLng(stop.lat, stop.lng),
-                  width: 120,
-                  height: 60,
+                (stop) => Marker(
+                  point: LatLng(stop.lat, stop.lng),
+                  width: TSizes.v120,
+                  height: TSizes.v60,
                   child: Column(
                     children: [
                       const Icon(
                         Icons.pause_circle_filled,
-                        color: Colors.orange,
-                        size: 30,
+                        color: TColors.materialOrange,
+                        size: TSizes.v30,
                       ),
                       Container(
-                        padding:
-                        const EdgeInsets
-                            .symmetric(
-                            horizontal: 6,
-                            vertical: 2),
-                        color: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
+                        color: TColors.white,
                         child: Text(
                           "${stop.duration.inMinutes} min",
                           style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight:
-                            FontWeight.bold,
+                            fontSize: TSizes.v12,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),

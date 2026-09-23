@@ -6,25 +6,11 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:medicle_sales_rbsh/features/StatelevelUser/CheckLocationOfAllUser/Controller/LocationController.dart';
 import 'package:medicle_sales_rbsh/utils/http/http_client.dart';
-
 import '../../../../services/LocationController.dart';
 import '../Model/UserLocationListModel.dart';
-
-
-
-
-
-import 'dart:async';
-import 'dart:math';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:medicle_sales_rbsh/features/StatelevelUser/CheckLocationOfAllUser/Controller/LocationController.dart';
-import 'package:medicle_sales_rbsh/utils/http/http_client.dart';
-
-import '../../../../services/LocationController.dart';
-import '../Model/UserLocationListModel.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 
 class RouteMapScreen extends StatefulWidget {
   const RouteMapScreen({super.key});
@@ -37,31 +23,33 @@ class _RouteMapScreenState extends State<RouteMapScreen> {
   final Completer<GoogleMapController> _controller = Completer();
   String userData = Get.arguments ?? 'No data';
   DateTime selectedDate = DateTime.now(); // Default to today's date
-  List<LatLng> _route = []; // Empty list initially, will be updated with fetched data
+  List<LatLng> _route =
+      []; // Empty list initially, will be updated with fetched data
   bool _isLoading = true; // For loading state
 
   // Initialize the controller
-  final LocationControllerList locationController = LocationControllerList(baseUrl: THttpHelper.baseUrl);
+  final LocationControllerList locationController =
+      LocationControllerList(baseUrl: THttpHelper.baseUrl);
 
   bool _trafficEnabled = false;
   MapType _mapType = MapType.normal;
 
   Set<Polyline> get _polylines => {
-    Polyline(
-      polylineId: const PolylineId('route'),
-      points: _route,
-      color: Colors.blueAccent,
-      width: 6,
-      startCap: Cap.roundCap,
-      endCap: Cap.roundCap,
-      jointType: JointType.round,
-      geodesic: true,
-      patterns: <PatternItem>[
-        PatternItem.dash(25),
-        PatternItem.gap(10),
-      ],
-    ),
-  };
+        Polyline(
+          polylineId: const PolylineId('route'),
+          points: _route,
+          color: TColors.materialBlueAccent,
+          width: TSizes.i6,
+          startCap: Cap.roundCap,
+          endCap: Cap.roundCap,
+          jointType: JointType.round,
+          geodesic: true,
+          patterns: <PatternItem>[
+            PatternItem.dash(25),
+            PatternItem.gap(10),
+          ],
+        ),
+      };
 
   Set<Marker> get _markers {
     final markers = <Marker>{};
@@ -72,7 +60,7 @@ class _RouteMapScreenState extends State<RouteMapScreen> {
         markerId: const MarkerId('start'),
         position: _route.first,
         icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
-        infoWindow: const InfoWindow(title: 'Start'),
+        infoWindow: const InfoWindow(title: TTexts.uiTextStart),
       ),
     );
 
@@ -82,7 +70,7 @@ class _RouteMapScreenState extends State<RouteMapScreen> {
         markerId: const MarkerId('end'),
         position: _route.last,
         icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
-        infoWindow: const InfoWindow(title: 'Destination'),
+        infoWindow: const InfoWindow(title: TTexts.uiTextDestination),
       ),
     );
 
@@ -133,14 +121,18 @@ class _RouteMapScreenState extends State<RouteMapScreen> {
   Future<void> fetchRouteData() async {
     try {
       // Format the date to 'MM/dd/yyyy'
-      String formattedDate = '${selectedDate.month.toString().padLeft(2, '0')}/${selectedDate.day.toString().padLeft(2, '0')}/${selectedDate.year}';
+      String formattedDate =
+          '${selectedDate.month.toString().padLeft(2, '0')}/${selectedDate.day.toString().padLeft(2, '0')}/${selectedDate.year}';
 
       // Fetch the filtered location data
-      List<UserLocationListModel> filteredLocations = await locationController.fetchUserLocationData('68aa1486771e77bad145c17a', formattedDate);
+      List<UserLocationListModel> filteredLocations = await locationController
+          .fetchUserLocationData('68aa1486771e77bad145c17a', formattedDate);
 
       // Create route list from filtered locations
       setState(() {
-        _route = filteredLocations.map((location) => LatLng(location.latitude!, location.longitude!)).toList();
+        _route = filteredLocations
+            .map((location) => LatLng(location.latitude!, location.longitude!))
+            .toList();
         _isLoading = false; // Set loading state to false after data is fetched
       });
     } catch (error) {
@@ -163,7 +155,7 @@ class _RouteMapScreenState extends State<RouteMapScreen> {
     final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Route Map'),
+        title: const Text(TTexts.uiTextRouteMap),
         actions: [
           // Date picker button
           IconButton(
@@ -195,7 +187,9 @@ class _RouteMapScreenState extends State<RouteMapScreen> {
           else
             GoogleMap(
               initialCameraPosition: CameraPosition(
-                target: _route.isNotEmpty ? _route.first : LatLng(28.594701, 77.450877),
+                target: _route.isNotEmpty
+                    ? _route.first
+                    : LatLng(28.594701, 77.450877),
                 zoom: 10.5,
               ),
               polylines: _polylines,
@@ -216,23 +210,23 @@ class _RouteMapScreenState extends State<RouteMapScreen> {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
               child: Card(
-                elevation: 6,
+                elevation: TSizes.v6,
                 color: theme.colorScheme.surface.withOpacity(0.92),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Padding(
                   padding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Route preview',
+                      Text(TTexts.uiTextRoutePreview,
                           style: theme.textTheme.titleMedium),
-                      const SizedBox(height: 2),
+                      const SizedBox(height: TSizes.v2),
                       Text(
-                        'Stops: ${_route.length} • Distance (rough): ${( _roughDistanceKm(_route) ).toStringAsFixed(1)} km',
+                        'Stops: ${_route.length} • Distance (rough): ${(_roughDistanceKm(_route)).toStringAsFixed(1)} km',
                         style: theme.textTheme.bodySmall,
                       ),
                     ],
@@ -251,34 +245,33 @@ class _RouteMapScreenState extends State<RouteMapScreen> {
               children: [
                 _roundButton(
                   icon: Icons.route,
-                  label: 'Fit route',
+                  label: TTexts.uiTextFitRoute,
                   onTap: _fitToRoute,
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: TSizes.v10),
                 _roundButton(
                   icon: Icons.movie_filter_outlined,
-                  label: 'Fly',
+                  label: TTexts.uiTextFly,
                   onTap: _flyThrough,
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: TSizes.v10),
                 _roundButton(
-                  icon: _trafficEnabled
-                      ? Icons.traffic
-                      : Icons.traffic_outlined,
-                  label: 'Traffic',
+                  icon:
+                      _trafficEnabled ? Icons.traffic : Icons.traffic_outlined,
+                  label: TTexts.uiTextTraffic,
                   onTap: () =>
                       setState(() => _trafficEnabled = !_trafficEnabled),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: TSizes.v10),
                 _roundButton(
                   icon: Icons.layers,
-                  label: 'Map',
+                  label: TTexts.uiTextMap,
                   onTap: () => setState(() {
                     _mapType = _mapType == MapType.normal
                         ? MapType.terrain
                         : _mapType == MapType.terrain
-                        ? MapType.hybrid
-                        : MapType.normal;
+                            ? MapType.hybrid
+                            : MapType.normal;
                   }),
                 ),
               ],
@@ -290,7 +283,8 @@ class _RouteMapScreenState extends State<RouteMapScreen> {
             alignment: Alignment.bottomCenter,
             child: _BottomSheet(
               startCoords: _route.isNotEmpty ? _route[0] : LatLng(0, 0),
-              endCoords: _route.isNotEmpty ? _route[_route.length - 1] : LatLng(0, 0),
+              endCoords:
+                  _route.isNotEmpty ? _route[_route.length - 1] : LatLng(0, 0),
             ),
           ),
         ],
@@ -326,7 +320,7 @@ Widget _roundButton({
   required VoidCallback onTap,
 }) {
   return Material(
-    color: Colors.black.withOpacity(0.65),
+    color: TColors.pureBlack.withOpacity(0.65),
     borderRadius: BorderRadius.circular(28),
     child: InkWell(
       borderRadius: BorderRadius.circular(28),
@@ -336,10 +330,11 @@ Widget _roundButton({
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: Colors.white, size: 20),
-            const SizedBox(width: 8),
+            Icon(icon, color: TColors.white, size: TSizes.v20),
+            const SizedBox(width: TSizes.v8),
             Text(label,
-                style: const TextStyle(color: Colors.white, fontSize: 12)),
+                style: const TextStyle(
+                    color: TColors.white, fontSize: TSizes.v12)),
           ],
         ),
       ),
@@ -363,7 +358,10 @@ class _BottomSheet extends StatelessWidget {
         color: theme.colorScheme.surface.withOpacity(0.96),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
         boxShadow: const [
-          BoxShadow(blurRadius: 14, color: Colors.black26, offset: Offset(0, -4))
+          BoxShadow(
+              blurRadius: TSizes.v14,
+              color: TColors.black26,
+              offset: Offset(0, -4))
         ],
       ),
       padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
@@ -373,17 +371,17 @@ class _BottomSheet extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 34,
-              height: 4,
+              width: TSizes.v34,
+              height: TSizes.v4,
               decoration: BoxDecoration(
                 color: theme.dividerColor,
                 borderRadius: BorderRadius.circular(999),
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: TSizes.v8),
             Text(
               'Start: ${startCoords.latitude.toStringAsFixed(5)}, ${startCoords.longitude.toStringAsFixed(5)}\n\n'
-                  'End: ${endCoords.latitude.toStringAsFixed(5)}, ${endCoords.longitude.toStringAsFixed(5)}',
+              'End: ${endCoords.latitude.toStringAsFixed(5)}, ${endCoords.longitude.toStringAsFixed(5)}',
               style: theme.textTheme.bodyMedium,
               textAlign: TextAlign.center,
             ),
@@ -393,8 +391,6 @@ class _BottomSheet extends StatelessWidget {
     );
   }
 }
-
-
 
 /*class RouteMapScreen extends StatefulWidget {
   const RouteMapScreen({super.key});
@@ -443,7 +439,7 @@ class _RouteMapScreenState extends State<RouteMapScreen> {
     Polyline(
       polylineId: const PolylineId('route'),
       points: _route,
-      color: Colors.blueAccent,
+      color: TColors.materialBlueAccent,
       width: 6,
       startCap: Cap.roundCap,
       endCap: Cap.roundCap,
@@ -669,7 +665,7 @@ Widget _roundButton({
   required VoidCallback onTap,
 }) {
   return Material(
-    color: Colors.black.withOpacity(0.65),
+    color: TColors.pureBlack.withOpacity(0.65),
     borderRadius: BorderRadius.circular(28),
     child: InkWell(
       borderRadius: BorderRadius.circular(28),
@@ -679,10 +675,10 @@ Widget _roundButton({
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: Colors.white, size: 20),
+            Icon(icon, color: TColors.white, size: 20),
             const SizedBox(width: 8),
             Text(label,
-                style: const TextStyle(color: Colors.white, fontSize: 12)),
+                style: const TextStyle(color: TColors.white, fontSize: 12)),
           ],
         ),
       ),
@@ -706,7 +702,7 @@ class _BottomSheet extends StatelessWidget {
         color: theme.colorScheme.surface.withOpacity(0.96),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
         boxShadow: const [
-          BoxShadow(blurRadius: 14, color: Colors.black26, offset: Offset(0, -4))
+          BoxShadow(blurRadius: 14, color: TColors.black26, offset: Offset(0, -4))
         ],
       ),
       padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),

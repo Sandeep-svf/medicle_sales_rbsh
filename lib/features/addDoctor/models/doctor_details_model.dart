@@ -106,73 +106,46 @@ class DoctorDetailsModel {
       id: json["_id"]?.toString(),
       name: json["name"]?.toString(),
       specialization: json["specialization"]?.toString(),
-
       clinicName: json["clinic_name"]?.toString(),
       clinicAddress: json["clinic_address"]?.toString(),
-
       location: json["location"]?.toString(),
       latitude: json["latitude"]?.toString(),
       longitude: json["longitude"]?.toString(),
-
       email: json["email"]?.toString(),
       phone: json["phone"]?.toString(),
-
-      registrationNumber:
-      json["registration_number"]?.toString(),
-
+      registrationNumber: json["registration_number"]?.toString(),
       yearsOfExperience: json["years_of_experience"],
-
       dateOfBirth: json["date_of_birth"] == null
           ? null
           : DateTime.parse(json["date_of_birth"]),
-
       qualification: json["qualification"]?.toString(),
-
       consultationFee: json["consultation_fee"] == null
           ? null
           : double.tryParse(
-        json["consultation_fee"].toString(),
-      ),
-
-      availableTimings:
-      json["available_timings"]?.toString(),
-
+              json["consultation_fee"].toString(),
+            ),
+      availableTimings: json["available_timings"]?.toString(),
       geoImageUrl: json["geo_image_url"]?.toString(),
-
       gender: json["gender"]?.toString(),
-
       anniversary: json["anniversary"] == null
           ? null
           : DateTime.parse(json["anniversary"]),
-
       priority: json["priority"]?.toString(),
-
       geoImageStatus: json["geo_image_status"],
-
       isAssignedToArea: json["is_assigned_to_area"],
-
-      createdAt: json["createdAt"] == null
-          ? null
-          : DateTime.parse(json["createdAt"]),
-
-      updatedAt: json["updatedAt"] == null
-          ? null
-          : DateTime.parse(json["updatedAt"]),
-
+      createdAt:
+          json["createdAt"] == null ? null : DateTime.parse(json["createdAt"]),
+      updatedAt:
+          json["updatedAt"] == null ? null : DateTime.parse(json["updatedAt"]),
       headOffice: json["headOffice"] == null
           ? null
           : HeadOffice.fromJson(json["headOffice"]),
-
-      area: json["area"] == null
-          ? null
-          : Area.fromJson(json["area"]),
-
+      area: json["area"] == null ? null : Area.fromJson(json["area"]),
       visitHistory: json["visit_history"] == null
           ? []
           : List<VisitHistory>.from(
-        json["visit_history"]
-            .map((x) => VisitHistory.fromJson(x)),
-      ),
+              json["visit_history"].map((x) => VisitHistory.fromJson(x)),
+            ),
     );
   }
 
@@ -190,26 +163,21 @@ class DoctorDetailsModel {
       "phone": phone,
       "registration_number": registrationNumber,
       "years_of_experience": yearsOfExperience,
-      "date_of_birth":
-      dateOfBirth?.toIso8601String(),
+      "date_of_birth": dateOfBirth?.toIso8601String(),
       "qualification": qualification,
       "consultation_fee": consultationFee,
       "available_timings": availableTimings,
       "geo_image_url": geoImageUrl,
       "gender": gender,
-      "anniversary":
-      anniversary?.toIso8601String(),
+      "anniversary": anniversary?.toIso8601String(),
       "priority": priority,
       "geo_image_status": geoImageStatus,
       "is_assigned_to_area": isAssignedToArea,
-      "createdAt":
-      createdAt?.toIso8601String(),
-      "updatedAt":
-      updatedAt?.toIso8601String(),
+      "createdAt": createdAt?.toIso8601String(),
+      "updatedAt": updatedAt?.toIso8601String(),
       "headOffice": headOffice?.toJson(),
       "area": area?.toJson(),
-      "visit_history":
-      visitHistory?.map((e) => e.toJson()).toList(),
+      "visit_history": visitHistory?.map((e) => e.toJson()).toList(),
     };
   }
 }
@@ -223,8 +191,7 @@ class HeadOffice {
     this.name,
   });
 
-  factory HeadOffice.fromJson(
-      Map<String, dynamic> json) {
+  factory HeadOffice.fromJson(Map<String, dynamic> json) {
     return HeadOffice(
       id: json["id"]?.toString(),
       name: json["name"]?.toString(),
@@ -248,8 +215,7 @@ class Area {
     this.name,
   });
 
-  factory Area.fromJson(
-      Map<String, dynamic> json) {
+  factory Area.fromJson(Map<String, dynamic> json) {
     return Area(
       id: json["id"]?.toString(),
       name: json["name"]?.toString(),
@@ -307,44 +273,26 @@ class VisitHistory {
   factory VisitHistory.fromJson(Map<String, dynamic> json) {
     return VisitHistory(
       id: json["id"]?.toString(),
-
-      date: json["date"] == null
-          ? null
-          : DateTime.parse(json["date"]),
-
+      date: json["date"] == null ? null : DateTime.parse(json["date"]),
       notes: json["notes"]?.toString(),
-
       latitude: json["latitude"]?.toString(),
-
       longitude: json["longitude"]?.toString(),
-
       confirmed: json["confirmed"],
-
       remark: json["remark"]?.toString(),
-
       productsDetailed: json["products_detailed"] == null
           ? []
           : List<String>.from(json["products_detailed"]),
-
       giftsGiven: json["gifts_given"] == null
           ? []
           : List<String>.from(json["gifts_given"]),
-
       userName: json["userName"]?.toString(),
-
       userEmail: json["userEmail"]?.toString(),
-
-      product: json["product"] == null
-          ? null
-          : Product.fromJson(json["product"]),
-
-      createdAt: json["createdAt"] == null
-          ? null
-          : DateTime.parse(json["createdAt"]),
-
-      updatedAt: json["updatedAt"] == null
-          ? null
-          : DateTime.parse(json["updatedAt"]),
+      product:
+          json["product"] == null ? null : Product.fromJson(json["product"]),
+      createdAt:
+          json["createdAt"] == null ? null : DateTime.parse(json["createdAt"]),
+      updatedAt:
+          json["updatedAt"] == null ? null : DateTime.parse(json["updatedAt"]),
     );
   }
 

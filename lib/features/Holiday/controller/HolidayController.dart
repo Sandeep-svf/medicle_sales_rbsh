@@ -63,7 +63,8 @@ class HolidayController extends GetxController {
         'year': selectedYear.value.toString(),
       };
 
-      if (selectedType.value != null && selectedType.value != HolidayType.Unknown) {
+      if (selectedType.value != null &&
+          selectedType.value != HolidayType.Unknown) {
         queryParams['type'] = selectedType.value!.apiValue!;
       }
 

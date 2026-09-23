@@ -12,9 +12,11 @@ class AllowanceController {
   static const String _baseUrl = "${THttpHelper.baseUrl}/expenses";
   static const String _logPrefix = 'AllowanceController';
 
-  static Future<bool> submitTravelAllowance(TravelAllowanceRequest request) async {
+  static Future<bool> submitTravelAllowance(
+      TravelAllowanceRequest request) async {
     try {
-      debugPrint('$_logPrefix: Sending Travel Allowance request: ${jsonEncode(request.toJson())}');
+      debugPrint(
+          '$_logPrefix: Sending Travel Allowance request: ${jsonEncode(request.toJson())}');
 
       final response = await http.post(
         Uri.parse(_baseUrl),
@@ -49,9 +51,11 @@ class AllowanceController {
     }
   }
 
-  static Future<bool> submitDailyAllowance(DailyAllowanceRequest request) async {
+  static Future<bool> submitDailyAllowance(
+      DailyAllowanceRequest request) async {
     try {
-      debugPrint('$_logPrefix: Sending Daily Allowance request: ${jsonEncode(request.toJson())}');
+      debugPrint(
+          '$_logPrefix: Sending Daily Allowance request: ${jsonEncode(request.toJson())}');
 
       final response = await http.post(
         Uri.parse(_baseUrl),
@@ -85,7 +89,6 @@ class AllowanceController {
       return false;
     }
   }
-
 
   static Future<bool> updateExpense({
     required String expenseId,

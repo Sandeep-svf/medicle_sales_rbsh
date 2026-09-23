@@ -30,9 +30,7 @@ class PerformanceFilterModel {
       startDate: json['startDate'] ?? '',
       endDate: json['endDate'] ?? '',
       visitType: json['visit_type'] ?? '',
-      state: json['state'] == null
-          ? null
-          : StateModel.fromJson(json['state']),
+      state: json['state'] == null ? null : StateModel.fromJson(json['state']),
     );
   }
 }

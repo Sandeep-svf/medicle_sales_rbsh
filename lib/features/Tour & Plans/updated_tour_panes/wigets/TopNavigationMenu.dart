@@ -1,28 +1,32 @@
 import 'package:flutter/material.dart';
-
 import '../helper/AppColors.dart';
-
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 
 class TopNavigationMenu extends StatelessWidget {
   final int currentIndex;
   final Function(int) onTabSelected;
 
-  const TopNavigationMenu({Key? key, required this.currentIndex, required this.onTabSelected}) : super(key: key);
+  const TopNavigationMenu(
+      {Key? key, required this.currentIndex, required this.onTabSelected})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 70,
+      height: TSizes.v70,
       color: AppColors.primaryDark,
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(8),
-            decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+            decoration: const BoxDecoration(
+                color: TColors.white, shape: BoxShape.circle),
             child: const Icon(Icons.pie_chart, color: AppColors.primaryDark),
           ),
-          const SizedBox(width: 32),
+          const SizedBox(width: TSizes.v32),
           Expanded(
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
@@ -38,9 +42,10 @@ class TopNavigationMenu extends StatelessWidget {
             ),
           ),
           CircleAvatar(
-              backgroundColor: Colors.orange.shade300,
-              child: const Text("AV", style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold))
-          )
+              backgroundColor: TColors.materialOrange300,
+              child: const Text(TTexts.uiTextAV,
+                  style: TextStyle(
+                      color: TColors.black87, fontWeight: FontWeight.bold)))
         ],
       ),
     );
@@ -55,9 +60,16 @@ class TopNavigationMenu extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: isActive ? Colors.white : Colors.white54, size: 24),
-            const SizedBox(height: 4),
-            Text(title, style: TextStyle(color: isActive ? Colors.white : Colors.white54, fontSize: 12, fontWeight: isActive ? FontWeight.bold : FontWeight.normal)),
+            Icon(icon,
+                color: isActive ? TColors.white : TColors.white54,
+                size: TSizes.v24),
+            const SizedBox(height: TSizes.v4),
+            Text(title,
+                style: TextStyle(
+                    color: isActive ? TColors.white : TColors.white54,
+                    fontSize: TSizes.v12,
+                    fontWeight:
+                        isActive ? FontWeight.bold : FontWeight.normal)),
           ],
         ),
       ),

@@ -1,11 +1,11 @@
 import 'dart:io';
-
-
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
 import '../controller/InvoiceController.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 
 class SendEmailSheet extends StatefulWidget {
   final dynamic invoice;
@@ -20,27 +20,23 @@ class SendEmailSheet extends StatefulWidget {
 }
 
 class _SendEmailSheetState extends State<SendEmailSheet> {
-
   final _formKey = GlobalKey<FormState>();
 
   late final TextEditingController _subjectController;
-  final TextEditingController _messageController =
-  TextEditingController();
+  final TextEditingController _messageController = TextEditingController();
 
   List<File> attachments = [];
 
   bool sending = false;
 
-  String get email =>
-      widget.invoice.stockist?.emailAddress ?? '';
+  String get email => widget.invoice.stockist?.emailAddress ?? '';
 
   @override
   void initState() {
     super.initState();
 
     _subjectController = TextEditingController(
-      text:
-      "Invoice ${widget.invoice.invoiceNumber ?? ''}",
+      text: "Invoice ${widget.invoice.invoiceNumber ?? ''}",
     );
   }
 
@@ -51,11 +47,10 @@ class _SendEmailSheetState extends State<SendEmailSheet> {
     super.dispose();
   }
 
-
   Future<void> pickFiles() async {
     Get.snackbar(
       "Coming Soon",
-      "Custom attachments will be available in a future release.",
+      TTexts.uiTextCustomAttachmentsWillBeAvailableInAFuture,
       snackPosition: SnackPosition.BOTTOM,
     );
   }
@@ -94,7 +89,6 @@ class _SendEmailSheetState extends State<SendEmailSheet> {
     }
   }*/
 
-
   void previewFile(File file) {
     final ext = file.path.split('.').last.toLowerCase();
 
@@ -114,16 +108,12 @@ class _SendEmailSheetState extends State<SendEmailSheet> {
     }
   }
 
-
-
   Future<void> sendEmail() async {
-
     if (!_formKey.currentState!.validate()) {
       return;
     }
 
     try {
-
       setState(() {
         sending = true;
       });
@@ -143,20 +133,16 @@ class _SendEmailSheetState extends State<SendEmailSheet> {
 
       Get.snackbar(
         "Success",
-        "Email sent successfully",
+        TTexts.uiTextEmailSentSuccessfully,
         snackPosition: SnackPosition.BOTTOM,
       );
-
     } catch (e) {
-
       Get.snackbar(
         "Error",
         e.toString(),
         snackPosition: SnackPosition.BOTTOM,
       );
-
     } finally {
-
       if (mounted) {
         setState(() {
           sending = false;
@@ -167,11 +153,10 @@ class _SendEmailSheetState extends State<SendEmailSheet> {
 
   @override
   Widget build(BuildContext context) {
-
     return Container(
       height: MediaQuery.of(context).size.height * .85,
       decoration: const BoxDecoration(
-        color: Colors.white,
+        color: TColors.white,
         borderRadius: BorderRadius.vertical(
           top: Radius.circular(28),
         ),
@@ -179,30 +164,24 @@ class _SendEmailSheetState extends State<SendEmailSheet> {
       child: SafeArea(
         child: Column(
           children: [
-
-            const SizedBox(height: 12),
-
+            const SizedBox(height: TSizes.v12),
             Container(
-              width: 60,
-              height: 5,
+              width: TSizes.v60,
+              height: TSizes.v5,
               decoration: BoxDecoration(
-                color: Colors.grey.shade300,
+                color: TColors.materialGrey300,
                 borderRadius: BorderRadius.circular(20),
               ),
             ),
-
-            const SizedBox(height: 20),
-
+            const SizedBox(height: TSizes.v20),
             const Text(
-              "Send Email",
+              TTexts.uiTextSendEmail,
               style: TextStyle(
-                fontSize: 22,
+                fontSize: TSizes.v22,
                 fontWeight: FontWeight.bold,
               ),
             ),
-
-            const SizedBox(height: 20),
-
+            const SizedBox(height: TSizes.v20),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(20),
@@ -210,64 +189,53 @@ class _SendEmailSheetState extends State<SendEmailSheet> {
                   key: _formKey,
                   child: Column(
                     children: [
-
                       TextFormField(
                         initialValue: email,
                         readOnly: true,
                         decoration: const InputDecoration(
-                          labelText: "To",
+                          labelText: TTexts.uiTextTo,
                           border: OutlineInputBorder(),
                         ),
                       ),
-
-                      const SizedBox(height: 16),
-
+                      const SizedBox(height: TSizes.v16),
                       TextFormField(
                         controller: _subjectController,
                         decoration: const InputDecoration(
-                          labelText: "Subject",
+                          labelText: TTexts.uiTextSubject,
                           border: OutlineInputBorder(),
                         ),
                         validator: (v) {
-                          if (v == null ||
-                              v.trim().isEmpty) {
+                          if (v == null || v.trim().isEmpty) {
                             return "Subject required";
                           }
                           return null;
                         },
                       ),
-
-                      const SizedBox(height: 16),
-
+                      const SizedBox(height: TSizes.v16),
                       TextFormField(
                         controller: _messageController,
                         maxLines: 6,
                         decoration: const InputDecoration(
-                          labelText: "Message",
+                          labelText: TTexts.uiTextMessage,
                           border: OutlineInputBorder(),
                           alignLabelWithHint: true,
                         ),
                         validator: (v) {
-                          if (v == null ||
-                              v.trim().isEmpty) {
+                          if (v == null || v.trim().isEmpty) {
                             return "Message required";
                           }
                           return null;
                         },
                       ),
-
-                      const SizedBox(height: 20),
-
+                      const SizedBox(height: TSizes.v20),
                       Row(
                         children: [
-
                           const Text(
-                            "Attachments",
+                            TTexts.uiTextAttachments,
                             style: TextStyle(
                               fontWeight: FontWeight.w600,
                             ),
                           ),
-
                           const Spacer(),
 
                           /*ElevatedButton.icon(
@@ -280,61 +248,52 @@ class _SendEmailSheetState extends State<SendEmailSheet> {
                             onPressed: () {
                               Get.snackbar(
                                 "Coming Soon",
-                                "Only invoice PDF is attached automatically by the server.",
+                                TTexts
+                                    .uiTextOnlyInvoicePDFIsAttachedAutomaticallyByThe,
                                 snackPosition: SnackPosition.BOTTOM,
                               );
                             },
                             icon: const Icon(Icons.attach_file),
-                            label: const Text("Add"),
+                            label: const Text(TTexts.uiTextAdd),
                           ),
                         ],
                       ),
-
-                      const SizedBox(height: 12),
-
-                    const SizedBox(height: 12),
-
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.green.shade50,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: Colors.green.shade200,
+                      const SizedBox(height: TSizes.v12),
+                      const SizedBox(height: TSizes.v12),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: TColors.materialGreen50,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: TColors.materialGreen200,
+                          ),
+                        ),
+                        child: const Row(
+                          children: [
+                            Icon(
+                              Icons.picture_as_pdf,
+                              color: TColors.materialGreen,
+                            ),
+                            SizedBox(width: TSizes.v12),
+                            Expanded(
+                              child: Text(
+                                TTexts
+                                    .uiTextInvoicePDFWillBeAttachedAutomaticallyByThe,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      child: const Row(
-                        children: [
-
-                          Icon(
-                            Icons.picture_as_pdf,
-                            color: Colors.green,
-                          ),
-
-                          SizedBox(width: 12),
-
-                          Expanded(
-                            child: Text(
-                              "Invoice PDF will be attached automatically by the server.",
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 12),
-
-
-
+                      const SizedBox(height: TSizes.v12),
                       ...attachments.asMap().entries.map((entry) {
-
                         final index = entry.key;
                         final file = entry.value;
 
                         final fileName = file.path.split('/').last;
                         final extension =
-                        fileName.split('.').last.toLowerCase();
+                            fileName.split('.').last.toLowerCase();
 
                         final isImage = [
                           'jpg',
@@ -347,52 +306,47 @@ class _SendEmailSheetState extends State<SendEmailSheet> {
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: Colors.grey.shade300,
+                              color: TColors.materialGrey300,
                             ),
                           ),
                           child: ListTile(
-
                             leading: isImage
                                 ? ClipRRect(
-                              borderRadius:
-                              BorderRadius.circular(8),
-                              child: Image.file(
-                                file,
-                                width: 50,
-                                height: 50,
-                                fit: BoxFit.cover,
-                              ),
-                            )
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: Image.file(
+                                      file,
+                                      width: TSizes.v50,
+                                      height: TSizes.v50,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  )
                                 : Container(
-                              width: 50,
-                              height: 50,
-                              decoration: BoxDecoration(
-                                color: Colors.red.shade50,
-                                borderRadius:
-                                BorderRadius.circular(8),
-                              ),
-                              child: const Icon(
-                                Icons.picture_as_pdf,
-                                color: Colors.red,
-                              ),
-                            ),
-
+                                    width: TSizes.v50,
+                                    height: TSizes.v50,
+                                    decoration: BoxDecoration(
+                                      color: TColors.materialRed50,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: const Icon(
+                                      Icons.picture_as_pdf,
+                                      color: TColors.materialRed,
+                                    ),
+                                  ),
                             title: Text(
                               fileName,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
 
-                           /* subtitle: Text(
+                            /* subtitle: Text(
                               extension.toUpperCase(),
                             ),*/
 
-
                             subtitle: const Text(
-                              "Automatically attached invoice PDF",
+                              TTexts.uiTextAutomaticallyAttachedInvoicePDF,
                             ),
 
-                          /*  trailing: Row(
+                            /*  trailing: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
 
@@ -408,7 +362,7 @@ class _SendEmailSheetState extends State<SendEmailSheet> {
                                 IconButton(
                                   icon: const Icon(
                                     Icons.delete_outline,
-                                    color: Colors.red,
+                                    color: TColors.materialRed,
                                   ),
                                   onPressed: () {
                                     removeFile(index);
@@ -427,29 +381,25 @@ class _SendEmailSheetState extends State<SendEmailSheet> {
                             ),
                           ),
                         );
-
                       }).toList(),
-
-                      const SizedBox(height: 30),
+                      const SizedBox(height: TSizes.v30),
                     ],
                   ),
                 ),
               ),
             ),
-
             Padding(
               padding: const EdgeInsets.all(20),
               child: SizedBox(
                 width: double.infinity,
-                height: 55,
+                height: TSizes.v55,
                 child: ElevatedButton(
-                  onPressed:
-                  sending ? null : sendEmail,
+                  onPressed: sending ? null : sendEmail,
                   child: sending
                       ? const CircularProgressIndicator()
                       : const Text(
-                    "Send Email",
-                  ),
+                          TTexts.uiTextSendEmail,
+                        ),
                 ),
               ),
             ),

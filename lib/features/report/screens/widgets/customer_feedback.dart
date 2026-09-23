@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../../utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class CustomerFeedback extends StatelessWidget {
   const CustomerFeedback({super.key});
@@ -7,24 +8,25 @@ class CustomerFeedback extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 2,
+      elevation: TSizes.v2,
       margin: const EdgeInsets.all(16),
       child: Padding(
         padding: const EdgeInsets.all(32),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start, // Aligns text to the left
+          crossAxisAlignment:
+              CrossAxisAlignment.start, // Aligns text to the left
           children: [
             Text(
               TTexts.customerFeedback,
               style: Theme.of(context).textTheme.headlineSmall,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: TSizes.v12),
             const Text(
-              "Positive response from Dr. Aarav Maurya",
+              TTexts.uiTextPositiveResponseFromDrAaravMaurya,
             ),
           ],
         ),
       ),
     );
   }
-  }
+}

@@ -1,6 +1,7 @@
-// lib/screens/pharma_distributor_form/widgets/bank_details_section.dart
 import 'package:flutter/material.dart';
-import '../../../utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class BankDetailsSection extends StatelessWidget {
   final TextEditingController bankName;
@@ -19,12 +20,15 @@ class BankDetailsSection extends StatelessWidget {
   });
 
   Widget _sectionTitle(String title) => Padding(
-    padding: const EdgeInsets.only(bottom: 8.0),
-    child: Text(
-      title,
-      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: TColors.primary),
-    ),
-  );
+        padding: const EdgeInsets.only(bottom: 8.0),
+        child: Text(
+          title,
+          style: const TextStyle(
+              fontSize: TSizes.v18,
+              fontWeight: FontWeight.bold,
+              color: TColors.primary),
+        ),
+      );
 
   Widget _requiredField(TextEditingController controller, String label,
       {TextInputType inputType = TextInputType.text, int maxLines = 1}) {
@@ -50,16 +54,18 @@ class BankDetailsSection extends StatelessWidget {
         _sectionTitle("Bank Details"),
         _requiredField(bankName, "Bank Name"),
         _requiredField(branch, "Branch"),
-        _requiredField(accountNumber, "Account Number", inputType: TextInputType.number),
+        _requiredField(accountNumber, "Account Number",
+            inputType: TextInputType.number),
         _requiredField(ifscCode, "IFSC Code"),
-        const SizedBox(height: 12),
+        const SizedBox(height: TSizes.v12),
         Center(
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: TColors.primary),
             onPressed: onSubmitNow,
             child: const Padding(
               padding: EdgeInsets.symmetric(horizontal: 40, vertical: 8),
-              child: Text("Submit", style: TextStyle(fontSize: 16)),
+              child:
+                  Text(TTexts.submit, style: TextStyle(fontSize: TSizes.v16)),
             ),
           ),
         ),

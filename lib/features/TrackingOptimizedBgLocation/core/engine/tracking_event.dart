@@ -1,4 +1,3 @@
-
 import '../location/location_decision.dart';
 import '../model/location_point.dart';
 import '../model/stop_point.dart';

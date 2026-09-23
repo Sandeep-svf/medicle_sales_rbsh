@@ -12,17 +12,18 @@
 
 class CilinicTestModel {
   CilinicTestModel({
-      String? id, 
-      String? firmName, 
-      String? contactPersonName, 
-      String? mobileNo, 
-      String? emailId, 
-      String? gstNo, 
-      String? address, 
-      num? yearsInBusiness, 
-      num? annualTurnover, 
-      String? createdAt, 
-      num? v,}){
+    String? id,
+    String? firmName,
+    String? contactPersonName,
+    String? mobileNo,
+    String? emailId,
+    String? gstNo,
+    String? address,
+    num? yearsInBusiness,
+    num? annualTurnover,
+    String? createdAt,
+    num? v,
+  }) {
     _id = id;
     _firmName = firmName;
     _contactPersonName = contactPersonName;
@@ -34,7 +35,7 @@ class CilinicTestModel {
     _annualTurnover = annualTurnover;
     _createdAt = createdAt;
     _v = v;
-}
+  }
 
   CilinicTestModel.fromJson(dynamic json) {
     _id = json['_id'];
@@ -60,29 +61,32 @@ class CilinicTestModel {
   num? _annualTurnover;
   String? _createdAt;
   num? _v;
-CilinicTestModel copyWith({  String? id,
-  String? firmName,
-  String? contactPersonName,
-  String? mobileNo,
-  String? emailId,
-  String? gstNo,
-  String? address,
-  num? yearsInBusiness,
-  num? annualTurnover,
-  String? createdAt,
-  num? v,
-}) => CilinicTestModel(  id: id ?? _id,
-  firmName: firmName ?? _firmName,
-  contactPersonName: contactPersonName ?? _contactPersonName,
-  mobileNo: mobileNo ?? _mobileNo,
-  emailId: emailId ?? _emailId,
-  gstNo: gstNo ?? _gstNo,
-  address: address ?? _address,
-  yearsInBusiness: yearsInBusiness ?? _yearsInBusiness,
-  annualTurnover: annualTurnover ?? _annualTurnover,
-  createdAt: createdAt ?? _createdAt,
-  v: v ?? _v,
-);
+  CilinicTestModel copyWith({
+    String? id,
+    String? firmName,
+    String? contactPersonName,
+    String? mobileNo,
+    String? emailId,
+    String? gstNo,
+    String? address,
+    num? yearsInBusiness,
+    num? annualTurnover,
+    String? createdAt,
+    num? v,
+  }) =>
+      CilinicTestModel(
+        id: id ?? _id,
+        firmName: firmName ?? _firmName,
+        contactPersonName: contactPersonName ?? _contactPersonName,
+        mobileNo: mobileNo ?? _mobileNo,
+        emailId: emailId ?? _emailId,
+        gstNo: gstNo ?? _gstNo,
+        address: address ?? _address,
+        yearsInBusiness: yearsInBusiness ?? _yearsInBusiness,
+        annualTurnover: annualTurnover ?? _annualTurnover,
+        createdAt: createdAt ?? _createdAt,
+        v: v ?? _v,
+      );
   String? get id => _id;
   String? get firmName => _firmName;
   String? get contactPersonName => _contactPersonName;
@@ -110,5 +114,4 @@ CilinicTestModel copyWith({  String? id,
     map['__v'] = _v;
     return map;
   }
-
 }

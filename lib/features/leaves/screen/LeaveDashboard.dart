@@ -3,10 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:path/path.dart';
-
-import '../../../utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import '../controller/LeaveController.dart';
 import '../model/LeaveType.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class LeaveDashboard extends StatelessWidget {
   const LeaveDashboard({super.key});
@@ -24,7 +25,7 @@ class LeaveDashboard extends StatelessWidget {
           boxShadow: [
             BoxShadow(
               color: TColors.primary.withOpacity(0.4),
-              blurRadius: 15,
+              blurRadius: TSizes.v15,
               offset: const Offset(0, 8),
             ),
           ],
@@ -32,12 +33,17 @@ class LeaveDashboard extends StatelessWidget {
         ),
         child: FloatingActionButton.extended(
           onPressed: () => _showApplyLeaveSheet(context, controller),
-          label: const Text("Apply Leave",
-              style:
-                  TextStyle(fontWeight: FontWeight.w600, letterSpacing: 0.5,color: Colors.white)),
-          icon: const Icon(Icons.add_circle_outline,color: Colors.white,),
+          label: const Text(TTexts.uiTextApplyLeave,
+              style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.5,
+                  color: TColors.white)),
+          icon: const Icon(
+            Icons.add_circle_outline,
+            color: TColors.white,
+          ),
           backgroundColor: TColors.primary,
-          elevation: 0,
+          elevation: TSizes.v0,
         ),
       ),
 
@@ -61,19 +67,19 @@ class LeaveDashboard extends StatelessWidget {
                   padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
                   child: Column(
                     children: [
-                      const SizedBox(height: 20),
+                      const SizedBox(height: TSizes.v20),
                       _buildSectionTitle("Available Balance"),
-                      const SizedBox(height: 15),
+                      const SizedBox(height: TSizes.v15),
 
                       // Balance List
                       SizedBox(
-                        height: 160,
+                        height: TSizes.v160,
                         child: ListView.separated(
                           scrollDirection: Axis.horizontal,
                           physics: const BouncingScrollPhysics(),
                           itemCount: controller.leaveBalances.length,
                           separatorBuilder: (_, __) =>
-                              const SizedBox(width: 15),
+                              const SizedBox(width: TSizes.v15),
                           itemBuilder: (context, index) {
                             return _buildAnimatedWidget(
                               index: index,
@@ -84,7 +90,7 @@ class LeaveDashboard extends StatelessWidget {
                         ),
                       ),
 
-                      const SizedBox(height: 30),
+                      const SizedBox(height: TSizes.v30),
 
                       // History Header
                       Row(
@@ -105,12 +111,12 @@ class LeaveDashboard extends StatelessWidget {
                               style: const TextStyle(
                                   color: TColors.primary,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 12),
+                                  fontSize: TSizes.v12),
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 15),
+                      const SizedBox(height: TSizes.v15),
 
                       // History List
                       if (controller.leaveHistory.isEmpty)
@@ -121,7 +127,7 @@ class LeaveDashboard extends StatelessWidget {
                           physics: const NeverScrollableScrollPhysics(),
                           itemCount: controller.leaveHistory.length,
                           separatorBuilder: (_, __) =>
-                              const SizedBox(height: 15),
+                              const SizedBox(height: TSizes.v15),
                           itemBuilder: (context, index) {
                             return _buildAnimatedWidget(
                               index: index + 4,
@@ -132,7 +138,7 @@ class LeaveDashboard extends StatelessWidget {
                         ),
 
                       // FIX: Bottom padding to prevent blur/cut-off behind FAB
-                      const SizedBox(height: 100),
+                      const SizedBox(height: TSizes.v100),
                     ],
                   ),
                 ),
@@ -156,8 +162,8 @@ class LeaveDashboard extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Color(0x40000000),
-            blurRadius: 20,
+            color: TColors.hex_40000000,
+            blurRadius: TSizes.v20,
             offset: Offset(0, 10),
           ),
         ],
@@ -168,33 +174,33 @@ class LeaveDashboard extends StatelessWidget {
           const Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("My Leaves",
+              Text(TTexts.uiTextMyLeaves,
                   style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 26,
+                      color: TColors.white,
+                      fontSize: TSizes.v26,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 0.5)),
-              SizedBox(height: 6),
-              Text("Manage your time off",
+              SizedBox(height: TSizes.v6),
+              Text(TTexts.uiTextManageYourTimeOff,
                   style: TextStyle(
-                      color: Color(0xFFF0F0F0),
-                      fontSize: 14,
+                      color: TColors.hex_FFF0F0F0,
+                      fontSize: TSizes.v14,
                       fontWeight: FontWeight.w400)),
             ],
           ),
           Material(
-            color: Colors.transparent,
+            color: TColors.transparent,
             child: InkWell(
               onTap: () => controller.fetchAllData(),
               borderRadius: BorderRadius.circular(15),
               child: Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: TColors.white.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(15),
-                  border: Border.all(color: Colors.white.withOpacity(0.3)),
+                  border: Border.all(color: TColors.white.withOpacity(0.3)),
                 ),
-                child: const Icon(Icons.refresh_rounded, color: Colors.white),
+                child: const Icon(Icons.refresh_rounded, color: TColors.white),
               ),
             ),
           )
@@ -206,7 +212,7 @@ class LeaveDashboard extends StatelessWidget {
   // --- 2. Balance Card ---
   Widget _buildBalanceCard(LeaveBalance balance) {
     return Container(
-      width: 165,
+      width: TSizes.v165,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: TColors.white,
@@ -214,8 +220,8 @@ class LeaveDashboard extends StatelessWidget {
         border: Border.all(color: TColors.grey.withOpacity(0.3)),
         boxShadow: [
           BoxShadow(
-              color: const Color(0xFF9E9E9E).withOpacity(0.1),
-              blurRadius: 15,
+              color: TColors.hex_FF9E9E9E.withOpacity(0.1),
+              blurRadius: TSizes.v15,
               offset: const Offset(0, 8)),
         ],
       ),
@@ -236,17 +242,17 @@ class LeaveDashboard extends StatelessWidget {
                     style: const TextStyle(
                         color: TColors.primary,
                         fontWeight: FontWeight.bold,
-                        fontSize: 13)),
+                        fontSize: TSizes.v13)),
               ),
               SizedBox(
-                height: 28,
-                width: 28,
+                height: TSizes.v28,
+                width: TSizes.v28,
                 child: Stack(
                   children: [
                     CircularProgressIndicator(
                         value: 1.0,
                         color: TColors.grey.withOpacity(0.2),
-                        strokeWidth: 3),
+                        strokeWidth: TSizes.v3),
                     CircularProgressIndicator(
                         value: (balance.used /
                                 (balance.allocated == 0
@@ -254,7 +260,7 @@ class LeaveDashboard extends StatelessWidget {
                                     : balance.allocated))
                             .toDouble(),
                         color: TColors.primary,
-                        strokeWidth: 3,
+                        strokeWidth: TSizes.v3,
                         strokeCap: StrokeCap.round),
                   ],
                 ),
@@ -264,15 +270,15 @@ class LeaveDashboard extends StatelessWidget {
           const Spacer(),
           Text("${balance.balance}",
               style: const TextStyle(
-                  fontSize: 34,
+                  fontSize: TSizes.v34,
                   fontWeight: FontWeight.w800,
                   color: TColors.textPrimary,
-                  height: 1.0)),
-          const SizedBox(height: 5),
+                  height: TSizes.v1)),
+          const SizedBox(height: TSizes.v5),
           Text(balance.leaveType.name,
               style: const TextStyle(
                   color: TColors.textSecondary,
-                  fontSize: 13,
+                  fontSize: TSizes.v13,
                   fontWeight: FontWeight.w500),
               maxLines: 1,
               overflow: TextOverflow.ellipsis),
@@ -289,20 +295,20 @@ class LeaveDashboard extends StatelessWidget {
 
     switch (item.status.toLowerCase()) {
       case 'approved':
-        statusColor = const Color(0xFF2E7D32);
-        statusBg = const Color(0xFFE8F5E9);
+        statusColor = TColors.hex_FF2E7D32;
+        statusBg = TColors.hex_FFE8F5E9;
         break;
       case 'rejected':
-        statusColor = const Color(0xFFC62828);
-        statusBg = const Color(0xFFFFEBEE);
+        statusColor = TColors.hex_FFC62828;
+        statusBg = TColors.hex_FFFFEBEE;
         break;
       case 'cancelled':
-        statusColor = Colors.grey.shade700;
-        statusBg = Colors.grey.shade200;
+        statusColor = TColors.materialGrey700;
+        statusBg = TColors.materialGrey200;
         break;
       default:
-        statusColor = const Color(0xFFEF6C00);
-        statusBg = const Color(0xFFFFF3E0);
+        statusColor = TColors.hex_FFEF6C00;
+        statusBg = TColors.hex_FFFFF3E0;
     }
 
     bool isPending = item.status.toLowerCase() == 'pending';
@@ -314,8 +320,8 @@ class LeaveDashboard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 10,
+              color: TColors.pureBlack.withOpacity(0.04),
+              blurRadius: TSizes.v10,
               offset: const Offset(0, 4))
         ],
       ),
@@ -325,12 +331,12 @@ class LeaveDashboard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                  width: 5,
-                  height: 50,
+                  width: TSizes.v5,
+                  height: TSizes.v50,
                   decoration: BoxDecoration(
                       color: TColors.primary.withOpacity(0.8),
                       borderRadius: BorderRadius.circular(10))),
-              const SizedBox(width: 16),
+              const SizedBox(width: TSizes.v16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -339,18 +345,18 @@ class LeaveDashboard extends StatelessWidget {
                         style: const TextStyle(
                             color: TColors.textPrimary,
                             fontWeight: FontWeight.bold,
-                            fontSize: 16)),
-                    const SizedBox(height: 6),
+                            fontSize: TSizes.v16)),
+                    const SizedBox(height: TSizes.v6),
                     Row(
                       children: [
                         const Icon(Icons.date_range_rounded,
-                            size: 14, color: TColors.textSecondary),
-                        const SizedBox(width: 5),
+                            size: TSizes.v14, color: TColors.textSecondary),
+                        const SizedBox(width: TSizes.v5),
                         Text(
                             "${_formatDate(item.startDate)} - ${_formatDate(item.endDate)}",
                             style: const TextStyle(
                                 color: TColors.textSecondary,
-                                fontSize: 13,
+                                fontSize: TSizes.v13,
                                 fontWeight: FontWeight.w500)),
                       ],
                     ),
@@ -359,44 +365,46 @@ class LeaveDashboard extends StatelessWidget {
               ),
               Container(
                 padding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
                     color: statusBg, borderRadius: BorderRadius.circular(12)),
                 child: Text(item.status,
                     style: TextStyle(
                         color: statusColor,
                         fontWeight: FontWeight.bold,
-                        fontSize: 11,
+                        fontSize: TSizes.v11,
                         letterSpacing: 0.3)),
               ),
             ],
           ),
           if (isPending) ...[
-            const SizedBox(height: 12),
-            Divider(height: 1, color: Colors.grey.withOpacity(0.1)),
-            const SizedBox(height: 8),
+            const SizedBox(height: TSizes.v12),
+            Divider(
+                height: TSizes.v1,
+                color: TColors.materialGrey.withOpacity(0.1)),
+            const SizedBox(height: TSizes.v8),
             Align(
               alignment: Alignment.centerRight,
               child: Material(
-                color: Colors.transparent,
+                color: TColors.transparent,
                 child: InkWell(
                   // FIX IS HERE: Use Get.context! instead of context
-                  onTap: () => _showCancelDialog(Get.context!, controller, item.id),
+                  onTap: () =>
+                      _showCancelDialog(Get.context!, controller, item.id),
                   borderRadius: BorderRadius.circular(8),
                   child: const Padding(
-                    padding:
-                    EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(Icons.cancel_outlined,
-                            size: 16, color: TColors.error),
-                        SizedBox(width: 6),
-                        Text("Cancel Request",
+                            size: TSizes.v16, color: TColors.error),
+                        SizedBox(width: TSizes.v6),
+                        Text(TTexts.uiTextCancelRequest,
                             style: TextStyle(
                                 color: TColors.error,
                                 fontWeight: FontWeight.w600,
-                                fontSize: 13)),
+                                fontSize: TSizes.v13)),
                       ],
                     ),
                   ),
@@ -453,7 +461,7 @@ class LeaveDashboard extends StatelessWidget {
           data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.light(
                 primary: TColors.primary,
-                onPrimary: Colors.white,
+                onPrimary: TColors.white,
                 onSurface: TColors.textPrimary),
           ),
           child: child!,
@@ -484,12 +492,12 @@ class LeaveDashboard extends StatelessWidget {
             borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
         child: Column(
           children: [
-            const SizedBox(height: 12),
+            const SizedBox(height: TSizes.v12),
             Container(
-                width: 50,
-                height: 5,
+                width: TSizes.v50,
+                height: TSizes.v5,
                 decoration: BoxDecoration(
-                    color: Colors.grey[300],
+                    color: TColors.materialGrey300,
                     borderRadius: BorderRadius.circular(10))),
             Expanded(
               child: SingleChildScrollView(
@@ -498,75 +506,90 @@ class LeaveDashboard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text("New Request",
+                    const Text(TTexts.uiTextNewRequest,
                         style: TextStyle(
-                            fontSize: 24,
+                            fontSize: TSizes.v24,
                             fontWeight: FontWeight.w800,
                             color: TColors.textPrimary)),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: TSizes.v20),
 
                     // --- SUMMARY CARD + SANDWICH NOTE ---
                     Obx(() => Column(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: TColors.primary.withOpacity(0.08),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                                color: TColors.primary.withOpacity(0.2)),
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(10),
-                                decoration: const BoxDecoration(
-                                    color: TColors.white,
-                                    shape: BoxShape.circle),
-                                child: const Icon(Icons.calendar_month_outlined,
-                                    color: TColors.primary),
-                              ),
-                              const SizedBox(width: 15),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text("Total Leave Days",
-                                      style: TextStyle(
-                                          fontSize: 12,
-                                          color: TColors.textSecondary)),
-                                  Text(
-                                      "${controller.calculatedDays.value} Days",
-                                      style: const TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                          color: TColors.textPrimary)),
-                                ],
-                              )
-                            ],
-                          ),
-                        ),
-                        if (controller.showSandwichNote.value)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 10),
-                            child: Container(
-                              padding: const EdgeInsets.all(10),
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
-                                color: Colors.orange.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                                color: TColors.primary.withOpacity(0.08),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                    color: TColors.primary.withOpacity(0.2)),
                               ),
-                              child: const Row(
+                              child: Row(
                                 children: [
-                                  Icon(Icons.info_outline, color: Colors.orange, size: 20),
-                                  SizedBox(width: 10),
-                                  Expanded(child: Text("Sandwich rule: Holidays/Sundays between leave dates are counted as leave.", style: TextStyle(color: Colors.orange, fontSize: 11, fontWeight: FontWeight.bold))),
+                                  Container(
+                                    padding: const EdgeInsets.all(10),
+                                    decoration: const BoxDecoration(
+                                        color: TColors.white,
+                                        shape: BoxShape.circle),
+                                    child: const Icon(
+                                        Icons.calendar_month_outlined,
+                                        color: TColors.primary),
+                                  ),
+                                  const SizedBox(width: TSizes.v15),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(TTexts.uiTextTotalLeaveDays,
+                                          style: TextStyle(
+                                              fontSize: TSizes.v12,
+                                              color: TColors.textSecondary)),
+                                      Text(
+                                          "${controller.calculatedDays.value} Days",
+                                          style: const TextStyle(
+                                              fontSize: TSizes.v20,
+                                              fontWeight: FontWeight.bold,
+                                              color: TColors.textPrimary)),
+                                    ],
+                                  )
                                 ],
                               ),
                             ),
-                          ),
-                      ],
-                    )),
-                    const SizedBox(height: 25),
+                            if (controller.showSandwichNote.value)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 10),
+                                child: Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color:
+                                        TColors.materialOrange.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                        color: TColors.materialOrange
+                                            .withOpacity(0.3)),
+                                  ),
+                                  child: const Row(
+                                    children: [
+                                      Icon(Icons.info_outline,
+                                          color: TColors.materialOrange,
+                                          size: TSizes.v20),
+                                      SizedBox(width: TSizes.v10),
+                                      Expanded(
+                                          child: Text(
+                                              TTexts
+                                                  .uiTextSandwichRuleHolidaysSundaysBetweenLeaveDatesAre,
+                                              style: TextStyle(
+                                                  color: TColors.materialOrange,
+                                                  fontSize: TSizes.v11,
+                                                  fontWeight:
+                                                      FontWeight.bold))),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                          ],
+                        )),
+                    const SizedBox(height: TSizes.v25),
 
                     // --- TAB SWITCHER ---
                     Container(
@@ -575,21 +598,21 @@ class LeaveDashboard extends StatelessWidget {
                           color: TColors.light,
                           borderRadius: BorderRadius.circular(12)),
                       child: Obx(() => Row(
-                        children: [
-                          _buildTab("One Day", 0, selectedTab, () {
-                            selectedTab.value = 0;
-                            endDate.value = startDate.value;
-                            recalculate();
-                          }),
-                          _buildTab("Multiple Days", 1, selectedTab, () {
-                            selectedTab.value = 1;
-                            endDate.value = null;
-                            recalculate();
-                          }),
-                        ],
-                      )),
+                            children: [
+                              _buildTab("One Day", 0, selectedTab, () {
+                                selectedTab.value = 0;
+                                endDate.value = startDate.value;
+                                recalculate();
+                              }),
+                              _buildTab("Multiple Days", 1, selectedTab, () {
+                                selectedTab.value = 1;
+                                endDate.value = null;
+                                recalculate();
+                              }),
+                            ],
+                          )),
                     ),
-                    const SizedBox(height: 25),
+                    const SizedBox(height: TSizes.v25),
 
                     _buildLabel("Leave Type"),
                     DropdownButtonFormField<LeaveType>(
@@ -599,80 +622,80 @@ class LeaveDashboard extends StatelessWidget {
                           color: TColors.primary),
                       items: controller.leaveTypes
                           .map((type) => DropdownMenuItem(
-                          value: type, child: Text(type.name)))
+                              value: type, child: Text(type.name)))
                           .toList(),
                       onChanged: (val) => selectedType.value = val,
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: TSizes.v20),
 
                     // --- DATE PICKERS ---
                     Obx(() => Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                _buildLabel("Start Date"),
-                                InkWell(
-                                  onTap: () => pickDate(true),
-                                  child: InputDecorator(
-                                      decoration: _inputDecoration(
-                                          "Select", Icons.calendar_today),
-                                      child: Text(
-                                          startDate.value != null
-                                              ? DateFormat('dd MMM')
-                                              .format(startDate.value!)
-                                              : "Select",
-                                          style: TextStyle(
-                                              color: startDate.value != null
-                                                  ? TColors.textPrimary
-                                                  : TColors.textSecondary,
-                                              fontWeight:
-                                              FontWeight.w600))),
-                                ),
-                              ]),
-                        ),
-                        if (selectedTab.value == 1) ...[
-                          const SizedBox(width: 15),
-                          Expanded(
-                            child: Column(
-                                crossAxisAlignment:
-                                CrossAxisAlignment.start,
-                                children: [
-                                  _buildLabel("End Date"),
-                                  InkWell(
-                                    onTap: startDate.value == null
-                                        ? null
-                                        : () => pickDate(false),
-                                    child: Opacity(
-                                      opacity: startDate.value == null
-                                          ? 0.5
-                                          : 1.0,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    _buildLabel("Start Date"),
+                                    InkWell(
+                                      onTap: () => pickDate(true),
                                       child: InputDecorator(
                                           decoration: _inputDecoration(
-                                              "Select", Icons.event),
+                                              "Select", Icons.calendar_today),
                                           child: Text(
-                                              endDate.value != null
+                                              startDate.value != null
                                                   ? DateFormat('dd MMM')
-                                                  .format(
-                                                  endDate.value!)
+                                                      .format(startDate.value!)
                                                   : "Select",
                                               style: TextStyle(
-                                                  color: endDate.value !=
-                                                      null
+                                                  color: startDate.value != null
                                                       ? TColors.textPrimary
-                                                      : TColors
-                                                      .textSecondary,
+                                                      : TColors.textSecondary,
                                                   fontWeight:
-                                                  FontWeight.w600))),
+                                                      FontWeight.w600))),
                                     ),
-                                  ),
-                                ]),
-                          ),
-                        ]
-                      ],
-                    )),
-                    const SizedBox(height: 20),
+                                  ]),
+                            ),
+                            if (selectedTab.value == 1) ...[
+                              const SizedBox(width: TSizes.v15),
+                              Expanded(
+                                child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      _buildLabel("End Date"),
+                                      InkWell(
+                                        onTap: startDate.value == null
+                                            ? null
+                                            : () => pickDate(false),
+                                        child: Opacity(
+                                          opacity: startDate.value == null
+                                              ? 0.5
+                                              : 1.0,
+                                          child: InputDecorator(
+                                              decoration: _inputDecoration(
+                                                  "Select", Icons.event),
+                                              child: Text(
+                                                  endDate.value != null
+                                                      ? DateFormat('dd MMM')
+                                                          .format(
+                                                              endDate.value!)
+                                                      : "Select",
+                                                  style: TextStyle(
+                                                      color: endDate.value !=
+                                                              null
+                                                          ? TColors.textPrimary
+                                                          : TColors
+                                                              .textSecondary,
+                                                      fontWeight:
+                                                          FontWeight.w600))),
+                                        ),
+                                      ),
+                                    ]),
+                              ),
+                            ]
+                          ],
+                        )),
+                    const SizedBox(height: TSizes.v20),
 
                     _buildLabel("Reason"),
                     TextField(
@@ -680,7 +703,7 @@ class LeaveDashboard extends StatelessWidget {
                         maxLines: 2,
                         decoration: _inputDecoration(
                             "Briefly explain...", Icons.edit_note)),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: TSizes.v20),
 
                     // --- HALF DAY SECTION ---
                     Obx(() {
@@ -696,30 +719,33 @@ class LeaveDashboard extends StatelessWidget {
                                 border: Border.all(
                                     color: isHalfDay.value
                                         ? TColors.primary
-                                        : Colors.transparent)),
+                                        : TColors.transparent)),
                             child: SwitchListTile(
                               contentPadding: const EdgeInsets.symmetric(
                                   horizontal: 16, vertical: 0),
                               activeColor: TColors.primary,
-                              title: const Text("Apply for Half Day",
+                              title: const Text(TTexts.uiTextApplyForHalfDay,
                                   style: TextStyle(
-                                      fontWeight: FontWeight.w700, fontSize: 15)),
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: TSizes.v15)),
                               value: isHalfDay.value,
                               onChanged: (val) {
                                 isHalfDay.value = val;
-                                if(!val) halfDayType.value = null;
+                                if (!val) halfDayType.value = null;
                                 recalculate();
                               },
                             ),
                           ),
                           if (isHalfDay.value) ...[
-                            const SizedBox(height: 15),
+                            const SizedBox(height: TSizes.v15),
                             _buildLabel("Half Day Session"),
                             DropdownButtonFormField<String>(
                               value: halfDayType.value,
-                              decoration: _inputDecoration("Select Session", Icons.access_time_rounded),
+                              decoration: _inputDecoration(
+                                  "Select Session", Icons.access_time_rounded),
                               items: ['First Half', 'Second Half']
-                                  .map((s) => DropdownMenuItem(value: s, child: Text(s)))
+                                  .map((s) => DropdownMenuItem(
+                                      value: s, child: Text(s)))
                                   .toList(),
                               onChanged: (val) => halfDayType.value = val,
                             ),
@@ -727,62 +753,68 @@ class LeaveDashboard extends StatelessWidget {
                         ],
                       );
                     }),
-                    const SizedBox(height: 30),
+                    const SizedBox(height: TSizes.v30),
 
                     SizedBox(
                       width: double.infinity,
-                      height: 55,
+                      height: TSizes.v55,
                       child: Obx(() => ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: TColors.primary,
-                          foregroundColor: Colors.white,
-                          elevation: 8,
-                          shadowColor: TColors.primary.withOpacity(0.4),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(18)),
-                        ),
-                        onPressed: controller.isSubmitting.value
-                            ? null
-                            : () {
-                          if (selectedType.value == null ||
-                              startDate.value == null ||
-                              endDate.value == null) {
-                            Get.snackbar(
-                                "Required", "Please fill all fields",
-                                backgroundColor:
-                                TColors.error.withOpacity(0.1),
-                                colorText: TColors.error);
-                            return;
-                          }
-                          if (isHalfDay.value && halfDayType.value == null) {
-                            Get.snackbar("Required", "Please select First or Second half session",
-                                backgroundColor: TColors.error.withOpacity(0.1),
-                                colorText: TColors.error);
-                            return;
-                          }
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: TColors.primary,
+                              foregroundColor: TColors.white,
+                              elevation: TSizes.v8,
+                              shadowColor: TColors.primary.withOpacity(0.4),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(18)),
+                            ),
+                            onPressed: controller.isSubmitting.value
+                                ? null
+                                : () {
+                                    if (selectedType.value == null ||
+                                        startDate.value == null ||
+                                        endDate.value == null) {
+                                      Get.snackbar("Required",
+                                          TTexts.uiTextPleaseFillAllFields,
+                                          backgroundColor:
+                                              TColors.error.withOpacity(0.1),
+                                          colorText: TColors.error);
+                                      return;
+                                    }
+                                    if (isHalfDay.value &&
+                                        halfDayType.value == null) {
+                                      Get.snackbar(
+                                          "Required",
+                                          TTexts
+                                              .uiTextPleaseSelectFirstOrSecondHalfSession,
+                                          backgroundColor:
+                                              TColors.error.withOpacity(0.1),
+                                          colorText: TColors.error);
+                                      return;
+                                    }
 
-                          controller.applyLeave(
-                            leaveTypeId: selectedType.value!.id,
-                            startDate: DateFormat('yyyy-MM-dd')
-                                .format(startDate.value!),
-                            endDate: DateFormat('yyyy-MM-dd')
-                                .format(endDate.value!),
-                            reason: reasonController.text,
-                            isHalfDay: isHalfDay.value,
-                            halfDayType: halfDayType.value,
-                          );
-                        },
-                        child: controller.isSubmitting.value
-                            ? const SizedBox(
-                            height: 24,
-                            width: 24,
-                            child: CircularProgressIndicator(
-                                color: Colors.white, strokeWidth: 2.5))
-                            : const Text("Submit Request",
-                            style: TextStyle(
-                                fontSize: 17,
-                                fontWeight: FontWeight.bold)),
-                      )),
+                                    controller.applyLeave(
+                                      leaveTypeId: selectedType.value!.id,
+                                      startDate: DateFormat('yyyy-MM-dd')
+                                          .format(startDate.value!),
+                                      endDate: DateFormat('yyyy-MM-dd')
+                                          .format(endDate.value!),
+                                      reason: reasonController.text,
+                                      isHalfDay: isHalfDay.value,
+                                      halfDayType: halfDayType.value,
+                                    );
+                                  },
+                            child: controller.isSubmitting.value
+                                ? const SizedBox(
+                                    height: TSizes.v24,
+                                    width: TSizes.v24,
+                                    child: CircularProgressIndicator(
+                                        color: TColors.white,
+                                        strokeWidth: TSizes.v2_5))
+                                : const Text(TTexts.uiTextSubmitRequest,
+                                    style: TextStyle(
+                                        fontSize: TSizes.v17,
+                                        fontWeight: FontWeight.bold)),
+                          )),
                     )
                   ],
                 ),
@@ -806,13 +838,15 @@ class LeaveDashboard extends StatelessWidget {
           duration: const Duration(milliseconds: 300),
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
-            color:
-                selectedTab.value == index ? TColors.white : Colors.transparent,
+            color: selectedTab.value == index
+                ? TColors.white
+                : TColors.transparent,
             borderRadius: BorderRadius.circular(10),
             boxShadow: selectedTab.value == index
                 ? [
                     BoxShadow(
-                        color: Colors.black.withOpacity(0.05), blurRadius: 4)
+                        color: TColors.pureBlack.withOpacity(0.05),
+                        blurRadius: TSizes.v4)
                   ]
                 : [],
           ),
@@ -828,15 +862,15 @@ class LeaveDashboard extends StatelessWidget {
     );
   }
 
-
-
-  void _showCancelDialog(BuildContext context, LeaveController controller, String leaveId) {
+  void _showCancelDialog(
+      BuildContext context, LeaveController controller, String leaveId) {
     AwesomeDialog(
       context: context,
       dialogType: DialogType.warning, // Shows a nice animated warning icon
       animType: AnimType.bottomSlide, // Slides in from bottom
-      title: 'Cancel Request?',
-      desc: 'Are you sure you want to cancel this leave application? This action cannot be undone.',
+      title: TTexts.uiTextCancelRequest_9bd1d782,
+      desc:
+          'Are you sure you want to cancel this leave application? This action cannot be undone.',
       btnCancelOnPress: () {}, // Auto-closes
       btnOkOnPress: () {
         controller.cancelLeave(leaveId);
@@ -844,20 +878,20 @@ class LeaveDashboard extends StatelessWidget {
       btnOkText: 'Yes, Cancel',
       btnCancelText: 'Keep it',
       btnOkColor: TColors.error, // Red button for destructive action
-      btnCancelColor: Colors.grey,
+      btnCancelColor: TColors.materialGrey,
       buttonsTextStyle: const TextStyle(fontWeight: FontWeight.bold),
-      descTextStyle: const TextStyle(color: TColors.textSecondary, fontSize: 14),
+      descTextStyle:
+          const TextStyle(color: TColors.textSecondary, fontSize: TSizes.v14),
       titleTextStyle: const TextStyle(
           color: TColors.textPrimary,
           fontWeight: FontWeight.bold,
-          fontSize: 20
-      ),
+          fontSize: TSizes.v20),
     ).show();
   }
 
   Widget _buildSectionTitle(String title) => Text(title,
       style: const TextStyle(
-          fontSize: 19,
+          fontSize: TSizes.v19,
           fontWeight: FontWeight.w800,
           color: TColors.textPrimary,
           letterSpacing: 0.3));
@@ -866,7 +900,7 @@ class LeaveDashboard extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 8),
       child: Text(label,
           style: const TextStyle(
-              fontSize: 14,
+              fontSize: TSizes.v14,
               fontWeight: FontWeight.w600,
               color: TColors.textSecondary)));
 
@@ -879,12 +913,12 @@ class LeaveDashboard extends StatelessWidget {
           border: Border.all(color: TColors.grey.withOpacity(0.3))),
       child: Column(children: [
         Icon(Icons.event_note_rounded,
-            size: 60, color: TColors.primary.withOpacity(0.3)),
-        const SizedBox(height: 15),
-        const Text("No leaves found",
+            size: TSizes.v60, color: TColors.primary.withOpacity(0.3)),
+        const SizedBox(height: TSizes.v15),
+        const Text(TTexts.uiTextNoLeavesFound,
             style: TextStyle(
                 color: TColors.textSecondary,
-                fontSize: 16,
+                fontSize: TSizes.v16,
                 fontWeight: FontWeight.w500))
       ]));
 
@@ -916,10 +950,11 @@ class LeaveDashboard extends StatelessWidget {
 
   InputDecoration _inputDecoration(String hint, IconData prefixIcon) {
     return InputDecoration(
-        prefixIcon:
-            Icon(prefixIcon, color: TColors.primary.withOpacity(0.6), size: 22),
+        prefixIcon: Icon(prefixIcon,
+            color: TColors.primary.withOpacity(0.6), size: TSizes.v22),
         hintText: hint,
-        hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
+        hintStyle:
+            const TextStyle(color: TColors.materialGrey, fontSize: TSizes.v14),
         filled: true,
         fillColor: TColors.light,
         contentPadding: const EdgeInsets.all(18),
@@ -928,7 +963,8 @@ class LeaveDashboard extends StatelessWidget {
             borderSide: BorderSide.none),
         focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
-            borderSide: const BorderSide(color: TColors.primary, width: 1.5)));
+            borderSide:
+                const BorderSide(color: TColors.primary, width: TSizes.v1_5)));
   }
 
   String _formatDate(String dateStr) {

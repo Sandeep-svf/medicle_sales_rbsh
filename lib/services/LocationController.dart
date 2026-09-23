@@ -37,7 +37,6 @@ class LocationController {
       deviceId = "No Device Id found"; // Assign default value if null
     }
 
-
     final now = DateTime.now();
     final formattedTime = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
 
@@ -48,25 +47,19 @@ class LocationController {
     print("LocationController latitude: $latitude");
     print("LocationController longitude : $longitude");
 
-
-
-    final Map<String,dynamic> requestData = {
-
-        "user_id": userId,
-        "device_id": deviceId,
-        "event_type": "location_update",
-        "latitude": latitude,
-        "longitude": longitude,
-        "timestamp": timestamp,
-        "metadata": {
-          "battery_level": 85,
-          "network_type": "4g tab test 8 Oct",
-          "accuracy": 15.5,
-          "speed": 0  //optional
-        }
-
-
-
+    final Map<String, dynamic> requestData = {
+      "user_id": userId,
+      "device_id": deviceId,
+      "event_type": "location_update",
+      "latitude": latitude,
+      "longitude": longitude,
+      "timestamp": timestamp,
+      "metadata": {
+        "battery_level": 85,
+        "network_type": "4g tab test 8 Oct",
+        "accuracy": 15.5,
+        "speed": 0 //optional
+      }
     };
 
     try {
@@ -82,7 +75,8 @@ class LocationController {
       if (response.statusCode == 200) {
         print('LocationController Location tracing started');
       } else {
-        print('LocationController Failed to start location tracing: ${response.statusCode}');
+        print(
+            'LocationController Failed to start location tracing: ${response.statusCode}');
       }
     } catch (e) {
       print('Error occurred while sending location data: $e');

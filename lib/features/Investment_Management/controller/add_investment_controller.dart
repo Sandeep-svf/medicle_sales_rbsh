@@ -1,3 +1,4 @@
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'dart:async';
 import 'dart:convert';
 
@@ -13,6 +14,8 @@ import '../api_service.dart';
 import '../enum.dart';
 import '../model/investment_request.dart';
 import '../model/investment_request_model.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class AddInvestmentController extends GetxController {
   AddInvestmentController({this.initialRequest});
@@ -115,7 +118,7 @@ class AddInvestmentController extends GetxController {
 
   final itemNameController = TextEditingController();
 
-  final quantityController = TextEditingController(text: "1");
+  final quantityController = TextEditingController(text: TTexts.uiText1);
 
   final valueController = TextEditingController();
 
@@ -345,8 +348,8 @@ class AddInvestmentController extends GetxController {
 
       final image = await _imagePicker.pickImage(
         source: source,
-        maxWidth: 1600,
-        maxHeight: 1600,
+        maxWidth: TSizes.v1600,
+        maxHeight: TSizes.v1600,
         imageQuality: 80,
         preferredCameraDevice: CameraDevice.rear,
         requestFullMetadata: false,
@@ -471,12 +474,11 @@ class AddInvestmentController extends GetxController {
     }
 
     Get.defaultDialog<void>(
-      title: "Camera Permission",
-      middleText:
-          "Camera access is disabled. Enable it in app settings to capture a payment proof.",
-      textCancel: "Not Now",
-      textConfirm: "Open Settings",
-      confirmTextColor: Colors.white,
+      title: TTexts.uiTextCameraPermission,
+      middleText: TTexts.uiTextCameraAccessIsDisabledEnableItInApp,
+      textCancel: TTexts.uiTextNotNow,
+      textConfirm: TTexts.uiTextOpenSettings,
+      confirmTextColor: TColors.white,
       onConfirm: () {
         Get.back();
         unawaited(_openAppSettingsSafely());
@@ -546,7 +548,7 @@ class AddInvestmentController extends GetxController {
         value <= 0) {
       Get.snackbar(
         "Gift Item",
-        "Enter an item name, positive quantity, and positive value.",
+        TTexts.uiTextEnterAnItemNamePositiveQuantityAndPositive,
         snackPosition: SnackPosition.BOTTOM,
       );
       return;
@@ -684,7 +686,7 @@ class AddInvestmentController extends GetxController {
     if (selectedMode.value == InvestmentMode.emi) {
       Get.snackbar(
         "Unsupported Mode",
-        "EMI is not supported by the Investment Request API.",
+        TTexts.uiTextEMIIsNotSupportedByTheInvestmentRequest,
         snackPosition: SnackPosition.BOTTOM,
       );
       return;
@@ -697,7 +699,7 @@ class AddInvestmentController extends GetxController {
     if (isEditing && initialRequest?.canEdit != true) {
       Get.snackbar(
         "Edit Not Available",
-        "Only Draft or Rejected requests can be edited.",
+        TTexts.uiTextOnlyDraftOrRejectedRequestsCanBeEdited,
         snackPosition: SnackPosition.BOTTOM,
       );
       return;
@@ -711,7 +713,7 @@ class AddInvestmentController extends GetxController {
       if (token == null || token.isEmpty) {
         Get.snackbar(
           "Authentication",
-          "Token not found. Please login again.",
+          TTexts.uiTextTokenNotFoundPleaseLoginAgain,
           snackPosition: SnackPosition.BOTTOM,
         );
         return;
@@ -791,7 +793,7 @@ class AddInvestmentController extends GetxController {
     } on TimeoutException {
       Get.snackbar(
         "Timeout",
-        "Server timeout.",
+        TTexts.uiTextServerTimeout,
         snackPosition: SnackPosition.BOTTOM,
       );
     } catch (error, stackTrace) {
@@ -800,7 +802,7 @@ class AddInvestmentController extends GetxController {
 
       Get.snackbar(
         "Error",
-        "Unable to submit the investment request. Please try again.",
+        TTexts.uiTextUnableToSubmitTheInvestmentRequestPleaseTry,
         snackPosition: SnackPosition.BOTTOM,
       );
     } finally {
@@ -812,7 +814,7 @@ class AddInvestmentController extends GetxController {
     if (selectedDoctorId.value.isEmpty) {
       Get.snackbar(
         "Doctor",
-        "Please select doctor.",
+        TTexts.uiTextPleaseSelectDoctor,
         snackPosition: SnackPosition.BOTTOM,
       );
       return false;
@@ -825,7 +827,7 @@ class AddInvestmentController extends GetxController {
     if (selectedMode.value == InvestmentMode.gift && giftItems.isEmpty) {
       Get.snackbar(
         "Gift Items",
-        "Please add at least one gift item.",
+        TTexts.uiTextPleaseAddAtLeastOneGiftItem,
         snackPosition: SnackPosition.BOTTOM,
       );
 

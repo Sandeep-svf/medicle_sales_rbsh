@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-
-import '../../../utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'performance_progress.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class KpiCard extends StatelessWidget {
   final String title;
@@ -32,15 +32,15 @@ class KpiCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: TColors.white,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: color.withOpacity(.15),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(.04),
-            blurRadius: 8,
+            color: TColors.pureBlack.withOpacity(.04),
+            blurRadius: TSizes.v8,
             offset: const Offset(0, 3),
           ),
         ],
@@ -48,44 +48,39 @@ class KpiCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
           /// Top
           Row(
             children: [
-
               Container(
-                height: 32,
-                width: 32,
+                height: TSizes.v32,
+                width: TSizes.v32,
                 decoration: BoxDecoration(
                   color: color.withOpacity(.10),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
                   icon,
-                  size: 18,
+                  size: TSizes.v18,
                   color: color,
                 ),
               ),
-
-              const SizedBox(width: 8),
-
+              const SizedBox(width: TSizes.v8),
               Expanded(
                 child: Text(
                   title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    fontSize: 15,
+                    fontSize: TSizes.v15,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
-
               Text(
                 "${(progress * 100).round()}%",
                 style: TextStyle(
                   color: color,
-                  fontSize: 14,
+                  fontSize: TSizes.v14,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -98,33 +93,31 @@ class KpiCard extends StatelessWidget {
           RichText(
             text: TextSpan(
               children: [
-
                 TextSpan(
                   text: "$confirmed",
                   style: const TextStyle(
                     color: TColors.textPrimary,
-                    fontSize: 28,
+                    fontSize: TSizes.v28,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-
                 TextSpan(
                   text: " / $scheduled",
                   style: const TextStyle(
                     color: TColors.textSecondary,
-                    fontSize: 17,
+                    fontSize: TSizes.v17,
                   ),
                 ),
               ],
             ),
           ),
 
-          const SizedBox(height: 8),
+          const SizedBox(height: TSizes.v8),
 
           PerformanceProgress(
             value: progress,
             color: color,
-            height: 5,
+            height: TSizes.v5,
           ),
         ],
       ),

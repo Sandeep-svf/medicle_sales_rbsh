@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-
-import '../../../utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class InvestmentEmpty extends StatelessWidget {
   final VoidCallback? onAdd;
@@ -16,34 +17,27 @@ class InvestmentEmpty extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-
           Icon(
             Icons.account_balance_wallet_outlined,
-            size: 90,
-            color: Colors.grey.shade400,
+            size: TSizes.v90,
+            color: TColors.materialGrey400,
           ),
-
-          const SizedBox(height: 20),
-
+          const SizedBox(height: TSizes.v20),
           const Text(
-            "No Investment Requests",
+            TTexts.uiTextNoInvestmentRequests,
             style: TextStyle(
-              fontSize: 22,
+              fontSize: TSizes.v22,
               fontWeight: FontWeight.bold,
             ),
           ),
-
-          const SizedBox(height: 8),
-
+          const SizedBox(height: TSizes.v8),
           Text(
-            "Create your first investment request.",
+            TTexts.uiTextCreateYourFirstInvestmentRequest,
             style: TextStyle(
-              color: Colors.grey.shade600,
+              color: TColors.materialGrey600,
             ),
           ),
-
-          const SizedBox(height: 24),
-
+          const SizedBox(height: TSizes.v24),
           ElevatedButton.icon(
             style: ElevatedButton.styleFrom(
               backgroundColor: TColors.primary,
@@ -55,12 +49,12 @@ class InvestmentEmpty extends StatelessWidget {
             onPressed: onAdd,
             icon: const Icon(
               Icons.add,
-              color: Colors.white,
+              color: TColors.white,
             ),
             label: const Text(
-              "New Request",
+              TTexts.uiTextNewRequest,
               style: TextStyle(
-                color: Colors.white,
+                color: TColors.white,
               ),
             ),
           ),

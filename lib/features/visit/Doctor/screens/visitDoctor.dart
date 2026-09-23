@@ -1,27 +1,25 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:image/image.dart' as img;
+import 'package:http/http.dart' as http;
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/services.dart';
-import 'package:image/image.dart'
-    as img; // Rename to avoid conflict with Flutter Image
-import 'package:http_parser/http_parser.dart'; // For MediaType
+import 'package:http_parser/http_parser.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:medicle_sales_rbsh/common/Model/SMResponseModel.dart';
 import 'package:medicle_sales_rbsh/features/doctor_offline/doctor_offline.dart';
-
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import '../../../../../../utils/LocationHelper/LocationHelper.dart';
-import '../../../../../../utils/constants/colors.dart';
-import '../../../../../../utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 import '../../../../../../utils/local_storage/auth_manager.dart';
 import '../../../../common/Model/DoctorVisitResponse.dart';
 import '../../../../utils/camera/CameraLocationResult.dart';
@@ -135,9 +133,9 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
       if (showMessage && mounted) {
         Get.snackbar(
           'Visits refreshed',
-          'Visits and products are up to date. Pending confirmations sync automatically.',
+          TTexts.uiTextVisitsAndProductsAreUpToDatePending,
           backgroundColor: TColors.success,
-          colorText: Colors.white,
+          colorText: TColors.white,
         );
       }
     } catch (error, stackTrace) {
@@ -187,7 +185,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
         endDate: _selectedDateRange?.end,
       );
 
-      Get.snackbar("Success", "List updated successfully",
+      Get.snackbar("Success", TTexts.uiTextListUpdatedSuccessfully,
           backgroundColor: TColors.success.withOpacity(0.1),
           colorText: TColors.success);
     }
@@ -205,8 +203,8 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
             data: Theme.of(context).copyWith(
               colorScheme: const ColorScheme.light(
                 primary: TColors.primary,
-                onPrimary: Colors.white,
-                onSurface: Colors.black,
+                onPrimary: TColors.white,
+                onSurface: TColors.pureBlack,
               ),
             ),
             child: child!,
@@ -287,38 +285,38 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
 
           // 2. Horizontal Filter List
           SizedBox(
-            height: 50,
+            height: TSizes.v50,
             child: ListView(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16),
               children: [
                 _buildFilterChip(VisitDateFilter.today),
-                const SizedBox(width: 8),
+                const SizedBox(width: TSizes.v8),
                 _buildFilterChip(VisitDateFilter.last7Days),
-                const SizedBox(width: 8),
+                const SizedBox(width: TSizes.v8),
                 _buildFilterChip(VisitDateFilter.last15Days),
-                const SizedBox(width: 8),
+                const SizedBox(width: TSizes.v8),
                 _buildFilterChip(VisitDateFilter.custom),
               ],
             ),
           ),
 
-          const SizedBox(height: 10),
+          const SizedBox(height: TSizes.v10),
 
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
               children: [
                 const Icon(Icons.sync_rounded, color: TColors.primary),
-                const SizedBox(width: 8),
+                const SizedBox(width: TSizes.v8),
                 const Expanded(
                   child: Text(
-                    'Local-first visits • Syncs automatically',
+                    TTexts.uiTextLocalFirstVisitsSyncsAutomatically,
                     style: TextStyle(fontWeight: FontWeight.w600),
                   ),
                 ),
                 IconButton(
-                  tooltip: 'Refresh visits and products',
+                  tooltip: TTexts.uiTextRefreshVisitsAndProducts,
                   onPressed: _isRefreshingAfterReconnect
                       ? null
                       : () => _refreshAll(showMessage: true),
@@ -333,13 +331,13 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                'Pull down to refresh visits and products. Confirmations saved offline sync when internet is available.',
-                style: TextStyle(fontSize: 12, color: Colors.black54),
+                TTexts.uiTextPullDownToRefreshVisitsAndProductsConfirmations,
+                style: TextStyle(fontSize: TSizes.v12, color: TColors.black54),
               ),
             ),
           ),
 
-          const SizedBox(height: 10),
+          const SizedBox(height: TSizes.v10),
 
           // 3. Main Content List (Includes Status Summary)
           Expanded(
@@ -353,7 +351,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                       physics: const AlwaysScrollableScrollPhysics(),
                       children: const [
                         SizedBox(
-                          height: 260,
+                          height: TSizes.v260,
                           child: Center(child: CircularProgressIndicator()),
                         ),
                       ],
@@ -366,7 +364,8 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                     child: ListView(
                       physics: const AlwaysScrollableScrollPhysics(),
                       children: [
-                        SizedBox(height: 260, child: _buildEmptyState()),
+                        SizedBox(
+                            height: TSizes.v260, child: _buildEmptyState()),
                       ],
                     ),
                   );
@@ -394,7 +393,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                       _buildStatusSummaryDashboard(
                           totalVisits, confirmedVisits, pendingVisits),
 
-                      const SizedBox(height: 10),
+                      const SizedBox(height: TSizes.v10),
 
                       if (filteredDoctors.isEmpty)
                         Expanded(
@@ -404,10 +403,11 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                               physics: const AlwaysScrollableScrollPhysics(),
                               children: const [
                                 SizedBox(
-                                  height: 220,
+                                  height: TSizes.v220,
                                   child: Center(
                                     child: Text(
-                                      "No doctors found matching your search.",
+                                      TTexts
+                                          .uiTextNoDoctorsFoundMatchingYourSearch,
                                     ),
                                   ),
                                 ),
@@ -451,9 +451,9 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                                     doctorVisit.confirmed == true
                                         ? TColors.success
                                         : isPendingSync
-                                            ? Colors.orange
+                                            ? TColors.materialOrange
                                             : isSchedulePending
-                                                ? Colors.orange
+                                                ? TColors.materialOrange
                                                 : TColors.primary;
 
                                 final statusText = doctorVisit.confirmed == true
@@ -476,19 +476,20 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
 
                                 // Priority Logic (Placeholder)
                                 const String priority = "C";
-                                Color priorityColor = Colors.blueGrey;
+                                Color priorityColor = TColors.materialBlueGrey;
 
                                 return Container(
                                   decoration: BoxDecoration(
-                                    color: Colors.white,
+                                    color: TColors.white,
                                     borderRadius: BorderRadius.circular(16),
                                     border: Border.all(
                                         color: TColors.primary.withOpacity(0.4),
-                                        width: 1),
+                                        width: TSizes.v1),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.black.withOpacity(0.06),
-                                        blurRadius: 15,
+                                        color:
+                                            TColors.pureBlack.withOpacity(0.06),
+                                        blurRadius: TSizes.v15,
                                         offset: const Offset(0, 6),
                                       ),
                                     ],
@@ -500,7 +501,9 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                                           CrossAxisAlignment.stretch,
                                       children: [
                                         // Left Colored Strip
-                                        Container(width: 6, color: statusColor),
+                                        Container(
+                                            width: TSizes.v6,
+                                            color: statusColor),
 
                                         // Main Content
                                         Expanded(
@@ -530,16 +533,17 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                                                             color: statusColor
                                                                 .withOpacity(
                                                                     0.3),
-                                                            width: 2),
+                                                            width: TSizes.v2),
                                                       ),
                                                       child: CircleAvatar(
-                                                        radius: 22,
+                                                        radius: TSizes.v22,
                                                         backgroundColor:
-                                                            Colors.white,
+                                                            TColors.white,
                                                         child: Text(
                                                           initials,
                                                           style: TextStyle(
-                                                            fontSize: 18,
+                                                            fontSize:
+                                                                TSizes.v18,
                                                             fontWeight:
                                                                 FontWeight.bold,
                                                             color: statusColor,
@@ -547,7 +551,8 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                                                         ),
                                                       ),
                                                     ),
-                                                    const SizedBox(width: 12),
+                                                    const SizedBox(
+                                                        width: TSizes.v12),
 
                                                     // Name, Date & Priority
                                                     Expanded(
@@ -570,11 +575,12 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                                                                   style:
                                                                       const TextStyle(
                                                                     fontSize:
-                                                                        16,
+                                                                        TSizes
+                                                                            .v16,
                                                                     fontWeight:
                                                                         FontWeight
                                                                             .bold,
-                                                                    color: Colors
+                                                                    color: TColors
                                                                         .black87,
                                                                   ),
                                                                   maxLines: 1,
@@ -610,7 +616,8 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                                                                   style:
                                                                       TextStyle(
                                                                     fontSize:
-                                                                        10,
+                                                                        TSizes
+                                                                            .v10,
                                                                     fontWeight:
                                                                         FontWeight
                                                                             .bold,
@@ -622,18 +629,20 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                                                             ],
                                                           ),
                                                           const SizedBox(
-                                                              height: 6),
+                                                              height:
+                                                                  TSizes.v6),
                                                           Row(
                                                             children: [
                                                               Icon(
                                                                   Icons
                                                                       .calendar_today_rounded,
-                                                                  size: 14,
-                                                                  color: Colors
-                                                                          .grey[
-                                                                      600]),
+                                                                  size: TSizes
+                                                                      .v14,
+                                                                  color: TColors
+                                                                      .materialGrey600),
                                                               const SizedBox(
-                                                                  width: 4),
+                                                                  width: TSizes
+                                                                      .v4),
                                                               Expanded(
                                                                 child: Text(
                                                                   doctorVisit
@@ -643,10 +652,10 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                                                                   style:
                                                                       TextStyle(
                                                                     fontSize:
-                                                                        12,
-                                                                    color: Colors
-                                                                            .grey[
-                                                                        600],
+                                                                        TSizes
+                                                                            .v12,
+                                                                    color: TColors
+                                                                        .materialGrey600,
                                                                     fontWeight:
                                                                         FontWeight
                                                                             .w500,
@@ -683,13 +692,15 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                                                                     .start,
                                                             children: [
                                                               Text(
-                                                                "SALES REP",
+                                                                TTexts
+                                                                    .uiTextSALESREP,
                                                                 style:
                                                                     TextStyle(
-                                                                  fontSize: 10,
-                                                                  color: Colors
-                                                                          .grey[
-                                                                      500],
+                                                                  fontSize:
+                                                                      TSizes
+                                                                          .v10,
+                                                                  color: TColors
+                                                                      .materialGrey500,
                                                                   fontWeight:
                                                                       FontWeight
                                                                           .w700,
@@ -698,18 +709,20 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                                                                 ),
                                                               ),
                                                               const SizedBox(
-                                                                  height: 4),
+                                                                  height: TSizes
+                                                                      .v4),
                                                               Row(
                                                                 children: [
                                                                   Icon(
                                                                       Icons
                                                                           .person_rounded,
-                                                                      size: 16,
-                                                                      color: Colors
-                                                                              .grey[
-                                                                          700]),
+                                                                      size: TSizes
+                                                                          .v16,
+                                                                      color: TColors
+                                                                          .materialGrey700),
                                                                   const SizedBox(
-                                                                      width: 6),
+                                                                      width: TSizes
+                                                                          .v6),
                                                                   Expanded(
                                                                     child: Text(
                                                                       doctorVisit
@@ -717,12 +730,12 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                                                                               ?.name ??
                                                                           'N/A',
                                                                       style: const TextStyle(
-                                                                          fontSize:
-                                                                              13,
+                                                                          fontSize: TSizes
+                                                                              .v13,
                                                                           fontWeight: FontWeight
                                                                               .w600,
                                                                           color:
-                                                                              Colors.black87),
+                                                                              TColors.black87),
                                                                       maxLines:
                                                                           1,
                                                                       overflow:
@@ -757,16 +770,20 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                                                                     .min,
                                                             children: [
                                                               Icon(statusIcon,
-                                                                  size: 12,
+                                                                  size: TSizes
+                                                                      .v12,
                                                                   color:
                                                                       statusColor),
                                                               const SizedBox(
-                                                                  width: 4),
+                                                                  width: TSizes
+                                                                      .v4),
                                                               Text(
                                                                 statusText,
                                                                 style:
                                                                     TextStyle(
-                                                                  fontSize: 10,
+                                                                  fontSize:
+                                                                      TSizes
+                                                                          .v10,
                                                                   fontWeight:
                                                                       FontWeight
                                                                           .bold,
@@ -780,7 +797,8 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                                                       ],
                                                     ),
 
-                                                    const SizedBox(height: 12),
+                                                    const SizedBox(
+                                                        height: TSizes.v12),
 
                                                     // --- Notes ---
                                                     Container(
@@ -789,13 +807,14 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                                                           const EdgeInsets.all(
                                                               12),
                                                       decoration: BoxDecoration(
-                                                        color: Colors.grey[50],
+                                                        color: TColors
+                                                            .materialGrey50,
                                                         borderRadius:
                                                             BorderRadius
                                                                 .circular(10),
                                                         border: Border.all(
-                                                            color: Colors
-                                                                .grey[200]!),
+                                                            color: TColors
+                                                                .materialGrey200!),
                                                       ),
                                                       child: Column(
                                                         crossAxisAlignment:
@@ -803,12 +822,14 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                                                                 .start,
                                                         children: [
                                                           Text(
-                                                            "CALL NOTES",
+                                                            TTexts
+                                                                .uiTextCALLNOTES,
                                                             maxLines: 1,
                                                             style: TextStyle(
-                                                              fontSize: 10,
-                                                              color: Colors
-                                                                  .grey[500],
+                                                              fontSize:
+                                                                  TSizes.v10,
+                                                              color: TColors
+                                                                  .materialGrey500,
                                                               fontWeight:
                                                                   FontWeight
                                                                       .w700,
@@ -817,7 +838,8 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                                                             ),
                                                           ),
                                                           const SizedBox(
-                                                              height: 4),
+                                                              height:
+                                                                  TSizes.v4),
                                                           Text(
                                                             doctorVisit.notes
                                                                         ?.isNotEmpty ==
@@ -826,10 +848,12 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                                                                     .notes!
                                                                 : "No notes provided.",
                                                             style: TextStyle(
-                                                              fontSize: 13,
-                                                              color: Colors
-                                                                  .grey[700],
-                                                              height: 1.4,
+                                                              fontSize:
+                                                                  TSizes.v13,
+                                                              color: TColors
+                                                                  .materialGrey700,
+                                                              height:
+                                                                  TSizes.v1_4,
                                                               fontStyle: doctorVisit
                                                                           .notes
                                                                           ?.isNotEmpty ==
@@ -847,7 +871,8 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                                                         ],
                                                       ),
                                                     ),
-                                                    const SizedBox(height: 12),
+                                                    const SizedBox(
+                                                        height: TSizes.v12),
 
                                                     // --- Action Button ---
                                                     SizedBox(
@@ -862,10 +887,11 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                                                                     .showSnackBar(
                                                                   const SnackBar(
                                                                     content: Text(
-                                                                        'Visit already confirmed.'),
+                                                                        TTexts
+                                                                            .uiTextVisitAlreadyConfirmed),
                                                                     backgroundColor:
-                                                                        Colors
-                                                                            .green,
+                                                                        TColors
+                                                                            .materialGreen,
                                                                   ),
                                                                 );
                                                               }
@@ -877,10 +903,11 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                                                                       const SnackBar(
                                                                         content:
                                                                             Text(
-                                                                          'This visit has been saved offline and is waiting to sync.',
+                                                                          TTexts
+                                                                              .uiTextThisVisitHasBeenSavedOfflineAndIs,
                                                                         ),
                                                                         backgroundColor:
-                                                                            Colors.orange,
+                                                                            TColors.materialOrange,
                                                                       ),
                                                                     );
                                                                   }
@@ -897,12 +924,12 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                                                                   true
                                                               ? TColors.success
                                                               : isPendingSync
-                                                                  ? Colors
-                                                                      .orange
+                                                                  ? TColors
+                                                                      .materialOrange
                                                                   : TColors
                                                                       .primary,
                                                           foregroundColor:
-                                                              Colors.white,
+                                                              TColors.white,
                                                           elevation: doctorVisit
                                                                       .confirmed ==
                                                                   true
@@ -914,8 +941,8 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                                                                   ? TColors
                                                                       .success
                                                                   : isPendingSync
-                                                                      ? Colors
-                                                                          .orange
+                                                                      ? TColors
+                                                                          .materialOrange
                                                                       : TColors
                                                                           .primary)
                                                               .withOpacity(0.4),
@@ -947,10 +974,11 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                                                                           .sync
                                                                       : Icons
                                                                           .touch_app_rounded,
-                                                              size: 20,
+                                                              size: TSizes.v20,
                                                             ),
                                                             const SizedBox(
-                                                                width: 8),
+                                                                width:
+                                                                    TSizes.v8),
                                                             Text(
                                                               doctorVisit.confirmed ==
                                                                       true
@@ -962,7 +990,8 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                                                                           .confirmVisit,
                                                               style:
                                                                   const TextStyle(
-                                                                fontSize: 15,
+                                                                fontSize:
+                                                                    TSizes.v15,
                                                                 fontWeight:
                                                                     FontWeight
                                                                         .bold,
@@ -1050,7 +1079,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
       floatingActionButton: FloatingActionButton(
         onPressed: _navigateToScheduleScreen, // Corrected to use new screen
         backgroundColor: TColors.primary,
-        child: const Icon(Icons.add, color: Colors.white),
+        child: const Icon(Icons.add, color: TColors.white),
       ),
     );
   }
@@ -1063,13 +1092,13 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-            color: Colors.white,
+            color: TColors.white,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.grey.withOpacity(0.2)),
+            border: Border.all(color: TColors.materialGrey.withOpacity(0.2)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.03),
-                blurRadius: 10,
+                color: TColors.pureBlack.withOpacity(0.03),
+                blurRadius: TSizes.v10,
                 offset: const Offset(0, 2),
               )
             ]),
@@ -1078,15 +1107,19 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
             _buildStatusCard("Total", total.toString(), TColors.primary,
                 Icons.calendar_today),
             Container(
-                width: 1, height: 40, color: Colors.grey.withOpacity(0.2)),
+                width: TSizes.v1,
+                height: TSizes.v40,
+                color: TColors.materialGrey.withOpacity(0.2)),
             // Divider
             _buildStatusCard("Done", confirmed.toString(), TColors.success,
                 Icons.check_circle_outline),
             Container(
-                width: 1, height: 40, color: Colors.grey.withOpacity(0.2)),
+                width: TSizes.v1,
+                height: TSizes.v40,
+                color: TColors.materialGrey.withOpacity(0.2)),
             // Divider
-            _buildStatusCard("Pending", pending.toString(), Colors.orange,
-                Icons.pending_outlined),
+            _buildStatusCard("Pending", pending.toString(),
+                TColors.materialOrange, Icons.pending_outlined),
           ],
         ),
       ),
@@ -1101,25 +1134,25 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 16, color: color.withOpacity(0.8)),
-              const SizedBox(width: 6),
+              Icon(icon, size: TSizes.v16, color: color.withOpacity(0.8)),
+              const SizedBox(width: TSizes.v6),
               Text(
                 count,
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: TSizes.v18,
                   fontWeight: FontWeight.bold,
                   color: color,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: TSizes.v4),
           Text(
             label.toUpperCase(),
             style: TextStyle(
-              fontSize: 10,
+              fontSize: TSizes.v10,
               fontWeight: FontWeight.w600,
-              color: Colors.grey[600],
+              color: TColors.materialGrey600,
               letterSpacing: 0.5,
             ),
           ),
@@ -1136,7 +1169,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
       label: Text(
         _getFilterName(filter),
         style: TextStyle(
-          color: isSelected ? Colors.white : Colors.black87,
+          color: isSelected ? TColors.white : TColors.black87,
           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
         ),
       ),
@@ -1147,10 +1180,10 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
         }
       },
       selectedColor: TColors.primary,
-      backgroundColor: Colors.grey[200],
+      backgroundColor: TColors.materialGrey200,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       side:
-          BorderSide(color: isSelected ? TColors.primary : Colors.transparent),
+          BorderSide(color: isSelected ? TColors.primary : TColors.transparent),
       showCheckmark: false,
     );
   }
@@ -1184,36 +1217,36 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
             ),
             child: Icon(
               Icons.calendar_month_outlined,
-              size: 64,
+              size: TSizes.v64,
               color: TColors.primary.withOpacity(0.6),
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: TSizes.v24),
           Text(
-            "No Schedules Available",
+            TTexts.uiTextNoSchedulesAvailable,
             style: TextStyle(
-              fontSize: 20,
+              fontSize: TSizes.v20,
               fontWeight: FontWeight.bold,
-              color: Colors.grey[800],
+              color: TColors.materialGrey800,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: TSizes.v8),
           Text(
             message,
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[600],
+              fontSize: TSizes.v16,
+              color: TColors.materialGrey600,
             ),
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: TSizes.v32),
           ElevatedButton.icon(
             onPressed: _navigateToScheduleScreen, // Corrected to use new screen
             icon: const Icon(Icons.add_circle_outline),
-            label: const Text("Schedule New Visit"),
+            label: const Text(TTexts.scheduleVisitTitle),
             style: ElevatedButton.styleFrom(
               backgroundColor: TColors.primary,
-              foregroundColor: Colors.white,
+              foregroundColor: TColors.white,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(30),
@@ -1246,9 +1279,9 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
             return StatefulBuilder(
               builder: (context, setState) {
                 return AlertDialog(
-                  title: const Text("Select Products (Optional)"),
+                  title: const Text(TTexts.uiTextSelectProductsOptional),
                   content: SizedBox(
-                    height: 500,
+                    height: TSizes.v500,
                     width: double.maxFinite,
                     child: Obx(() {
                       if (productController.isLoading.value) {
@@ -1256,7 +1289,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                       }
                       if (productController.productList.isEmpty) {
                         return const Center(
-                            child: Text("No products available."));
+                            child: Text(TTexts.uiTextNoProductsAvailable));
                       }
 
                       final filteredList =
@@ -1271,7 +1304,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                           TextField(
                             decoration: InputDecoration(
                               prefixIcon: const Icon(Icons.search),
-                              hintText: "Search products...",
+                              hintText: TTexts.uiTextSearchProducts,
                               border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(8)),
                             ),
@@ -1279,11 +1312,12 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                               searchQuery.value = value.toLowerCase();
                             },
                           ),
-                          const SizedBox(height: 10),
+                          const SizedBox(height: TSizes.v10),
                           Expanded(
                             child: filteredList.isEmpty
                                 ? const Center(
-                                    child: Text("No matching products found."))
+                                    child: Text(
+                                        TTexts.uiTextNoMatchingProductsFound))
                                 : ListView.builder(
                                     itemCount: filteredList.length,
                                     itemBuilder: (_, i) {
@@ -1300,8 +1334,8 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                                               BorderRadius.circular(8),
                                           child: Image.network(
                                             product.image ?? '',
-                                            width: 40,
-                                            height: 40,
+                                            width: TSizes.v40,
+                                            height: TSizes.v40,
                                             fit: BoxFit.cover,
                                             errorBuilder: (_, __, ___) =>
                                                 const Icon(
@@ -1330,14 +1364,14 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(context, <String>[]),
-                      child: const Text("Skip"),
+                      child: const Text(TTexts.skip),
                     ),
                     ElevatedButton(
                       onPressed: () =>
                           Navigator.pop(context, selectedProductIds.toList()),
                       style: ElevatedButton.styleFrom(
                           backgroundColor: TColors.primary),
-                      child: const Text("Next"),
+                      child: const Text(TTexts.uiTextNext),
                     ),
                   ],
                 );
@@ -1564,9 +1598,9 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
     if (accountId == null || accountId.trim().isEmpty) {
       Get.snackbar(
         'Authentication required',
-        'Sign in again before saving the geo image.',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
+        TTexts.uiTextSignInAgainBeforeSavingTheGeoImage,
+        backgroundColor: TColors.materialRed,
+        colorText: TColors.white,
       );
       return false;
     }
@@ -1596,9 +1630,9 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
       if (cachedDoctor == null || store == null) {
         Get.snackbar(
           'Doctor unavailable offline',
-          'This doctor is not present in the offline doctor cache.',
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
+          TTexts.uiTextThisDoctorIsNotPresentInTheOffline,
+          backgroundColor: TColors.materialRed,
+          colorText: TColors.white,
         );
         return false;
       }
@@ -1639,8 +1673,8 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
     QuickAlert.show(
       context: context,
       type: QuickAlertType.loading,
-      title: "Processing",
-      text: "Adding Watermark & Logo...",
+      title: TTexts.uiTextProcessing,
+      text: TTexts.uiTextAddingWatermarkLogo,
       disableBackBtn: true,
     );
 
@@ -1753,9 +1787,9 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
     await QuickAlert.show(
       context: context,
       type: QuickAlertType.confirm,
-      title: "Confirm Visit",
-      text: "Submit this visit?",
-      confirmBtnText: "Yes",
+      title: TTexts.confirmVisit,
+      text: TTexts.uiTextSubmitThisVisit,
+      confirmBtnText: TTexts.yes,
       onConfirmBtnTap: () {
         confirmed = true;
         Navigator.of(context, rootNavigator: true).pop();
@@ -1765,7 +1799,9 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
     if (!confirmed) return;
 
     QuickAlert.show(
-        context: context, type: QuickAlertType.loading, title: "Submitting...");
+        context: context,
+        type: QuickAlertType.loading,
+        title: TTexts.uiTextSubmitting);
 
     try {
       debugPrint(
@@ -1832,7 +1868,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
         QuickAlert.show(
           context: context,
           type: QuickAlertType.error,
-          title: "Visit Confirmation Failed",
+          title: TTexts.uiTextVisitConfirmationFailed,
           text: body["errors"]?[0]?["message"] ??
               body["message"] ??
               "Unable to confirm visit.",
@@ -1861,7 +1897,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                         ? "Visit saved offline."
                         : "Visit Confirmed!")),
             backgroundColor: TColors.success,
-            colorText: Colors.white,
+            colorText: TColors.white,
           );
 
           if (isQueued) {
@@ -1915,8 +1951,8 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
       QuickAlert.show(
         context: context,
         type: QuickAlertType.error,
-        title: "Unable to Save Visit",
-        text: "Visit could not be saved. Please try again.",
+        title: TTexts.uiTextUnableToSaveVisit,
+        text: TTexts.uiTextVisitCouldNotBeSavedPleaseTryAgain,
       );
     } finally {
       debugPrint("VisitConfirmationController: Confirm Visit Finished");
@@ -1932,8 +1968,8 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
     QuickAlert.show(
       context: context,
       type: QuickAlertType.loading,
-      title: "Uploading...",
-      text: "Please wait",
+      title: TTexts.uiTextUploading,
+      text: TTexts.uiTextPleaseWait,
     );
 
     try {
@@ -1941,7 +1977,8 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
 
       if (token == null || token.isEmpty) {
         Navigator.of(context, rootNavigator: true).pop();
-        Get.snackbar("Error", "Authentication failed. Please login again.");
+        Get.snackbar(
+            "Error", TTexts.uiTextAuthenticationFailedPleaseLoginAgain);
         return false;
       }
 
@@ -1974,8 +2011,8 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
       Navigator.of(context, rootNavigator: true).pop(); // Close Loader
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        Get.snackbar("Success", "Photo Uploaded!",
-            backgroundColor: TColors.primary, colorText: Colors.white);
+        Get.snackbar("Success", TTexts.uiTextPhotoUploaded,
+            backgroundColor: TColors.primary, colorText: TColors.white);
         return true;
       } else {
         // Show server response for debugging
@@ -2008,23 +2045,24 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
             child: Column(
               mainAxisSize: MainAxisSize.min, // Wrap content height
               children: [
-                const Text("Preview",
-                    style:
-                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 10),
+                const Text(TTexts.uiTextPreview,
+                    style: TextStyle(
+                        fontSize: TSizes.v18, fontWeight: FontWeight.bold)),
+                const SizedBox(height: TSizes.v10),
 
                 // --- THE IMAGE PREVIEW ---
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child: Image.file(
                     imageFile,
-                    height: 250, // Fixed height for the "small box" feel
+                    height:
+                        TSizes.v250, // Fixed height for the "small box" feel
                     width: double.infinity,
                     fit: BoxFit.cover,
                   ),
                 ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: TSizes.v20),
 
                 // --- BUTTONS ---
                 Row(
@@ -2037,13 +2075,13 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                               false); // Returns False -> Triggers Retake Loop
                         },
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.red,
-                          side: const BorderSide(color: Colors.red),
+                          foregroundColor: TColors.materialRed,
+                          side: const BorderSide(color: TColors.materialRed),
                         ),
-                        child: const Text("Retake"),
+                        child: const Text(TTexts.uiTextRetake),
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: TSizes.v10),
 
                     // SUBMIT BUTTON
                     Expanded(
@@ -2061,9 +2099,9 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: TColors.primary,
-                          foregroundColor: Colors.white,
+                          foregroundColor: TColors.white,
                         ),
-                        child: const Text("Submit"),
+                        child: const Text(TTexts.submit),
                       ),
                     ),
                   ],
@@ -2091,7 +2129,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
         height: Get.height * .80,
         padding: const EdgeInsets.all(16),
         decoration: const BoxDecoration(
-          color: Colors.white,
+          color: TColors.white,
           borderRadius: BorderRadius.vertical(
             top: Radius.circular(20),
           ),
@@ -2101,7 +2139,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
             TextField(
               controller: searchController,
               decoration: InputDecoration(
-                hintText: "Search Area",
+                hintText: TTexts.uiTextSearchArea,
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -2117,7 +2155,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                 );
               },
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: TSizes.v10),
             Expanded(
               child: Obx(
                 () => ListView.builder(
@@ -2163,7 +2201,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
               child: ElevatedButton.icon(
                 icon: const Icon(Icons.add),
                 label: const Text(
-                  "Area Not Found? Create New",
+                  TTexts.uiTextAreaNotFoundCreateNew,
                 ),
                 onPressed: () {
                   Get.back();
@@ -2195,7 +2233,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
           return Container(
             padding: const EdgeInsets.all(20),
             decoration: const BoxDecoration(
-              color: Colors.white,
+              color: TColors.white,
               borderRadius: BorderRadius.vertical(
                 top: Radius.circular(24),
               ),
@@ -2204,15 +2242,15 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
               mainAxisSize: MainAxisSize.min,
               children: [
                 const Text(
-                  "Select Area",
+                  TTexts.uiTextSelectArea,
                   style: TextStyle(
-                    fontSize: 20,
+                    fontSize: TSizes.v20,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: TSizes.v20),
                 SizedBox(
-                  height: 300,
+                  height: TSizes.v300,
                   child: ListView.builder(
                     itemCount: offices.length,
                     itemBuilder: (_, index) {
@@ -2240,7 +2278,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                   width: double.infinity,
                   child: ElevatedButton(
                     child: const Text(
-                      "Continue",
+                      TTexts.uiTextContinue,
                     ),
                     onPressed: () {
                       Get.back();
@@ -2282,62 +2320,62 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
         child: Container(
           padding: const EdgeInsets.all(24),
           constraints: const BoxConstraints(
-            maxWidth: 500,
+            maxWidth: TSizes.v500,
           ),
           child: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  height: 90,
-                  width: 90,
+                  height: TSizes.v90,
+                  width: TSizes.v90,
                   decoration: BoxDecoration(
-                    color: Colors.green.shade50,
+                    color: TColors.materialGreen50,
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
                     Icons.location_city,
-                    color: Colors.green,
-                    size: 50,
+                    color: TColors.materialGreen,
+                    size: TSizes.v50,
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: TSizes.v20),
                 const Text(
-                  "Confirm New Area",
+                  TTexts.uiTextConfirmNewArea,
                   style: TextStyle(
-                    fontSize: 24,
+                    fontSize: TSizes.v24,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: TSizes.v8),
                 Text(
-                  "Review the detected area information before creating it.",
+                  TTexts.uiTextReviewTheDetectedAreaInformationBeforeCreatingIt,
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: Colors.grey.shade600,
+                    color: TColors.materialGrey600,
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: TSizes.v24),
                 TextField(
                   controller: areaController,
                   readOnly: true,
                   decoration: InputDecoration(
-                    labelText: "Area Name",
+                    labelText: TTexts.uiTextAreaName,
                     prefixIcon: const Icon(Icons.edit_location_alt),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: TSizes.v20),
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade50,
+                    color: TColors.materialGrey50,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: Colors.grey.shade300,
+                      color: TColors.materialGrey300,
                     ),
                   ),
                   child: Column(
@@ -2374,18 +2412,18 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                     ],
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: TSizes.v24),
                 Row(
                   children: [
                     Expanded(
                       child: OutlinedButton(
                         onPressed: () => Get.back(),
                         child: const Text(
-                          "Cancel",
+                          TTexts.cancel,
                         ),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: TSizes.v12),
                     Expanded(
                       flex: 2,
                       child: ElevatedButton.icon(
@@ -2393,7 +2431,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                           Icons.check_circle,
                         ),
                         label: const Text(
-                          "Create Area",
+                          TTexts.uiTextCreateArea,
                         ),
                         onPressed: () async {
                           final createdAreaId =
@@ -2462,10 +2500,10 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
       children: [
         Icon(
           icon,
-          size: 18,
+          size: TSizes.v18,
           color: TColors.primary,
         ),
-        const SizedBox(width: 10),
+        const SizedBox(width: TSizes.v10),
         Expanded(
           child: Text(
             title,
@@ -2494,7 +2532,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
       Container(
         padding: const EdgeInsets.all(24),
         decoration: const BoxDecoration(
-          color: Colors.white,
+          color: TColors.white,
           borderRadius: BorderRadius.vertical(
             top: Radius.circular(28),
           ),
@@ -2504,71 +2542,71 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                height: 90,
-                width: 90,
+                height: TSizes.v90,
+                width: TSizes.v90,
                 decoration: BoxDecoration(
-                  color: Colors.blue.shade50,
+                  color: TColors.materialBlue50,
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
                   Icons.location_searching,
-                  size: 50,
+                  size: TSizes.v50,
                   color: TColors.primary,
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: TSizes.v20),
               const Text(
-                "Create New Area",
+                TTexts.uiTextCreateNewArea,
                 style: TextStyle(
-                  fontSize: 24,
+                  fontSize: TSizes.v24,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: TSizes.v8),
               Text(
-                "Enter pincode and we'll automatically fetch all available areas and post offices.",
+                TTexts.uiTextEnterPincodeAndWeLlAutomaticallyFetchAll,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: Colors.grey.shade600,
-                  height: 1.4,
+                  color: TColors.materialGrey600,
+                  height: TSizes.v1_4,
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: TSizes.v20),
               Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: Colors.blue.shade50,
+                  color: TColors.materialBlue50,
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: const Row(
                   children: [
                     Icon(
                       Icons.info_outline,
-                      color: Colors.blue,
+                      color: TColors.materialBlue,
                     ),
-                    SizedBox(width: 10),
+                    SizedBox(width: TSizes.v10),
                     Expanded(
                       child: Text(
-                        "No need to enter Post Office manually. We will fetch it automatically.",
+                        TTexts.uiTextNoNeedToEnterPostOfficeManuallyWe,
                       ),
                     )
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: TSizes.v20),
               TextField(
                 controller: pinController,
                 keyboardType: TextInputType.number,
                 maxLength: 6,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
-                  fontSize: 24,
+                  fontSize: TSizes.v24,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 5,
                 ),
                 decoration: InputDecoration(
                   counterText: "",
-                  hintText: "201306",
+                  hintText: TTexts.uiText201306,
                   prefixIcon: const Icon(
                     Icons.pin_drop,
                   ),
@@ -2577,16 +2615,16 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: TSizes.v20),
               SizedBox(
                 width: double.infinity,
-                height: 55,
+                height: TSizes.v55,
                 child: ElevatedButton.icon(
                   icon: const Icon(Icons.search),
                   label: const Text(
-                    "Verify & Fetch Areas",
+                    TTexts.uiTextVerifyFetchAreas,
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: TSizes.v16,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -2596,7 +2634,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                     if (pin.length != 6) {
                       Get.snackbar(
                         "Invalid Pincode",
-                        "Please enter a valid 6 digit pincode",
+                        TTexts.uiTextPleaseEnterAValid6DigitPincode,
                       );
                       return;
                     }
@@ -2614,7 +2652,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                         data[0]['PostOffice'] == null) {
                       Get.snackbar(
                         "Error",
-                        "Invalid Pincode",
+                        TTexts.uiTextInvalidPincode,
                       );
                       return;
                     }

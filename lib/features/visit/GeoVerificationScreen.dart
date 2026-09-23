@@ -5,18 +5,19 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
+import 'package:http/http.dart' as http;
 import 'package:image/image.dart' as img;
 import 'package:intl/intl.dart';
 import 'package:quickalert/quickalert.dart';
-
-// --- YOUR IMPORTS ---
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 import 'package:medicle_sales_rbsh/utils/http/http_client.dart';
 import 'package:medicle_sales_rbsh/utils/local_storage/auth_manager.dart';
 import '../../../../utils/camera/CameraLocationResult.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+
+// --- YOUR IMPORTS ---
 
 // --- CONSTANTS FOR ANIMATION ---
 const Duration kAnimationDuration = Duration(milliseconds: 600);
@@ -123,7 +124,7 @@ class _GeoVerificationScreenState extends State<GeoVerificationScreen>
     } catch (e) {
       Get.snackbar(
         "Error",
-        "Processing failed",
+        TTexts.uiTextProcessingFailed,
         backgroundColor: TColors.primary.withOpacity(0.1), // Pink tint
         colorText: TColors.primary, // Pink text
         snackPosition: SnackPosition.BOTTOM,
@@ -209,7 +210,7 @@ class _GeoVerificationScreenState extends State<GeoVerificationScreen>
           ? "Verifying Location"
           : "Encrypting geo image for sync",
       disableBackBtn: true,
-      barrierColor: Colors.black.withOpacity(0.7),
+      barrierColor: TColors.pureBlack.withOpacity(0.7),
       confirmBtnColor: TColors.primary, // <--- PINK BUTTON
       headerBackgroundColor: TColors.primary, // <--- PINK HEADER
     );
@@ -223,7 +224,7 @@ class _GeoVerificationScreenState extends State<GeoVerificationScreen>
           QuickAlert.show(
             context: context,
             type: QuickAlertType.error,
-            text: "The geo image could not be saved offline.",
+            text: TTexts.uiTextTheGeoImageCouldNotBeSavedOffline,
             confirmBtnColor: TColors.primary,
           );
           return;
@@ -232,13 +233,13 @@ class _GeoVerificationScreenState extends State<GeoVerificationScreen>
         Get.back(result: true);
         Get.snackbar(
           "Saved Offline",
-          "Geo image saved and will upload when internet returns.",
+          TTexts.uiTextGeoImageSavedAndWillUploadWhenInternet,
           backgroundColor: TColors.primary,
-          colorText: Colors.white,
+          colorText: TColors.white,
           snackPosition: SnackPosition.BOTTOM,
           margin: const EdgeInsets.all(20),
           borderRadius: 20,
-          icon: const Icon(Icons.cloud_upload, color: Colors.white),
+          icon: const Icon(Icons.cloud_upload, color: TColors.white),
           duration: const Duration(seconds: 2),
         );
         return;
@@ -271,13 +272,13 @@ class _GeoVerificationScreenState extends State<GeoVerificationScreen>
         // 2. Success Snackbar with Primary Color
         Get.snackbar(
           "Verified",
-          "Location Verified Successfully",
+          TTexts.uiTextLocationVerifiedSuccessfully,
           backgroundColor: TColors.primary, // <--- PINK BACKGROUND
-          colorText: Colors.white,
+          colorText: TColors.white,
           snackPosition: SnackPosition.BOTTOM,
           margin: const EdgeInsets.all(20),
           borderRadius: 20,
-          icon: const Icon(Icons.verified, color: Colors.white),
+          icon: const Icon(Icons.verified, color: TColors.white),
           duration: const Duration(seconds: 2),
         );
       } else {
@@ -285,7 +286,7 @@ class _GeoVerificationScreenState extends State<GeoVerificationScreen>
         QuickAlert.show(
           context: context,
           type: QuickAlertType.error,
-          text: "Upload Failed",
+          text: TTexts.uiTextUploadFailed,
           confirmBtnColor: TColors.primary, // <--- PINK BUTTON
         );
       }
@@ -308,7 +309,7 @@ class _GeoVerificationScreenState extends State<GeoVerificationScreen>
   Widget build(BuildContext context) {
     // 1. LayoutBuilder ensures we know available space to prevent overflow
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: TColors.white,
       body: LayoutBuilder(
         builder: (context, constraints) {
           return Stack(
@@ -337,12 +338,12 @@ class _GeoVerificationScreenState extends State<GeoVerificationScreen>
                               // 1. Custom App Bar
                               _buildCustomAppBar(),
 
-                              const SizedBox(height: 30),
+                              const SizedBox(height: TSizes.v30),
 
                               // 2. Doctor Info Card (Glassmorphism)
                               _buildDoctorInfoCard(),
 
-                              const SizedBox(height: 30),
+                              const SizedBox(height: TSizes.v30),
 
                               // 3. The "Viewfinder" (Camera Area)
                               // This will take available space but have a minimum height
@@ -352,12 +353,12 @@ class _GeoVerificationScreenState extends State<GeoVerificationScreen>
                                 child: _buildViewFinder(),
                               ),
 
-                              const SizedBox(height: 30),
+                              const SizedBox(height: TSizes.v30),
 
                               // 4. Bottom Controls
                               _buildBottomControls(),
 
-                              const SizedBox(height: 20),
+                              const SizedBox(height: TSizes.v20),
                             ],
                           ),
                         ),
@@ -380,7 +381,7 @@ class _GeoVerificationScreenState extends State<GeoVerificationScreen>
       width: double.infinity,
       height: double.infinity,
       decoration: const BoxDecoration(
-        color: Colors.white, // Fallback
+        color: TColors.white, // Fallback
       ),
       child: CustomPaint(
         painter: MeshGradientPainter(
@@ -401,27 +402,29 @@ class _GeoVerificationScreenState extends State<GeoVerificationScreen>
           child: Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: TColors.white,
               shape: BoxShape.circle,
               boxShadow: [
-                BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)
+                BoxShadow(
+                    color: TColors.pureBlack.withOpacity(0.05),
+                    blurRadius: TSizes.v10)
               ],
             ),
             child: const Icon(Icons.arrow_back_ios_new,
-                size: 18, color: TColors.primary),
+                size: TSizes.v18, color: TColors.primary),
           ),
         ),
         Text(
-          "VERIFICATION",
+          TTexts.uiTextVERIFICATION,
           style: TextStyle(
             color: TColors.primary_shade800,
             fontWeight: FontWeight.w900,
-            fontSize: 16,
+            fontSize: TSizes.v16,
             letterSpacing: 2.0,
           ),
         ),
         // Empty container to balance the row
-        const SizedBox(width: 40),
+        const SizedBox(width: TSizes.v40),
       ],
     );
   }
@@ -430,13 +433,13 @@ class _GeoVerificationScreenState extends State<GeoVerificationScreen>
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.8), // Semi-transparent
+        color: TColors.white.withOpacity(0.8), // Semi-transparent
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white),
+        border: Border.all(color: TColors.white),
         boxShadow: [
           BoxShadow(
               color: TColors.primary.withOpacity(0.08),
-              blurRadius: 20,
+              blurRadius: TSizes.v20,
               offset: const Offset(0, 10)),
         ],
       ),
@@ -449,26 +452,26 @@ class _GeoVerificationScreenState extends State<GeoVerificationScreen>
               borderRadius: BorderRadius.circular(16),
             ),
             child: const Icon(Icons.medication_rounded,
-                color: TColors.primary, size: 28),
+                color: TColors.primary, size: TSizes.v28),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: TSizes.v16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text("VISIT LOCATION",
+                const Text(TTexts.uiTextVISITLOCATION,
                     style: TextStyle(
-                        fontSize: 10,
+                        fontSize: TSizes.v10,
                         fontWeight: FontWeight.bold,
-                        color: Colors.grey,
+                        color: TColors.materialGrey,
                         letterSpacing: 1)),
-                const SizedBox(height: 4),
+                const SizedBox(height: TSizes.v4),
                 Text(
                   widget.doctorName,
                   style: const TextStyle(
-                      fontSize: 18,
+                      fontSize: TSizes.v18,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black87),
+                      color: TColors.black87),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -480,16 +483,18 @@ class _GeoVerificationScreenState extends State<GeoVerificationScreen>
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(
               color: _capturedImage != null
-                  ? Colors.green.withOpacity(0.1)
-                  : Colors.orange.withOpacity(0.1),
+                  ? TColors.materialGreen.withOpacity(0.1)
+                  : TColors.materialOrange.withOpacity(0.1),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
               _capturedImage != null ? "READY" : "PENDING",
               style: TextStyle(
-                  color: _capturedImage != null ? Colors.green : Colors.orange,
+                  color: _capturedImage != null
+                      ? TColors.materialGreen
+                      : TColors.materialOrange,
                   fontWeight: FontWeight.bold,
-                  fontSize: 10),
+                  fontSize: TSizes.v10),
             ),
           )
         ],
@@ -502,12 +507,12 @@ class _GeoVerificationScreenState extends State<GeoVerificationScreen>
       duration: kAnimationDuration,
       curve: kAnimationCurve,
       decoration: BoxDecoration(
-        color: Colors.black, // Dark viewfinder background
+        color: TColors.pureBlack, // Dark viewfinder background
         borderRadius: BorderRadius.circular(30),
         boxShadow: [
           BoxShadow(
               color: TColors.primary.withOpacity(0.2),
-              blurRadius: 30,
+              blurRadius: TSizes.v30,
               offset: const Offset(0, 15)),
         ],
       ),
@@ -528,7 +533,7 @@ class _GeoVerificationScreenState extends State<GeoVerificationScreen>
           // 3. Viewfinder Corners (Custom Paint)
           IgnorePointer(
             child: CustomPaint(
-              painter: ViewfinderPainter(color: Colors.white.withOpacity(0.5)),
+              painter: ViewfinderPainter(color: TColors.white.withOpacity(0.5)),
             ),
           ),
         ],
@@ -538,7 +543,7 @@ class _GeoVerificationScreenState extends State<GeoVerificationScreen>
 
   Widget _buildEmptyState() {
     return Container(
-      color: Colors.grey[100],
+      color: TColors.materialGrey100,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -548,25 +553,27 @@ class _GeoVerificationScreenState extends State<GeoVerificationScreen>
               padding: const EdgeInsets.all(25),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white,
+                color: TColors.white,
                 boxShadow: [
                   BoxShadow(
-                      color: Colors.black.withOpacity(0.05), blurRadius: 20)
+                      color: TColors.pureBlack.withOpacity(0.05),
+                      blurRadius: TSizes.v20)
                 ],
               ),
               child: const Icon(Icons.camera_alt_rounded,
-                  size: 50, color: TColors.primary),
+                  size: TSizes.v50, color: TColors.primary),
             ),
           ),
-          const SizedBox(height: 20),
-          Text("CAPTURE EVIDENCE",
+          const SizedBox(height: TSizes.v20),
+          Text(TTexts.uiTextCAPTUREEVIDENCE,
               style: TextStyle(
                   color: TColors.primary_shade800,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 1.5)),
-          const SizedBox(height: 5),
-          Text("Ensure clear visibility of location",
-              style: TextStyle(color: Colors.grey[500], fontSize: 12)),
+          const SizedBox(height: TSizes.v5),
+          Text(TTexts.uiTextEnsureClearVisibilityOfLocation,
+              style: TextStyle(
+                  color: TColors.materialGrey500, fontSize: TSizes.v12)),
         ],
       ),
     );
@@ -593,7 +600,7 @@ class _GeoVerificationScreenState extends State<GeoVerificationScreen>
         child: ScaleTransition(
           scale: _pulseAnimation,
           child: Container(
-            height: 70,
+            height: TSizes.v70,
             decoration: BoxDecoration(
               gradient: const LinearGradient(
                   colors: [TColors.primary, TColors.primary_shade400]),
@@ -601,20 +608,21 @@ class _GeoVerificationScreenState extends State<GeoVerificationScreen>
               boxShadow: const [
                 BoxShadow(
                     color: TColors.primary_shadow_dark,
-                    blurRadius: 20,
+                    blurRadius: TSizes.v20,
                     offset: Offset(0, 10))
               ],
             ),
             child: const Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.center_focus_weak, color: Colors.white, size: 28),
-                SizedBox(width: 12),
-                Text("INITIATE CAPTURE",
+                Icon(Icons.center_focus_weak,
+                    color: TColors.white, size: TSizes.v28),
+                SizedBox(width: TSizes.v12),
+                Text(TTexts.uiTextINITIATECAPTURE,
                     style: TextStyle(
-                        color: Colors.white,
+                        color: TColors.white,
                         fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                        fontSize: TSizes.v16,
                         letterSpacing: 1.2)),
               ],
             ),
@@ -628,11 +636,11 @@ class _GeoVerificationScreenState extends State<GeoVerificationScreen>
         Expanded(
           child: _buildSecondaryButton(
             icon: Icons.refresh_rounded,
-            label: "RETAKE",
+            label: TTexts.uiTextRETAKE,
             onTap: _capturePhoto,
           ),
         ),
-        const SizedBox(width: 16),
+        const SizedBox(width: TSizes.v16),
         Expanded(
           child: _buildPrimaryButton(
             icon: Icons.check_circle_rounded,
@@ -651,25 +659,25 @@ class _GeoVerificationScreenState extends State<GeoVerificationScreen>
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        height: 60,
+        height: TSizes.v60,
         decoration: BoxDecoration(
           color: TColors.success,
           borderRadius: BorderRadius.circular(18),
           boxShadow: [
             BoxShadow(
-                color: Colors.green.withOpacity(0.4),
-                blurRadius: 15,
+                color: TColors.materialGreen.withOpacity(0.4),
+                blurRadius: TSizes.v15,
                 offset: const Offset(0, 8))
           ],
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: Colors.white),
-            const SizedBox(width: 8),
+            Icon(icon, color: TColors.white),
+            const SizedBox(width: TSizes.v8),
             Text(label,
                 style: const TextStyle(
-                    color: Colors.white,
+                    color: TColors.white,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 1)),
           ],
@@ -685,17 +693,18 @@ class _GeoVerificationScreenState extends State<GeoVerificationScreen>
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        height: 60,
+        height: TSizes.v60,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: TColors.white,
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: TColors.primary.withOpacity(0.2), width: 2),
+          border: Border.all(
+              color: TColors.primary.withOpacity(0.2), width: TSizes.v2),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(icon, color: TColors.primary),
-            const SizedBox(width: 8),
+            const SizedBox(width: TSizes.v8),
             Text(label,
                 style: const TextStyle(
                     color: TColors.primary,
@@ -728,7 +737,7 @@ class MeshGradientPainter extends CustomPainter {
     paint.shader = ui.Gradient.radial(
       Offset(0, 0),
       size.width * 0.8,
-      [tertiary.withOpacity(0.8), Colors.white.withOpacity(0)],
+      [tertiary.withOpacity(0.8), TColors.white.withOpacity(0)],
     );
     canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), paint);
 
@@ -736,7 +745,7 @@ class MeshGradientPainter extends CustomPainter {
     paint.shader = ui.Gradient.radial(
       Offset(size.width, size.height),
       size.width * 0.6,
-      [secondary.withOpacity(0.4), Colors.white.withOpacity(0)],
+      [secondary.withOpacity(0.4), TColors.white.withOpacity(0)],
     );
     canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), paint);
   }
@@ -822,7 +831,7 @@ class ScannerPainter extends CustomPainter {
       ..shader = ui.Gradient.linear(
         Offset(0, yPos),
         Offset(0, yPos - 50), // Trail behind
-        [color.withOpacity(0.5), Colors.transparent],
+        [color.withOpacity(0.5), TColors.transparent],
       );
 
     // Draw the glow rect based on direction (simplified to trail up)

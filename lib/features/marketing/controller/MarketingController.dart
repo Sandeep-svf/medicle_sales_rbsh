@@ -206,7 +206,6 @@ class MarketingController extends GetxController {
 }
 */
 
-
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -223,7 +222,8 @@ class MarketingController extends GetxController {
 
   final PdfService _service;
 
-  MarketingController({PdfService? service}) : _service = service ?? PdfService();
+  MarketingController({PdfService? service})
+      : _service = service ?? PdfService();
 
   final isLoading = false.obs;
   final isGridView = false.obs;
@@ -315,7 +315,8 @@ class MarketingController extends GetxController {
     return null;
   }
 
-  Future<String?> getSignedUrlById(String id) => _service.fetchSignedUrlById(id);
+  Future<String?> getSignedUrlById(String id) =>
+      _service.fetchSignedUrlById(id);
 
   Future<String> downloadToCache({
     required String signedUrl,
@@ -361,7 +362,8 @@ class MarketingController extends GetxController {
   }
 
   /// Save/refresh a single item after user taps & we download
-  Future<void> saveDownloaded(PdfItem item, String signedUrl, String localPath) async {
+  Future<void> saveDownloaded(
+      PdfItem item, String signedUrl, String localPath) async {
     final toSave = item.copyWith(
       signedUrl: signedUrl,
       localPath: localPath,

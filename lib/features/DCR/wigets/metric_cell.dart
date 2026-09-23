@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class MetricCell extends StatelessWidget {
   final int scheduled;
@@ -35,23 +36,18 @@ class MetricCell extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-
           _item(
             "Scheduled",
             scheduled.toString(),
             TColors.textPrimary,
           ),
-
           _divider(),
-
           _item(
             "Confirmed",
             confirmed.toString(),
             color,
           ),
-
           _divider(),
-
           _item(
             "Coverage",
             "${(coverage * 100).toStringAsFixed(0)}%",
@@ -64,36 +60,33 @@ class MetricCell extends StatelessWidget {
 
   Widget _divider() {
     return Container(
-      width: 1,
-      height: 42,
+      width: TSizes.v1,
+      height: TSizes.v42,
       color: TColors.borderSecondary,
     );
   }
 
   Widget _item(
-      String title,
-      String value,
-      Color valueColor,
-      ) {
+    String title,
+    String value,
+    Color valueColor,
+  ) {
     return Expanded(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-
           Text(
             title,
             style: const TextStyle(
-              fontSize: 11,
+              fontSize: TSizes.v11,
               color: TColors.textSecondary,
             ),
           ),
-
-          const SizedBox(height: 6),
-
+          const SizedBox(height: TSizes.v6),
           Text(
             value,
             style: TextStyle(
-              fontSize: 18,
+              fontSize: TSizes.v18,
               fontWeight: FontWeight.bold,
               color: valueColor,
             ),
@@ -109,7 +102,7 @@ class MetricCell extends StatelessWidget {
     }
 
     if (coverage >= .75) {
-      return Colors.blue;
+      return TColors.materialBlue;
     }
 
     if (coverage >= .50) {

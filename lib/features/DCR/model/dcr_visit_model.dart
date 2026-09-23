@@ -46,34 +46,22 @@ class DcrVisitModel {
 
     return DcrVisitModel(
       id: json['id'] ?? '',
-
       visitType: json['visit_type'] ?? '',
-
       date: json['date'] ?? '',
-
       notes: json['notes'] ?? '',
-
       confirmed: json['confirmed'] ?? false,
-
       latitude: _toDouble(json['latitude']),
-
       longitude: _toDouble(json['longitude']),
-
       doctor: json['DoctorInfo'] == null
           ? null
           : DoctorModel.fromJson(json['DoctorInfo']),
-
       chemist: json['Chemist'] == null
           ? null
           : ChemistModel.fromJson(json['Chemist']),
-
       stockist: json['Stockist'] == null
           ? null
           : StockistModel.fromJson(json['Stockist']),
-
-      user: json['User'] == null
-          ? null
-          : UserModel.fromJson(json['User']),
+      user: json['User'] == null ? null : UserModel.fromJson(json['User']),
     );
   }
 

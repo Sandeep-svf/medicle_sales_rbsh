@@ -7,7 +7,8 @@ Future<String> getDeviceId() async {
 
   if (Platform.isAndroid) {
     final info = await deviceInfo.androidInfo;
-    return info.id; // or info.serialNumber if appropriate (subject to Android restrictions)
+    return info
+        .id; // or info.serialNumber if appropriate (subject to Android restrictions)
   }
 
   if (Platform.isIOS) {
@@ -27,4 +28,3 @@ Future<String> getAndroidId() async {
     return '';
   }
 }
-

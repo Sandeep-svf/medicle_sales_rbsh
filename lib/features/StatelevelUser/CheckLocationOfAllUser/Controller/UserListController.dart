@@ -1,3 +1,4 @@
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -7,13 +8,14 @@ import 'package:medicle_sales_rbsh/utils/http/http_client.dart';
 import '../../../../utils/local_storage/auth_manager.dart';
 import '../../../authentication/models/UserModel.dart';
 import '../Model/UserListResponseModel.dart';
-
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class UserListController extends GetxController {
   var isLoading = false.obs;
   var userList = <Usert>[].obs;
 
-  static const String _baseUrl = THttpHelper.baseUrl; // Replace with your base URL
+  static const String _baseUrl =
+      THttpHelper.baseUrl; // Replace with your base URL
   AuthManager authManager = AuthManager();
 
   @override
@@ -60,20 +62,20 @@ class UserListController extends GetxController {
             );
             Get.snackbar(
               "Success",
-              jsonData['message'],  // Display success message
+              jsonData['message'], // Display success message
               snackPosition: SnackPosition.BOTTOM,
-              backgroundColor: Colors.green,
-              colorText: Colors.white,
+              backgroundColor: TColors.materialGreen,
+              colorText: TColors.white,
             );
             print("[UserListController] Successfully fetched User list.");
           } else {
             // Handle case where 'users' is not a List
             Get.snackbar(
               "Error",
-              "Invalid data format for 'users'. Expected a List.",
+              TTexts.uiTextInvalidDataFormatForUsersExpectedAList,
               snackPosition: SnackPosition.BOTTOM,
-              backgroundColor: Colors.redAccent,
-              colorText: Colors.white,
+              backgroundColor: TColors.materialRedAccent,
+              colorText: TColors.white,
             );
             print("[UserListController] Error: 'users' is not a list.");
           }
@@ -83,8 +85,8 @@ class UserListController extends GetxController {
             "Error",
             jsonData['message'],
             snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.redAccent,
-            colorText: Colors.white,
+            backgroundColor: TColors.materialRedAccent,
+            colorText: TColors.white,
           );
           print("[UserListController] Error: ${jsonData['message']}");
         }
@@ -94,10 +96,11 @@ class UserListController extends GetxController {
           "Error",
           "Failed to load Usert list. Status code: ${response.statusCode}",
           snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.redAccent,
-          colorText: Colors.white,
+          backgroundColor: TColors.materialRedAccent,
+          colorText: TColors.white,
         );
-        print("[UserListController] Failed to load Usert list. Status code: ${response.statusCode}");
+        print(
+            "[UserListController] Failed to load Usert list. Status code: ${response.statusCode}");
       }
     } catch (e) {
       print("[UserListController] Exception caught: $e");
@@ -107,20 +110,12 @@ class UserListController extends GetxController {
         "Error",
         "Something went wrong: $e",
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.redAccent,
-        colorText: Colors.white,
+        backgroundColor: TColors.materialRedAccent,
+        colorText: TColors.white,
       );
     } finally {
       isLoading.value = false;
       print("[UserListController] Fetching Usert list completed.");
     }
   }
-
-
 }
-
-
-
-
-
-

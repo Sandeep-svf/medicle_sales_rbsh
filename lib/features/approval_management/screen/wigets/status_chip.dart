@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import '../../../../utils/constants/colors.dart';
 import '../../../../utils/constants/sizes.dart';
 
-
-
 class StatusChip extends StatelessWidget {
   const StatusChip({
     super.key,
@@ -15,12 +13,10 @@ class StatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     Color bg = TColors.primary_shade50;
     Color fg = TColors.primary;
 
     switch (status.toLowerCase()) {
-
       case "approved":
       case "accepted":
         bg = TColors.successBg;

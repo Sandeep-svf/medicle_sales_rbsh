@@ -65,16 +65,15 @@ class PdfItem {
 }
 */
 
-
 class PdfItem {
-  final int? idPk;            // local db id (autoincrement)
-  final String id;            // server GUID
+  final int? idPk; // local db id (autoincrement)
+  final String id; // server GUID
   final String title;
   final String? description;
-  final String fileKey;       // server file_key
-  final String? updatedAt;    // server updated_at
-  final String? signedUrl;    // last signed url we used
-  final String? localPath;    // downloaded absolute path
+  final String fileKey; // server file_key
+  final String? updatedAt; // server updated_at
+  final String? signedUrl; // last signed url we used
+  final String? localPath; // downloaded absolute path
   final String? lastSyncedAt; // when we cached
 
   PdfItem({
@@ -118,9 +117,13 @@ class PdfItem {
     return PdfItem(
       id: (e['id'] ?? '').toString(),
       title: (e['title'] ?? 'Untitled').toString(),
-      description: (e['description'] ?? '').toString().isEmpty ? null : (e['description'] as String),
+      description: (e['description'] ?? '').toString().isEmpty
+          ? null
+          : (e['description'] as String),
       fileKey: (e['file_key'] ?? '').toString(),
-      updatedAt: (e['updated_at'] ?? '').toString().isEmpty ? null : (e['updated_at'] as String),
+      updatedAt: (e['updated_at'] ?? '').toString().isEmpty
+          ? null
+          : (e['updated_at'] as String),
     );
   }
 
@@ -144,12 +147,22 @@ class PdfItem {
       idPk: map['id'] as int?,
       id: (map['serverId'] ?? '').toString(),
       title: (map['title'] ?? 'Untitled').toString(),
-      description: (map['description'] ?? '').toString().isEmpty ? null : (map['description'] as String),
+      description: (map['description'] ?? '').toString().isEmpty
+          ? null
+          : (map['description'] as String),
       fileKey: (map['fileKey'] ?? '').toString(),
-      updatedAt: (map['updatedAt'] ?? '').toString().isEmpty ? null : (map['updatedAt'] as String),
-      signedUrl: (map['signedUrl'] ?? '').toString().isEmpty ? null : (map['signedUrl'] as String),
-      localPath: (map['localPath'] ?? '').toString().isEmpty ? null : (map['localPath'] as String),
-      lastSyncedAt: (map['lastSyncedAt'] ?? '').toString().isEmpty ? null : (map['lastSyncedAt'] as String),
+      updatedAt: (map['updatedAt'] ?? '').toString().isEmpty
+          ? null
+          : (map['updatedAt'] as String),
+      signedUrl: (map['signedUrl'] ?? '').toString().isEmpty
+          ? null
+          : (map['signedUrl'] as String),
+      localPath: (map['localPath'] ?? '').toString().isEmpty
+          ? null
+          : (map['localPath'] as String),
+      lastSyncedAt: (map['lastSyncedAt'] ?? '').toString().isEmpty
+          ? null
+          : (map['lastSyncedAt'] as String),
     );
   }
 
@@ -167,4 +180,3 @@ class PdfItem {
     };
   }
 }
-

@@ -3,9 +3,11 @@ import 'package:flutter/services.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:printing/printing.dart';
 import '../services/order_pdf_service.dart';
-import '../../../utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import '../models/order_models.dart';
 import '../widgets/order_widgets.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class OrderDetailScreen extends StatefulWidget {
   const OrderDetailScreen({super.key, required this.order});
@@ -33,8 +35,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text(
-                'Could not share the PDF. Your order is saved; please try again.')));
+            content: Text(TTexts.uiTextCouldNotShareThePDFYourOrderIs)));
       }
     } finally {
       if (mounted) setState(() => _sharing = false);
@@ -46,7 +47,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         context,
         MaterialPageRoute(
             builder: (_) => Scaffold(
-                  appBar: AppBar(title: const Text('Order PDF')),
+                  appBar: AppBar(title: const Text(TTexts.uiTextOrderPDF)),
                   body: PdfPreview(
                     build: (_) => OrderPdfService.fromOrder(widget.order),
                     pdfFileName: '${widget.order.reference}.pdf',
@@ -63,14 +64,14 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       final result = await OpenFilex.open(widget.order.attachmentPath);
       if (result.type != ResultType.done && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text(
-                'The attachment could not be opened. Check that a PDF or image viewer is installed.')));
+            content:
+                Text(TTexts.uiTextTheAttachmentCouldNotBeOpenedCheckThat)));
       }
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
             content:
-                Text('This attachment is no longer available on the device.')));
+                Text(TTexts.uiTextThisAttachmentIsNoLongerAvailableOnThe)));
       }
     } finally {
       if (mounted) setState(() => _opening = false);
@@ -85,17 +86,18 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         child: Scaffold(
           appBar: AppBar(
               title: Text(order.reference),
-              backgroundColor: Colors.white,
+              backgroundColor: TColors.white,
               actions: [
                 IconButton(
-                    tooltip: 'Copy order reference',
+                    tooltip: TTexts.uiTextCopyOrderReference,
                     onPressed: () async {
                       await Clipboard.setData(
                           ClipboardData(text: order.clientGeneratedId));
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                                content: Text('Order reference copied')));
+                                content:
+                                    Text(TTexts.uiTextOrderReferenceCopied)));
                       }
                     },
                     icon: const Icon(Icons.copy_outlined))
@@ -103,30 +105,33 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           body: ListView(padding: const EdgeInsets.all(20), children: [
             Center(
                 child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 1000),
+                    constraints: const BoxConstraints(maxWidth: TSizes.v1000),
                     child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           OrderSection(
-                              title: 'Your order is saved',
-                              subtitle:
-                                  'Preview, print or share a medicine order PDF. Choose WhatsApp from the share menu if installed.',
+                              title: TTexts.uiTextYourOrderIsSaved,
+                              subtitle: TTexts
+                                  .uiTextPreviewPrintOrShareAMedicineOrderPDF,
                               icon: Icons.task_alt,
-                              child:
-                                  Wrap(spacing: 12, runSpacing: 8, children: [
-                                FilledButton.icon(
-                                    onPressed: _sharing ? null : _sharePdf,
-                                    icon: const Icon(Icons.share_outlined),
-                                    label: Text(_sharing
-                                        ? 'Preparing PDF…'
-                                        : 'Share PDF')),
-                                OutlinedButton.icon(
-                                    onPressed: _previewPdf,
-                                    icon: const Icon(
-                                        Icons.picture_as_pdf_outlined),
-                                    label: const Text('Preview PDF')),
-                              ])),
-                          const SizedBox(height: 18),
+                              child: Wrap(
+                                  spacing: TSizes.v12,
+                                  runSpacing: TSizes.v8,
+                                  children: [
+                                    FilledButton.icon(
+                                        onPressed: _sharing ? null : _sharePdf,
+                                        icon: const Icon(Icons.share_outlined),
+                                        label: Text(_sharing
+                                            ? 'Preparing PDF…'
+                                            : 'Share PDF')),
+                                    OutlinedButton.icon(
+                                        onPressed: _previewPdf,
+                                        icon: const Icon(
+                                            Icons.picture_as_pdf_outlined),
+                                        label: const Text(
+                                            TTexts.uiTextPreviewPDF)),
+                                  ])),
+                          const SizedBox(height: TSizes.v18),
                           OrderSection(
                               title: order.doctorName,
                               subtitle:
@@ -135,18 +140,21 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                               child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Wrap(spacing: 8, runSpacing: 8, children: [
-                                      const OrderTag('Saved on this device',
-                                          icon: Icons.phone_android),
-                                      OrderTag(
-                                          order.priority == 'Urgent'
-                                              ? 'Urgent priority'
-                                              : 'Normal priority',
-                                          color: order.priority == 'Urgent'
-                                              ? TColors.warning
-                                              : TColors.textSecondary)
-                                    ]),
-                                    const SizedBox(height: 18),
+                                    Wrap(
+                                        spacing: TSizes.v8,
+                                        runSpacing: TSizes.v8,
+                                        children: [
+                                          const OrderTag('Saved on this device',
+                                              icon: Icons.phone_android),
+                                          OrderTag(
+                                              order.priority == 'Urgent'
+                                                  ? 'Urgent priority'
+                                                  : 'Normal priority',
+                                              color: order.priority == 'Urgent'
+                                                  ? TColors.warning
+                                                  : TColors.textSecondary)
+                                        ]),
+                                    const SizedBox(height: TSizes.v18),
                                     ...{
                                       'Clinic / business': order.clinicName,
                                       'Contact': order.contactPhone,
@@ -179,21 +187,22 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                                 children: [
                                                   Text(e.key,
                                                       style: const TextStyle(
-                                                          fontSize: 11,
+                                                          fontSize: TSizes.v11,
                                                           color: TColors
                                                               .textSecondary)),
-                                                  const SizedBox(height: 3),
+                                                  const SizedBox(
+                                                      height: TSizes.v3),
                                                   Text(e.value!,
                                                       style: const TextStyle(
                                                           fontWeight:
                                                               FontWeight.w600))
                                                 ]))),
                                   ])),
-                          const SizedBox(height: 18),
+                          const SizedBox(height: TSizes.v18),
                           OrderSection(
-                              title: 'Products',
-                              subtitle:
-                                  'Recorded quantities and estimated rates',
+                              title: TTexts.uiTextProducts,
+                              subtitle: TTexts
+                                  .uiTextRecordedQuantitiesAndEstimatedRates,
                               icon: Icons.medication_outlined,
                               child: Column(
                                   children: order.items
@@ -202,7 +211,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                               const EdgeInsets.only(bottom: 12),
                                           padding: const EdgeInsets.all(14),
                                           decoration: BoxDecoration(
-                                              color: const Color(0xFFFAF8F9),
+                                              color: TColors.hex_FFFAF8F9,
                                               borderRadius:
                                                   BorderRadius.circular(12)),
                                           child: Column(
@@ -213,7 +222,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                                     style: const TextStyle(
                                                         fontWeight:
                                                             FontWeight.w800)),
-                                                const SizedBox(height: 4),
+                                                const SizedBox(
+                                                    height: TSizes.v4),
                                                 Text(
                                                     [
                                                       item.salt,
@@ -225,13 +235,14 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                                             (s) => s.isNotEmpty)
                                                         .join(' · '),
                                                     style: const TextStyle(
-                                                        fontSize: 12,
+                                                        fontSize: TSizes.v12,
                                                         color: TColors
                                                             .textSecondary)),
-                                                const SizedBox(height: 12),
+                                                const SizedBox(
+                                                    height: TSizes.v12),
                                                 Wrap(
-                                                    spacing: 8,
-                                                    runSpacing: 8,
+                                                    spacing: TSizes.v8,
+                                                    runSpacing: TSizes.v8,
                                                     children: [
                                                       OrderTag(
                                                           '${item.paidQuantity} ordered · ${item.unit}'),
@@ -242,22 +253,23 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                                             color:
                                                                 TColors.success)
                                                     ]),
-                                                const SizedBox(height: 10),
+                                                const SizedBox(
+                                                    height: TSizes.v10),
                                                 Text(
                                                     item.hasPrice
                                                         ? '${orderMoney(item.unitRatePaise ?? 0)} / ${item.unit.toLowerCase()} · ${(item.discountBasisPoints / 100).toStringAsFixed(2)}% discount · ${(item.taxBasisPoints / 100).toStringAsFixed(2)}% tax'
                                                         : 'Rate not entered',
                                                     style: const TextStyle(
-                                                        fontSize: 11,
+                                                        fontSize: TSizes.v11,
                                                         color: TColors
                                                             .textSecondary)),
                                               ])))
                                       .toList())),
-                          const SizedBox(height: 18),
+                          const SizedBox(height: TSizes.v18),
                           OrderSummary(items: order.items),
-                          const SizedBox(height: 18),
+                          const SizedBox(height: TSizes.v18),
                           OrderSection(
-                              title: 'Order attachment',
+                              title: TTexts.uiTextOrderAttachment,
                               subtitle: order.attachmentName,
                               icon: order.attachmentIsPdf
                                   ? Icons.picture_as_pdf_outlined

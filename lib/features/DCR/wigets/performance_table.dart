@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:medicle_sales_rbsh/features/DCR/wigets/performance_row.dart';
 import 'package:medicle_sales_rbsh/features/DCR/wigets/table_header.dart';
-
-import '../../../utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import '../model/performance_model.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class PerformanceTable extends StatelessWidget {
   final List<PerformanceModel> employees;
@@ -31,18 +30,16 @@ class PerformanceTable extends StatelessWidget {
       ),
       child: Column(
         children: [
-
           TableHeader(
             sortColumn: sortColumn,
             ascending: ascending,
             onSort: onSort,
           ),
-
           ListView.separated(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: employees.length,
-            separatorBuilder: (_, __) => const Divider(height: 1),
+            separatorBuilder: (_, __) => const Divider(height: TSizes.v1),
             itemBuilder: (_, index) {
               return PerformanceRow(
                 employee: employees[index],

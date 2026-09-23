@@ -1,3 +1,15 @@
+import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../../authentication/models/UserModel.dart';
+import '../Model/UserListResponseModel.dart';
+import 'GoogleMapRouteScreen.dart';
+import 'package:get/get.dart';
+import '../Controller/UserListController.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
+
 /// user_list_screen.dart
 /// A simple Flutter screen that shows a list of users (dummy data)
 /// with two actions per user: "Current Location" and "Show Route".
@@ -13,45 +25,6 @@
 /// iOS (ios/Runner/Info.plist):
 ///   <key>NSLocationWhenInUseUsageDescription</key>
 ///   <string>This app uses your location to show routes.</string>
-
-import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:url_launcher/url_launcher.dart';
-
-import '../../../authentication/models/UserModel.dart';
-import '../Model/UserListResponseModel.dart';
-import 'GoogleMapRouteScreen.dart';
-
-
-import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:get/get.dart';
-import 'package:url_launcher/url_launcher.dart';
-
-import '../Controller/UserListController.dart';  // Import the correct UserListController
-import 'GoogleMapRouteScreen.dart';  // Import your route screen for Google Maps
-
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:url_launcher/url_launcher.dart';
-
-import '../Controller/UserListController.dart';  // Import your UserListController
-
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:url_launcher/url_launcher.dart';
-
-import '../Controller/UserListController.dart';  // Import the correct controller
-
-
-
-import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:get/get.dart';
-import '../Controller/UserListController.dart';  // Import your UserListController
-import 'GoogleMapRouteScreen.dart';  // Import your route screen for Google Maps
-import '../Model/UserListResponseModel.dart';  // Make sure this import is correct
 
 class UserListScreen extends StatefulWidget {
   const UserListScreen({super.key});
@@ -86,17 +59,19 @@ class _UserListScreenState extends State<UserListScreen> {
       }
       if (permission == LocationPermission.deniedForever) {
         if (mounted) {
-          _snack('Location permission permanently denied. Enable it in Settings.');
+          _snack(
+              'Location permission permanently denied. Enable it in Settings.');
         }
         return null;
       }
 
-      final pos = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+      final pos = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high);
       _lastPosition = pos;
       if (mounted) {
         _snack(
           'You are at: ${pos.latitude.toStringAsFixed(5)}, '
-              '${pos.longitude.toStringAsFixed(5)}',
+          '${pos.longitude.toStringAsFixed(5)}',
         );
       }
       return pos;
@@ -113,13 +88,14 @@ class _UserListScreenState extends State<UserListScreen> {
     if (pos == null) return;
 
     final origin = '${pos.latitude},${pos.longitude}';
-    final destination = '${"user.lat"},${"user.lng"}';  // Assuming lat/lng is available in the Usert model
+    final destination =
+        '${"user.lat"},${"user.lng"}'; // Assuming lat/lng is available in the Usert model
 
     final uri = Uri.parse(
       'https://www.google.com/maps/dir/?api=1'
-          '&origin=$origin'
-          '&destination=$destination'
-          '&travelmode=driving',
+      '&origin=$origin'
+      '&destination=$destination'
+      '&travelmode=driving',
     );
 
     if (await canLaunchUrl(uri)) {
@@ -139,20 +115,23 @@ class _UserListScreenState extends State<UserListScreen> {
   void initState() {
     super.initState();
     // Fetch user list when screen initializes
-    userListController.fetchUserListByState("YourStateHere"); // Replace with actual state
+    userListController
+        .fetchUserListByState("YourStateHere"); // Replace with actual state
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-
         actions: [
           IconButton(
-            tooltip: 'Get current location',
+            tooltip: TTexts.uiTextGetCurrentLocation,
             onPressed: _gettingLocation ? null : _getCurrentPosition,
             icon: _gettingLocation
-                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator())
+                ? const SizedBox(
+                    width: TSizes.v20,
+                    height: TSizes.v20,
+                    child: CircularProgressIndicator())
                 : const Icon(Icons.my_location),
           )
         ],
@@ -163,77 +142,84 @@ class _UserListScreenState extends State<UserListScreen> {
         }
 
         if (userListController.userList.isEmpty) {
-          return const Center(child: Text('No users available'));
+          return const Center(child: Text(TTexts.uiTextNoUsersAvailable));
         }
 
         return ListView.separated(
           padding: const EdgeInsets.all(12),
           itemCount: userListController.userList.length,
-          separatorBuilder: (_, __) => const SizedBox(height: 10),
+          separatorBuilder: (_, __) => const SizedBox(height: TSizes.v10),
           itemBuilder: (context, i) {
-            final u = userListController.userList[i]; // Getting user data from the list
+            final u = userListController
+                .userList[i]; // Getting user data from the list
             return Card(
-              elevation: 3,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              elevation: TSizes.v3,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
               child: Padding(
                 padding: const EdgeInsets.all(14),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Display user name
-                    Text(u.name ?? 'No Name', style: Theme.of(context).textTheme.titleMedium),
-                    const SizedBox(height: 6),
+                    Text(u.name ?? 'No Name',
+                        style: Theme.of(context).textTheme.titleMedium),
+                    const SizedBox(height: TSizes.v6),
 
                     // Display role
                     Row(
                       children: [
-                        const Icon(Icons.work_outline, size: 16),
-                        const SizedBox(width: 6),
+                        const Icon(Icons.work_outline, size: TSizes.v16),
+                        const SizedBox(width: TSizes.v6),
                         Expanded(child: Text(u.role ?? 'Not Assigned')),
                       ],
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: TSizes.v4),
 
                     // Display email
                     Row(
                       children: [
-                        const Icon(Icons.email_outlined, size: 16),
-                        const SizedBox(width: 6),
+                        const Icon(Icons.email_outlined, size: TSizes.v16),
+                        const SizedBox(width: TSizes.v6),
                         Expanded(child: Text(u.email ?? 'No Email')),
                       ],
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: TSizes.v4),
 
                     // Display mobile number
                     Row(
                       children: [
-                        const Icon(Icons.phone_outlined, size: 16),
-                        const SizedBox(width: 6),
+                        const Icon(Icons.phone_outlined, size: TSizes.v16),
+                        const SizedBox(width: TSizes.v6),
                         Expanded(child: Text(u.mobileNumber ?? 'No Mobile')),
                       ],
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: TSizes.v4),
 
                     // Display state
                     Row(
                       children: [
-                        const Icon(Icons.location_on_outlined, size: 16),
-                        const SizedBox(width: 6),
+                        const Icon(Icons.location_on_outlined,
+                            size: TSizes.v16),
+                        const SizedBox(width: TSizes.v6),
                         Expanded(child: Text(u.state ?? 'No State')),
                       ],
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: TSizes.v4),
 
                     // Display salary amount
                     Row(
                       children: [
-                        const Icon(Icons.monetization_on_outlined, size: 16),
-                        const SizedBox(width: 6),
-                        Expanded(child: Text('₹${u.salaryAmount?.toString() ?? 'Not Assigned'}')),
+                        const Icon(Icons.monetization_on_outlined,
+                            size: TSizes.v16),
+                        const SizedBox(width: TSizes.v6),
+                        Expanded(
+                            child: Text(
+                                '₹${u.salaryAmount?.toString() ?? 'Not Assigned'}')),
                       ],
                     ),
                     const Divider(), // Adds a line for separation
-                    const SizedBox(height: 12),
+                    const SizedBox(height: TSizes.v12),
 
                     // Buttons for interactive actions
                     Row(
@@ -241,39 +227,40 @@ class _UserListScreenState extends State<UserListScreen> {
                         // Current Location Button
                         Expanded(
                           child: FilledButton.icon(
-                            onPressed: _gettingLocation ? null : _getCurrentPosition,
+                            onPressed:
+                                _gettingLocation ? null : _getCurrentPosition,
                             icon: const Icon(Icons.my_location),
-                            label: const Text('Current Location'),
+                            label: const Text(TTexts.uiTextCurrentLocation),
                           ),
                         ),
-                        const SizedBox(width: 10),
+                        const SizedBox(width: TSizes.v10),
 
                         // Show Route Button
                         Expanded(
                           child: OutlinedButton.icon(
                             onPressed: () {
                               // First, perform the logic to open the route (your existing method)
-                             // _openRouteTo(u);
+                              // _openRouteTo(u);
 
                               // Then, navigate to the RouteMapScreen and pass user data
-                              Get.to(() => RouteMapScreen(), arguments: u.id);  // Passing user name
+                              Get.to(() => RouteMapScreen(),
+                                  arguments: u.id); // Passing user name
                             },
                             icon: const Icon(Icons.route),
-                            label: const Text('Show Route'),
+                            label: const Text(TTexts.uiTextShowRoute),
                           ),
                         )
-
                       ],
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: TSizes.v10),
 
                     // Show Details Button (To open a detailed dialog or page)
                     Center(
                       child: TextButton(
                         onPressed: () => _showUserDetailsDialog(context, u),
                         child: const Text(
-                          'Show Details',
-                          style: TextStyle(color: Colors.blue),
+                          TTexts.uiTextShowDetails,
+                          style: TextStyle(color: TColors.materialBlue),
                         ),
                       ),
                     ),
@@ -296,30 +283,31 @@ class _UserListScreenState extends State<UserListScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          elevation: 10, // Adds shadow for better visibility
-          backgroundColor: Colors.white, // Background color of the dialog
+          elevation: TSizes.v10, // Adds shadow for better visibility
+          backgroundColor: TColors.white, // Background color of the dialog
           title: Text(
             u.name ?? 'User Details',
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: Colors.deepPurple,
-            ),
+                  fontWeight: FontWeight.bold,
+                  color: TColors.materialDeepPurple,
+                ),
           ),
           content: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildUserDetailRow(Icons.badge, 'Employee Code', u.employeeCode),
-                _buildUserDetailRow(Icons.business, 'Department', u.department),
-                _buildUserDetailRow(Icons.home_work, 'Head Office', u.headOffice),
-                _buildUserDetailRow(Icons.account_balance, 'Branch', u.branch),
-                _buildUserDetailRow(Icons.work, 'Employment Type', u.employmentType),
                 _buildUserDetailRow(
-                    Icons.check_circle_outline,
-                    'Active',
-                    u.isActive == true ? 'Yes' : 'No'
-                ),
-                _buildUserDetailRow(Icons.access_time, 'Created At', u.createdAt),
+                    Icons.badge, 'Employee Code', u.employeeCode),
+                _buildUserDetailRow(Icons.business, 'Department', u.department),
+                _buildUserDetailRow(
+                    Icons.home_work, 'Head Office', u.headOffice),
+                _buildUserDetailRow(Icons.account_balance, 'Branch', u.branch),
+                _buildUserDetailRow(
+                    Icons.work, 'Employment Type', u.employmentType),
+                _buildUserDetailRow(Icons.check_circle_outline, 'Active',
+                    u.isActive == true ? 'Yes' : 'No'),
+                _buildUserDetailRow(
+                    Icons.access_time, 'Created At', u.createdAt),
               ],
             ),
           ),
@@ -327,14 +315,14 @@ class _UserListScreenState extends State<UserListScreen> {
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
               style: TextButton.styleFrom(
-                backgroundColor: Colors.deepPurpleAccent,
+                backgroundColor: TColors.materialDeepPurpleAccent,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
               child: Text(
-                'Close',
-                style: TextStyle(color: Colors.white),
+                TTexts.uiTextClose,
+                style: TextStyle(color: TColors.white),
               ),
             ),
           ],
@@ -353,25 +341,27 @@ class _UserListScreenState extends State<UserListScreen> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.deepPurple.withOpacity(0.1),
+              color: TColors.materialDeepPurple.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: Colors.deepPurple, size: 22),
+            child:
+                Icon(icon, color: TColors.materialDeepPurple, size: TSizes.v22),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: TSizes.v12),
           Text(
             '$label:',
             style: const TextStyle(
               fontWeight: FontWeight.bold,
-              fontSize: 16,
-              color: Colors.black87,
+              fontSize: TSizes.v16,
+              color: TColors.black87,
             ),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: TSizes.v10),
           Expanded(
             child: Text(
               value ?? 'Not Available',
-              style: const TextStyle(fontSize: 16, color: Colors.black54),
+              style:
+                  const TextStyle(fontSize: TSizes.v16, color: TColors.black54),
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -379,13 +369,7 @@ class _UserListScreenState extends State<UserListScreen> {
       ),
     );
   }
-
-
-
 }
-
-
-
 
 /*
 class UserListScreen extends StatefulWidget {

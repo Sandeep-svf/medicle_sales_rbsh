@@ -1,12 +1,12 @@
 import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
-import '../../../../utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import '../../controller/add_investment_controller.dart';
 import '../../enum.dart';
 import 'section_card.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class CustomUpload extends GetView<AddInvestmentController> {
   const CustomUpload({super.key});
@@ -30,11 +30,11 @@ class CustomUpload extends GetView<AddInvestmentController> {
                   ? "Optional. Capture or select a cancelled cheque image up to 5 MB."
                   : "Optional. Capture or select a UPI or QR payment image up to 5 MB.",
               style: TextStyle(
-                color: Colors.grey.shade700,
-                height: 1.4,
+                color: TColors.materialGrey700,
+                height: TSizes.v1_4,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: TSizes.v16),
             if (bytes != null)
               _SelectedProofState(
                 bytes: bytes,
@@ -50,8 +50,8 @@ class CustomUpload extends GetView<AddInvestmentController> {
             else
               _EmptyProofState(isPicking: isPicking),
             if (isPicking) ...[
-              const SizedBox(height: 14),
-              const LinearProgressIndicator(minHeight: 3),
+              const SizedBox(height: TSizes.v14),
+              const LinearProgressIndicator(minHeight: TSizes.v3),
             ],
           ],
         ),
@@ -80,9 +80,9 @@ class _ExistingProofState extends StatelessWidget {
           width: double.infinity,
           clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
-            color: Colors.grey.shade100,
+            color: TColors.materialGrey100,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: Colors.grey.shade300),
+            border: Border.all(color: TColors.materialGrey300),
           ),
           child: AspectRatio(
             aspectRatio: 16 / 9,
@@ -96,13 +96,13 @@ class _ExistingProofState extends StatelessWidget {
                 : const _ExistingProofPlaceholder(),
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: TSizes.v10),
         Text(
-          "A payment image is already attached. Select another image to replace it.",
+          TTexts.uiTextAPaymentImageIsAlreadyAttachedSelectAnother,
           textAlign: TextAlign.center,
-          style: TextStyle(color: Colors.grey.shade700),
+          style: TextStyle(color: TColors.materialGrey700),
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: TSizes.v14),
         _ProofSourceButtons(isPicking: isPicking),
       ],
     );
@@ -117,7 +117,7 @@ class _ExistingProofPlaceholder extends StatelessWidget {
     return const Center(
       child: Icon(
         Icons.image_outlined,
-        size: 48,
+        size: TSizes.v48,
         color: TColors.primary,
       ),
     );
@@ -137,27 +137,27 @@ class _EmptyProofState extends GetView<AddInvestmentController> {
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 28),
           decoration: BoxDecoration(
-            color: Colors.grey.shade50,
+            color: TColors.materialGrey50,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: Colors.grey.shade300),
+            border: Border.all(color: TColors.materialGrey300),
           ),
           child: const Column(
             children: [
               Icon(
                 Icons.add_photo_alternate_outlined,
-                size: 44,
+                size: TSizes.v44,
                 color: TColors.primary,
               ),
-              SizedBox(height: 10),
+              SizedBox(height: TSizes.v10),
               Text(
-                "No image selected",
+                TTexts.uiTextNoImageSelected,
                 textAlign: TextAlign.center,
                 style: TextStyle(fontWeight: FontWeight.w600),
               ),
             ],
           ),
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: TSizes.v14),
         _ProofSourceButtons(isPicking: isPicking),
       ],
     );
@@ -185,9 +185,9 @@ class _SelectedProofState extends GetView<AddInvestmentController> {
           width: double.infinity,
           clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
-            color: Colors.grey.shade100,
+            color: TColors.materialGrey100,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: Colors.grey.shade300),
+            border: Border.all(color: TColors.materialGrey300),
           ),
           child: AspectRatio(
             aspectRatio: 16 / 9,
@@ -196,12 +196,12 @@ class _SelectedProofState extends GetView<AddInvestmentController> {
               fit: BoxFit.contain,
               gaplessPlayback: true,
               errorBuilder: (_, __, ___) => const Center(
-                child: Icon(Icons.broken_image_outlined, size: 44),
+                child: Icon(Icons.broken_image_outlined, size: TSizes.v44),
               ),
             ),
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: TSizes.v12),
         Row(
           children: [
             Expanded(
@@ -214,25 +214,26 @@ class _SelectedProofState extends GetView<AddInvestmentController> {
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(fontWeight: FontWeight.w600),
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: TSizes.v2),
                   Text(
                     fileSize,
                     style: TextStyle(
-                      color: Colors.grey.shade600,
-                      fontSize: 12,
+                      color: TColors.materialGrey600,
+                      fontSize: TSizes.v12,
                     ),
                   ),
                 ],
               ),
             ),
             IconButton(
-              tooltip: "Remove image",
+              tooltip: TTexts.uiTextRemoveImage,
               onPressed: isPicking ? null : controller.removePaymentProof,
-              icon: const Icon(Icons.delete_outline, color: Colors.red),
+              icon:
+                  const Icon(Icons.delete_outline, color: TColors.materialRed),
             ),
           ],
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: TSizes.v10),
         _ProofSourceButtons(isPicking: isPicking),
       ],
     );
@@ -249,15 +250,15 @@ class _ProofSourceButtons extends GetView<AddInvestmentController> {
     final galleryButton = OutlinedButton.icon(
       onPressed: isPicking ? null : controller.pickPaymentProofFromGallery,
       icon: const Icon(Icons.photo_library_outlined),
-      label: const Text("Gallery"),
+      label: const Text(TTexts.uiTextGallery),
     );
 
     final cameraButton = ElevatedButton.icon(
       onPressed: isPicking ? null : controller.pickPaymentProofFromCamera,
-      icon: const Icon(Icons.camera_alt_outlined, color: Colors.white),
+      icon: const Icon(Icons.camera_alt_outlined, color: TColors.white),
       label: const Text(
-        "Camera",
-        style: TextStyle(color: Colors.white),
+        TTexts.uiTextCamera,
+        style: TextStyle(color: TColors.white),
       ),
       style: ElevatedButton.styleFrom(backgroundColor: TColors.primary),
     );
@@ -268,7 +269,7 @@ class _ProofSourceButtons extends GetView<AddInvestmentController> {
           return Column(
             children: [
               SizedBox(width: double.infinity, child: galleryButton),
-              const SizedBox(height: 10),
+              const SizedBox(height: TSizes.v10),
               SizedBox(width: double.infinity, child: cameraButton),
             ],
           );
@@ -277,7 +278,7 @@ class _ProofSourceButtons extends GetView<AddInvestmentController> {
         return Row(
           children: [
             Expanded(child: galleryButton),
-            const SizedBox(width: 12),
+            const SizedBox(width: TSizes.v12),
             Expanded(child: cameraButton),
           ],
         );

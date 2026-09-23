@@ -1,3 +1,4 @@
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 
@@ -13,12 +14,18 @@ enum HolidayType {
   // Helper to parse string to Enum
   static HolidayType fromString(String? type) {
     switch (type) {
-      case 'National': return HolidayType.National;
-      case 'Regional': return HolidayType.Regional;
-      case 'Religious': return HolidayType.Religious;
-      case 'Company': return HolidayType.Company;
-      case 'Optional': return HolidayType.Optional;
-      default: return HolidayType.Unknown;
+      case 'National':
+        return HolidayType.National;
+      case 'Regional':
+        return HolidayType.Regional;
+      case 'Religious':
+        return HolidayType.Religious;
+      case 'Company':
+        return HolidayType.Company;
+      case 'Optional':
+        return HolidayType.Optional;
+      default:
+        return HolidayType.Unknown;
     }
   }
 
@@ -71,7 +78,7 @@ class Holiday extends Equatable {
     try {
       return Color(int.parse(hexColor.replaceFirst('#', '0xFF')));
     } catch (e) {
-      return Colors.grey;
+      return TColors.materialGrey;
     }
   }
 

@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 import '../../../utils/local_storage/auth_manager.dart';
 import '../api_service.dart';
 import '../model/investment_request_model.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class InvestmentRequestController extends GetxController {
   final RxBool tableView = true.obs;
@@ -149,7 +150,7 @@ class InvestmentRequestController extends GetxController {
     if (rejectionReason.trim().isEmpty) {
       Get.snackbar(
         "Rejection Reason",
-        "Please enter a rejection reason.",
+        TTexts.uiTextPleaseEnterARejectionReason,
         snackPosition: SnackPosition.BOTTOM,
       );
       return false;
@@ -182,7 +183,7 @@ class InvestmentRequestController extends GetxController {
       if (token == null || token.isEmpty) {
         Get.snackbar(
           "Authentication",
-          "Token not found. Please login again.",
+          TTexts.uiTextTokenNotFoundPleaseLoginAgain,
           snackPosition: SnackPosition.BOTTOM,
         );
         return false;
@@ -217,7 +218,7 @@ class InvestmentRequestController extends GetxController {
     } on TimeoutException {
       Get.snackbar(
         "Timeout",
-        "Server timeout.",
+        TTexts.uiTextServerTimeout,
         snackPosition: SnackPosition.BOTTOM,
       );
       return false;
@@ -226,7 +227,7 @@ class InvestmentRequestController extends GetxController {
       debugPrintStack(stackTrace: stackTrace);
       Get.snackbar(
         "Error",
-        "Unable to update the investment request.",
+        TTexts.uiTextUnableToUpdateTheInvestmentRequest,
         snackPosition: SnackPosition.BOTTOM,
       );
       return false;

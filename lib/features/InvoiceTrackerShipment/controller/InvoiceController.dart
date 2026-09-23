@@ -7,7 +7,6 @@ import 'package:medicle_sales_rbsh/utils/local_storage/auth_manager.dart';
 
 import '../model/InvoiceResponse.dart';
 
-
 class InvoiceController extends GetxController {
   final String baseUrl;
   final String bearerToken;
@@ -28,11 +27,9 @@ class InvoiceController extends GetxController {
 
   var isLoadingMore = false.obs;
 
-
   Future<void> sendInvoiceEmail(
-      String invoiceId,
-      ) async {
-
+    String invoiceId,
+  ) async {
     final auth = AuthManager();
     final token = await auth.getAuthToken();
 
@@ -46,14 +43,12 @@ class InvoiceController extends GetxController {
     );
   }
 
-
   Future<void> sendCustomEmail({
     required String invoiceId,
     required String subject,
     required String body,
     required List<File> attachments,
   }) async {
-
     final auth = AuthManager();
     final token = await auth.getAuthToken();
 
@@ -63,9 +58,9 @@ class InvoiceController extends GetxController {
       "attachments": attachments
           .map(
             (file) => dio.MultipartFile.fromFileSync(
-          file.path,
-        ),
-      )
+              file.path,
+            ),
+          )
           .toList(),
     });
 
@@ -79,7 +74,6 @@ class InvoiceController extends GetxController {
       ),
     );
   }
-
 
   Future<void> fetchInvoices({
     int page = 1,
@@ -112,14 +106,11 @@ class InvoiceController extends GetxController {
           response.data as Map<String, dynamic>,
         );
 
-        currentPage.value =
-            parsed.pagination?.currentPage ?? page;
+        currentPage.value = parsed.pagination?.currentPage ?? page;
 
-        totalPages.value =
-            parsed.pagination?.totalPages ?? 1;
+        totalPages.value = parsed.pagination?.totalPages ?? 1;
 
-        totalCount.value =
-            parsed.pagination?.totalCount ?? 0;
+        totalCount.value = parsed.pagination?.totalCount ?? 0;
 
         if (loadMore) {
           invoices.addAll(parsed.data);
@@ -136,7 +127,6 @@ class InvoiceController extends GetxController {
       isLoadingMore.value = false;
     }
   }
-
 
   Future<void> loadMoreInvoices() async {
     if (isLoadingMore.value) return;

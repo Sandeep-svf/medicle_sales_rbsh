@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
 import '../controller/area_detail_controller.dart';
 import '../model/area_model.dart';
 import '../model/chemist_location_model.dart';
 import '../model/doctor_location_model.dart';
 import '../model/stockist_location_model.dart';
 import '../wigets/area_details/area_detail_google_map.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 
 class AreaDetailMapScreen extends StatelessWidget {
   final AreaModel area;
@@ -48,7 +50,6 @@ class AreaDetailMapScreen extends StatelessWidget {
           AreaDetailGoogleMap(
             area: area,
           ),
-
           Positioned(
             top: 16,
             right: 16,
@@ -79,48 +80,42 @@ class AreaMapLegend extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 6,
+      elevation: TSizes.v6,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
       child: Container(
-        width: 190,
+        width: TSizes.v190,
         padding: const EdgeInsets.all(12),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             const Text(
-              "Entities",
+              TTexts.uiTextEntities,
               style: TextStyle(
-                fontSize: 15,
+                fontSize: TSizes.v15,
                 fontWeight: FontWeight.bold,
               ),
             ),
-
-            const Divider(height: 16),
-
+            const Divider(height: TSizes.v16),
             _LegendItem(
               icon: Icons.local_hospital,
-              color: Colors.red,
-              title: "Doctors",
+              color: TColors.materialRed,
+              title: TTexts.uiTextDoctors,
               count: doctorCount,
             ),
-
-            const SizedBox(height: 8),
-
+            const SizedBox(height: TSizes.v8),
             _LegendItem(
               icon: Icons.local_pharmacy,
-              color: Colors.green,
-              title: "Chemists",
+              color: TColors.materialGreen,
+              title: TTexts.uiTextChemists,
               count: chemistCount,
             ),
-
-            const SizedBox(height: 8),
-
+            const SizedBox(height: TSizes.v8),
             _LegendItem(
               icon: Icons.store,
-              color: Colors.orange,
-              title: "Stockists",
+              color: TColors.materialOrange,
+              title: TTexts.uiTextStockists,
               count: stockistCount,
             ),
           ],
@@ -148,26 +143,23 @@ class _LegendItem extends StatelessWidget {
     return Row(
       children: [
         CircleAvatar(
-          radius: 11,
+          radius: TSizes.v11,
           backgroundColor: color.withOpacity(.15),
           child: Icon(
             icon,
-            size: 14,
+            size: TSizes.v14,
             color: color,
           ),
         ),
-
-        const SizedBox(width: 10),
-
+        const SizedBox(width: TSizes.v10),
         Expanded(
           child: Text(
             title,
             style: const TextStyle(
-              fontSize: 13,
+              fontSize: TSizes.v13,
             ),
           ),
         ),
-
         Container(
           padding: const EdgeInsets.symmetric(
             horizontal: 8,
@@ -180,7 +172,7 @@ class _LegendItem extends StatelessWidget {
           child: Text(
             "$count",
             style: const TextStyle(
-              color: Colors.white,
+              color: TColors.white,
               fontWeight: FontWeight.bold,
             ),
           ),

@@ -1,3 +1,4 @@
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
@@ -7,6 +8,7 @@ import 'dart:convert';
 import '../../../utils/http/http_client.dart';
 import '../../authentication/controllers/AuthController.dart';
 import '../models/DoctorModelList.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class DoctorListController extends GetxController {
   var isLoading = false.obs;
@@ -28,17 +30,13 @@ class DoctorListController extends GetxController {
   // Priority Filter (all | A | B | C)
   var selectedPriorityFilter = "all".obs;
 
-  var fromDate = DateTime.now()
-      .subtract(const Duration(days: 30))
-      .obs;
+  var fromDate = DateTime.now().subtract(const Duration(days: 30)).obs;
 
   var toDate = DateTime.now().obs;
 
-
-
   static const String _baseUrl = THttpHelper.baseUrl;
   AuthManager authManager = AuthManager();
-  late String headOffice="";
+  late String headOffice = "";
 
   Future<void> applyFilter() async {
     switch (selectedFilter.value) {
@@ -92,18 +90,16 @@ class DoctorListController extends GetxController {
 
         final List<dynamic> data = jsonResponse["data"] ?? [];
 
-        final doctors =
-        data.map((e) => Doctor.fromJson(e)).toList();
+        final doctors = data.map((e) => Doctor.fromJson(e)).toList();
 
-        totalDoctors.value =
-            jsonResponse["count"] ?? doctors.length;
+        totalDoctors.value = jsonResponse["count"] ?? doctors.length;
 
         doctorList.assignAll(doctors);
         filteredDoctors.assignAll(doctors);
       } else {
         Get.snackbar(
           "Error",
-          "Unable to fetch visited doctors",
+          TTexts.uiTextUnableToFetchVisitedDoctors,
         );
       }
     } catch (e) {
@@ -139,18 +135,16 @@ class DoctorListController extends GetxController {
 
         final List<dynamic> data = jsonResponse["data"] ?? [];
 
-        final doctors =
-        data.map((e) => Doctor.fromJson(e)).toList();
+        final doctors = data.map((e) => Doctor.fromJson(e)).toList();
 
-        totalDoctors.value =
-            jsonResponse["count"] ?? doctors.length;
+        totalDoctors.value = jsonResponse["count"] ?? doctors.length;
 
         doctorList.assignAll(doctors);
         filteredDoctors.assignAll(doctors);
       } else {
         Get.snackbar(
           "Error",
-          "Unable to fetch unvisited doctors",
+          TTexts.uiTextUnableToFetchUnvisitedDoctors,
         );
       }
     } catch (e) {
@@ -181,18 +175,15 @@ class DoctorListController extends GetxController {
     required String areaId,
   }) async {
     try {
-      final token =
-      await authManager.getAuthToken();
+      final token = await authManager.getAuthToken();
 
       final response = await http.put(
         Uri.parse(
           "$_baseUrl/doctors/$doctorId",
         ),
         headers: {
-          "Content-Type":
-          "application/json",
-          "Authorization":
-          "Bearer $token",
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
         },
         body: jsonEncode({
           "areaId": areaId,
@@ -204,7 +195,7 @@ class DoctorListController extends GetxController {
 
         Get.snackbar(
           "Success",
-          "Area Assigned",
+          TTexts.uiTextAreaAssigned,
         );
       }
     } catch (e) {
@@ -225,8 +216,7 @@ class DoctorListController extends GetxController {
     try {
       isLoading.value = true;
 
-      final token =
-      await authManager.getAuthToken();
+      final token = await authManager.getAuthToken();
 
       final response = await http.post(
         Uri.parse("$_baseUrl/areas"),
@@ -242,18 +232,14 @@ class DoctorListController extends GetxController {
         }),
       );
 
-      if (response.statusCode == 201 ||
-          response.statusCode == 200) {
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        final jsonResponse = jsonDecode(response.body);
 
-        final jsonResponse =
-        jsonDecode(response.body);
-
-        final String createdAreaId =
-        jsonResponse["data"]["id"];
+        final String createdAreaId = jsonResponse["data"]["id"];
 
         Get.snackbar(
           "Success",
-          "Area created successfully!",
+          TTexts.uiTextAreaCreatedSuccessfully,
         );
 
         return createdAreaId;
@@ -261,20 +247,17 @@ class DoctorListController extends GetxController {
 
       Get.snackbar(
         "Error",
-        "Failed creating area",
+        TTexts.uiTextFailedCreatingArea,
       );
 
       return null;
-
     } catch (e) {
-
       Get.snackbar(
         "Error",
         e.toString(),
       );
 
       return null;
-
     } finally {
       isLoading.value = false;
     }
@@ -292,8 +275,7 @@ class DoctorListController extends GetxController {
       );
 
       if (response.statusCode == 200) {
-        final jsonResponse =
-        jsonDecode(response.body);
+        final jsonResponse = jsonDecode(response.body);
 
         return jsonResponse["data"] ?? [];
       }
@@ -318,8 +300,10 @@ class DoctorListController extends GetxController {
       print("Doctors Data: $_baseUrl/api/doctors/my-doctors");
       final response = await http.get(
         Uri.parse("$_baseUrl/doctors/my-doctors"),
-        headers: {"Content-Type": "application/json",
-          'Authorization': 'Bearer $token'},
+        headers: {
+          "Content-Type": "application/json",
+          'Authorization': 'Bearer $token'
+        },
       );
 
       print("Response: ${response.body}");
@@ -327,36 +311,37 @@ class DoctorListController extends GetxController {
       if (Get.isDialogOpen ?? false) Get.back(); // Close the loading dialog
 
       if (response.statusCode == 200) {
-        final Map<String, dynamic> jsonResponse =
-        jsonDecode(response.body);
+        final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
 
-        final List<dynamic> jsonData =
-            jsonResponse['data'] ?? [];
+        final List<dynamic> jsonData = jsonResponse['data'] ?? [];
 
         print("Doctors Data: $jsonData");
 
         final List<Doctor> loadedData =
-        jsonData.map((e) => Doctor.fromJson(e)).toList();
+            jsonData.map((e) => Doctor.fromJson(e)).toList();
 
-        totalDoctors.value =
-            jsonResponse["count"] ?? loadedData.length;
+        totalDoctors.value = jsonResponse["count"] ?? loadedData.length;
 
         doctorList.assignAll(loadedData);
         filteredDoctors.assignAll(loadedData);
       } else {
-        Get.snackbar("Error", "Failed to load doctors: ${response.statusCode}",
+        Get.snackbar(
+          "Error",
+          "Failed to load doctors: ${response.statusCode}",
           snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.redAccent,
-          colorText: Colors.white,
+          backgroundColor: TColors.materialRedAccent,
+          colorText: TColors.white,
         );
       }
     } catch (e) {
       print("Doctors Data: falling in catch block $e");
       if (Get.isDialogOpen ?? false) Get.back(); // Ensure dialog is closed
-      Get.snackbar("Error", "Something went wrong: $e",
+      Get.snackbar(
+        "Error",
+        "Something went wrong: $e",
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.redAccent,
-        colorText: Colors.white,
+        backgroundColor: TColors.materialRedAccent,
+        colorText: TColors.white,
       );
     } finally {
       print("Doctors Data: Falling in finally block");

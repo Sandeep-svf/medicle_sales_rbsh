@@ -1,6 +1,8 @@
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class LiveClockWidget extends StatefulWidget {
   const LiveClockWidget({super.key});
@@ -32,16 +34,15 @@ class _LiveClockWidgetState extends State<LiveClockWidget> {
       children: [
         const Icon(
           Icons.access_time,
-          size: 16,
-          color: Colors.white70,
+          size: TSizes.v16,
+          color: TColors.white70,
         ),
-        const SizedBox(width: 6),
+        const SizedBox(width: TSizes.v6),
         Text(
-          DateFormat('EEEE, MMMM dd, yyyy · hh:mm:ss a')
-              .format(DateTime.now()),
+          DateFormat('EEEE, MMMM dd, yyyy · hh:mm:ss a').format(DateTime.now()),
           style: const TextStyle(
-            fontSize: 14,
-            color: Colors.white,
+            fontSize: TSizes.v14,
+            color: TColors.white,
           ),
         ),
       ],

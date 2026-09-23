@@ -65,74 +65,58 @@ class TourPlanDayModel {
     required this.handshakeStatus,
     required this.createdAt,
     required this.updatedAt,
-
     this.jointWorkWithUserId,
     this.jointWorkUserIds = const [],
-
     this.handshakeTime,
     this.handshakeDistanceMeters,
-
     this.handshakeUserLat,
     this.handshakeUserLng,
-
     this.handshakePartnerLat,
     this.handshakePartnerLng,
-
     this.handshakeVerifiedByUserId,
-
     this.beatId1,
     this.beatId2,
-
     this.changeRequestStatus = "None",
     this.changeRequestReason,
-
     this.changeRequestBeatId1,
     this.changeRequestBeatId2,
-
     this.changeRequestDayType,
     this.changeRequestComments,
-
     this.notes,
-
     this.beat1,
     this.beat2,
     this.jointWorkWith,
-
     this.jointWorkUsers = const [],
   });
 
   factory TourPlanDayModel.fromJson(
-      Map<String, dynamic>? json,
-      ) {
+    Map<String, dynamic>? json,
+  ) {
     final data = json ?? <String, dynamic>{};
 
     return TourPlanDayModel(
       id: data["id"]?.toString() ?? "",
 
-      tourPlanId:
-      data["tour_plan_id"]?.toString() ?? "",
+      tourPlanId: data["tour_plan_id"]?.toString() ?? "",
 
       date: _parseDate(
-        data["date"],
-      ) ?? DateTime.fromMillisecondsSinceEpoch(0),
+            data["date"],
+          ) ??
+          DateTime.fromMillisecondsSinceEpoch(0),
 
-      dayType:
-      data["day_type"]?.toString() ?? "",
+      dayType: data["day_type"]?.toString() ?? "",
 
-      collaborationStatus:
-      data["collaboration_status"]?.toString() ?? "None",
+      collaborationStatus: data["collaboration_status"]?.toString() ?? "None",
 
       // ------------------------------------------------
       // JOINT WORK
       // ------------------------------------------------
 
-      jointWorkWithUserId:
-      _nullableString(
+      jointWorkWithUserId: _nullableString(
         data["joint_work_with_user_id"],
       ),
 
-      jointWorkUserIds:
-      _parseJointWorkUserIds(
+      jointWorkUserIds: _parseJointWorkUserIds(
         data["joint_work_user_ids"],
         data["joint_work_users"] ?? data["jointWorkUsers"],
       ),
@@ -141,41 +125,33 @@ class TourPlanDayModel {
       // HANDSHAKE
       // ------------------------------------------------
 
-      handshakeStatus:
-      data["handshake_status"]?.toString() ?? "None",
+      handshakeStatus: data["handshake_status"]?.toString() ?? "None",
 
-      handshakeTime:
-      _parseDate(
+      handshakeTime: _parseDate(
         data["handshake_time"],
       ),
 
-      handshakeDistanceMeters:
-      _parseDouble(
+      handshakeDistanceMeters: _parseDouble(
         data["handshake_distance_meters"],
       ),
 
-      handshakeUserLat:
-      _parseDouble(
+      handshakeUserLat: _parseDouble(
         data["handshake_user_lat"],
       ),
 
-      handshakeUserLng:
-      _parseDouble(
+      handshakeUserLng: _parseDouble(
         data["handshake_user_lng"],
       ),
 
-      handshakePartnerLat:
-      _parseDouble(
+      handshakePartnerLat: _parseDouble(
         data["handshake_partner_lat"],
       ),
 
-      handshakePartnerLng:
-      _parseDouble(
+      handshakePartnerLng: _parseDouble(
         data["handshake_partner_lng"],
       ),
 
-      handshakeVerifiedByUserId:
-      _nullableString(
+      handshakeVerifiedByUserId: _nullableString(
         data["handshake_verified_by_user_id"],
       ),
 
@@ -183,13 +159,11 @@ class TourPlanDayModel {
       // BEATS
       // ------------------------------------------------
 
-      beatId1:
-      _nullableString(
+      beatId1: _nullableString(
         data["beat_id_1"],
       ),
 
-      beatId2:
-      _nullableString(
+      beatId2: _nullableString(
         data["beat_id_2"],
       ),
 
@@ -197,31 +171,25 @@ class TourPlanDayModel {
       // CHANGE REQUEST
       // ------------------------------------------------
 
-      changeRequestStatus:
-      data["change_request_status"]?.toString() ?? "None",
+      changeRequestStatus: data["change_request_status"]?.toString() ?? "None",
 
-      changeRequestReason:
-      _nullableString(
+      changeRequestReason: _nullableString(
         data["change_request_reason"],
       ),
 
-      changeRequestBeatId1:
-      _nullableString(
+      changeRequestBeatId1: _nullableString(
         data["change_request_beat_id_1"],
       ),
 
-      changeRequestBeatId2:
-      _nullableString(
+      changeRequestBeatId2: _nullableString(
         data["change_request_beat_id_2"],
       ),
 
-      changeRequestDayType:
-      _nullableString(
+      changeRequestDayType: _nullableString(
         data["change_request_day_type"],
       ),
 
-      changeRequestComments:
-      _nullableString(
+      changeRequestComments: _nullableString(
         data["change_request_comments"],
       ),
 
@@ -229,8 +197,7 @@ class TourPlanDayModel {
       // NOTES
       // ------------------------------------------------
 
-      notes:
-      _nullableString(
+      notes: _nullableString(
         data["notes"],
       ),
 
@@ -238,27 +205,25 @@ class TourPlanDayModel {
       // TIMESTAMPS
       // ------------------------------------------------
 
-      createdAt:
-      _parseDate(
-        data["created_at"],
-      ) ?? DateTime.fromMillisecondsSinceEpoch(0),
+      createdAt: _parseDate(
+            data["created_at"],
+          ) ??
+          DateTime.fromMillisecondsSinceEpoch(0),
 
-      updatedAt:
-      _parseDate(
-        data["updated_at"],
-      ) ?? DateTime.fromMillisecondsSinceEpoch(0),
+      updatedAt: _parseDate(
+            data["updated_at"],
+          ) ??
+          DateTime.fromMillisecondsSinceEpoch(0),
 
       // ------------------------------------------------
       // BEAT DETAILS
       // ------------------------------------------------
 
-      beat1:
-      _parseMap(
+      beat1: _parseMap(
         data["beat1"],
       ),
 
-      beat2:
-      _parseMap(
+      beat2: _parseMap(
         data["beat2"],
       ),
 
@@ -266,13 +231,11 @@ class TourPlanDayModel {
       // JOINT WORK DETAILS
       // ------------------------------------------------
 
-      jointWorkWith:
-      _parseMap(
+      jointWorkWith: _parseMap(
         data["jointWorkWith"] ?? data["joint_work_with"],
       ),
 
-      jointWorkUsers:
-      _parseMapList(
+      jointWorkUsers: _parseMapList(
         data["joint_work_users"] ?? data["jointWorkUsers"],
       ),
     );
@@ -288,89 +251,63 @@ class TourPlanDayModel {
 
       "day_type": dayType,
 
-      "collaboration_status":
-      collaborationStatus,
+      "collaboration_status": collaborationStatus,
 
       // Joint work
-      "joint_work_with_user_id":
-      jointWorkWithUserId,
+      "joint_work_with_user_id": jointWorkWithUserId,
 
-      "joint_work_user_ids":
-      jointWorkUserIds,
+      "joint_work_user_ids": jointWorkUserIds,
 
       // Handshake
-      "handshake_status":
-      handshakeStatus,
+      "handshake_status": handshakeStatus,
 
-      "handshake_time":
-      handshakeTime?.toIso8601String(),
+      "handshake_time": handshakeTime?.toIso8601String(),
 
-      "handshake_distance_meters":
-      handshakeDistanceMeters,
+      "handshake_distance_meters": handshakeDistanceMeters,
 
-      "handshake_user_lat":
-      handshakeUserLat,
+      "handshake_user_lat": handshakeUserLat,
 
-      "handshake_user_lng":
-      handshakeUserLng,
+      "handshake_user_lng": handshakeUserLng,
 
-      "handshake_partner_lat":
-      handshakePartnerLat,
+      "handshake_partner_lat": handshakePartnerLat,
 
-      "handshake_partner_lng":
-      handshakePartnerLng,
+      "handshake_partner_lng": handshakePartnerLng,
 
-      "handshake_verified_by_user_id":
-      handshakeVerifiedByUserId,
+      "handshake_verified_by_user_id": handshakeVerifiedByUserId,
 
       // Beats
-      "beat_id_1":
-      beatId1,
+      "beat_id_1": beatId1,
 
-      "beat_id_2":
-      beatId2,
+      "beat_id_2": beatId2,
 
       // Change request
-      "change_request_status":
-      changeRequestStatus,
+      "change_request_status": changeRequestStatus,
 
-      "change_request_reason":
-      changeRequestReason,
+      "change_request_reason": changeRequestReason,
 
-      "change_request_beat_id_1":
-      changeRequestBeatId1,
+      "change_request_beat_id_1": changeRequestBeatId1,
 
-      "change_request_beat_id_2":
-      changeRequestBeatId2,
+      "change_request_beat_id_2": changeRequestBeatId2,
 
-      "change_request_day_type":
-      changeRequestDayType,
+      "change_request_day_type": changeRequestDayType,
 
-      "change_request_comments":
-      changeRequestComments,
+      "change_request_comments": changeRequestComments,
 
       // Other
-      "notes":
-      notes,
+      "notes": notes,
 
-      "created_at":
-      createdAt.toIso8601String(),
+      "created_at": createdAt.toIso8601String(),
 
-      "updated_at":
-      updatedAt.toIso8601String(),
+      "updated_at": updatedAt.toIso8601String(),
 
       // Details
-      "beat1":
-      beat1,
+      "beat1": beat1,
 
-      "beat2":
-      beat2,
+      "beat2": beat2,
 
-      "jointWorkWith":
-      jointWorkWith,
+      "jointWorkWith": jointWorkWith,
 
-      "joint_work_users":
-      jointWorkUsers,
+      "joint_work_users": jointWorkUsers,
     };
   }
 
@@ -449,15 +386,14 @@ class TourPlanDayModel {
       changeRequestBeatId2: identical(changeRequestBeatId2, _tourPlanDayUnset)
           ? this.changeRequestBeatId2
           : changeRequestBeatId2 as String?,
-      changeRequestDayType:
-          identical(changeRequestDayType, _tourPlanDayUnset)
-              ? this.changeRequestDayType
-              : changeRequestDayType as String?,
-      changeRequestComments:
-          identical(changeRequestComments, _tourPlanDayUnset)
-              ? this.changeRequestComments
-              : changeRequestComments as String?,
-      notes: identical(notes, _tourPlanDayUnset) ? this.notes : notes as String?,
+      changeRequestDayType: identical(changeRequestDayType, _tourPlanDayUnset)
+          ? this.changeRequestDayType
+          : changeRequestDayType as String?,
+      changeRequestComments: identical(changeRequestComments, _tourPlanDayUnset)
+          ? this.changeRequestComments
+          : changeRequestComments as String?,
+      notes:
+          identical(notes, _tourPlanDayUnset) ? this.notes : notes as String?,
       beat1: beat1,
       beat2: beat2,
       jointWorkWith: jointWorkWith,
@@ -476,8 +412,7 @@ class TourPlanDayModel {
 
     final stringValue = value.toString().trim();
 
-    if (stringValue.isEmpty ||
-        stringValue.toLowerCase() == "null") {
+    if (stringValue.isEmpty || stringValue.toLowerCase() == "null") {
       return null;
     }
 
@@ -529,8 +464,7 @@ class TourPlanDayModel {
         .whereType<Map>()
         .map((user) {
           final nested = user["user"];
-          final value =
-              user["user_id"] ??
+          final value = user["user_id"] ??
               user["userId"] ??
               (nested is Map ? nested["id"] : null) ??
               user["id"];
@@ -541,8 +475,8 @@ class TourPlanDayModel {
   }
 
   static List<String> _parseStringList(
-      dynamic value,
-      ) {
+    dynamic value,
+  ) {
     if (value == null || value is! List) {
       return const [];
     }
@@ -555,8 +489,8 @@ class TourPlanDayModel {
   }
 
   static Map<String, dynamic>? _parseMap(
-      dynamic value,
-      ) {
+    dynamic value,
+  ) {
     if (value == null || value is! Map) {
       return null;
     }
@@ -567,8 +501,8 @@ class TourPlanDayModel {
   }
 
   static List<Map<String, dynamic>> _parseMapList(
-      dynamic value,
-      ) {
+    dynamic value,
+  ) {
     if (value == null || value is! List) {
       return const [];
     }
@@ -577,9 +511,9 @@ class TourPlanDayModel {
         .whereType<Map>()
         .map(
           (item) => Map<String, dynamic>.from(
-        item,
-      ),
-    )
+            item,
+          ),
+        )
         .toList();
   }
 }

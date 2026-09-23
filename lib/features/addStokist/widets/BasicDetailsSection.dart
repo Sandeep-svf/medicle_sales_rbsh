@@ -1,8 +1,9 @@
-// lib/screens/pharma_distributor_form/widgets/basic_details_section.dart
 import 'package:flutter/material.dart';
-
-import '../../../utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import '../model/headoffice.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+
 // adjust if needed
 
 class BasicDetailsSection extends StatelessWidget {
@@ -34,15 +35,20 @@ class BasicDetailsSection extends StatelessWidget {
   });
 
   Widget _sectionTitle(String title) => Padding(
-    padding: const EdgeInsets.only(bottom: 8.0),
-    child: Text(
-      title,
-      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: TColors.primary),
-    ),
-  );
+        padding: const EdgeInsets.only(bottom: 8.0),
+        child: Text(
+          title,
+          style: const TextStyle(
+              fontSize: TSizes.v18,
+              fontWeight: FontWeight.bold,
+              color: TColors.primary),
+        ),
+      );
 
   Widget _requiredField(TextEditingController controller, String label,
-      {TextInputType inputType = TextInputType.text, int maxLines = 1, Function(String)? onChanged}) {
+      {TextInputType inputType = TextInputType.text,
+      int maxLines = 1,
+      Function(String)? onChanged}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: TextFormField(
@@ -66,12 +72,12 @@ class BasicDetailsSection extends StatelessWidget {
         _sectionTitle("Applicant Details"),
         _requiredField(firmName, "Firm Name", onChanged: (_) {}),
         _requiredField(businessName, "Registered Business Name"),
-        const SizedBox(height: 8),
+        const SizedBox(height: TSizes.v8),
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 6),
           child: DropdownButtonFormField<String>(
             decoration: const InputDecoration(
-              labelText: "Head Office *",
+              labelText: TTexts.uiTextHeadOffice_523ae239,
               border: OutlineInputBorder(),
             ),
             value: selectedHeadOfficeId,
@@ -82,20 +88,22 @@ class BasicDetailsSection extends StatelessWidget {
               );
             }).toList(),
             onChanged: onHeadOfficeChanged,
-            validator: (value) => value == null || value.isEmpty ? 'Please select a head office' : null,
+            validator: (value) => value == null || value.isEmpty
+                ? 'Please select a head office'
+                : null,
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: TSizes.v8),
         _requiredField(gstNumber, 'GST Number'),
-        const SizedBox(height: 8),
+        const SizedBox(height: TSizes.v8),
         _requiredField(panNumber, ' PAN Number'),
-        const SizedBox(height: 8),
+        const SizedBox(height: TSizes.v8),
         _requiredField(drugLicenceNumber, 'Drug License Number'),
-        const SizedBox(height: 8),
+        const SizedBox(height: TSizes.v8),
         DropdownButtonFormField<String>(
           decoration: const InputDecoration(
             border: OutlineInputBorder(),
-            labelText: "Nature of Business",
+            labelText: TTexts.uiTextNatureOfBusiness,
           ),
           value: selectedBusinessType,
           items: businessTypes.map((type) {

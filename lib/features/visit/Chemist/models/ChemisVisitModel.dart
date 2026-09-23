@@ -2,13 +2,13 @@ import 'dart:convert';
 import 'package:intl/intl.dart';
 
 class ChemistVisitModel {
-  final String id;               // visit id
-  final String chemistId;        // chemist_id
-  final String userId;           // user_id
+  final String id; // visit id
+  final String chemistId; // chemist_id
+  final String userId; // user_id
 
   // Server sends date as "YYYY-MM-DD"
-  final String? dateStr;         // raw
-  final DateTime? date;          // parsed (nullable if parse fails)
+  final String? dateStr; // raw
+  final DateTime? date; // parsed (nullable if parse fails)
 
   final String? notes;
   final bool confirmed;
@@ -19,10 +19,10 @@ class ChemistVisitModel {
   final double? latitude;
   final double? longitude;
 
-  final DateTime? createdAt;     // ISO
-  final DateTime? updatedAt;     // ISO
+  final DateTime? createdAt; // ISO
+  final DateTime? updatedAt; // ISO
 
-  final ChemistInfo? chemist;    // nested "Chemist"
+  final ChemistInfo? chemist; // nested "Chemist"
 
   ChemistVisitModel({
     required this.id,
@@ -57,7 +57,8 @@ class ChemistVisitModel {
       return (s == null || s.isEmpty) ? null : s;
     }
 
-    DateTime? _iso(dynamic v) => v == null ? null : DateTime.tryParse(v.toString());
+    DateTime? _iso(dynamic v) =>
+        v == null ? null : DateTime.tryParse(v.toString());
 
     DateTime? _ymd(String? raw) {
       if (raw == null) return null;
@@ -76,8 +77,8 @@ class ChemistVisitModel {
     }
 
     final rawDate = _sn(j['date']);
-    final latStr  = _sn(j['latitude']);
-    final lngStr  = _sn(j['longitude']);
+    final latStr = _sn(j['latitude']);
+    final lngStr = _sn(j['longitude']);
 
     return ChemistVisitModel(
       id: _s(j['id']).trim(),
@@ -97,30 +98,34 @@ class ChemistVisitModel {
       chemist: (j['Chemist'] is Map)
           ? ChemistInfo.fromJson(j['Chemist'] as Map<String, dynamic>)
           : (j['chemist'] is Map)
-          ? ChemistInfo.fromJson(j['chemist'] as Map<String, dynamic>)
-          : null,
+              ? ChemistInfo.fromJson(j['chemist'] as Map<String, dynamic>)
+              : null,
     );
   }
 
   Map<String, dynamic> toJson() => {
-    "id": id,
-    "chemist_id": chemistId,
-    "user_id": userId,
-    "date": dateStr, // keep original format
-    "notes": notes,
-    "confirmed": confirmed,
-    "latitude": latitudeStr,   // keep original strings (server expects strings)
-    "longitude": longitudeStr,
-    "created_at": createdAt?.toIso8601String(),
-    "updated_at": updatedAt?.toIso8601String(),
-    "Chemist": chemist?.toJson(),
-  };
+        "id": id,
+        "chemist_id": chemistId,
+        "user_id": userId,
+        "date": dateStr, // keep original format
+        "notes": notes,
+        "confirmed": confirmed,
+        "latitude":
+            latitudeStr, // keep original strings (server expects strings)
+        "longitude": longitudeStr,
+        "created_at": createdAt?.toIso8601String(),
+        "updated_at": updatedAt?.toIso8601String(),
+        "Chemist": chemist?.toJson(),
+      };
 
   // List helpers
   static List<ChemistVisitModel> listFromRawJson(String raw) {
     final data = json.decode(raw);
     if (data is List) {
-      return data.map<ChemistVisitModel>((e) => ChemistVisitModel.fromJson(e as Map<String, dynamic>?)).toList();
+      return data
+          .map<ChemistVisitModel>(
+              (e) => ChemistVisitModel.fromJson(e as Map<String, dynamic>?))
+          .toList();
     }
     return const <ChemistVisitModel>[];
   }
@@ -149,7 +154,6 @@ class ChemistInfo {
   final DateTime? updatedAt;
   final String? areaId;
 
-
   ChemistInfo({
     required this.id,
     required this.firmName,
@@ -169,7 +173,6 @@ class ChemistInfo {
     this.createdAt,
     this.updatedAt,
     this.areaId,
-
   });
 
   factory ChemistInfo.fromJson(Map<String, dynamic>? j) {
@@ -182,17 +185,21 @@ class ChemistInfo {
       final s = v?.toString().trim();
       return (s == null || s.isEmpty) ? null : s;
     }
+
     double? _dbl(dynamic v) {
       if (v == null) return null;
       if (v is num) return v.toDouble();
       return double.tryParse(v.toString());
     }
+
     int? _int(dynamic v) {
       if (v == null) return null;
       if (v is int) return v;
       return int.tryParse(v.toString());
     }
-    DateTime? _iso(dynamic v) => v == null ? null : DateTime.tryParse(v.toString());
+
+    DateTime? _iso(dynamic v) =>
+        v == null ? null : DateTime.tryParse(v.toString());
 
     final latStr = _sn(j['latitude']);
     final lngStr = _sn(j['longitude']);
@@ -216,31 +223,28 @@ class ChemistInfo {
       createdAt: _iso(j['created_at']),
       updatedAt: _iso(j['updated_at']),
       areaId: _sn(j['area_id']),
-
     );
   }
 
   Map<String, dynamic> toJson() => {
-    "id": id,
-    "firm_name": firmName,
-    "contact_person_name": contactPersonName,
-    "designation": designation,
-    "mobile_no": mobileNo,
-    "email_id": emailId,
-    "drug_license_number": drugLicenseNumber,
-    "gst_no": gstNo,
-    "address": address,
-    "latitude": latitudeStr,   // keep original strings
-    "longitude": longitudeStr,
-    "years_in_business": yearsInBusiness,
-    "head_office_id": headOfficeId,
-    "created_at": createdAt?.toIso8601String(),
-    "updated_at": updatedAt?.toIso8601String(),
-    "area_id": areaId,
-  };
+        "id": id,
+        "firm_name": firmName,
+        "contact_person_name": contactPersonName,
+        "designation": designation,
+        "mobile_no": mobileNo,
+        "email_id": emailId,
+        "drug_license_number": drugLicenseNumber,
+        "gst_no": gstNo,
+        "address": address,
+        "latitude": latitudeStr, // keep original strings
+        "longitude": longitudeStr,
+        "years_in_business": yearsInBusiness,
+        "head_office_id": headOfficeId,
+        "created_at": createdAt?.toIso8601String(),
+        "updated_at": updatedAt?.toIso8601String(),
+        "area_id": areaId,
+      };
 }
-
-
 
 /*
 class ChemistVisitModel {

@@ -2,24 +2,27 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:http/http.dart' as http;
 import 'package:permission_handler/permission_handler.dart';
-import 'package:http_parser/http_parser.dart'; // <--- ADD THIS
-// --- Project Imports ---
+import 'package:http_parser/http_parser.dart';
 import 'package:medicle_sales_rbsh/utils/http/http_client.dart';
 import 'package:medicle_sales_rbsh/utils/local_storage/auth_manager.dart';
-import '../../../utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import '../controllers/doctor_details_controller.dart';
 import '../models/DoctorModelList.dart';
-
-// --- Geo Overlay Utilities ---
 import '../../../utils/camera/CameraLocationResult.dart';
 import '../../../utils/camera/image_overlay_utils.dart';
 import '../../../utils/loder/CircularLoaderController.dart';
 import '../models/doctor_details_model.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+
+// --- Project Imports ---
+
+// --- Geo Overlay Utilities ---
 
 class DoctorDetailsScreen extends StatefulWidget {
   final String doctorId;
@@ -61,17 +64,15 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
       }
 
       return Scaffold(
-        backgroundColor: const Color(0xFFF5F5F5),
-
+        backgroundColor: TColors.hex_FFF5F5F5,
         appBar: AppBar(
           title: Text(
             controller.doctor.value?.name ?? "Doctor Details",
-            style: const TextStyle(color: Colors.white),
+            style: const TextStyle(color: TColors.white),
           ),
           backgroundColor: TColors.primary,
-          iconTheme: const IconThemeData(color: Colors.white),
+          iconTheme: const IconThemeData(color: TColors.white),
         ),
-
         body: Stack(
           children: [
             LayoutBuilder(
@@ -83,13 +84,12 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
                 }
               },
             ),
-
             if (_isUploading)
               Container(
-                color: Colors.black54,
+                color: TColors.black54,
                 child: const Center(
                   child: CircularProgressIndicator(
-                    color: Colors.white,
+                    color: TColors.white,
                   ),
                 ),
               ),
@@ -107,26 +107,24 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _buildProfileHeader(),
-          const SizedBox(height: 16),
+          const SizedBox(height: TSizes.v16),
           _buildContactInfo(),
-          const SizedBox(height: 16),
+          const SizedBox(height: TSizes.v16),
           _buildMapSection(),
-          const SizedBox(height: 16),
+          const SizedBox(height: TSizes.v16),
           // GEO IMAGE SECTION
           _buildGeoImageSection(context),
-          const SizedBox(height: 16),
+          const SizedBox(height: TSizes.v16),
           _buildBasicInfo(),
-          const SizedBox(height: 16),
+          const SizedBox(height: TSizes.v16),
           _buildHeadOfficeInfo(),
-          const SizedBox(height: 16),
-
+          const SizedBox(height: TSizes.v16),
 
           _buildAccountInfo(),
-          const SizedBox(height: 16),
+          const SizedBox(height: TSizes.v16),
           _buildVisitHistory(),
 
-
-          const SizedBox(height: 20),
+          const SizedBox(height: TSizes.v20),
         ],
       ),
     );
@@ -141,8 +139,7 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
       child: Column(
         children: [
           _buildProfileHeader(),
-          const SizedBox(height: 24),
-
+          const SizedBox(height: TSizes.v24),
           if (isWideLandscape)
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -152,44 +149,40 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
                   child: Column(
                     children: [
                       _buildContactInfo(),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: TSizes.v24),
                       _buildBasicInfo(),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: TSizes.v24),
                       _buildAccountInfo(),
                     ],
                   ),
                 ),
-                const SizedBox(width: 24),
+                const SizedBox(width: TSizes.v24),
                 Column(
                   children: [
-
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-
                         Expanded(
                           flex: 5,
                           child: Column(
                             children: [
                               _buildContactInfo(),
-                              const SizedBox(height: 24),
+                              const SizedBox(height: TSizes.v24),
                               _buildBasicInfo(),
-                              const SizedBox(height: 24),
+                              const SizedBox(height: TSizes.v24),
                               _buildAccountInfo(),
                             ],
                           ),
                         ),
-
-                        const SizedBox(width: 24),
-
+                        const SizedBox(width: TSizes.v24),
                         Expanded(
                           flex: 7,
                           child: Column(
                             children: [
-                              _buildMapSection(height: 300),
-                              const SizedBox(height: 24),
+                              _buildMapSection(height: TSizes.v300),
+                              const SizedBox(height: TSizes.v24),
                               _buildGeoImageSection(context),
-                              const SizedBox(height: 24),
+                              const SizedBox(height: TSizes.v24),
                               _buildHeadOfficeInfo(),
                             ],
                           ),
@@ -197,7 +190,7 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
                       ],
                     ),
 
-                    const SizedBox(height: 24),
+                    const SizedBox(height: TSizes.v24),
 
                     _buildVisitHistory(), // <-- FULL WIDTH
                   ],
@@ -207,34 +200,30 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
           else
             Column(
               children: [
-
-                _buildMapSection(height: 300),
-                const SizedBox(height: 24),
+                _buildMapSection(height: TSizes.v300),
+                const SizedBox(height: TSizes.v24),
 
                 _buildGeoImageSection(context),
-                const SizedBox(height: 24),
+                const SizedBox(height: TSizes.v24),
 
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-
                     Expanded(
                       child: Column(
                         children: [
                           _buildContactInfo(),
-                          const SizedBox(height: 24),
+                          const SizedBox(height: TSizes.v24),
                           _buildBasicInfo(),
                         ],
                       ),
                     ),
-
-                    const SizedBox(width: 24),
-
+                    const SizedBox(width: TSizes.v24),
                     Expanded(
                       child: Column(
                         children: [
                           _buildHeadOfficeInfo(),
-                          const SizedBox(height: 24),
+                          const SizedBox(height: TSizes.v24),
                           _buildAccountInfo(),
                         ],
                       ),
@@ -242,7 +231,7 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
                   ],
                 ),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: TSizes.v24),
 
                 _buildVisitHistory(), // <-- FULL WIDTH
               ],
@@ -257,7 +246,8 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
   Widget _buildGeoImageSection(BuildContext context) {
     // 1. Check existing Server Image
     final String? serverImageUrl = doctor.geoImageUrl;
-    final bool hasServerImage = serverImageUrl != null && serverImageUrl.isNotEmpty;
+    final bool hasServerImage =
+        serverImageUrl != null && serverImageUrl.isNotEmpty;
 
     // 2. Check local preview Image (User just took a photo)
     final bool hasLocalPreview = _localImageFile != null;
@@ -275,25 +265,24 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
               if (hasServerImage && !hasLocalPreview)
                 IconButton(
                   onPressed: () => _showImageSourceSheet(context),
-                  icon: const Icon(Icons.edit, size: 20, color: Colors.grey),
-                  tooltip: "Replace Image",
+                  icon: const Icon(Icons.edit,
+                      size: TSizes.v20, color: TColors.materialGrey),
+                  tooltip: TTexts.uiTextReplaceImage,
                 ),
             ],
           ),
           const Divider(),
-          const SizedBox(height: 8),
+          const SizedBox(height: TSizes.v8),
 
           // --- FIXED LOGIC ORDER ---
           if (hasLocalPreview)
-          // PRIORITY 1: Show the new image user just captured (Review Mode)
+            // PRIORITY 1: Show the new image user just captured (Review Mode)
             _buildLocalPreviewView()
-
           else if (hasServerImage)
-          // PRIORITY 2: Show existing server image (Read-Only)
+            // PRIORITY 2: Show existing server image (Read-Only)
             _buildServerImageView(context, serverImageUrl!)
-
           else
-          // PRIORITY 3: Nothing exists, show upload placeholder
+            // PRIORITY 3: Nothing exists, show upload placeholder
             _buildUploadPlaceholder(context),
         ],
       ),
@@ -303,12 +292,12 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
   // --- View for Server Image ---
   Widget _buildServerImageView(BuildContext context, String url) {
     return Container(
-      height: 250,
+      height: TSizes.v250,
       width: double.infinity,
       decoration: BoxDecoration(
-        color: Colors.grey[100],
+        color: TColors.materialGrey100,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade300),
+        border: Border.all(color: TColors.materialGrey300),
       ),
       child: Stack(
         fit: StackFit.expand,
@@ -318,11 +307,12 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
             child: Image.network(
               url,
               fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) =>
-              const Center(child: Icon(Icons.broken_image, color: Colors.grey)),
+              errorBuilder: (context, error, stackTrace) => const Center(
+                  child: Icon(Icons.broken_image, color: TColors.materialGrey)),
               loadingBuilder: (context, child, loadingProgress) {
                 if (loadingProgress == null) return child;
-                return const Center(child: CircularProgressIndicator(color: TColors.primary));
+                return const Center(
+                    child: CircularProgressIndicator(color: TColors.primary));
               },
             ),
           ),
@@ -332,16 +322,22 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
             child: GestureDetector(
               onTap: () => _showFullImage(context, url, isLocal: false),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.6),
+                  color: TColors.pureBlack.withOpacity(0.6),
                   borderRadius: BorderRadius.circular(30),
                 ),
                 child: const Row(
                   children: [
-                    Icon(Icons.visibility, color: Colors.white, size: 18),
-                    SizedBox(width: 6),
-                    Text("View", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
+                    Icon(Icons.visibility,
+                        color: TColors.white, size: TSizes.v18),
+                    SizedBox(width: TSizes.v6),
+                    Text(TTexts.uiTextView,
+                        style: TextStyle(
+                            color: TColors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: TSizes.v12)),
                   ],
                 ),
               ),
@@ -357,12 +353,13 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
     return Column(
       children: [
         Container(
-          height: 250,
+          height: TSizes.v250,
           width: double.infinity,
           decoration: BoxDecoration(
-            color: Colors.grey[100],
+            color: TColors.materialGrey100,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: TColors.primary, width: 2), // Highlight border
+            border: Border.all(
+                color: TColors.primary, width: TSizes.v2), // Highlight border
           ),
           child: Stack(
             fit: StackFit.expand,
@@ -375,44 +372,50 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
                 right: 12,
                 bottom: 12,
                 child: GestureDetector(
-                  onTap: () => _showFullImage(context, _localImageFile!.path, isLocal: true),
+                  onTap: () => _showFullImage(context, _localImageFile!.path,
+                      isLocal: true),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.6),
+                      color: TColors.pureBlack.withOpacity(0.6),
                       borderRadius: BorderRadius.circular(30),
                     ),
-                    child: const Icon(Icons.zoom_in, color: Colors.white, size: 20),
+                    child: const Icon(Icons.zoom_in,
+                        color: TColors.white, size: TSizes.v20),
                   ),
                 ),
               ),
             ],
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: TSizes.v16),
         Row(
           children: [
             Expanded(
               child: OutlinedButton.icon(
                 onPressed: () => _showImageSourceSheet(context), // Re-pick
-                icon: const Icon(Icons.refresh, color: Colors.grey),
-                label: const Text("Change", style: TextStyle(color: Colors.grey)),
+                icon: const Icon(Icons.refresh, color: TColors.materialGrey),
+                label: const Text(TTexts.uiTextChange,
+                    style: TextStyle(color: TColors.materialGrey)),
                 style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Colors.grey),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  side: const BorderSide(color: TColors.materialGrey),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)),
                 ),
               ),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: TSizes.v16),
             Expanded(
               child: ElevatedButton.icon(
                 onPressed: () => _uploadImageToApi(_localImageFile!), // Upload
                 icon: const Icon(Icons.cloud_upload),
-                label: const Text("Submit Image"),
+                label: const Text(TTexts.uiTextSubmitImage),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: TColors.primary,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  foregroundColor: TColors.white,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)),
                 ),
               ),
             ),
@@ -425,31 +428,37 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
   // --- View for No Image (Initial State) ---
   Widget _buildUploadPlaceholder(BuildContext context) {
     return Container(
-      height: 180,
+      height: TSizes.v180,
       width: double.infinity,
       decoration: BoxDecoration(
-        color: Colors.grey[50],
+        color: TColors.materialGrey50,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade300, style: BorderStyle.solid),
+        border: Border.all(
+            color: TColors.materialGrey300, style: BorderStyle.solid),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.add_a_photo_outlined, size: 40, color: Colors.grey[400]),
-          const SizedBox(height: 12),
+          Icon(Icons.add_a_photo_outlined,
+              size: TSizes.v40, color: TColors.materialGrey400),
+          const SizedBox(height: TSizes.v12),
           const Text(
-            "No Geo Location Image added yet",
-            style: TextStyle(color: Colors.grey, fontSize: 14, fontWeight: FontWeight.w500),
+            TTexts.uiTextNoGeoLocationImageAddedYet,
+            style: TextStyle(
+                color: TColors.materialGrey,
+                fontSize: TSizes.v14,
+                fontWeight: FontWeight.w500),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: TSizes.v16),
           ElevatedButton.icon(
             onPressed: () => _showImageSourceSheet(context),
             icon: const Icon(Icons.camera_alt),
-            label: const Text("Capture / Upload"),
+            label: const Text(TTexts.uiTextCaptureUpload),
             style: ElevatedButton.styleFrom(
               backgroundColor: TColors.primary,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              foregroundColor: TColors.white,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
             ),
           ),
         ],
@@ -462,14 +471,15 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
   void _showImageSourceSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
       builder: (_) => SafeArea(
         child: Wrap(
           children: [
             ListTile(
               leading: const Icon(Icons.camera_alt),
-              title: const Text('Take Photo (Geo Overlay)'),
-              subtitle: const Text("Recommended"),
+              title: const Text(TTexts.uiTextTakePhotoGeoOverlay),
+              subtitle: const Text(TTexts.uiTextRecommended),
               onTap: () {
                 Navigator.pop(context);
                 _pickImage(isCamera: true);
@@ -477,7 +487,7 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.photo_library),
-              title: const Text('Choose from Gallery'),
+              title: const Text(TTexts.uiTextChooseFromGallery),
               onTap: () {
                 Navigator.pop(context);
                 _pickImage(isCamera: false);
@@ -497,7 +507,7 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
     } else {
       if (Platform.isAndroid) {
         status = await Permission.photos.request();
-        if(status.isDenied) status = await Permission.storage.request();
+        if (status.isDenied) status = await Permission.storage.request();
       } else {
         status = await Permission.photos.request();
       }
@@ -514,7 +524,8 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
       // 2. Capture
       if (isCamera) {
         // --- CAMERA: Capture + Geo Overlay ---
-        final CameraLocationResult? result = await CameraLocationService.captureImageWithLocation();
+        final CameraLocationResult? result =
+            await CameraLocationService.captureImageWithLocation();
 
         if (result != null) {
           // Apply Overlay (Lat/Lng/Date)
@@ -541,9 +552,9 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
           _localImageFile = tempImage;
         });
       }
-
     } catch (e) {
-      Get.snackbar("Error", "Failed to capture image: $e", backgroundColor: Colors.red, colorText: Colors.white);
+      Get.snackbar("Error", "Failed to capture image: $e",
+          backgroundColor: TColors.materialRed, colorText: TColors.white);
     }
   }
 
@@ -554,7 +565,8 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
       final token = await AuthManager().getAuthToken();
 
       // API Endpoint
-      final String url = '${THttpHelper.baseUrl}/doctors/${widget.doctorId}/geo-image';
+      final String url =
+          '${THttpHelper.baseUrl}/doctors/${widget.doctorId}/geo-image';
 
       // POST Request
       var request = http.MultipartRequest('POST', Uri.parse(url));
@@ -567,7 +579,8 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
       request.files.add(await http.MultipartFile.fromPath(
         'geo_image',
         imageFile.path,
-        contentType: MediaType('image', 'jpeg'), // <--- THIS FIXES THE SERVER ERROR
+        contentType:
+            MediaType('image', 'jpeg'), // <--- THIS FIXES THE SERVER ERROR
       ));
 
       print("Uploading to: $url");
@@ -579,7 +592,8 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
       print("Body: ${response.body}");
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        Get.snackbar("Success", "Geo Image Uploaded Successfully!", backgroundColor: Colors.green, colorText: Colors.white);
+        Get.snackbar("Success", TTexts.uiTextGeoImageUploadedSuccessfully,
+            backgroundColor: TColors.materialGreen, colorText: TColors.white);
         await Future.delayed(const Duration(seconds: 1));
         if (mounted) Navigator.pop(context, true); // Refresh list
       } else {
@@ -588,11 +602,12 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
             ? "Server Error: Only image files are allowed."
             : "Upload failed: ${response.statusCode}";
 
-        Get.snackbar("Failed", msg, backgroundColor: Colors.red, colorText: Colors.white);
+        Get.snackbar("Failed", msg,
+            backgroundColor: TColors.materialRed, colorText: TColors.white);
       }
-
     } catch (e) {
-      Get.snackbar("Error", "Exception: $e", backgroundColor: Colors.red, colorText: Colors.white);
+      Get.snackbar("Error", "Exception: $e",
+          backgroundColor: TColors.materialRed, colorText: TColors.white);
     } finally {
       if (mounted) setState(() => _isUploading = false);
     }
@@ -610,35 +625,31 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
             Icons.info_outline,
           ),
           const Divider(),
-
           _buildInfoRow(
             Icons.badge_outlined,
             "Registration",
             doctor.registrationNumber ?? "N/A",
           ),
-
           _buildInfoRow(
             Icons.calendar_today_outlined,
             "DOB",
             doctor.dateOfBirth != null &&
-                doctor.dateOfBirth!.toString().isNotEmpty
+                    doctor.dateOfBirth!.toString().isNotEmpty
                 ? DateFormat('dd MMM yyyy').format(
-              DateTime.parse(doctor.dateOfBirth!.toString()),
-            )
+                    DateTime.parse(doctor.dateOfBirth!.toString()),
+                  )
                 : "N/A",
           ),
-
           _buildInfoRow(
             Icons.cake_outlined,
             "Anniversary",
             doctor.anniversary != null &&
-                doctor.anniversary!.toString().isNotEmpty
+                    doctor.anniversary!.toString().isNotEmpty
                 ? DateFormat('dd MMM yyyy').format(
-              DateTime.parse(doctor.anniversary!.toString()),
-            )
+                    DateTime.parse(doctor.anniversary!.toString()),
+                  )
                 : "N/A",
           ),
-
           _buildInfoRow(
             Icons.work_history_outlined,
             "Experience",
@@ -646,7 +657,6 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
                 ? "${doctor.yearsOfExperience} Years"
                 : "N/A",
           ),
-
           _buildInfoRow(
             Icons.person_outline,
             "Gender",
@@ -663,24 +673,24 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
     String priorityLabel;
 
     if (priority!.isEmpty || priority.toLowerCase() == 'null') {
-      priorityColor = Colors.grey;
+      priorityColor = TColors.materialGrey;
       priorityLabel = "Not added";
     } else {
       switch (priority) {
         case 'A':
-          priorityColor = Colors.red;
+          priorityColor = TColors.materialRed;
           priorityLabel = "High Priority";
           break;
         case 'B':
-          priorityColor = Colors.orange;
+          priorityColor = TColors.materialOrange;
           priorityLabel = "Medium Priority";
           break;
         case 'C':
-          priorityColor = Colors.blueGrey;
+          priorityColor = TColors.materialBlueGrey;
           priorityLabel = "Standard Priority";
           break;
         default:
-          priorityColor = Colors.grey;
+          priorityColor = TColors.materialGrey;
           priorityLabel = "Not added";
       }
     }
@@ -695,20 +705,20 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
               shape: BoxShape.circle,
               border: Border.all(
                 color: TColors.primary.withOpacity(0.5),
-                width: 2,
+                width: TSizes.v2,
               ),
             ),
             child: CircleAvatar(
-              radius: 35,
+              radius: TSizes.v35,
               backgroundColor: TColors.primary.withOpacity(0.1),
               child: const Icon(
                 Icons.person,
                 color: TColors.primary,
-                size: 40,
+                size: TSizes.v40,
               ),
             ),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: TSizes.v16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -720,9 +730,9 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
                       child: Text(
                         controller.doctor.value?.name ?? "Unknown Doctor",
                         style: const TextStyle(
-                          fontSize: 22,
+                          fontSize: TSizes.v22,
                           fontWeight: FontWeight.bold,
-                          color: Colors.black87,
+                          color: TColors.black87,
                         ),
                       ),
                     ),
@@ -741,7 +751,7 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
                       child: Text(
                         priorityLabel,
                         style: TextStyle(
-                          fontSize: 11,
+                          fontSize: TSizes.v11,
                           fontWeight: FontWeight.bold,
                           color: priorityColor,
                         ),
@@ -749,34 +759,34 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: TSizes.v6),
                 Text(
                   (doctor.specialization?.isNotEmpty ?? false)
                       ? doctor.specialization!
                       : "N/A",
                   style: TextStyle(
-                    color: Colors.grey.shade600,
-                    fontSize: 16,
+                    color: TColors.materialGrey600,
+                    fontSize: TSizes.v16,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: TSizes.v8),
                 Row(
                   children: [
                     Icon(
                       Icons.location_on,
-                      size: 14,
-                      color: Colors.grey.shade500,
+                      size: TSizes.v14,
+                      color: TColors.materialGrey500,
                     ),
-                    const SizedBox(width: 4),
+                    const SizedBox(width: TSizes.v4),
                     Expanded(
                       child: Text(
                         (doctor.location?.isNotEmpty ?? false)
                             ? doctor.location!
                             : "N/A",
                         style: TextStyle(
-                          color: Colors.grey.shade600,
-                          fontSize: 13,
+                          color: TColors.materialGrey600,
+                          fontSize: TSizes.v13,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -802,21 +812,15 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
             Icons.contact_phone_outlined,
           ),
           const Divider(),
-
           _buildInfoRow(
             Icons.email_outlined,
             "Email",
-            (doctor.email?.isNotEmpty ?? false)
-                ? doctor.email!
-                : "N/A",
+            (doctor.email?.isNotEmpty ?? false) ? doctor.email! : "N/A",
           ),
-
           _buildInfoRow(
             Icons.phone_outlined,
             "Phone",
-            (doctor.phone?.isNotEmpty ?? false)
-                ? doctor.phone!
-                : "N/A",
+            (doctor.phone?.isNotEmpty ?? false) ? doctor.phone! : "N/A",
           ),
         ],
       ),
@@ -855,14 +859,13 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
             Icons.history_edu_outlined,
           ),
           const Divider(),
-
           if (visits.isEmpty)
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 30),
               child: Center(
                 child: Text(
-                  "No Visit History",
-                  style: TextStyle(color: Colors.grey),
+                  TTexts.uiTextNoVisitHistory,
+                  style: TextStyle(color: TColors.materialGrey),
                 ),
               ),
             )
@@ -889,67 +892,55 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
       margin: const EdgeInsets.only(bottom: 18),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.grey.shade50,
+        color: TColors.materialGrey50,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: confirmed
-              ? Colors.green.shade200
-              : Colors.orange.shade200,
+          color:
+              confirmed ? TColors.materialGreen200 : TColors.materialOrange200,
         ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
           /// Header
           Row(
             children: [
-
               CircleAvatar(
-                radius: 22,
+                radius: TSizes.v22,
                 backgroundColor: confirmed
-                    ? Colors.green.shade100
-                    : Colors.orange.shade100,
+                    ? TColors.materialGreen100
+                    : TColors.materialOrange100,
                 child: Icon(
-                  confirmed
-                      ? Icons.check
-                      : Icons.schedule,
+                  confirmed ? Icons.check : Icons.schedule,
                   color: confirmed
-                      ? Colors.green
-                      : Colors.orange,
+                      ? TColors.materialGreen
+                      : TColors.materialOrange,
                 ),
               ),
-
-              const SizedBox(width: 14),
-
+              const SizedBox(width: TSizes.v14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-
                     Text(
                       visit.date != null
-                          ? DateFormat("dd MMM yyyy")
-                          .format(visit.date!)
+                          ? DateFormat("dd MMM yyyy").format(visit.date!)
                           : "N/A",
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 17,
+                        fontSize: TSizes.v17,
                       ),
                     ),
-
-                    const SizedBox(height: 3),
-
+                    const SizedBox(height: TSizes.v3),
                     Text(
                       visit.userName ?? "Unknown MR",
                       style: TextStyle(
-                        color: Colors.grey.shade700,
+                        color: TColors.materialGrey700,
                       ),
                     ),
                   ],
                 ),
               ),
-
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12,
@@ -957,18 +948,16 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
                 ),
                 decoration: BoxDecoration(
                   color: confirmed
-                      ? Colors.green.shade100
-                      : Colors.orange.shade100,
+                      ? TColors.materialGreen100
+                      : TColors.materialOrange100,
                   borderRadius: BorderRadius.circular(30),
                 ),
                 child: Text(
-                  confirmed
-                      ? "Confirmed"
-                      : "Pending",
+                  confirmed ? "Confirmed" : "Pending",
                   style: TextStyle(
                     color: confirmed
-                        ? Colors.green.shade900
-                        : Colors.orange.shade900,
+                        ? TColors.materialGreen900
+                        : TColors.materialOrange900,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -976,18 +965,16 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
             ],
           ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: TSizes.v16),
 
           LayoutBuilder(
             builder: (context, constraints) {
-
               final isTablet = constraints.maxWidth > 700;
 
               return Wrap(
-                spacing: 16,
-                runSpacing: 16,
+                spacing: TSizes.v16,
+                runSpacing: TSizes.v16,
                 children: [
-
                   SizedBox(
                     width: isTablet
                         ? (constraints.maxWidth - 32) / 3
@@ -998,7 +985,6 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
                       visit.userName ?? "-",
                     ),
                   ),
-
                   SizedBox(
                     width: isTablet
                         ? (constraints.maxWidth - 32) / 3
@@ -1009,7 +995,6 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
                       visit.userEmail ?? "-",
                     ),
                   ),
-
                   SizedBox(
                     width: isTablet
                         ? (constraints.maxWidth - 32) / 3
@@ -1020,7 +1005,6 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
                       visit.product?.name ?? "-",
                     ),
                   ),
-
                   SizedBox(
                     width: isTablet
                         ? (constraints.maxWidth - 32) / 3
@@ -1037,90 +1021,78 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
           ),
 
           if ((visit.notes ?? "").isNotEmpty) ...[
-            const SizedBox(height: 16),
-
+            const SizedBox(height: TSizes.v16),
             const Text(
-              "Notes",
+              TTexts.notes,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
               ),
             ),
-
-            const SizedBox(height: 6),
-
+            const SizedBox(height: TSizes.v6),
             Text(visit.notes!),
           ],
 
           if ((visit.remark ?? "").isNotEmpty) ...[
-            const SizedBox(height: 16),
-
+            const SizedBox(height: TSizes.v16),
             const Text(
-              "Remark",
+              TTexts.uiTextRemark,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
               ),
             ),
-
-            const SizedBox(height: 6),
-
+            const SizedBox(height: TSizes.v6),
             Text(visit.remark!),
           ],
 
           if ((visit.productsDetailed ?? []).isNotEmpty) ...[
-            const SizedBox(height: 18),
-
+            const SizedBox(height: TSizes.v18),
             const Text(
-              "Products Detailed",
+              TTexts.uiTextProductsDetailed,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
               ),
             ),
-
-            const SizedBox(height: 8),
-
+            const SizedBox(height: TSizes.v8),
             Wrap(
-              spacing: 8,
-              runSpacing: 8,
+              spacing: TSizes.v8,
+              runSpacing: TSizes.v8,
               children: visit.productsDetailed!
                   .map(
                     (e) => Chip(
-                  avatar: const Icon(
-                    Icons.medication,
-                    size: 18,
-                  ),
-                  label: Text(e),
-                ),
-              )
+                      avatar: const Icon(
+                        Icons.medication,
+                        size: TSizes.v18,
+                      ),
+                      label: Text(e),
+                    ),
+                  )
                   .toList(),
             ),
           ],
 
           if ((visit.giftsGiven ?? []).isNotEmpty) ...[
-            const SizedBox(height: 18),
-
+            const SizedBox(height: TSizes.v18),
             const Text(
-              "Gifts Given",
+              TTexts.uiTextGiftsGiven,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
               ),
             ),
-
-            const SizedBox(height: 8),
-
+            const SizedBox(height: TSizes.v8),
             Wrap(
-              spacing: 8,
-              runSpacing: 8,
+              spacing: TSizes.v8,
+              runSpacing: TSizes.v8,
               children: visit.giftsGiven!
                   .map(
                     (e) => Chip(
-                  backgroundColor: Colors.orange.shade50,
-                  avatar: const Icon(
-                    Icons.card_giftcard,
-                    size: 18,
-                  ),
-                  label: Text(e),
-                ),
-              )
+                      backgroundColor: TColors.materialOrange50,
+                      avatar: const Icon(
+                        Icons.card_giftcard,
+                        size: TSizes.v18,
+                      ),
+                      label: Text(e),
+                    ),
+                  )
                   .toList(),
             ),
           ],
@@ -1128,20 +1100,21 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
       ),
     );
   }
+
   Widget _miniInfo(
-      IconData icon,
-      String title,
-      String value,
-      ) {
+    IconData icon,
+    String title,
+    String value,
+  ) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Icon(
           icon,
-          size: 18,
+          size: TSizes.v18,
           color: TColors.primary,
         ),
-        const SizedBox(width: 8),
+        const SizedBox(width: TSizes.v8),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1149,11 +1122,11 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
               Text(
                 title,
                 style: TextStyle(
-                  color: Colors.grey.shade600,
-                  fontSize: 12,
+                  color: TColors.materialGrey600,
+                  fontSize: TSizes.v12,
                 ),
               ),
-              const SizedBox(height: 2),
+              const SizedBox(height: TSizes.v2),
               Text(
                 value,
                 style: const TextStyle(
@@ -1167,8 +1140,6 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
     );
   }
 
-
-
   Widget _buildAccountInfo() {
     return _buildStyledCard(
       child: Column(
@@ -1179,24 +1150,22 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
             Icons.manage_accounts_outlined,
           ),
           const Divider(),
-
           _buildInfoRow(
             Icons.access_time,
             "Created",
             doctor.createdAt!.toString().isNotEmpty
                 ? DateFormat('dd MMM yyyy, hh:mm a').format(
-              DateTime.parse(doctor.createdAt!.toString()),
-            )
+                    DateTime.parse(doctor.createdAt!.toString()),
+                  )
                 : "N/A",
           ),
-
           _buildInfoRow(
             Icons.update,
             "Last Updated",
             doctor.updatedAt!.toString().isNotEmpty
                 ? DateFormat('dd MMM yyyy, hh:mm a').format(
-              DateTime.parse(doctor.updatedAt!.toString()),
-            )
+                    DateTime.parse(doctor.updatedAt!.toString()),
+                  )
                 : "N/A",
           ),
         ],
@@ -1207,14 +1176,21 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
   Widget _buildMapSection({double height = 220}) {
     double? lat = double.tryParse(doctor.latitude ?? '');
     double? lng = double.tryParse(doctor.longitude ?? '');
-    bool isValidLocation = lat != null && lng != null && lat != 0.0 && lng != 0.0;
+    bool isValidLocation =
+        lat != null && lng != null && lat != 0.0 && lng != 0.0;
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: TColors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: TColors.primary.withOpacity(0.3), width: 1),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 15, offset: const Offset(0, 6))],
+        border: Border.all(
+            color: TColors.primary.withOpacity(0.3), width: TSizes.v1),
+        boxShadow: [
+          BoxShadow(
+              color: TColors.pureBlack.withOpacity(0.06),
+              blurRadius: TSizes.v15,
+              offset: const Offset(0, 6))
+        ],
       ),
       clipBehavior: Clip.antiAlias,
       child: Column(
@@ -1225,8 +1201,12 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
             child: Row(
               children: [
                 const Icon(Icons.map_outlined, color: TColors.primary),
-                const SizedBox(width: 8),
-                const Text("Location on Map", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: TColors.primary)),
+                const SizedBox(width: TSizes.v8),
+                const Text(TTexts.uiTextLocationOnMap,
+                    style: TextStyle(
+                        fontSize: TSizes.v16,
+                        fontWeight: FontWeight.bold,
+                        color: TColors.primary)),
               ],
             ),
           ),
@@ -1234,10 +1214,17 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
             height: height,
             child: isValidLocation
                 ? GoogleMap(
-              initialCameraPosition: CameraPosition(target: LatLng(lat, lng), zoom: 15),
-              markers: {Marker(markerId: const MarkerId("doctor_location"), position: LatLng(lat, lng), infoWindow: InfoWindow(title: doctor.name))},
-            )
-                : const Center(child: Text("Invalid Location Coordinates")),
+                    initialCameraPosition:
+                        CameraPosition(target: LatLng(lat, lng), zoom: 15),
+                    markers: {
+                      Marker(
+                          markerId: const MarkerId("doctor_location"),
+                          position: LatLng(lat, lng),
+                          infoWindow: InfoWindow(title: doctor.name))
+                    },
+                  )
+                : const Center(
+                    child: Text(TTexts.uiTextInvalidLocationCoordinates)),
           ),
         ],
       ),
@@ -1248,10 +1235,16 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: TColors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: TColors.primary.withOpacity(0.3), width: 1),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 15, offset: const Offset(0, 6))],
+        border: Border.all(
+            color: TColors.primary.withOpacity(0.3), width: TSizes.v1),
+        boxShadow: [
+          BoxShadow(
+              color: TColors.pureBlack.withOpacity(0.06),
+              blurRadius: TSizes.v15,
+              offset: const Offset(0, 6))
+        ],
       ),
       child: child,
     );
@@ -1260,9 +1253,13 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
   Widget _buildSectionTitle(String title, IconData icon) {
     return Row(
       children: [
-        Icon(icon, size: 20, color: TColors.primary),
-        const SizedBox(width: 8),
-        Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF333333))),
+        Icon(icon, size: TSizes.v20, color: TColors.primary),
+        const SizedBox(width: TSizes.v8),
+        Text(title,
+            style: const TextStyle(
+                fontSize: TSizes.v16,
+                fontWeight: FontWeight.bold,
+                color: TColors.hex_FF333333)),
       ],
     );
   }
@@ -1274,16 +1271,26 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
         children: [
           Container(
             padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(color: TColors.primary.withOpacity(0.05), borderRadius: BorderRadius.circular(8)),
-            child: Icon(icon, size: 18, color: TColors.primary),
+            decoration: BoxDecoration(
+                color: TColors.primary.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(8)),
+            child: Icon(icon, size: TSizes.v18, color: TColors.primary),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: TSizes.v16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: TextStyle(fontSize: 12, color: Colors.grey.shade500, fontWeight: FontWeight.w600)),
-                Text(value.isNotEmpty ? value : "N/A", style: const TextStyle(fontSize: 14, color: Colors.black87, fontWeight: FontWeight.w500)),
+                Text(label,
+                    style: TextStyle(
+                        fontSize: TSizes.v12,
+                        color: TColors.materialGrey500,
+                        fontWeight: FontWeight.w600)),
+                Text(value.isNotEmpty ? value : "N/A",
+                    style: const TextStyle(
+                        fontSize: TSizes.v14,
+                        color: TColors.black87,
+                        fontWeight: FontWeight.w500)),
               ],
             ),
           ),
@@ -1292,11 +1299,12 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
     );
   }
 
-  void _showFullImage(BuildContext context, String path, {required bool isLocal}) {
+  void _showFullImage(BuildContext context, String path,
+      {required bool isLocal}) {
     showDialog(
       context: context,
       builder: (_) => Dialog(
-        backgroundColor: Colors.transparent,
+        backgroundColor: TColors.transparent,
         insetPadding: const EdgeInsets.all(12),
         child: Stack(
           alignment: Alignment.topRight,
@@ -1319,11 +1327,13 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.6),
+                    color: TColors.pureBlack.withOpacity(0.6),
                     shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 1.5),
+                    border:
+                        Border.all(color: TColors.white, width: TSizes.v1_5),
                   ),
-                  child: const Icon(Icons.close, color: Colors.white, size: 22),
+                  child: const Icon(Icons.close,
+                      color: TColors.white, size: TSizes.v22),
                 ),
               ),
             ),

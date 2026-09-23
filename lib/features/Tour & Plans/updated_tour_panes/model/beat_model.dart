@@ -26,14 +26,12 @@ class BeatModel {
       userId: json['user_id']?.toString() ?? '',
       color: json['color']?.toString() ?? '',
       isActive: json['is_active'] == true,
-
       createdAt: _parseDate(json['created_at']),
       updatedAt: _parseDate(json['updated_at']),
-
       areas: (json['areas'] as List?)
-          ?.whereType<Map<String, dynamic>>()
-          .map((e) => BeatAreaModel.fromJson(e))
-          .toList() ??
+              ?.whereType<Map<String, dynamic>>()
+              .map((e) => BeatAreaModel.fromJson(e))
+              .toList() ??
           [],
     );
   }
@@ -48,7 +46,6 @@ class BeatModel {
     }
   }
 }
-
 
 class BeatAreaModel {
   final String id;

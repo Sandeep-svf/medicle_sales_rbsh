@@ -28,8 +28,7 @@ class TrackingState {
     return TrackingState(
       lastLat: map['last_lat'],
       lastLng: map['last_lng'],
-      lastTimestampUtc:
-      DateTime.parse(map['last_timestamp_utc']),
+      lastTimestampUtc: DateTime.parse(map['last_timestamp_utc']),
       activeStopId: map['active_stop_id'],
       activeTripId: map['active_trip_id'],
     );

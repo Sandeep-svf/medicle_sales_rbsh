@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
 import '../../addDoctor/controllers/DoctroController.dart';
-
 import '../controller/add_investment_controller.dart';
 import '../enum.dart';
 import '../model/investment_request_model.dart';
@@ -17,6 +15,8 @@ import '../wigets/create_request/item_gift_form.dart';
 import '../wigets/create_request/neft_form.dart';
 import '../wigets/create_request/submit_buttons.dart';
 import '../wigets/create_request/upi_form.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 
 class AddInvestmentScreen extends StatelessWidget {
   AddInvestmentScreen({
@@ -35,20 +35,20 @@ class AddInvestmentScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade100,
+      backgroundColor: TColors.materialGrey100,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
+        backgroundColor: TColors.white,
+        elevation: TSizes.v0,
         centerTitle: false,
         title: Text(
           investmentController.screenTitle,
           style: const TextStyle(
-            color: Colors.black87,
+            color: TColors.black87,
             fontWeight: FontWeight.bold,
           ),
         ),
         iconTheme: const IconThemeData(
-          color: Colors.black,
+          color: TColors.pureBlack,
         ),
       ),
       body: SafeArea(
@@ -74,9 +74,9 @@ class AddInvestmentScreen extends StatelessWidget {
                           child: _leftPanel(),
                         ),
                       ),
-                      const SizedBox(width: 20),
+                      const SizedBox(width: TSizes.v20),
                       SizedBox(
-                        width: 380,
+                        width: TSizes.v380,
                         child: SingleChildScrollView(
                           child: _rightPanel(),
                         ),
@@ -95,7 +95,7 @@ class AddInvestmentScreen extends StatelessWidget {
                 child: Column(
                   children: [
                     _leftPanel(),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: TSizes.v20),
                     _rightPanel(),
                   ],
                 ),
@@ -113,15 +113,15 @@ class AddInvestmentScreen extends StatelessWidget {
       children: [
         AddRequestHeader(isEditing: investmentController.isEditing),
 
-        const SizedBox(height: 20),
+        const SizedBox(height: TSizes.v20),
 
         const DoctorSection(),
 
-        const SizedBox(height: 20),
+        const SizedBox(height: TSizes.v20),
 
         const InvestmentModeSelector(),
 
-        const SizedBox(height: 20),
+        const SizedBox(height: TSizes.v20),
 
         /// Dynamic Form
         Obx(() {
@@ -152,9 +152,9 @@ class AddInvestmentScreen extends StatelessWidget {
 
           return const Column(
             children: [
-              SizedBox(height: 20),
+              SizedBox(height: TSizes.v20),
               CustomUpload(),
-              SizedBox(height: 20),
+              SizedBox(height: TSizes.v20),
             ],
           );
         }),
@@ -195,7 +195,7 @@ class AddInvestmentScreen extends StatelessWidget {
     return const Column(
       children: [
         ComplianceCard(),
-        SizedBox(height: 20),
+        SizedBox(height: TSizes.v20),
         SubmitButtons(),
       ],
     );

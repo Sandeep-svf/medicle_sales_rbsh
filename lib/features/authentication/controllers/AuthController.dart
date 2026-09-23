@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:get/get.dart';
 import 'package:medicle_sales_rbsh/features/authentication/screens/login/login.dart';
 import 'package:medicle_sales_rbsh/utils/http/http_client.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -9,6 +9,9 @@ import 'package:medicle_sales_rbsh/features/dashboard/screen/dashboard.dart';
 import '../../../utils/local_storage/auth_manager.dart';
 import '../models/UserModel.dart';
 import '../models/headoffice.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class AuthController extends GetxController {
   var isLoading = false.obs;
@@ -17,11 +20,12 @@ class AuthController extends GetxController {
   static const String _baseUrl = THttpHelper.baseUrl;
 
   Future<void> login(String email, String password, String deviceID) async {
-    print("AuthController: login() initiated for email: $email | deviceID: $deviceID");
+    print(
+        "AuthController: login() initiated for email: $email | deviceID: $deviceID");
 
     if (email.isEmpty || password.isEmpty) {
       print("AuthController: Validation failed - Email or Password is empty");
-      Get.snackbar("Error", "Email and Password cannot be empty");
+      Get.snackbar("Error", TTexts.uiTextEmailAndPasswordCannotBeEmpty);
       return;
     }
 
@@ -44,28 +48,28 @@ class AuthController extends GetxController {
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 20, vertical: 14),
               decoration: BoxDecoration(
-                color: Colors.black87, // Dark background
+                color: TColors.black87, // Dark background
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    "Loading...",
+                    TTexts.uiTextLoading,
                     style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.white, // White text
+                      fontSize: TSizes.v16,
+                      color: TColors.white, // White text
                       fontWeight: FontWeight.bold,
                       decoration: TextDecoration.none, // Ensure no underline
                     ),
                   ),
-                  SizedBox(width: 10),
+                  SizedBox(width: TSizes.v10),
                   SizedBox(
-                    height: 20, // Adjust circle size
-                    width: 20,
+                    height: TSizes.v20, // Adjust circle size
+                    width: TSizes.v20,
                     child: CircularProgressIndicator(
-                      color: Colors.white,
-                      strokeWidth: 2.5, // Slightly thinner stroke
+                      color: TColors.white,
+                      strokeWidth: TSizes.v2_5, // Slightly thinner stroke
                     ),
                   ),
                 ],
@@ -80,13 +84,14 @@ class AuthController extends GetxController {
       final response = await http.post(
         Uri.parse("$_baseUrl/auth/login"),
         headers: {"Content-Type": "application/json"},
-       // body: jsonEncode({"email": email, "password": password, "deviceId" : deviceID}),
+        // body: jsonEncode({"email": email, "password": password, "deviceId" : deviceID}),
         body: jsonEncode({"email": email, "password": password}),
       );
 
       print("AuthController: deviceID  - deviceID: ${deviceID}");
 
-      print("AuthController: Response received - Status Code: ${response.statusCode}");
+      print(
+          "AuthController: Response received - Status Code: ${response.statusCode}");
       print("AuthController: Raw Response Body: ${response.body}");
 
       final data = jsonDecode(response.body);
@@ -98,7 +103,8 @@ class AuthController extends GetxController {
       }
 
       if (response.statusCode == 200) {
-        print("AuthController: Login Successful, checking for 'user' key in response");
+        print(
+            "AuthController: Login Successful, checking for 'user' key in response");
         // Ensure 'user' key exists before parsing
         if (data.containsKey("user")) {
           print("AuthController: 'user' key found, parsing UserModel");
@@ -112,7 +118,8 @@ class AuthController extends GetxController {
           // Initialize AuthManager
           AuthManager authManager = AuthManager();
 
-          print("AuthController: Saving user data, ID, role, and token to AuthManager");
+          print(
+              "AuthController: Saving user data, ID, role, and token to AuthManager");
           // Save the full UserModel
           await authManager.saveUserData(userModel);
 
@@ -120,7 +127,8 @@ class AuthController extends GetxController {
           await authManager.saveUserId(userModel.user!.id);
           await authManager.saveUserRole(userModel.user!.role);
 
-          print("AuthController: auth check role saved -> ${userModel.user!.role}");
+          print(
+              "AuthController: auth check role saved -> ${userModel.user!.role}");
 
           // Save the auth token
           await authManager.saveAuthToken(token!);
@@ -132,11 +140,14 @@ class AuthController extends GetxController {
           // Navigate to Dashboard
           Get.offAll(() => DashboardScreen());
         } else {
-          print("AuthController Error: 'user' key missing from server response");
-          Get.snackbar("AuthController Error", "Invalid response from server");
+          print(
+              "AuthController Error: 'user' key missing from server response");
+          Get.snackbar(
+              "AuthController Error", TTexts.uiTextInvalidResponseFromServer);
         }
       } else {
-        print("AuthController Error: Login Failed with message -> ${data["message"]}");
+        print(
+            "AuthController Error: Login Failed with message -> ${data["message"]}");
         Get.snackbar("AuthController Error", data["message"] ?? "Login Failed");
       }
     } catch (e) {

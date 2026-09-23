@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class SectionCard extends StatelessWidget {
   final String title;
@@ -21,7 +22,7 @@ class SectionCard extends StatelessWidget {
         leading: Icon(icon),
         title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
         subtitle: Text(subtitle),
-        trailing: const Icon(Icons.arrow_forward_ios, size: 14),
+        trailing: const Icon(Icons.arrow_forward_ios, size: TSizes.v14),
         onTap: onTap,
       ),
     );
@@ -52,12 +53,12 @@ class CardContainer extends StatelessWidget {
               children: [
                 Text(title,
                     style: const TextStyle(
-                        fontSize: 15, fontWeight: FontWeight.w600)),
+                        fontSize: TSizes.v15, fontWeight: FontWeight.w600)),
                 const Spacer(),
                 if (trailing != null) trailing!,
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: TSizes.v12),
             child,
           ],
         ),

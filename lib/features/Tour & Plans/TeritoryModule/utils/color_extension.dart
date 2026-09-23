@@ -1,3 +1,4 @@
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 // color_extension.dart
 
 import 'package:flutter/material.dart';
@@ -11,7 +12,7 @@ extension HexColorExtension on String {
         ),
       );
     } catch (_) {
-      return Colors.red;
+      return TColors.materialRed;
     }
   }
 }

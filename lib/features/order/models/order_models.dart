@@ -159,17 +159,15 @@ class OrderDraft {
       return 'Attach a PDF or image up to 20 MB.';
     }
     if (attachmentBytes.isNotEmpty &&
-        ![
-          'application/pdf',
-          'image/jpeg',
-          'image/png'
-        ].contains(attachmentMime)) {
+        !['application/pdf', 'image/jpeg', 'image/png']
+            .contains(attachmentMime)) {
       return 'Use a PDF, JPG or PNG attachment.';
     }
     if (requestedDeliveryDate != null &&
         DateTime(requestedDeliveryDate!.year, requestedDeliveryDate!.month,
                 requestedDeliveryDate!.day)
-            .isBefore(DateTime(orderDate.year, orderDate.month, orderDate.day))) {
+            .isBefore(
+                DateTime(orderDate.year, orderDate.month, orderDate.day))) {
       return 'Delivery date cannot be before the order date.';
     }
     if (!['Normal', 'Urgent'].contains(priority) ||

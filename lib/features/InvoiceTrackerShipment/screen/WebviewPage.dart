@@ -1,6 +1,6 @@
-// screens/webview_page.dart
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class WebViewPage extends StatefulWidget {
   final String url;
@@ -50,9 +50,9 @@ class _WebViewPageState extends State<WebViewPage> {
               padding: EdgeInsets.only(right: 12.0),
               child: Center(
                 child: SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2),
+                  width: TSizes.v18,
+                  height: TSizes.v18,
+                  child: CircularProgressIndicator(strokeWidth: TSizes.v2),
                 ),
               ),
             )

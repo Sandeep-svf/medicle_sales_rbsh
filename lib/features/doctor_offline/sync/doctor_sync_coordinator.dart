@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import '../doctor_offline_exception.dart';
 import '../models/doctor_sync_models.dart';
 import '../repositories/doctor_repository.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 typedef DoctorScopeGuard = Future<bool> Function();
 typedef DoctorSyncDelay = Future<void> Function(Duration duration);
@@ -106,7 +107,7 @@ class DoctorSyncCoordinator {
       _setStatus(
         DoctorSyncStatus(
           phase: DoctorSyncPhase.current,
-          message: 'Doctors are available offline',
+          message: TTexts.uiTextDoctorsAreAvailableOffline,
           downloadedCount: count,
           hasCachedData: count > 0,
           lastSuccessfulSyncUtc: completed.lastSuccessfulSyncUtc,
@@ -269,7 +270,7 @@ class DoctorSyncCoordinator {
     _setStatus(
       _status.copyWith(
         phase: DoctorSyncPhase.syncing,
-        message: 'Checking for doctor updates',
+        message: TTexts.uiTextCheckingForDoctorUpdates,
         hasCachedData: true,
       ),
     );

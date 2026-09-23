@@ -1,6 +1,6 @@
-// lib/screens/pharma_distributor_form/widgets/facilities_section.dart
 import 'package:flutter/material.dart';
-import '../../../utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class FacilitiesSection extends StatelessWidget {
   final bool warehouseFacility;
@@ -21,12 +21,15 @@ class FacilitiesSection extends StatelessWidget {
   });
 
   Widget _sectionTitle(String title) => Padding(
-    padding: const EdgeInsets.only(bottom: 8.0),
-    child: Text(
-      title,
-      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: TColors.primary),
-    ),
-  );
+        padding: const EdgeInsets.only(bottom: 8.0),
+        child: Text(
+          title,
+          style: const TextStyle(
+              fontSize: TSizes.v18,
+              fontWeight: FontWeight.bold,
+              color: TColors.primary),
+        ),
+      );
 
   Widget _checkbox(String title, bool value, Function(bool) onChanged) {
     return CheckboxListTile(
@@ -60,9 +63,12 @@ class FacilitiesSection extends StatelessWidget {
       children: [
         _sectionTitle("Facilities"),
         _checkbox("Warehouse Facility", warehouseFacility, onWarehouseChanged),
-        _textField(storageSize, "Storage Facility Size (in sqft)", inputType: TextInputType.number),
-        _checkbox("Cold Storage Available", coldStorageAvailable, onColdStorageChanged),
-        _textField(salesReps, "No. of Sales Representatives", inputType: TextInputType.number),
+        _textField(storageSize, "Storage Facility Size (in sqft)",
+            inputType: TextInputType.number),
+        _checkbox("Cold Storage Available", coldStorageAvailable,
+            onColdStorageChanged),
+        _textField(salesReps, "No. of Sales Representatives",
+            inputType: TextInputType.number),
       ],
     );
   }

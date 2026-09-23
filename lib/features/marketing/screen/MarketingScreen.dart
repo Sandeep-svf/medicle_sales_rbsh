@@ -1,5 +1,3 @@
-/*
-// lib/ui/screens/marketing_screen.dart
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -7,9 +5,13 @@ import 'package:get/get.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:medicle_sales_rbsh/utils/http/http_client.dart';
-
 import '../controller/MarketingController.dart';
 import '../model/PdfItem.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+
+/*
+
 
 // Adjust paths to your project structure:
 
@@ -38,7 +40,7 @@ class MarketingScreen extends StatelessWidget {
         appBar: AppBar(
           title: const Text(
             "Use offline mode if internet is slow or unavailable for viewing PDFs.",
-            style: TextStyle(color: Colors.white),
+            style: TextStyle(color: TColors.white),
           ),
           backgroundColor: TColors.primary,
           actions: [
@@ -46,7 +48,7 @@ class MarketingScreen extends StatelessWidget {
               tooltip: isGrid ? "Switch to List View" : "Switch to Grid View",
               icon: Icon(
                 isGrid ? Icons.view_list : Icons.grid_view,
-                color: Colors.white,
+                color: TColors.white,
               ),
               onPressed: c.toggleGrid,
             ),
@@ -65,14 +67,14 @@ class MarketingScreen extends StatelessWidget {
                         children: [
                           const Text(
                             "Offline mode",
-                            style: TextStyle(color: Colors.white),
+                            style: TextStyle(color: TColors.white),
                           ),
                           const SizedBox(width: 4), // small space between text and toggle
                           Switch(
                             value: isOffline,
                             onChanged: (v) => c.setOffline(v),
-                            activeColor: Colors.white,
-                            activeTrackColor: Colors.white24,
+                            activeColor: TColors.white,
+                            activeTrackColor: TColors.white24,
                           ),
                         ],
                       ),
@@ -80,11 +82,11 @@ class MarketingScreen extends StatelessWidget {
                       const SizedBox(width: 12), // space between toggle and button
                       ElevatedButton.icon(
                         onPressed: isLoading ? null : () => c.refreshPdfs(context),
-                        icon: const Icon(Icons.refresh, color: Colors.white),
+                        icon: const Icon(Icons.refresh, color: TColors.white),
                         label: const Text("Refresh PDFs"),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white24,
-                          foregroundColor: Colors.white,
+                          backgroundColor: TColors.white24,
+                          foregroundColor: TColors.white,
                         ),
                       ),
                     ],
@@ -99,7 +101,7 @@ class MarketingScreen extends StatelessWidget {
                           isOffline
                               ? "Offline items: ${c.offlineItems.length}"
                               : "Online items: ${c.onlineItems.length}",
-                          style: const TextStyle(color: Colors.white),
+                          style: const TextStyle(color: TColors.white),
                         ),
                       ],
                     ),
@@ -161,8 +163,8 @@ class MarketingScreen extends StatelessWidget {
                             : Icons.image,
                         size: 40,
                         color: _isPdfFile(item.fileKey)
-                            ? Colors.red
-                            : Colors.blue,
+                            ? TColors.materialRed
+                            : TColors.materialBlue,
                       ),
                       title: Text(item.title),
                       trailing: const Icon(Icons.chevron_right),
@@ -277,7 +279,7 @@ class _AssetCard extends StatelessWidget {
             Icon(
               isPdf ? Icons.picture_as_pdf : Icons.image,
               size: 60,
-              color: isPdf ? Colors.red : Colors.blue,
+              color: isPdf ? TColors.materialRed : TColors.materialBlue,
             ),
             const SizedBox(height: 12),
             Padding(
@@ -320,15 +322,6 @@ class PDFViewerScreen extends StatelessWidget {
   }
 }
 */
-import 'dart:io';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:flutter_pdfview/flutter_pdfview.dart';
-import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
-
-import '../controller/MarketingController.dart';
-import '../model/PdfItem.dart';
 
 class MarketingScreen extends StatelessWidget {
   const MarketingScreen({super.key});
@@ -349,8 +342,8 @@ class MarketingScreen extends StatelessWidget {
       return Scaffold(
         appBar: AppBar(
           title: const Text(
-            "Use offline mode if internet is slow or unavailable for viewing PDFs.",
-            style: TextStyle(color: Colors.white),
+            TTexts.uiTextUseOfflineModeIfInternetIsSlowOr,
+            style: TextStyle(color: TColors.white),
           ),
           backgroundColor: TColors.primary,
           actions: [
@@ -358,7 +351,7 @@ class MarketingScreen extends StatelessWidget {
               tooltip: isGrid ? "Switch to List View" : "Switch to Grid View",
               icon: Icon(
                 isGrid ? Icons.view_list : Icons.grid_view,
-                color: Colors.white,
+                color: TColors.white,
               ),
               onPressed: c.toggleGrid,
             ),
@@ -374,30 +367,32 @@ class MarketingScreen extends StatelessWidget {
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Text("Offline mode", style: TextStyle(color: Colors.white)),
-                          const SizedBox(width: 4),
+                          const Text(TTexts.uiTextOfflineMode,
+                              style: TextStyle(color: TColors.white)),
+                          const SizedBox(width: TSizes.v4),
                           Switch(
                             value: isOffline,
                             onChanged: (v) => c.setOffline(v),
-                            activeColor: Colors.white,
-                            activeTrackColor: Colors.white24,
+                            activeColor: TColors.white,
+                            activeTrackColor: TColors.white24,
                           ),
                         ],
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: TSizes.v12),
                       ElevatedButton.icon(
                         onPressed: isLoading ? null : () => c.load(),
-                        icon: const Icon(Icons.refresh, color: Colors.white),
-                        label: const Text("Refresh PDFs"),
+                        icon: const Icon(Icons.refresh, color: TColors.white),
+                        label: const Text(TTexts.uiTextRefreshPDFs),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white24,
-                          foregroundColor: Colors.white,
+                          backgroundColor: TColors.white24,
+                          foregroundColor: TColors.white,
                         ),
                       ),
                     ],
                   ),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -405,7 +400,7 @@ class MarketingScreen extends StatelessWidget {
                           isOffline
                               ? "Offline items: ${c.offlineItems.length}"
                               : "Online items: ${c.onlineItems.length}",
-                          style: const TextStyle(color: Colors.white),
+                          style: const TextStyle(color: TColors.white),
                         ),
                       ],
                     ),
@@ -421,49 +416,53 @@ class MarketingScreen extends StatelessWidget {
               child: isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : items.isEmpty
-                  ? const Center(child: Text("No files available"))
-                  : isGrid
-                  ? GridView.builder(
-                padding: const EdgeInsets.all(12),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: crossAxisCount,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                  childAspectRatio: 0.75,
-                ),
-                itemCount: items.length,
-                itemBuilder: (context, index) {
-                  final item = items[index];
-                  return _AssetCard(
-                    title: item.title,
-                    onTap: () => _onOpen(context, c, item),
-                  );
-                },
-              )
-                  : ListView.builder(
-                padding: const EdgeInsets.all(12),
-                itemCount: items.length,
-                itemBuilder: (context, index) {
-                  final item = items[index];
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    elevation: 4,
-                    child: ListTile(
-                      leading: const Icon(Icons.picture_as_pdf, size: 40, color: Colors.red),
-                      title: Text(item.title),
-                      subtitle: item.description == null || item.description!.isEmpty
-                          ? null
-                          : Text(
-                        item.description!,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      trailing: const Icon(Icons.chevron_right),
-                      onTap: () => _onOpen(context, c, item),
-                    ),
-                  );
-                },
-              ),
+                      ? const Center(child: Text(TTexts.uiTextNoFilesAvailable))
+                      : isGrid
+                          ? GridView.builder(
+                              padding: const EdgeInsets.all(12),
+                              gridDelegate:
+                                  SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: crossAxisCount,
+                                crossAxisSpacing: TSizes.v12,
+                                mainAxisSpacing: TSizes.v12,
+                                childAspectRatio: 0.75,
+                              ),
+                              itemCount: items.length,
+                              itemBuilder: (context, index) {
+                                final item = items[index];
+                                return _AssetCard(
+                                  title: item.title,
+                                  onTap: () => _onOpen(context, c, item),
+                                );
+                              },
+                            )
+                          : ListView.builder(
+                              padding: const EdgeInsets.all(12),
+                              itemCount: items.length,
+                              itemBuilder: (context, index) {
+                                final item = items[index];
+                                return Card(
+                                  margin: const EdgeInsets.only(bottom: 12),
+                                  elevation: TSizes.v4,
+                                  child: ListTile(
+                                    leading: const Icon(Icons.picture_as_pdf,
+                                        size: TSizes.v40,
+                                        color: TColors.materialRed),
+                                    title: Text(item.title),
+                                    subtitle: item.description == null ||
+                                            item.description!.isEmpty
+                                        ? null
+                                        : Text(
+                                            item.description!,
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                    trailing: const Icon(Icons.chevron_right),
+                                    onTap: () => _onOpen(context, c, item),
+                                  ),
+                                );
+                              },
+                            ),
             ),
           ],
         ),
@@ -471,14 +470,16 @@ class MarketingScreen extends StatelessWidget {
     });
   }
 
-  Future<void> _onOpen(BuildContext context, MarketingController c, PdfItem item) async {
+  Future<void> _onOpen(
+      BuildContext context, MarketingController c, PdfItem item) async {
     if (c.isOfflineMode.value) {
       final localPath = item.localPath;
       if (localPath != null && await File(localPath).exists()) {
         _openPdf(context, localPath);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Not downloaded yet for offline use")),
+          const SnackBar(
+              content: Text(TTexts.uiTextNotDownloadedYetForOfflineUse)),
         );
       }
       return;
@@ -488,7 +489,9 @@ class MarketingScreen extends StatelessWidget {
       final online = await c.isOnline();
       if (!online) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Internet not available. Switch to Offline mode.")),
+          const SnackBar(
+              content:
+                  Text(TTexts.uiTextInternetNotAvailableSwitchToOfflineMode)),
         );
         return;
       }
@@ -511,7 +514,7 @@ class MarketingScreen extends StatelessWidget {
       if (signedUrl == null) {
         if (Navigator.canPop(context)) Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Failed to retrieve signed URL")),
+          const SnackBar(content: Text(TTexts.uiTextFailedToRetrieveSignedURL)),
         );
         return;
       }
@@ -561,12 +564,13 @@ class _AssetCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Card(
-        elevation: 4,
+        elevation: TSizes.v4,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.picture_as_pdf, size: 60, color: Colors.red),
-            const SizedBox(height: 12),
+            const Icon(Icons.picture_as_pdf,
+                size: TSizes.v60, color: TColors.materialRed),
+            const SizedBox(height: TSizes.v12),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
@@ -591,7 +595,7 @@ class PDFViewerScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("PDF Viewer")),
+      appBar: AppBar(title: const Text(TTexts.pdfViewer)),
       body: PDFView(
         filePath: pdfPath,
         enableSwipe: true,

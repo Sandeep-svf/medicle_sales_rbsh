@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../../../utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import '../models/order_models.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 String orderMoney(int paise) =>
     NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 2)
@@ -12,11 +14,10 @@ String orderDateLabel(DateTime value) =>
 ThemeData orderTheme(BuildContext context) => Theme.of(context).copyWith(
       colorScheme: ColorScheme.fromSeed(
           seedColor: TColors.primary, brightness: Brightness.light),
-      scaffoldBackgroundColor: const Color(0xFFF8F6F7),
+      scaffoldBackgroundColor: TColors.hex_FFF8F6F7,
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: const Color(0xFFFAF8F9),
-        labelStyle: const TextStyle(fontSize: 13, color: TColors.textSecondary),
+        fillColor: TColors.hex_FFFAF8F9,
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
         border: OutlineInputBorder(
@@ -27,15 +28,17 @@ ThemeData orderTheme(BuildContext context) => Theme.of(context).copyWith(
             borderSide: const BorderSide(color: TColors.borderSecondary)),
         focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: TColors.primary, width: 1.5)),
+            borderSide:
+                const BorderSide(color: TColors.primary, width: TSizes.v1_5)),
       ),
       filledButtonTheme: FilledButtonThemeData(
           style: FilledButton.styleFrom(
         backgroundColor: TColors.primary,
-        foregroundColor: Colors.white,
+        foregroundColor: TColors.white,
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+        textStyle:
+            const TextStyle(fontWeight: FontWeight.w700, fontSize: TSizes.v14),
       )),
     );
 
@@ -56,9 +59,9 @@ class OrderSection extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-            color: Colors.white,
+            color: TColors.white,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: const Color(0xFFEDE6E9))),
+            border: Border.all(color: TColors.hex_FFEDE6E9)),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
             Container(
@@ -66,27 +69,27 @@ class OrderSection extends StatelessWidget {
                 decoration: BoxDecoration(
                     color: TColors.primary_shade50,
                     borderRadius: BorderRadius.circular(12)),
-                child: Icon(icon, color: TColors.primary, size: 20)),
-            const SizedBox(width: 12),
+                child: Icon(icon, color: TColors.primary, size: TSizes.v20)),
+            const SizedBox(width: TSizes.v12),
             Expanded(
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                   Text(title,
                       style: const TextStyle(
-                          fontSize: 17, fontWeight: FontWeight.w800)),
+                          fontSize: TSizes.v17, fontWeight: FontWeight.w800)),
                   if (subtitle != null) ...[
-                    const SizedBox(height: 3),
+                    const SizedBox(height: TSizes.v3),
                     Text(subtitle!,
                         style: const TextStyle(
-                            fontSize: 12,
+                            fontSize: TSizes.v12,
                             color: TColors.textSecondary,
-                            height: 1.4))
+                            height: TSizes.v1_4))
                   ],
                 ])),
             if (trailing != null) trailing!,
           ]),
-          const SizedBox(height: 20),
+          const SizedBox(height: TSizes.v20),
           child,
         ]),
       );
@@ -106,14 +109,14 @@ class OrderTag extends StatelessWidget {
             borderRadius: BorderRadius.circular(8)),
         child: Row(mainAxisSize: MainAxisSize.min, children: [
           if (icon != null) ...[
-            Icon(icon, size: 14, color: color),
-            const SizedBox(width: 5)
+            Icon(icon, size: TSizes.v14, color: color),
+            const SizedBox(width: TSizes.v5)
           ],
           Flexible(
               child: Text(label,
                   style: TextStyle(
                       fontWeight: FontWeight.w600,
-                      fontSize: 11,
+                      fontSize: TSizes.v11,
                       color: color))),
         ]),
       );
@@ -127,12 +130,12 @@ class OrderSummary extends StatelessWidget {
   Widget build(BuildContext context) {
     final total = OrderTotals(items);
     return OrderSection(
-        title: 'Order summary',
+        title: TTexts.uiTextOrderSummary,
         icon: Icons.receipt_long_outlined,
         subtitle: '${items.length} product lines',
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           if (items.isEmpty)
-            const Text('Your selected products will appear here.',
+            const Text(TTexts.uiTextYourSelectedProductsWillAppearHere,
                 style: TextStyle(color: TColors.textSecondary)),
           if (showLines)
             ...items.map((item) => Padding(
@@ -145,35 +148,38 @@ class OrderSummary extends StatelessWidget {
                       Text(
                           '${item.paidQuantity} ordered + ${item.sampleQuantity} free · ${item.unit}${item.packDescription?.isNotEmpty == true ? ' · ${item.packDescription}' : ''}',
                           style: const TextStyle(
-                              fontSize: 12, color: TColors.textSecondary)),
+                              fontSize: TSizes.v12,
+                              color: TColors.textSecondary)),
                     ]))),
           if (items.isNotEmpty) ...[
             Text(total.quantityLabel,
                 style: const TextStyle(fontWeight: FontWeight.w600)),
-            const Divider(height: 28),
+            const Divider(height: TSizes.v28),
             _amount('Subtotal', total.subtotalPaise),
             _amount('Discount', -total.discountPaise),
             _amount('Tax estimate', total.taxPaise),
-            const Divider(height: 24),
+            const Divider(height: TSizes.v24),
             Row(children: [
               const Expanded(
-                  child: Text('Estimated total',
+                  child: Text(TTexts.uiTextEstimatedTotal,
                       style: TextStyle(fontWeight: FontWeight.w800))),
               Flexible(
                   child: Text(orderMoney(total.totalPaise),
                       textAlign: TextAlign.end,
                       style: const TextStyle(
-                          fontSize: 22,
+                          fontSize: TSizes.v22,
                           fontWeight: FontWeight.w800,
                           color: TColors.primary_shade700)))
             ]),
-            const SizedBox(height: 10),
+            const SizedBox(height: TSizes.v10),
             Text(
                 total.fullyPriced
                     ? 'Based on entered rates. Final pricing and availability are confirmed by your office.'
                     : '${total.unpricedLines} product line(s) have no rate. This estimate includes priced lines only.',
                 style: const TextStyle(
-                    fontSize: 11, height: 1.5, color: TColors.textSecondary)),
+                    fontSize: TSizes.v11,
+                    height: TSizes.v1_5,
+                    color: TColors.textSecondary)),
           ],
         ]));
   }
@@ -184,7 +190,7 @@ class OrderSummary extends StatelessWidget {
         Expanded(
             child: Text(label,
                 style: const TextStyle(
-                    color: TColors.textSecondary, fontSize: 12))),
+                    color: TColors.textSecondary, fontSize: TSizes.v12))),
         Text(orderMoney(value),
             style: const TextStyle(fontWeight: FontWeight.w600))
       ]));
@@ -198,8 +204,8 @@ class OrderFields extends StatelessWidget {
       LayoutBuilder(builder: (context, constraints) {
         final columns = constraints.maxWidth >= 560 ? 2 : 1;
         return Wrap(
-            spacing: 14,
-            runSpacing: 16,
+            spacing: TSizes.v14,
+            runSpacing: TSizes.v16,
             children: children
                 .map((child) => SizedBox(
                     width:

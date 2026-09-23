@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-
-import '../../../../utils/constants/colors.dart';
-
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class InvestmentTextField extends StatelessWidget {
   final TextEditingController controller;
@@ -35,14 +34,14 @@ class InvestmentTextField extends StatelessWidget {
           color: TColors.primary,
         ),
         filled: true,
-        fillColor: Colors.grey.shade50,
+        fillColor: TColors.materialGrey50,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide(
-            color: Colors.grey.shade300,
+            color: TColors.materialGrey300,
           ),
         ),
       ),

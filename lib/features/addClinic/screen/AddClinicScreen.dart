@@ -1,17 +1,19 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../utils/constants/colors.dart';
+import 'package:http/http.dart' as http;
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import '../../addStokist/widets/AnnualGTurnOverSection.dart';
 import '../controllers/AddChemistController.dart';
-
-import 'dart:io';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import '../../../utils/constants/colors.dart';
-import '../../addStokist/widets/AnnualGTurnOverSection.dart';
-import '../controllers/AddChemistController.dart';
-
+import 'package:medicle_sales_rbsh/features/authentication/controllers/AuthController.dart';
+import 'package:medicle_sales_rbsh/utils/http/http_client.dart';
+import 'package:medicle_sales_rbsh/utils/local_storage/auth_manager.dart';
+import 'dart:convert';
+import '../../authentication/models/headoffice.dart';
+import '../controllers/ClinicListController.dart';
+import '../../addDoctor/screens/map.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class AddChemistScreen extends StatelessWidget {
   const AddChemistScreen({Key? key}) : super(key: key);
@@ -23,7 +25,7 @@ class AddChemistScreen extends StatelessWidget {
     final controller = Get.put(AddChemistController());
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6F9),
+      backgroundColor: TColors.hex_FFF4F6F9,
       body: CustomScrollView(
         slivers: [
           // 1. SLIVER APP BAR
@@ -35,20 +37,27 @@ class AddChemistScreen extends StatelessWidget {
             leading: IconButton(
               icon: Container(
                 padding: const EdgeInsets.all(8),
-                decoration: const BoxDecoration(color: Colors.black26, shape: BoxShape.circle),
-                child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
+                decoration: const BoxDecoration(
+                    color: TColors.black26, shape: BoxShape.circle),
+                child: const Icon(Icons.arrow_back,
+                    color: TColors.white, size: TSizes.v20),
               ),
               onPressed: () => Get.back(),
             ),
             flexibleSpace: FlexibleSpaceBar(
               centerTitle: true,
               title: const Text(
-                "Add New Chemist",
+                TTexts.uiTextAddNewChemist,
                 style: TextStyle(
-                  color: Colors.white,
+                  color: TColors.white,
                   fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                  shadows: [Shadow(offset: Offset(0, 1), blurRadius: 3.0, color: Colors.black45)],
+                  fontSize: TSizes.v16,
+                  shadows: [
+                    Shadow(
+                        offset: Offset(0, 1),
+                        blurRadius: TSizes.v3,
+                        color: TColors.black45)
+                  ],
                 ),
               ),
               background: Stack(
@@ -57,14 +66,19 @@ class AddChemistScreen extends StatelessWidget {
                   Image.asset(
                     _bannerAsset,
                     fit: BoxFit.fill,
-                    errorBuilder: (_, __, ___) => Container(color: TColors.primary),
+                    errorBuilder: (_, __, ___) =>
+                        Container(color: TColors.primary),
                   ),
                   Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
-                        colors: [Colors.black38, Colors.transparent, TColors.primary.withOpacity(0.9)],
+                        colors: [
+                          TColors.black38,
+                          TColors.transparent,
+                          TColors.primary.withOpacity(0.9)
+                        ],
                       ),
                     ),
                   ),
@@ -83,20 +97,23 @@ class AddChemistScreen extends StatelessWidget {
                   Row(
                     children: [
                       Expanded(child: _buildImagePicker(controller, context)),
-                      const SizedBox(width: 15),
+                      const SizedBox(width: TSizes.v15),
                       Expanded(child: _buildLocationPicker(controller)),
                     ],
                   ),
-                  const SizedBox(height: 25),
+                  const SizedBox(height: TSizes.v25),
 
                   // --- FORM CARD ---
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: TColors.white,
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
-                        BoxShadow(color: Colors.grey.withOpacity(0.08), blurRadius: 15, offset: const Offset(0, 5)),
+                        BoxShadow(
+                            color: TColors.materialGrey.withOpacity(0.08),
+                            blurRadius: TSizes.v15,
+                            offset: const Offset(0, 5)),
                       ],
                     ),
                     child: Form(
@@ -104,85 +121,121 @@ class AddChemistScreen extends StatelessWidget {
                       child: Column(
                         children: [
                           _buildSectionHeader("01", "Basic Details"),
-                          const SizedBox(height: 15),
+                          const SizedBox(height: TSizes.v15),
 
                           // --- REQUIRED FIELDS ---
-                          _buildTextField(controller.firmNameController, "Firm Name", Icons.store, required: true),
-                          const SizedBox(height: 15),
-                          _buildTextField(controller.contactPersonController, "Contact Person", Icons.person, required: true),
-                          const SizedBox(height: 15),
+                          _buildTextField(controller.firmNameController,
+                              "Firm Name", Icons.store,
+                              required: true),
+                          const SizedBox(height: TSizes.v15),
+                          _buildTextField(controller.contactPersonController,
+                              "Contact Person", Icons.person,
+                              required: true),
+                          const SizedBox(height: TSizes.v15),
 
                           // Head Office Dropdown (Required)
                           Obx(() => DropdownButtonFormField<String>(
-                            value: controller.selectedHeadOfficeId.value,
-                            icon: const Icon(Icons.keyboard_arrow_down_rounded),
-                            decoration: _inputDecoration("Select Head Office *", Icons.domain),
-                            items: controller.headOffices.map((office) {
-                              return DropdownMenuItem<String>(
-                                value: office['id'],
-                                child: Text(office['name'] ?? "Unknown", style: const TextStyle(fontSize: 14)),
-                              );
-                            }).toList(),
-                            onChanged: (val) => controller.selectedHeadOfficeId.value = val,
-                            validator: (v) => v == null ? "Required" : null,
-                          )),
-                          const SizedBox(height: 15),
+                                value: controller.selectedHeadOfficeId.value,
+                                icon: const Icon(
+                                    Icons.keyboard_arrow_down_rounded),
+                                decoration: _inputDecoration(
+                                    "Select Head Office *", Icons.domain),
+                                items: controller.headOffices.map((office) {
+                                  return DropdownMenuItem<String>(
+                                    value: office['id'],
+                                    child: Text(office['name'] ?? "Unknown",
+                                        style: const TextStyle(
+                                            fontSize: TSizes.v14)),
+                                  );
+                                }).toList(),
+                                onChanged: (val) =>
+                                    controller.selectedHeadOfficeId.value = val,
+                                validator: (v) => v == null ? "Required" : null,
+                              )),
+                          const SizedBox(height: TSizes.v15),
 
                           // --- OPTIONAL FIELDS (Default "") ---
-                          _buildTextField(controller.phoneController, "Mobile Number", Icons.phone, isNumber: true, required: false),
-                          const SizedBox(height: 15),
-                          _buildTextField(controller.emailController, "Email ID", Icons.email, keyboardType: TextInputType.emailAddress, required: false),
-                          const SizedBox(height: 15),
-                          _buildTextField(controller.addressController, "Full Address", Icons.location_on_outlined, maxLines: 2, required: false),
+                          _buildTextField(controller.phoneController,
+                              "Mobile Number", Icons.phone,
+                              isNumber: true, required: false),
+                          const SizedBox(height: TSizes.v15),
+                          _buildTextField(controller.emailController,
+                              "Email ID", Icons.email,
+                              keyboardType: TextInputType.emailAddress,
+                              required: false),
+                          const SizedBox(height: TSizes.v15),
+                          _buildTextField(controller.addressController,
+                              "Full Address", Icons.location_on_outlined,
+                              maxLines: 2, required: false),
 
-                          const SizedBox(height: 30),
+                          const SizedBox(height: TSizes.v30),
                           _buildSectionHeader("02", "Business Details"),
-                          const SizedBox(height: 15),
+                          const SizedBox(height: TSizes.v15),
 
-                          _buildTextField(controller.designationController, "Designation", Icons.badge_outlined, required: false),
-                          const SizedBox(height: 15),
-                          _buildTextField(controller.drugLicenseNumberController, "Drug License No.", Icons.description_outlined, required: false),
-                          const SizedBox(height: 15),
-                          _buildTextField(controller.gstController, "GST No.", Icons.receipt_long, required: false),
-                          const SizedBox(height: 15),
+                          _buildTextField(controller.designationController,
+                              "Designation", Icons.badge_outlined,
+                              required: false),
+                          const SizedBox(height: TSizes.v15),
+                          _buildTextField(
+                              controller.drugLicenseNumberController,
+                              "Drug License No.",
+                              Icons.description_outlined,
+                              required: false),
+                          const SizedBox(height: TSizes.v15),
+                          _buildTextField(controller.gstController, "GST No.",
+                              Icons.receipt_long,
+                              required: false),
+                          const SizedBox(height: TSizes.v15),
 
                           // Optional Int (Default 0)
-                          _buildTextField(controller.yearsInBusinessController, "Years in Business", Icons.history, isNumber: true, required: false),
+                          _buildTextField(controller.yearsInBusinessController,
+                              "Years in Business", Icons.history,
+                              isNumber: true, required: false),
 
-                          const SizedBox(height: 30),
+                          const SizedBox(height: TSizes.v30),
                           _buildSectionHeader("03", "Turnover"),
-                          const SizedBox(height: 10),
+                          const SizedBox(height: TSizes.v10),
 
                           Obx(() => AnnualTurnoverSection(
-                            turnovers: controller.annualTurnovers.toList(),
-                            onChanged: (updatedList) {
-                              controller.updateTurnovers(updatedList);
-                            },
-                          )),
+                                turnovers: controller.annualTurnovers.toList(),
+                                onChanged: (updatedList) {
+                                  controller.updateTurnovers(updatedList);
+                                },
+                              )),
 
-                          const SizedBox(height: 40),
+                          const SizedBox(height: TSizes.v40),
 
                           // --- SUBMIT BUTTON ---
                           SizedBox(
                             width: double.infinity,
-                            height: 55,
+                            height: TSizes.v55,
                             child: Obx(() => ElevatedButton(
-                              onPressed: controller.isLoading.value ? null : controller.submitForm,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: TColors.primary,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                elevation: 5,
-                                shadowColor: TColors.primary.withOpacity(0.4),
-                              ),
-                              child: controller.isLoading.value
-                                  ? const CircularProgressIndicator(color: Colors.white)
-                                  : const Text(
-                                "COMPLETE REGISTRATION",
-                                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, letterSpacing: 1.0, color: Colors.white),
-                              ),
-                            )),
+                                  onPressed: controller.isLoading.value
+                                      ? null
+                                      : controller.submitForm,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: TColors.primary,
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(12)),
+                                    elevation: TSizes.v5,
+                                    shadowColor:
+                                        TColors.primary.withOpacity(0.4),
+                                  ),
+                                  child: controller.isLoading.value
+                                      ? const CircularProgressIndicator(
+                                          color: TColors.white)
+                                      : const Text(
+                                          TTexts.uiTextCOMPLETEREGISTRATION,
+                                          style: TextStyle(
+                                              fontSize: TSizes.v15,
+                                              fontWeight: FontWeight.bold,
+                                              letterSpacing: 1.0,
+                                              color: TColors.white),
+                                        ),
+                                )),
                           ),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: TSizes.v20),
                         ],
                       ),
                     ),
@@ -199,13 +252,18 @@ class AddChemistScreen extends StatelessWidget {
   // ================= HELPER WIDGETS =================
 
   // 1. Image Picker
-  Widget _buildImagePicker(AddChemistController controller, BuildContext context) {
+  Widget _buildImagePicker(
+      AddChemistController controller, BuildContext context) {
     return Container(
-      height: 160,
+      height: TSizes.v160,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: TColors.white,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
+        boxShadow: [
+          BoxShadow(
+              color: TColors.pureBlack.withOpacity(0.05),
+              blurRadius: TSizes.v10)
+        ],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
@@ -215,8 +273,10 @@ class AddChemistScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const CircularProgressIndicator(color: TColors.primary),
-                const SizedBox(height: 8),
-                Text("Processing...", style: TextStyle(fontSize: 10, color: Colors.grey[600]))
+                const SizedBox(height: TSizes.v8),
+                Text(TTexts.uiTextProcessing_272bc02e,
+                    style: TextStyle(
+                        fontSize: TSizes.v10, color: TColors.materialGrey600))
               ],
             );
           }
@@ -226,29 +286,32 @@ class AddChemistScreen extends StatelessWidget {
               fit: StackFit.expand,
               children: [
                 Image.file(controller.chemistImage.value!, fit: BoxFit.cover),
-                Container(color: Colors.black12),
+                Container(color: TColors.black12),
                 Center(
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.5),
+                      color: TColors.pureBlack.withOpacity(0.5),
                       borderRadius: BorderRadius.circular(30),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         GestureDetector(
-                          onTap: () => _showFullImage(context, controller.chemistImage.value!),
+                          onTap: () => _showFullImage(
+                              context, controller.chemistImage.value!),
                           child: Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.9),
+                              color: TColors.white.withOpacity(0.9),
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(Icons.visibility, color: TColors.primary, size: 20),
+                            child: const Icon(Icons.visibility,
+                                color: TColors.primary, size: TSizes.v20),
                           ),
                         ),
-                        const SizedBox(width: 15),
+                        const SizedBox(width: TSizes.v15),
                         GestureDetector(
                           onTap: controller.captureImage,
                           child: Container(
@@ -257,7 +320,8 @@ class AddChemistScreen extends StatelessWidget {
                               color: TColors.primary.withOpacity(0.9),
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(Icons.refresh, color: Colors.white, size: 20),
+                            child: const Icon(Icons.refresh,
+                                color: TColors.white, size: TSizes.v20),
                           ),
                         ),
                       ],
@@ -273,13 +337,15 @@ class AddChemistScreen extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.add_a_photo_outlined, size: 40, color: TColors.primary.withOpacity(0.6)),
-                const SizedBox(height: 10),
-                Text(
-                    "Capture\nPhoto *",
+                Icon(Icons.add_a_photo_outlined,
+                    size: TSizes.v40, color: TColors.primary.withOpacity(0.6)),
+                const SizedBox(height: TSizes.v10),
+                Text(TTexts.uiTextCapturePhoto,
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.red[400], fontSize: 13, fontWeight: FontWeight.w600)
-                ),
+                    style: TextStyle(
+                        color: TColors.materialRed400,
+                        fontSize: TSizes.v13,
+                        fontWeight: FontWeight.w600)),
               ],
             ),
           );
@@ -293,12 +359,16 @@ class AddChemistScreen extends StatelessWidget {
     return InkWell(
       onTap: controller.pickLocation,
       child: Container(
-        height: 160,
+        height: TSizes.v160,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: TColors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: TColors.primary.withOpacity(0.1)),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
+          boxShadow: [
+            BoxShadow(
+                color: TColors.pureBlack.withOpacity(0.05),
+                blurRadius: TSizes.v10)
+          ],
         ),
         child: Obx(() {
           bool isSet = controller.latitude.value != 0.0;
@@ -308,27 +378,31 @@ class AddChemistScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: isSet ? Colors.green.withOpacity(0.1) : TColors.primary.withOpacity(0.1),
+                  color: isSet
+                      ? TColors.materialGreen.withOpacity(0.1)
+                      : TColors.primary.withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.location_on, size: 30, color: isSet ? Colors.green : TColors.primary),
+                child: Icon(Icons.location_on,
+                    size: TSizes.v30,
+                    color: isSet ? TColors.materialGreen : TColors.primary),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: TSizes.v12),
               Text(
                 isSet ? "Location Set" : "Select Location *",
                 textAlign: TextAlign.center,
                 style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                    color: isSet ? Colors.black : Colors.red[400]
-                ),
+                    fontSize: TSizes.v14,
+                    color: isSet ? TColors.pureBlack : TColors.materialRed400),
               ),
               if (isSet)
                 Padding(
                   padding: const EdgeInsets.only(top: 4),
                   child: Text(
                     "Lat: ${controller.latitude.value.toStringAsFixed(4)}",
-                    style: const TextStyle(fontSize: 11, color: Colors.grey),
+                    style: const TextStyle(
+                        fontSize: TSizes.v11, color: TColors.materialGrey),
                   ),
                 )
             ],
@@ -343,25 +417,42 @@ class AddChemistScreen extends StatelessWidget {
       children: [
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          decoration: BoxDecoration(color: TColors.primary.withOpacity(0.1), borderRadius: BorderRadius.circular(6)),
-          child: Text(number, style: const TextStyle(color: TColors.primary, fontWeight: FontWeight.bold, fontSize: 12)),
+          decoration: BoxDecoration(
+              color: TColors.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(6)),
+          child: Text(number,
+              style: const TextStyle(
+                  color: TColors.primary,
+                  fontWeight: FontWeight.bold,
+                  fontSize: TSizes.v12)),
         ),
-        const SizedBox(width: 10),
-        Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)),
+        const SizedBox(width: TSizes.v10),
+        Text(title,
+            style: const TextStyle(
+                fontSize: TSizes.v16,
+                fontWeight: FontWeight.bold,
+                color: TColors.black87)),
       ],
     );
   }
 
   // Updated Helper: required flag controls the validator and asterisk
-  Widget _buildTextField(TextEditingController ctrl, String label, IconData icon, {bool isNumber = false, bool required = false, int maxLines = 1, TextInputType? keyboardType}) {
+  Widget _buildTextField(
+      TextEditingController ctrl, String label, IconData icon,
+      {bool isNumber = false,
+      bool required = false,
+      int maxLines = 1,
+      TextInputType? keyboardType}) {
     return TextFormField(
       controller: ctrl,
-      keyboardType: keyboardType ?? (isNumber ? TextInputType.number : TextInputType.text),
+      keyboardType: keyboardType ??
+          (isNumber ? TextInputType.number : TextInputType.text),
       maxLines: maxLines,
-      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+      style: const TextStyle(fontSize: TSizes.v14, fontWeight: FontWeight.w500),
       decoration: _inputDecoration(required ? "$label *" : label, icon),
       validator: (v) {
-        if (required && (v == null || v.trim().isEmpty)) return "$label is required";
+        if (required && (v == null || v.trim().isEmpty))
+          return "$label is required";
         return null;
       },
     );
@@ -370,14 +461,23 @@ class AddChemistScreen extends StatelessWidget {
   InputDecoration _inputDecoration(String label, IconData icon) {
     return InputDecoration(
       labelText: label,
-      prefixIcon: Icon(icon, size: 18, color: TColors.primary.withOpacity(0.7)),
-      labelStyle: TextStyle(color: Colors.grey[500], fontSize: 13),
+      prefixIcon:
+          Icon(icon, size: TSizes.v18, color: TColors.primary.withOpacity(0.7)),
+      labelStyle:
+          TextStyle(color: TColors.materialGrey500, fontSize: TSizes.v13),
       filled: true,
-      fillColor: const Color(0xFFFAFAFA),
+      fillColor: TColors.hex_FFFAFAFA,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: TColors.primary, width: 1.5)),
+      border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: TColors.materialGrey200)),
+      enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: TColors.materialGrey200)),
+      focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide:
+              const BorderSide(color: TColors.primary, width: TSizes.v1_5)),
     );
   }
 
@@ -385,7 +485,7 @@ class AddChemistScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (_) => Dialog(
-        backgroundColor: Colors.transparent,
+        backgroundColor: TColors.transparent,
         insetPadding: const EdgeInsets.all(12),
         child: Stack(
           alignment: Alignment.topRight,
@@ -406,11 +506,13 @@ class AddChemistScreen extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.6),
+                    color: TColors.pureBlack.withOpacity(0.6),
                     shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 1.5),
+                    border:
+                        Border.all(color: TColors.white, width: TSizes.v1_5),
                   ),
-                  child: const Icon(Icons.close, color: Colors.white, size: 22),
+                  child: const Icon(Icons.close,
+                      color: TColors.white, size: TSizes.v22),
                 ),
               ),
             ),
@@ -421,20 +523,8 @@ class AddChemistScreen extends StatelessWidget {
   }
 }
 
-  // old working code without geo_image
- /*import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
-import 'package:medicle_sales_rbsh/features/authentication/controllers/AuthController.dart';
-import 'package:medicle_sales_rbsh/utils/http/http_client.dart';
-import 'package:medicle_sales_rbsh/utils/local_storage/auth_manager.dart';
-import 'dart:convert';
-import '../../../utils/constants/colors.dart';
-import '../../addStokist/widets/AnnualGTurnOverSection.dart';
-import '../../authentication/models/headoffice.dart';
-import '../controllers/ClinicListController.dart';
-import '../../addDoctor/screens/map.dart';
-
+// old working code without geo_image
+/*
 class AddClinicScreen extends StatefulWidget {
   final ClinicListController controller;
   const AddClinicScreen({super.key, required this.controller});
@@ -486,7 +576,7 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
     // headOfficeId = authController.getHeadOffice() as String;
   }
 
- *//* Future<void> _fetchHeadOffices() async {
+ */ /* Future<void> _fetchHeadOffices() async {
     setState(() {
       isLoadingHeadOffices = true; // Show loader while fetching head offices
     });
@@ -508,9 +598,9 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
       setState(() {
         isLoadingHeadOffices = false; // Hide loader on exception
       });
-      Get.snackbar("Error", "Failed to fetch head offices: $e", backgroundColor: Colors.red);
+      Get.snackbar("Error", "Failed to fetch head offices: $e", backgroundColor: TColors.materialRed);
     }
-  }*//*
+  }*/ /*
 
 
   Future<void> _fetchHeadOffices() async {
@@ -568,7 +658,7 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
       setState(() {
         isLoadingHeadOffices = false; // Hide loader on exception
       });
-      Get.snackbar("Error", "Failed to fetch head offices: $e", backgroundColor: Colors.red);
+      Get.snackbar("Error", "Failed to fetch head offices: $e", backgroundColor: TColors.materialRed);
     }
   }
 
@@ -651,7 +741,7 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
   }
 
 
-  *//*Future<void> _submitForm() async {
+  */ /*Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => isLoading = true); // Show loading while submitting the form
@@ -676,7 +766,7 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
     };
 
 
-    *//**//*final body = {
+    */ /**/ /*final body = {
       "firmName": firmNameController.text,
       "contactPersonName": contactPersonController.text,
       "mobileNo": phoneController.text,
@@ -693,7 +783,7 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
         "year": e["year"],
         "amount": e["amount"]
       }).toList(),
-    };*//**//*
+    };*/ /**/ /*
 
     try {
       final response = await http.post(
@@ -720,7 +810,7 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
     } finally {
       setState(() => isLoading = false); // Hide loader after form submission
     }
-  }*//*
+  }*/ /*
 
   @override
   Widget build(BuildContext context) {
@@ -748,7 +838,7 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
 
                 _buildTextField(addressController, "Address",required: true),
                 // Head Office Dropdown (Required)
-                *//*Padding(
+                */ /*Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
                   child: isLoadingHeadOffices
                       ? const CircularProgressIndicator() // Show loader while fetching head offices
@@ -777,7 +867,7 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
                         : null,
                   ),
 
-                ),*//*
+                ),*/ /*
 
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -862,7 +952,7 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
                                             Get.snackbar(
                                               "📍 Location Selected",
                                               "$selectedLocation\nLat: $selectedlatitude, Lng: $selectedlongitude",
-                                              backgroundColor: Colors.green,
+                                              backgroundColor: TColors.materialGreen,
                                               duration: const Duration(seconds: 4),
                                             );
                                           } else {
@@ -870,7 +960,7 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
                                             Get.snackbar(
                                               "Location Not Selected",
                                               "Please try again or cancel",
-                                              backgroundColor: Colors.orange,
+                                              backgroundColor: TColors.materialOrange,
                                             );
                                           }
                     } catch (e) {
@@ -891,7 +981,7 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
                     children: [
                       Icon(
                         Icons.location_on,
-                        color: Colors.white,
+                        color: TColors.white,
                         size: 22,
                       ),
                       SizedBox(width: 8),
@@ -900,13 +990,13 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: TColors.white,
                         ),
                       ),
                     ],
                   ),
                 ),
-                *//*TextButton(
+                */ /*TextButton(
                   onPressed: () async {
                     final result = await Navigator.push(
                       context,
@@ -928,7 +1018,7 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
                       Get.snackbar(
                         "📍 Location Selected",
                         "$selectedLocation\nLat: $selectedlatitude, Lng: $selectedlongitude",
-                        backgroundColor: Colors.green,
+                        backgroundColor: TColors.materialGreen,
                         duration: const Duration(seconds: 4),
                       );
 
@@ -937,7 +1027,7 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
                       Get.snackbar(
                         "Location Not Selected",
                         "Please try again or cancel",
-                        backgroundColor: Colors.orange,
+                        backgroundColor: TColors.materialOrange,
                       );
                     }
                   },
@@ -954,7 +1044,7 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
                     children: [
                       Icon(
                         Icons.location_on,
-                        color: Colors.white,
+                        color: TColors.white,
                         size: 22,
                       ),
                       SizedBox(width: 8),
@@ -963,12 +1053,12 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: TColors.white,
                         ),
                       ),
                     ],
                   ),
-                ),*//*
+                ),*/ /*
 
                 // Centered "Add Chemist" Button
                 Padding(
@@ -984,7 +1074,7 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
                       minimumSize: Size(double.infinity, 50), // Full-width button
                     ),
                     child: isLoading
-                        ? const CircularProgressIndicator(color: Colors.white)
+                        ? const CircularProgressIndicator(color: TColors.white)
                         : const Text("Add Chemist", style: TextStyle(fontSize: 18)),
                   ),
                 ),
@@ -1006,7 +1096,7 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
         maxLines: maxLines,
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: TextStyle(color: Colors.black),
+          labelStyle: TextStyle(color: TColors.pureBlack),
           border: OutlineInputBorder(),
           focusedBorder: OutlineInputBorder(
             borderSide: BorderSide(color: TColors.primary, width: 2),
@@ -1037,4 +1127,3 @@ Widget _sectionTitle(String title) => Padding(
     ),
   ),
 );*/
-

@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../../../utils/constants/colors.dart';
 import '../../../../utils/constants/sizes.dart';
 import '../../model/collaboration_request_model.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class CollaborationRequestCard extends StatelessWidget {
   const CollaborationRequestCard({
@@ -26,7 +27,7 @@ class CollaborationRequestCard extends StatelessWidget {
 
     return Card(
       elevation: TSizes.cardElevation,
-      surfaceTintColor: Colors.transparent,
+      surfaceTintColor: TColors.transparent,
       color: TColors.cardBackground,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(TSizes.cardRadiusLg),
@@ -39,48 +40,34 @@ class CollaborationRequestCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
             /// HEADER
             Row(
               children: [
-
                 Expanded(
                   child: Column(
-                    crossAxisAlignment:
-                    CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-
                       Text(
                         user?.name ?? "-",
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleMedium
-                            ?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                ),
                       ),
-
                       const SizedBox(height: TSizes.xs),
-
                       Text(
                         user?.employeeCode ?? "-",
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodyMedium
-                            ?.copyWith(
-                          color:
-                          TColors.textSecondary,
-                        ),
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: TColors.textSecondary,
+                            ),
                       ),
                     ],
                   ),
                 ),
-
                 _StatusChip(
-                  status:
-                  request.collaborationStatus,
+                  status: request.collaborationStatus,
                 ),
               ],
             ),
@@ -92,9 +79,8 @@ class CollaborationRequestCard extends StatelessWidget {
             const SizedBox(height: TSizes.md),
 
             _InfoRow(
-              title: "Visit Date",
-              value: DateFormat("dd MMM yyyy")
-                  .format(request.date),
+              title: TTexts.uiTextVisitDate,
+              value: DateFormat("dd MMM yyyy").format(request.date),
             ),
 
             const SizedBox(
@@ -102,7 +88,7 @@ class CollaborationRequestCard extends StatelessWidget {
             ),
 
             _InfoRow(
-              title: "Day Type",
+              title: TTexts.uiTextDayType,
               value: request.dayType,
             ),
 
@@ -114,34 +100,27 @@ class CollaborationRequestCard extends StatelessWidget {
 
             Row(
               children: [
-
                 Expanded(
                   child: OutlinedButton.icon(
-                    onPressed:
-                    loading ? null : onReject,
+                    onPressed: loading ? null : onReject,
                     icon: const Icon(Icons.close),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor:
-                      TColors.error,
+                      foregroundColor: TColors.error,
                     ),
-                    label: const Text("Reject"),
+                    label: const Text(TTexts.uiTextReject),
                   ),
                 ),
-
                 const SizedBox(
                   width: TSizes.md,
                 ),
-
                 Expanded(
                   child: FilledButton.icon(
-                    onPressed:
-                    loading ? null : onAccept,
+                    onPressed: loading ? null : onAccept,
                     style: FilledButton.styleFrom(
-                      backgroundColor:
-                      TColors.primary,
+                      backgroundColor: TColors.primary,
                     ),
                     icon: const Icon(Icons.check),
-                    label: const Text("Accept"),
+                    label: const Text(TTexts.uiTextAccept),
                   ),
                 ),
               ],
@@ -166,29 +145,21 @@ class _InfoRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-
         Expanded(
           child: Text(
             title,
-            style: Theme.of(context)
-                .textTheme
-                .bodyMedium
-                ?.copyWith(
-              color: TColors.textSecondary,
-            ),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: TColors.textSecondary,
+                ),
           ),
         ),
-
         Expanded(
           child: Text(
             value,
             textAlign: TextAlign.end,
-            style: Theme.of(context)
-                .textTheme
-                .bodyMedium
-                ?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
           ),
         ),
       ],

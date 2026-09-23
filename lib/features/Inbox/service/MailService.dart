@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class MailService {
-
   /// 📥 READ INBOX
   static Future<List<dynamic>> getInbox(String token) async {
     final response = await http.get(

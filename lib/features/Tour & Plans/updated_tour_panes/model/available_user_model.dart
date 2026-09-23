@@ -14,16 +14,14 @@ class AvailableUserModel {
   });
 
   factory AvailableUserModel.fromJson(
-      Map<String, dynamic> json,
-      ) {
+    Map<String, dynamic> json,
+  ) {
     return AvailableUserModel(
       id: json['id'] ?? '',
       name: json['name'] ?? '',
       role: json['role'] ?? '',
-      employeeCode:
-      json['employeeCode'] ?? '',
-      available:
-      json['available'] ?? false,
+      employeeCode: json['employeeCode'] ?? '',
+      available: json['available'] ?? false,
     );
   }
 }

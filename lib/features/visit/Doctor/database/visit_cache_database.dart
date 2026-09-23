@@ -4,8 +4,7 @@ import 'package:sqflite/sqflite.dart';
 class VisitCacheDatabase {
   VisitCacheDatabase._();
 
-  static final VisitCacheDatabase instance =
-  VisitCacheDatabase._();
+  static final VisitCacheDatabase instance = VisitCacheDatabase._();
 
   Database? _database;
 
@@ -28,10 +27,9 @@ class VisitCacheDatabase {
   }
 
   Future<void> _create(
-      Database db,
-      int version,
-      ) async {
-
+    Database db,
+    int version,
+  ) async {
     await db.execute('''
 CREATE TABLE visit_cache(
 cacheKey TEXT PRIMARY KEY,

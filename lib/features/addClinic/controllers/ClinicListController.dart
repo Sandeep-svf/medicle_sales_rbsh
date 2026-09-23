@@ -6,6 +6,8 @@ import 'package:http/http.dart' as http;
 import '../../../utils/http/http_client.dart';
 import '../../../utils/local_storage/auth_manager.dart';
 import '../model/clinic.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class ClinicListController extends GetxController {
   var isLoading = false.obs;
@@ -25,25 +27,20 @@ class ClinicListController extends GetxController {
     super.onInit();
   }
 
-
   Future<List<dynamic>> fetchAreas() async {
     try {
-      final token =
-      await authManager.getAuthToken();
+      final token = await authManager.getAuthToken();
 
       final response = await http.get(
         Uri.parse("$_baseUrl/areas"),
         headers: {
-          "Content-Type":
-          "application/json",
-          "Authorization":
-          "Bearer $token",
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
         },
       );
 
       if (response.statusCode == 200) {
-        final jsonResponse =
-        jsonDecode(response.body);
+        final jsonResponse = jsonDecode(response.body);
 
         return jsonResponse["data"] ?? [];
       }
@@ -57,24 +54,20 @@ class ClinicListController extends GetxController {
     }
   }
 
-
   Future<void> assignAreaToChemist({
     required String chemistId,
     required String areaId,
   }) async {
     try {
-      final token =
-      await authManager.getAuthToken();
+      final token = await authManager.getAuthToken();
 
       final response = await http.put(
         Uri.parse(
           "$_baseUrl/chemists/$chemistId",
         ),
         headers: {
-          "Content-Type":
-          "application/json",
-          "Authorization":
-          "Bearer $token",
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
         },
         body: jsonEncode({
           "areaId": areaId,
@@ -86,7 +79,7 @@ class ClinicListController extends GetxController {
 
         Get.snackbar(
           "Success",
-          "Area Assigned",
+          TTexts.uiTextAreaAssigned,
         );
       }
     } catch (e) {
@@ -97,7 +90,6 @@ class ClinicListController extends GetxController {
     }
   }
 
-
   Future<String?> createNewArea({
     required String name,
     required String pincode,
@@ -107,8 +99,7 @@ class ClinicListController extends GetxController {
     try {
       isLoading.value = true;
 
-      final token =
-      await authManager.getAuthToken();
+      final token = await authManager.getAuthToken();
 
       final response = await http.post(
         Uri.parse("$_baseUrl/areas"),
@@ -124,18 +115,14 @@ class ClinicListController extends GetxController {
         }),
       );
 
-      if (response.statusCode == 201 ||
-          response.statusCode == 200) {
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        final jsonResponse = jsonDecode(response.body);
 
-        final jsonResponse =
-        jsonDecode(response.body);
-
-        final String createdAreaId =
-        jsonResponse["data"]["id"];
+        final String createdAreaId = jsonResponse["data"]["id"];
 
         Get.snackbar(
           "Success",
-          "Area created successfully!",
+          TTexts.uiTextAreaCreatedSuccessfully,
         );
 
         return createdAreaId;
@@ -143,38 +130,37 @@ class ClinicListController extends GetxController {
 
       Get.snackbar(
         "Error",
-        "Failed creating area",
+        TTexts.uiTextFailedCreatingArea,
       );
 
       return null;
-
     } catch (e) {
-
       Get.snackbar(
         "Error",
         e.toString(),
       );
 
       return null;
-
     } finally {
       isLoading.value = false;
     }
   }
-
 
   Future<void> fetchClinicList() async {
     print("httpChemist: Fetching chemist list...");
 
     try {
       isLoading.value = true;
-      final token  = await authManager.getAuthToken();
+      final token = await authManager.getAuthToken();
 
       print("httpChemist: Head Office: $headOffice");
 
       final response = await http.get(
         Uri.parse("$_baseUrl/chemists/my-chemists"),
-        headers: {"Content-Type": "application/json",'Authorization': 'Bearer $token'},
+        headers: {
+          "Content-Type": "application/json",
+          'Authorization': 'Bearer $token'
+        },
       );
 
       print("httpChemist: Response: ${response.body}");
@@ -189,14 +175,15 @@ class ClinicListController extends GetxController {
 
           if (data is List) {
             // Assign to BOTH lists
-            List<Clinic> loadedData = data.map<Clinic>((json) => Clinic.fromJson(json)).toList();
+            List<Clinic> loadedData =
+                data.map<Clinic>((json) => Clinic.fromJson(json)).toList();
 
             clinicList.assignAll(loadedData);
             filteredClinicList.assignAll(loadedData); // Sync filtered list
 
             print("httpChemist: Successfully fetched clinic list.");
           } else {
-            Get.snackbar("Warning", "Invalid data format received.");
+            Get.snackbar("Warning", TTexts.uiTextInvalidDataFormatReceived);
           }
         } else {
           Get.snackbar("Warning", jsonData['message']);
@@ -221,12 +208,12 @@ class ClinicListController extends GetxController {
       filteredClinicList.assignAll(clinicList);
     } else {
       filteredClinicList.assignAll(clinicList.where((clinic) {
-        return (clinic.firmName ?? "").toLowerCase().contains(query.toLowerCase());
+        return (clinic.firmName ?? "")
+            .toLowerCase()
+            .contains(query.toLowerCase());
       }).toList());
     }
   }
-
-
 
 /*Future<void> fetchClinicList() async {
     print("httpChemist: Fetching chemist list...");
@@ -260,8 +247,8 @@ class ClinicListController extends GetxController {
             "Success",
             jsonData['message'], // Display the success message from the response
             snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.green,
-            colorText: Colors.white,
+            backgroundColor: TColors.materialGreen,
+            colorText: TColors.white,
           );
           print("httpChemist: Successfully fetched clinic list.");
         } else {
@@ -270,8 +257,8 @@ class ClinicListController extends GetxController {
             "Error",
             jsonData['message'],
             snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.redAccent,
-            colorText: Colors.white,
+            backgroundColor: TColors.materialRedAccent,
+            colorText: TColors.white,
           );
           print("httpChemist: Error fetching data: ${jsonData['message']}");
         }
@@ -281,8 +268,8 @@ class ClinicListController extends GetxController {
           "Error",
           "Failed to load chemists. Status code: ${response.statusCode}",
           snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.redAccent,
-          colorText: Colors.white,
+          backgroundColor: TColors.materialRedAccent,
+          colorText: TColors.white,
         );
         print("httpChemist: Error: Failed to load chemists. Status code: ${response.statusCode}");
       }
@@ -296,8 +283,8 @@ class ClinicListController extends GetxController {
         "Error",
         "Something went wrong: $e",
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.redAccent,
-        colorText: Colors.white,
+        backgroundColor: TColors.materialRedAccent,
+        colorText: TColors.white,
       );
     } finally {
       print("httpChemist: Fetching completed.");

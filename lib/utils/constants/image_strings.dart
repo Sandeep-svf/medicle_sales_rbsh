@@ -1,9 +1,7 @@
-
 /* -- App Image Strings -- */
 
 /// This class contains all the App Images in String formats.
 class TImages {
-
   // -- App Logos
   static const String darkAppLogo = "assets/logos/glucks_care_logo_auth.png";
   static const String darkAppLogoSmall = "assets/app_icon/app_icon.png";
@@ -11,19 +9,24 @@ class TImages {
   static const String lightAppLogoSmall = "assets/app_icon/app_icon.png";
 
   // -- Category Icons
-  static const String sportIcon = "assets/icons/categories/icons8-bowling-64.png";
+  static const String sportIcon =
+      "assets/icons/categories/icons8-bowling-64.png";
   // -- Brand Icons
   static const String nikeLogo = "assets/icons/brands/nike.png";
   // -- Animations
-  static const String productsIllustration = "assets/images/animations/sammy-line-workout.gif";
+  static const String productsIllustration =
+      "assets/images/animations/sammy-line-workout.gif";
   // -- OnBoarding Texts
-  static const String onBoardingImage1 = "assets/images/on_boarding_images/sammy-line-searching.gif";
+  static const String onBoardingImage1 =
+      "assets/images/on_boarding_images/sammy-line-searching.gif";
   // -- Products
   static const String productImage1 = "assets/images/products/nike-shoes.png";
   // -- Product Reviews
-  static const String userProfileImage1 = "assets/images/reviews/review_profile_image_1.jpg";
+  static const String userProfileImage1 =
+      "assets/images/reviews/review_profile_image_1.jpg";
   //Banners
-  static const String promoBanner1 = "assets/images/products/promo-banner-1.png";
+  static const String promoBanner1 =
+      "assets/images/products/promo-banner-1.png";
   //Profile
   static const String user = "assets/images/content/user.png";
 
@@ -31,7 +34,4 @@ class TImages {
   static const String pdf = "assets/pdf/sample.pdf";
   static const String pdf2 = "assets/pdf/sample_2.pdf";
   static const String pdf3 = "assets/pdf/sample_3.pdf";
-
-
 }
-

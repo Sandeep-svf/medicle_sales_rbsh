@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-
 import '../../../../utils/constants/colors.dart';
 import '../../../../utils/constants/sizes.dart';
 import '../model/doctor_location_model.dart';
@@ -20,19 +19,18 @@ class DoctorMarkerWidget extends StatelessWidget {
   Color get borderColor {
     switch (doctor.visitStatus) {
       case VisitStatus.pending:
-        return Colors.orange;
+        return TColors.materialOrange;
 
       case VisitStatus.visited:
-        return Colors.green;
+        return TColors.materialGreen;
 
       case VisitStatus.missed:
-        return Colors.red;
+        return TColors.materialRed;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-
     final parts = doctor.doctorName.split(" ");
 
     String initials = "";
@@ -46,51 +44,32 @@ class DoctorMarkerWidget extends StatelessWidget {
     }
 
     return Container(
-
-      width: 42,
-
-      height: 42,
-
+      width: TSizes.v42,
+      height: TSizes.v42,
       decoration: BoxDecoration(
-
-        color: Colors.white,
-
+        color: TColors.white,
         shape: BoxShape.circle,
-
         border: Border.all(
-          color: selected
-              ? TColors.primary
-              : borderColor,
+          color: selected ? TColors.primary : borderColor,
           width: selected ? 4 : 3,
         ),
-
         boxShadow: const [
-
           BoxShadow(
-            blurRadius: 6,
-            color: Colors.black12,
+            blurRadius: TSizes.v6,
+            color: TColors.black12,
           ),
-
         ],
-
       ),
-
       child: Center(
-
         child: Text(
-
           initials,
-
           style: const TextStyle(
             color: TColors.primary,
             fontSize: TSizes.fontSizeSm,
             fontWeight: FontWeight.bold,
           ),
-
         ),
-
       ),
-
     );
   }
 }

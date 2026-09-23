@@ -1,195 +1,131 @@
 import 'package:flutter/material.dart';
-
-
-import '../../../../utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'section_card.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class ComplianceCard extends StatelessWidget {
   const ComplianceCard({super.key});
 
   @override
   Widget build(BuildContext context) {
-
     const used = 19000.0;
     const limit = 50000.0;
 
     final progress = used / limit;
 
     return SectionCard(
-
-      title: "Compliance",
-
+      title: TTexts.uiTextCompliance,
       icon: Icons.verified_user_outlined,
-
       child: Column(
-
         crossAxisAlignment: CrossAxisAlignment.start,
-
         children: [
-
           Row(
-
             children: [
-
               Expanded(
-
                 child: _tile(
                   "Used",
                   "₹19,000",
-                  Colors.orange,
+                  TColors.materialOrange,
                 ),
-
               ),
-
-              const SizedBox(width: 12),
-
+              const SizedBox(width: TSizes.v12),
               Expanded(
-
                 child: _tile(
                   "Remaining",
                   "₹31,000",
-                  Colors.green,
+                  TColors.materialGreen,
                 ),
-
               )
-
             ],
-
           ),
-
-          const SizedBox(height: 18),
-
+          const SizedBox(height: TSizes.v18),
           const Text(
-            "Quarterly Budget",
+            TTexts.uiTextQuarterlyBudget,
             style: TextStyle(
               fontWeight: FontWeight.w600,
             ),
           ),
-
-          const SizedBox(height: 10),
-
+          const SizedBox(height: TSizes.v10),
           ClipRRect(
             borderRadius: BorderRadius.circular(10),
             child: LinearProgressIndicator(
               value: progress,
-              minHeight: 10,
-              backgroundColor: Colors.grey.shade200,
+              minHeight: TSizes.v10,
+              backgroundColor: TColors.materialGrey200,
               color: TColors.primary,
             ),
           ),
-
-          const SizedBox(height: 10),
-
+          const SizedBox(height: TSizes.v10),
           Row(
-
             children: [
-
-              const Text("₹0"),
-
+              const Text(TTexts.uiText0),
               const Spacer(),
-
               Text(
                 "₹${limit.toStringAsFixed(0)}",
               )
-
             ],
-
           ),
-
-          const SizedBox(height: 18),
-
+          const SizedBox(height: TSizes.v18),
           Container(
-
             padding: const EdgeInsets.all(12),
-
             decoration: BoxDecoration(
-
-              color: Colors.green.withOpacity(.08),
-
+              color: TColors.materialGreen.withOpacity(.08),
               borderRadius: BorderRadius.circular(12),
-
             ),
-
             child: const Row(
-
               children: [
-
                 Icon(
                   Icons.check_circle,
-                  color: Colors.green,
+                  color: TColors.materialGreen,
                 ),
-
-                SizedBox(width: 10),
-
+                SizedBox(width: TSizes.v10),
                 Expanded(
                   child: Text(
-                    "Within compliance limit",
+                    TTexts.uiTextWithinComplianceLimit,
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                 )
-
               ],
-
             ),
-
           )
-
         ],
-
       ),
-
     );
-
   }
 
   Widget _tile(
-      String title,
-      String value,
-      Color color,
-      ) {
-
+    String title,
+    String value,
+    Color color,
+  ) {
     return Container(
-
       padding: const EdgeInsets.all(14),
-
       decoration: BoxDecoration(
-
         color: color.withOpacity(.08),
-
         borderRadius: BorderRadius.circular(14),
-
       ),
-
       child: Column(
-
         children: [
-
           Text(
             title,
             style: TextStyle(
-              color: Colors.grey.shade600,
+              color: TColors.materialGrey600,
             ),
           ),
-
-          const SizedBox(height: 6),
-
+          const SizedBox(height: TSizes.v6),
           Text(
             value,
             style: TextStyle(
               color: color,
               fontWeight: FontWeight.bold,
-              fontSize: 18,
+              fontSize: TSizes.v18,
             ),
           ),
-
         ],
-
       ),
-
     );
-
   }
-
 }

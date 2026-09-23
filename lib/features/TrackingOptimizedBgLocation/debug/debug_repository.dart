@@ -9,9 +9,6 @@ class DebugRepository {
   final _locationDao = LocationPointDao();
   final _stopDao = StopDao();
 
-
-
-
   Future<List<LocationPoint>> recentLocations() {
     return _locationDao.fetchRecent(10);
   }
@@ -49,5 +46,4 @@ class DebugRepository {
     final total = result.first['total'] as num?;
     return (total ?? 0).toDouble();
   }
-
 }

@@ -18,9 +18,5 @@ class TrackingDebugState {
 
   static double lastSpeed = 0;
 
-
   static int? activeStopMinutes;
-
-
-
 }

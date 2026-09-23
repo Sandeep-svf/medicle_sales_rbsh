@@ -6,7 +6,7 @@ import 'package:medicle_sales_rbsh/utils/http/http_client.dart';
 import 'package:medicle_sales_rbsh/utils/local_storage/auth_manager.dart';
 
 import '../model/ticketmodal.dart';
- // Importing the model file created above
+// Importing the model file created above
 
 class TicketController extends GetxController {
   RxList<TicketModel> tickets = <TicketModel>[].obs; // List of tickets
@@ -60,7 +60,8 @@ class TicketController extends GetxController {
 
         // Update the reactive list of tickets
         tickets.value = ticketsResponse.data ?? [];
-        _debug('Tickets fetched successfully. ${ticketsResponse.data?.length ?? 0} tickets found.');
+        _debug(
+            'Tickets fetched successfully. ${ticketsResponse.data?.length ?? 0} tickets found.');
       } else {
         _debug('Failed to load tickets, Status Code: ${response.statusCode}');
       }
@@ -72,7 +73,8 @@ class TicketController extends GetxController {
   }
 
   // Create a new ticket
-  Future<bool> createTicket(String title, String description, String image) async {
+  Future<bool> createTicket(
+      String title, String description, String image) async {
     try {
       final token = await AuthManager().getAuthToken();
       if (token == null || token.isEmpty) {

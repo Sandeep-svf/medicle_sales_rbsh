@@ -139,7 +139,7 @@ class PdfDb {
       // 2) Snapshot existing column names
       final colsRes = await txn.rawQuery('PRAGMA table_info($table)');
       final existingCols =
-      colsRes.map((row) => (row['name'] as String).toLowerCase()).toSet();
+          colsRes.map((row) => (row['name'] as String).toLowerCase()).toSet();
 
       // 3) Build a temp table with the new schema
       await txn.execute('''
@@ -158,35 +158,42 @@ class PdfDb {
 
       // 4) Copy data, mapping legacy names if needed
       // Use COALESCE for fileKey: prefer camelCase; fallback to snake_case; else empty.
-      final hasServerId = existingCols.contains('serverid') || existingCols.contains('server_id');
-      final hasTitle    = existingCols.contains('title');
-      final hasDesc     = existingCols.contains('description');
-      final hasFileKey  = existingCols.contains('filekey');
+      final hasServerId = existingCols.contains('serverid') ||
+          existingCols.contains('server_id');
+      final hasTitle = existingCols.contains('title');
+      final hasDesc = existingCols.contains('description');
+      final hasFileKey = existingCols.contains('filekey');
       final hasFile_key = existingCols.contains('file_key');
-      final hasUpdated  = existingCols.contains('updatedat') || existingCols.contains('updated_at');
-      final hasSigned   = existingCols.contains('signedurl') || existingCols.contains('signed_url');
-      final hasLocal    = existingCols.contains('localpath') || existingCols.contains('local_path');
-      final hasSynced   = existingCols.contains('lastsyncedat') || existingCols.contains('last_synced_at');
+      final hasUpdated = existingCols.contains('updatedat') ||
+          existingCols.contains('updated_at');
+      final hasSigned = existingCols.contains('signedurl') ||
+          existingCols.contains('signed_url');
+      final hasLocal = existingCols.contains('localpath') ||
+          existingCols.contains('local_path');
+      final hasSynced = existingCols.contains('lastsyncedat') ||
+          existingCols.contains('last_synced_at');
 
       // Build a SELECT that tolerates missing columns.
       String colOrNull(String colCamel, String? legacySnake) {
         final lc = colCamel.toLowerCase();
         final ls = legacySnake?.toLowerCase();
-        if (existingCols.contains(lc)) return colCamel;     // exact present
-        if (ls != null && existingCols.contains(ls)) return legacySnake!; // legacy
+        if (existingCols.contains(lc)) return colCamel; // exact present
+        if (ls != null && existingCols.contains(ls))
+          return legacySnake!; // legacy
         return "NULL";
       }
 
-      final serverIdSel = hasServerId ? colOrNull('serverId', 'server_id') : "NULL";
-      final titleSel    = hasTitle    ? 'title' : "''";
-      final descSel     = colOrNull('description', null);
-      final fileKeySel  = hasFileKey || hasFile_key
+      final serverIdSel =
+          hasServerId ? colOrNull('serverId', 'server_id') : "NULL";
+      final titleSel = hasTitle ? 'title' : "''";
+      final descSel = colOrNull('description', null);
+      final fileKeySel = hasFileKey || hasFile_key
           ? "COALESCE(${hasFileKey ? 'fileKey' : 'NULL'}, ${hasFile_key ? 'file_key' : 'NULL'}, '')"
           : "''";
-      final updatedSel  = colOrNull('updatedAt', 'updated_at');
-      final signedSel   = colOrNull('signedUrl', 'signed_url');
-      final localSel    = colOrNull('localPath', 'local_path');
-      final syncedSel   = colOrNull('lastSyncedAt', 'last_synced_at');
+      final updatedSel = colOrNull('updatedAt', 'updated_at');
+      final signedSel = colOrNull('signedUrl', 'signed_url');
+      final localSel = colOrNull('localPath', 'local_path');
+      final syncedSel = colOrNull('lastSyncedAt', 'last_synced_at');
 
       await txn.execute('''
         INSERT INTO ${table}_new (serverId, title, description, fileKey, updatedAt, signedUrl, localPath, lastSyncedAt)
@@ -221,14 +228,16 @@ class PdfDb {
 
   static Future<PdfItem?> getByFileKey(String fileKey) async {
     final db = await open();
-    final res = await db.query(table, where: 'fileKey = ?', whereArgs: [fileKey], limit: 1);
+    final res = await db.query(table,
+        where: 'fileKey = ?', whereArgs: [fileKey], limit: 1);
     if (res.isEmpty) return null;
     return PdfItem.fromDb(res.first);
   }
 
   static Future<PdfItem?> getByServerId(String serverId) async {
     final db = await open();
-    final res = await db.query(table, where: 'serverId = ?', whereArgs: [serverId], limit: 1);
+    final res = await db.query(table,
+        where: 'serverId = ?', whereArgs: [serverId], limit: 1);
     if (res.isEmpty) return null;
     return PdfItem.fromDb(res.first);
   }

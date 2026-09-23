@@ -3,9 +3,9 @@ import 'package:path/path.dart';
 
 import '../models/DoctorOfflineModel.dart';
 
-
 class DoctorDatabaseHelper {
-  static final DoctorDatabaseHelper _instance = DoctorDatabaseHelper._internal();
+  static final DoctorDatabaseHelper _instance =
+      DoctorDatabaseHelper._internal();
   factory DoctorDatabaseHelper() => _instance;
   DoctorDatabaseHelper._internal();
 
@@ -55,7 +55,8 @@ class DoctorDatabaseHelper {
   Future<List<DoctorOfflineModel>> getPendingDoctors() async {
     final db = await database;
     final List<Map<String, dynamic>> maps = await db.query('offline_doctors');
-    return List.generate(maps.length, (i) => DoctorOfflineModel.fromJson(maps[i]));
+    return List.generate(
+        maps.length, (i) => DoctorOfflineModel.fromJson(maps[i]));
   }
 
   Future<void> clearPendingDoctors() async {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class SectionCard extends StatelessWidget {
   final String title;
@@ -15,7 +16,7 @@ class SectionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 1.5,
+      elevation: TSizes.v1_5,
       margin: EdgeInsets.zero,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(18),
@@ -25,31 +26,21 @@ class SectionCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
             Row(
               children: [
-
-                if(icon!=null)
-                  Icon(icon,size:20),
-
-                if(icon!=null)
-                  const SizedBox(width:8),
-
+                if (icon != null) Icon(icon, size: TSizes.v20),
+                if (icon != null) const SizedBox(width: TSizes.v8),
                 Text(
                   title,
                   style: const TextStyle(
-                    fontSize: 18,
+                    fontSize: TSizes.v18,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-
               ],
             ),
-
-            const SizedBox(height:18),
-
+            const SizedBox(height: TSizes.v18),
             child
-
           ],
         ),
       ),

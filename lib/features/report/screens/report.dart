@@ -14,7 +14,6 @@ class ReportScreen extends StatelessWidget {
       body: SingleChildScrollView(
         child: Column(
           children: [
-
             /// Sales Performance
             SalesPerformances(),
 

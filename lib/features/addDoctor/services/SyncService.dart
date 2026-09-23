@@ -3,7 +3,6 @@ import 'package:path/path.dart';
 
 import '../../../utils/offline_model/BaseOfflineModel.dart';
 
-
 class GenericDatabaseHelper<T extends BaseOfflineModel> {
   static Database? _database;
 
@@ -42,10 +41,12 @@ class GenericDatabaseHelper<T extends BaseOfflineModel> {
 
   Future<void> insert(T model) async {
     final db = await database;
-    await db.insert(model.tableName, model.toJson(), conflictAlgorithm: ConflictAlgorithm.replace);
+    await db.insert(model.tableName, model.toJson(),
+        conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
-  Future<List<T>> getAll(String tableName, T Function(Map<String, dynamic>) fromJson) async {
+  Future<List<T>> getAll(
+      String tableName, T Function(Map<String, dynamic>) fromJson) async {
     final db = await database;
     final result = await db.query(tableName);
     return result.map((json) => fromJson(json)).toList();

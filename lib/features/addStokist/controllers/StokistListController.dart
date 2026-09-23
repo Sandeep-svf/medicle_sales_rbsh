@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import '../../../utils/http/http_client.dart';
 import '../../../utils/local_storage/auth_manager.dart';
 import '../model/Stokist.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class StokistListController extends GetxController {
   var isLoading = false.obs;
@@ -23,7 +24,6 @@ class StokistListController extends GetxController {
     super.onInit();
     fetchStokist();
   }
-
 
   Future<List<dynamic>> fetchAreas() async {
     try {
@@ -54,18 +54,15 @@ class StokistListController extends GetxController {
     required String areaId,
   }) async {
     try {
-      final token =
-      await authManager.getAuthToken();
+      final token = await authManager.getAuthToken();
 
       final response = await http.put(
         Uri.parse(
           "$_baseUrl/stockists/$stockistId",
         ),
         headers: {
-          "Content-Type":
-          "application/json",
-          "Authorization":
-          "Bearer $token",
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
         },
         body: jsonEncode({
           "areaId": areaId,
@@ -77,7 +74,7 @@ class StokistListController extends GetxController {
 
         Get.snackbar(
           "Success",
-          "Area Assigned",
+          TTexts.uiTextAreaAssigned,
         );
       }
     } catch (e) {
@@ -87,7 +84,6 @@ class StokistListController extends GetxController {
       );
     }
   }
-
 
   Future<String?> createNewArea({
     required String name,
@@ -114,18 +110,14 @@ class StokistListController extends GetxController {
         }),
       );
 
-      if (response.statusCode == 200 ||
-          response.statusCode == 201) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final jsonResponse = jsonDecode(response.body);
 
-        final jsonResponse =
-        jsonDecode(response.body);
-
-        final String areaId =
-        jsonResponse["data"]["id"];
+        final String areaId = jsonResponse["data"]["id"];
 
         Get.snackbar(
           "Success",
-          "Area Created",
+          TTexts.uiTextAreaCreated,
         );
 
         return areaId;
@@ -165,19 +157,23 @@ class StokistListController extends GetxController {
         if (jsonData['success'] == true && jsonData['data'] is List) {
           final List<dynamic> dataJson = jsonData['data'];
 
-          final List<Stockist> parsedList = dataJson.map((item) {
-            try {
-              return Stockist.fromJson(item);
-            } catch (e) {
-              return null;
-            }
-          }).whereType<Stockist>().toList();
+          final List<Stockist> parsedList = dataJson
+              .map((item) {
+                try {
+                  return Stockist.fromJson(item);
+                } catch (e) {
+                  return null;
+                }
+              })
+              .whereType<Stockist>()
+              .toList();
 
           // Assign to BOTH lists
           stokistList.assignAll(parsedList);
           filteredStokistList.assignAll(parsedList);
 
-          debugPrint("httpStockist: Successfully assigned ${stokistList.length} stockists.");
+          debugPrint(
+              "httpStockist: Successfully assigned ${stokistList.length} stockists.");
         }
       } else {
         debugPrint("httpStockist: Server Error: ${response.statusCode}");
@@ -194,9 +190,10 @@ class StokistListController extends GetxController {
     if (query.isEmpty) {
       filteredStokistList.assignAll(stokistList);
     } else {
-      filteredStokistList.assignAll(stokistList.where((s) =>
-          (s.firmName ?? "").toLowerCase().contains(query.toLowerCase())
-      ).toList());
+      filteredStokistList.assignAll(stokistList
+          .where((s) =>
+              (s.firmName ?? "").toLowerCase().contains(query.toLowerCase()))
+          .toList());
     }
   }
 }

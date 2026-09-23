@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../doctor_offline/models/doctor.dart';
-import '../../../utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'order_widgets.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class OrderDoctorPicker extends StatefulWidget {
   const OrderDoctorPicker({super.key, required this.doctors});
@@ -41,11 +43,12 @@ class _OrderDoctorPickerState extends State<OrderDoctorPicker> {
                   padding: const EdgeInsets.fromLTRB(20, 16, 8, 12),
                   child: Row(children: [
                     const Expanded(
-                        child: Text('Select doctor',
+                        child: Text(TTexts.uiTextSelectDoctor_44eae791,
                             style: TextStyle(
-                                fontSize: 21, fontWeight: FontWeight.w800))),
+                                fontSize: TSizes.v21,
+                                fontWeight: FontWeight.w800))),
                     IconButton(
-                        tooltip: 'Close doctor list',
+                        tooltip: TTexts.uiTextCloseDoctorList,
                         onPressed: () => Navigator.pop(context),
                         icon: const Icon(Icons.close)),
                   ])),
@@ -55,7 +58,7 @@ class _OrderDoctorPickerState extends State<OrderDoctorPicker> {
                     onChanged: (value) => setState(() => _query = value),
                     decoration: const InputDecoration(
                         prefixIcon: Icon(Icons.search),
-                        hintText: 'Name, clinic, area, specialty or phone'),
+                        hintText: TTexts.uiTextNameClinicAreaSpecialtyOrPhone),
                   )),
               Padding(
                   padding: const EdgeInsets.all(16),
@@ -67,11 +70,13 @@ class _OrderDoctorPickerState extends State<OrderDoctorPicker> {
                           child: Padding(
                               padding: EdgeInsets.all(24),
                               child: Text(
-                                  'No matching doctors. Try another search or download your doctor list from Offline Doctors.',
+                                  TTexts
+                                      .uiTextNoMatchingDoctorsTryAnotherSearchOrDownload,
                                   textAlign: TextAlign.center)))
                       : ListView.separated(
                           itemCount: doctors.length,
-                          separatorBuilder: (_, __) => const Divider(height: 1),
+                          separatorBuilder: (_, __) =>
+                              const Divider(height: TSizes.v1),
                           itemBuilder: (context, index) {
                             final d = doctors[index];
                             return ListTile(

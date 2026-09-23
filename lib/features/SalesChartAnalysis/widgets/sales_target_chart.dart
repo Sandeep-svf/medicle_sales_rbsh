@@ -2,12 +2,13 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class SalesTargetChartScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 2,
+      elevation: TSizes.v2,
       margin: const EdgeInsets.all(16),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -18,13 +19,15 @@ class SalesTargetChartScreen extends StatelessWidget {
               TTexts.dailySaleTarget,
               style: Theme.of(context).textTheme.headlineSmall,
             ),
-            SizedBox(height: 10,),
-            const SizedBox(height: 16),
             SizedBox(
-              height: 250,
+              height: TSizes.v10,
+            ),
+            const SizedBox(height: TSizes.v16),
+            SizedBox(
+              height: TSizes.v250,
               child: BarChartWidget(),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: TSizes.v16),
             _buildLegend(context),
           ],
         ),
@@ -38,8 +41,8 @@ class SalesTargetChartScreen extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         _legendItem(TColors.primary, TTexts.pending),
-        const SizedBox(width: 16),
-        _legendItem(Colors.green, TTexts.completed),
+        const SizedBox(width: TSizes.v16),
+        _legendItem(TColors.materialGreen, TTexts.completed),
       ],
     );
   }
@@ -48,15 +51,15 @@ class SalesTargetChartScreen extends StatelessWidget {
     return Row(
       children: [
         Container(
-          width: 12,
-          height: 12,
+          width: TSizes.v12,
+          height: TSizes.v12,
           decoration: BoxDecoration(
             color: color,
             shape: BoxShape.circle,
           ),
         ),
-        const SizedBox(width: 6),
-        Text(text, style: TextStyle(fontSize: 14)),
+        const SizedBox(width: TSizes.v6),
+        Text(text, style: TextStyle(fontSize: TSizes.v14)),
       ],
     );
   }
@@ -112,10 +115,12 @@ class BarChartWidget extends StatelessWidget {
         BarChartRodData(
           toY: totalHeight,
           rodStackItems: [
-            BarChartRodStackItem(0, greenHeight, Colors.green), // Achieved
-            BarChartRodStackItem(greenHeight, totalHeight, TColors.primary), // Pending
+            BarChartRodStackItem(
+                0, greenHeight, TColors.materialGreen), // Achieved
+            BarChartRodStackItem(
+                greenHeight, totalHeight, TColors.primary), // Pending
           ],
-          width: 30,
+          width: TSizes.v30,
           borderRadius: BorderRadius.circular(4),
         ),
       ],

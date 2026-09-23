@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
-import '../../../utils/constants/colors.dart';
-import '../../../utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 import '../controller/DashboardController.dart';
 import '../model/dashboard_beat_model.dart';
 import 'dashboard_beat_reason_dialog.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class DashboardBeatBottomSheet extends StatelessWidget {
   const DashboardBeatBottomSheet({super.key});
@@ -17,7 +17,7 @@ class DashboardBeatBottomSheet extends StatelessWidget {
     return Container(
       height: MediaQuery.of(context).size.height * .85,
       decoration: const BoxDecoration(
-        color: Colors.white,
+        color: TColors.white,
         borderRadius: BorderRadius.vertical(
           top: Radius.circular(30),
         ),
@@ -28,12 +28,12 @@ class DashboardBeatBottomSheet extends StatelessWidget {
             //--------------------------------------------------
             // Drag Handle
             //--------------------------------------------------
-            const SizedBox(height: 10),
+            const SizedBox(height: TSizes.v10),
             Container(
-              width: 55,
-              height: 5,
+              width: TSizes.v55,
+              height: TSizes.v5,
               decoration: BoxDecoration(
-                color: Colors.grey.shade300,
+                color: TColors.materialGrey300,
                 borderRadius: BorderRadius.circular(30),
               ),
             ),
@@ -43,19 +43,19 @@ class DashboardBeatBottomSheet extends StatelessWidget {
             // Header
             //--------------------------------------------------
             const Text(
-              "Switch Today's Beat",
+              TTexts.uiTextSwitchTodaySBeat,
               style: TextStyle(
-                fontSize: 22,
+                fontSize: TSizes.v22,
                 fontWeight: FontWeight.w700,
                 color: TColors.textPrimary,
               ),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: TSizes.v6),
             const Text(
-              "Choose another beat for today's field work",
+              TTexts.uiTextChooseAnotherBeatForTodaySFieldWork,
               style: TextStyle(
                 color: TColors.textSecondary,
-                fontSize: 14,
+                fontSize: TSizes.v14,
               ),
             ),
             const SizedBox(height: TSizes.lg),
@@ -71,7 +71,7 @@ class DashboardBeatBottomSheet extends StatelessWidget {
                 controller: controller.dashboardBeatSearchController,
                 onChanged: controller.filterDashboardBeats,
                 decoration: InputDecoration(
-                  hintText: "Search Beat",
+                  hintText: TTexts.uiTextSearchBeat,
                   prefixIcon: const Icon(Icons.search),
                   filled: true,
                   fillColor: TColors.softGrey,
@@ -101,7 +101,7 @@ class DashboardBeatBottomSheet extends StatelessWidget {
                 if (controller.dashboardFilteredBeats.isEmpty) {
                   return const Center(
                     child: Text(
-                      "No Beats Found",
+                      TTexts.uiTextNoBeatsFound,
                       style: TextStyle(
                         color: TColors.textSecondary,
                       ),
@@ -115,16 +115,19 @@ class DashboardBeatBottomSheet extends StatelessWidget {
                     vertical: 8,
                   ),
                   itemCount: controller.dashboardFilteredBeats.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 12),
+                  separatorBuilder: (_, __) =>
+                      const SizedBox(height: TSizes.v12),
                   itemBuilder: (_, index) {
                     final beat = controller.dashboardFilteredBeats[index];
                     return Obx(() {
                       return _DashboardBeatTile(
                         beat: beat,
                         isCurrent: beat.id ==
-                            controller.dashboardData.value?.data?.todayBeatAssigned?.beatId,
+                            controller.dashboardData.value?.data
+                                ?.todayBeatAssigned?.beatId,
                         isSelected:
-                        controller.dashboardSelectedBeat.value?.id == beat.id,
+                            controller.dashboardSelectedBeat.value?.id ==
+                                beat.id,
                         onTap: () {
                           controller.dashboardSelectedBeat.value = beat;
 
@@ -165,42 +168,39 @@ class DashboardBeatBottomSheet extends StatelessWidget {
                             color: TColors.borderPrimary,
                           ),
                         ),
-                        child: const Text("Cancel"),
+                        child: const Text(TTexts.cancel),
                       ),
                     ),
-                    const SizedBox(width: 14),
+                    const SizedBox(width: TSizes.v14),
                     Expanded(
                       flex: 2,
                       child: Obx(
-                            () => ElevatedButton.icon(
+                        () => ElevatedButton.icon(
                           onPressed:
-                          controller.dashboardSelectedBeat.value == null
-                          ? null
-                          : () {
+                              controller.dashboardSelectedBeat.value == null
+                                  ? null
+                                  : () {
+                                      // Close Bottom Sheet
+                                      Get.back();
 
-                        // Close Bottom Sheet
-                        Get.back();
-
-        // Open Reason Dialog
-        Get.dialog(
-        const DashboardBeatReasonDialog(),
-    barrierDismissible: false,
-    );
-
-
-                          },
+                                      // Open Reason Dialog
+                                      Get.dialog(
+                                        const DashboardBeatReasonDialog(),
+                                        barrierDismissible: false,
+                                      );
+                                    },
                           icon: controller.dashboardBeatChanging.value
                               ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
+                                  width: TSizes.v18,
+                                  height: TSizes.v18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: TSizes.v2,
+                                    color: TColors.white,
+                                  ),
+                                )
                               : const Icon(
-                            Icons.check_circle_outline,
-                          ),
+                                  Icons.check_circle_outline,
+                                ),
                           label: Text(
                             controller.dashboardBeatChanging.value
                                 ? "Applying..."
@@ -208,9 +208,9 @@ class DashboardBeatBottomSheet extends StatelessWidget {
                           ),
                           style: ElevatedButton.styleFrom(
                             minimumSize: const Size(double.infinity, 52),
-                            elevation: 0,
+                            elevation: TSizes.v0,
                             backgroundColor: TColors.primary,
-                            foregroundColor: Colors.white,
+                            foregroundColor: TColors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(14),
                             ),
@@ -258,7 +258,7 @@ class _DashboardBeatTile extends StatelessWidget {
         duration: const Duration(milliseconds: 220),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected ? TColors.primary_shade50 : Colors.white,
+          color: isSelected ? TColors.primary_shade50 : TColors.white,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
             color: isSelected ? TColors.primary : TColors.borderPrimary,
@@ -266,8 +266,8 @@ class _DashboardBeatTile extends StatelessWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(.04),
-              blurRadius: 10,
+              color: TColors.pureBlack.withOpacity(.04),
+              blurRadius: TSizes.v10,
               offset: const Offset(0, 4),
             ),
           ],
@@ -280,25 +280,25 @@ class _DashboardBeatTile extends StatelessWidget {
             //------------------------------------------------
             AnimatedContainer(
               duration: const Duration(milliseconds: 200),
-              width: 24,
-              height: 24,
+              width: TSizes.v24,
+              height: TSizes.v24,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: isSelected ? TColors.primary : Colors.white,
+                color: isSelected ? TColors.primary : TColors.white,
                 border: Border.all(
                   color: isSelected ? TColors.primary : TColors.borderPrimary,
-                  width: 2,
+                  width: TSizes.v2,
                 ),
               ),
               child: isSelected
                   ? const Icon(
-                Icons.check,
-                color: Colors.white,
-                size: 15,
-              )
+                      Icons.check,
+                      color: TColors.white,
+                      size: TSizes.v15,
+                    )
                   : null,
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: TSizes.v16),
 
             //------------------------------------------------
             // Content
@@ -313,7 +313,7 @@ class _DashboardBeatTile extends StatelessWidget {
                         child: Text(
                           beat.name,
                           style: const TextStyle(
-                            fontSize: 17,
+                            fontSize: TSizes.v17,
                             fontWeight: FontWeight.w700,
                             color: TColors.textPrimary,
                           ),
@@ -330,25 +330,25 @@ class _DashboardBeatTile extends StatelessWidget {
                             borderRadius: BorderRadius.circular(30),
                           ),
                           child: const Text(
-                            "CURRENT",
+                            TTexts.uiTextCURRENT,
                             style: TextStyle(
                               color: TColors.success,
                               fontWeight: FontWeight.bold,
-                              fontSize: 11,
+                              fontSize: TSizes.v11,
                             ),
                           ),
                         ),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: TSizes.v8),
                   Row(
                     children: [
                       const Icon(
                         Icons.location_on_outlined,
-                        size: 18,
+                        size: TSizes.v18,
                         color: TColors.primary,
                       ),
-                      const SizedBox(width: 6),
+                      const SizedBox(width: TSizes.v6),
                       Text(
                         "${beat.areas.length} Area${beat.areas.length == 1 ? '' : 's'}",
                         style: const TextStyle(
@@ -358,13 +358,13 @@ class _DashboardBeatTile extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: TSizes.v10),
                   Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
+                    spacing: TSizes.v8,
+                    runSpacing: TSizes.v8,
                     children: [
                       ...previewAreas.map(
-                            (area) => Container(
+                        (area) => Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 10,
                             vertical: 6,
@@ -376,7 +376,7 @@ class _DashboardBeatTile extends StatelessWidget {
                           child: Text(
                             area.name,
                             style: const TextStyle(
-                              fontSize: 12,
+                              fontSize: TSizes.v12,
                               color: TColors.textPrimary,
                             ),
                           ),
@@ -397,7 +397,7 @@ class _DashboardBeatTile extends StatelessWidget {
                             style: const TextStyle(
                               color: TColors.primary,
                               fontWeight: FontWeight.w600,
-                              fontSize: 12,
+                              fontSize: TSizes.v12,
                             ),
                           ),
                         ),

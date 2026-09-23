@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class VisitConfirmResponse {
   final bool status;
@@ -19,7 +20,7 @@ class VisitConfirmResponse {
       return VisitConfirmResponse(
         status: false,
         success: false,
-        message: "No response",
+        message: TTexts.uiTextNoResponse,
         distance: 0,
       );
     }

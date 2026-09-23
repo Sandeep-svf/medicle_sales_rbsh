@@ -86,7 +86,8 @@ class WeatherService {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) return null;
     }
-    return await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.low);
+    return await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.low);
   }
 }
 

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 
 class InvestmentStatusChip extends StatelessWidget {
   final String status;
@@ -16,37 +18,37 @@ class InvestmentStatusChip extends StatelessWidget {
 
     switch (status.toLowerCase()) {
       case "pending":
-        color = Colors.orange;
+        color = TColors.materialOrange;
         text = "Pending";
         icon = Icons.schedule;
         break;
 
       case "approved":
-        color = Colors.blue;
+        color = TColors.materialBlue;
         text = "Approved";
         icon = Icons.thumb_up_alt_outlined;
         break;
 
       case "paid":
-        color = Colors.green;
+        color = TColors.materialGreen;
         text = "Paid";
         icon = Icons.check_circle_outline;
         break;
 
       case "rejected":
-        color = Colors.red;
+        color = TColors.materialRed;
         text = "Rejected";
         icon = Icons.cancel_outlined;
         break;
 
       case "draft":
-        color = Colors.grey;
+        color = TColors.materialGrey;
         text = "Draft";
         icon = Icons.edit_note;
         break;
 
       default:
-        color = Colors.grey;
+        color = TColors.materialGrey;
         text = status;
         icon = Icons.help_outline;
     }
@@ -68,10 +70,10 @@ class InvestmentStatusChip extends StatelessWidget {
         children: [
           Icon(
             icon,
-            size: 15,
+            size: TSizes.v15,
             color: color,
           ),
-          const SizedBox(width: 5),
+          const SizedBox(width: TSizes.v5),
           Text(
             text,
             style: TextStyle(

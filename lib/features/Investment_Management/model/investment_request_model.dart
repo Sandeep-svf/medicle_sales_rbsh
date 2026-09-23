@@ -1,3 +1,4 @@
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -109,19 +110,19 @@ class InvestmentRequest {
   Color get paymentColor {
     switch (paymentMode) {
       case "Cash":
-        return Colors.green;
+        return TColors.materialGreen;
 
       case "NEFT":
-        return Colors.blue;
+        return TColors.materialBlue;
 
       case "UPI":
-        return Colors.deepPurple;
+        return TColors.materialDeepPurple;
 
       case "Items/Gift":
-        return Colors.orange;
+        return TColors.materialOrange;
 
       default:
-        return Colors.grey;
+        return TColors.materialGrey;
     }
   }
 
@@ -147,22 +148,22 @@ class InvestmentRequest {
   Color get statusColor {
     switch (status) {
       case "Pending":
-        return Colors.orange;
+        return TColors.materialOrange;
 
       case "Approved":
-        return Colors.blue;
+        return TColors.materialBlue;
 
       case "Rejected":
-        return Colors.red;
+        return TColors.materialRed;
 
       case "Paid":
-        return Colors.green;
+        return TColors.materialGreen;
 
       case "Draft":
-        return Colors.grey;
+        return TColors.materialGrey;
 
       default:
-        return Colors.grey;
+        return TColors.materialGrey;
     }
   }
 

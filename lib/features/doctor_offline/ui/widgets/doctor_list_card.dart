@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
-
 import '../../models/doctor.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class DoctorListCard extends StatelessWidget {
   const DoctorListCard({
@@ -44,7 +44,7 @@ class DoctorListCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const SizedBox(
-          width: 5,
+          width: TSizes.v5,
           child: ColoredBox(color: TColors.primary),
         ),
         Expanded(
@@ -63,8 +63,8 @@ class DoctorListCard extends StatelessWidget {
                             ? 'Offline stored only'
                             : 'Photo upload pending',
                         style: const TextStyle(
-                            color: Colors.deepOrange,
-                            fontSize: 12,
+                            color: TColors.materialDeepOrange,
+                            fontSize: TSizes.v12,
                             fontWeight: FontWeight.w600))),
               if (fillHeight) Expanded(child: cardBody) else cardBody,
             ],
@@ -88,15 +88,15 @@ class DoctorListCard extends StatelessWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 12,
+              color: TColors.pureBlack.withValues(alpha: 0.05),
+              blurRadius: TSizes.v12,
               offset: const Offset(0, 6),
             ),
           ],
         ),
         clipBehavior: Clip.antiAlias,
         child: Material(
-          color: Colors.transparent,
+          color: TColors.transparent,
           child: InkWell(
             onTap: onTap,
             child: fillHeight ? cardRow : IntrinsicHeight(child: cardRow),
@@ -124,7 +124,7 @@ class _CardHeader extends StatelessWidget {
       decoration: BoxDecoration(
         color: TColors.primary.withValues(alpha: 0.04),
         border: Border(
-          bottom: BorderSide(color: Colors.grey.shade100),
+          bottom: BorderSide(color: TColors.materialGrey100),
         ),
       ),
       child: Row(
@@ -136,11 +136,11 @@ class _CardHeader extends StatelessWidget {
               shape: BoxShape.circle,
               border: Border.all(
                 color: TColors.primary.withValues(alpha: 0.3),
-                width: 2,
+                width: TSizes.v2,
               ),
             ),
             child: CircleAvatar(
-              radius: 24,
+              radius: TSizes.v24,
               backgroundColor: TColors.white,
               child: Text(
                 _initial,
@@ -151,7 +151,7 @@ class _CardHeader extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: TSizes.v12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -180,7 +180,7 @@ class _CardHeader extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.grey.shade800,
+                        color: TColors.materialGrey800,
                         fontWeight: FontWeight.w600,
                       ),
                 ),
@@ -188,7 +188,7 @@ class _CardHeader extends StatelessWidget {
                 _CompactInfoLine(
                   icon: Icons.location_on_rounded,
                   value: _location,
-                  valueColor: Colors.grey.shade600,
+                  valueColor: TColors.materialGrey600,
                 ),
               ],
             ),
@@ -241,9 +241,9 @@ class _CardBody extends StatelessWidget {
               Icon(
                 Icons.work_history_rounded,
                 size: TSizes.iconSm,
-                color: Colors.grey.shade700,
+                color: TColors.materialGrey700,
               ),
-              const SizedBox(width: 6),
+              const SizedBox(width: TSizes.v6),
               Expanded(
                 child: Text(
                   doctor.yearsOfExperience == null
@@ -264,13 +264,13 @@ class _CardBody extends StatelessWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
+                    color: TColors.materialGrey100,
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
                     doctor.gender!.trim(),
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: Colors.grey.shade700,
+                          color: TColors.materialGrey700,
                           fontWeight: FontWeight.w600,
                         ),
                   ),
@@ -282,14 +282,14 @@ class _CardBody extends StatelessWidget {
           _CompactInfoLine(
             icon: Icons.local_hospital_outlined,
             value: doctor.displayClinic,
-            valueColor: Colors.grey.shade700,
+            valueColor: TColors.materialGrey700,
           ),
           // Grid cards use a fixed height, but actions should follow the
           // doctor information instead of being pushed down by a large gap.
           const SizedBox(height: TSizes.md),
           SizedBox(
             width: double.infinity,
-            height: 40,
+            height: TSizes.v40,
             child: ElevatedButton(
               onPressed: onTap,
               style: ElevatedButton.styleFrom(
@@ -301,7 +301,7 @@ class _CardBody extends StatelessWidget {
                 ),
               ),
               child: const Text(
-                'View Profile',
+                TTexts.uiTextViewProfile,
                 style: TextStyle(fontWeight: FontWeight.w700),
               ),
             ),
@@ -310,7 +310,7 @@ class _CardBody extends StatelessWidget {
             const SizedBox(height: TSizes.sm),
             _CardActionButton(
               icon: Icons.add_a_photo_outlined,
-              label: 'Add Geo Image',
+              label: TTexts.uiTextAddGeoImage,
               onPressed: imageActionBusy ? null : onAddGeoImage!,
               busy: imageActionBusy,
             ),
@@ -319,7 +319,7 @@ class _CardBody extends StatelessWidget {
             const SizedBox(height: TSizes.sm),
             _CardActionButton(
               icon: Icons.my_location_outlined,
-              label: 'Request Location Update',
+              label: TTexts.uiTextRequestLocationUpdate,
               onPressed: onRequestLocation!,
             ),
           ],
@@ -327,7 +327,7 @@ class _CardBody extends StatelessWidget {
             const SizedBox(height: TSizes.sm),
             _CardActionButton(
               icon: Icons.location_city_outlined,
-              label: 'Assign Area',
+              label: TTexts.uiTextAssignArea,
               onPressed: onAddArea!,
             ),
           ],
@@ -354,15 +354,15 @@ class _CardActionButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
-      height: 40,
+      height: TSizes.v40,
       child: OutlinedButton.icon(
         onPressed: onPressed,
         icon: busy
             ? const SizedBox.square(
                 dimension: 17,
-                child: CircularProgressIndicator(strokeWidth: 2),
+                child: CircularProgressIndicator(strokeWidth: TSizes.v2),
               )
-            : Icon(icon, size: 17),
+            : Icon(icon, size: TSizes.v17),
         label: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis),
         style: OutlinedButton.styleFrom(
           foregroundColor: TColors.primary,
@@ -394,8 +394,8 @@ class _CompactInfoLine extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 14, color: valueColor),
-        const SizedBox(width: 5),
+        Icon(icon, size: TSizes.v14, color: valueColor),
+        const SizedBox(width: TSizes.v5),
         Expanded(
           child: Text(
             value,
@@ -448,23 +448,23 @@ class _PriorityPresentation {
     switch (value?.trim().toUpperCase()) {
       case 'A':
         return const _PriorityPresentation(
-          label: 'Priority A',
-          color: Colors.red,
+          label: TTexts.uiTextPriorityA,
+          color: TColors.materialRed,
         );
       case 'B':
         return const _PriorityPresentation(
-          label: 'Priority B',
-          color: Colors.orange,
+          label: TTexts.uiTextPriorityB,
+          color: TColors.materialOrange,
         );
       case 'C':
         return const _PriorityPresentation(
-          label: 'Priority C',
-          color: Colors.blueGrey,
+          label: TTexts.uiTextPriorityC,
+          color: TColors.materialBlueGrey,
         );
       default:
         return const _PriorityPresentation(
-          label: 'Not Added',
-          color: Colors.grey,
+          label: TTexts.uiTextNotAdded,
+          color: TColors.materialGrey,
         );
     }
   }

@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:get/get.dart';
 import 'package:latlong2/latlong.dart';
-
 import '../../controller/area_detail_controller.dart';
 import '../../model/area_model.dart';
 import 'entity_marker.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 
 class AreaDetailGoogleMap extends StatelessWidget {
   final AreaModel area;
@@ -22,7 +23,7 @@ class AreaDetailGoogleMap extends StatelessWidget {
     );
 
     return Obx(
-          () => FlutterMap(
+      () => FlutterMap(
         options: MapOptions(
           initialCenter: LatLng(
             area.latitude,
@@ -45,8 +46,8 @@ class AreaDetailGoogleMap extends StatelessWidget {
                 ),
                 radius: controller.dynamicRadius.value,
                 useRadiusInMeter: true,
-                color: Colors.blue.withOpacity(.15),
-                borderColor: Colors.blue,
+                color: TColors.materialBlue.withOpacity(.15),
+                borderColor: TColors.materialBlue,
                 borderStrokeWidth: 2,
               ),
             ],
@@ -60,12 +61,12 @@ class AreaDetailGoogleMap extends StatelessWidget {
                   area.latitude,
                   area.longitude,
                 ),
-                width: 160,
-                height: 50,
+                width: TSizes.v160,
+                height: TSizes.v50,
                 child: Container(
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: TColors.white,
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
@@ -85,8 +86,8 @@ class AreaDetailGoogleMap extends StatelessWidget {
                   doctor.latitude,
                   doctor.longitude,
                 ),
-                width: 40,
-                height: 40,
+                width: TSizes.v40,
+                height: TSizes.v40,
                 child: GestureDetector(
                   onTap: () {
                     debugPrint(
@@ -95,7 +96,7 @@ class AreaDetailGoogleMap extends StatelessWidget {
                   },
                   child: EntityMarker(
                     icon: Icons.local_hospital,
-                    color: Colors.red,
+                    color: TColors.materialRed,
                     onTap: () {
                       debugPrint(
                         "Doctor Area : ${doctor.areaId}",
@@ -115,11 +116,11 @@ class AreaDetailGoogleMap extends StatelessWidget {
                   chemist.latitude,
                   chemist.longitude,
                 ),
-                width: 40,
-                height: 40,
+                width: TSizes.v40,
+                height: TSizes.v40,
                 child: EntityMarker(
                   icon: Icons.local_pharmacy,
-                  color: Colors.green,
+                  color: TColors.materialGreen,
                   onTap: () {
                     debugPrint(
                       "Chemist Area : ${chemist.areaId}",
@@ -129,6 +130,7 @@ class AreaDetailGoogleMap extends StatelessWidget {
               );
             }).toList(),
           ),
+
           /// Stockist Markers
           MarkerLayer(
             markers: controller.areaStockists.map((stockist) {
@@ -137,11 +139,11 @@ class AreaDetailGoogleMap extends StatelessWidget {
                   stockist.latitude,
                   stockist.longitude,
                 ),
-                width: 40,
-                height: 40,
+                width: TSizes.v40,
+                height: TSizes.v40,
                 child: EntityMarker(
                   icon: Icons.store,
-                  color: Colors.orange,
+                  color: TColors.materialOrange,
                   onTap: () {
                     debugPrint(
                       "Stockist Area : ${stockist.areaId}",

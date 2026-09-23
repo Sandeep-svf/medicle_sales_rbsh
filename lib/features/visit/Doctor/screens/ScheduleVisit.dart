@@ -5,15 +5,15 @@ import 'package:medicle_sales_rbsh/features/visit/Stockist/screens/visitStockist
 
 import '../../../../utils/check_internet/checkInternetConnection.dart';
 import '../../../../utils/constants/colors.dart';
-
-
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class ScheduleVisit extends StatefulWidget {
   @override
   _MainScreenState createState() => _MainScreenState();
 }
 
-class _MainScreenState extends State<ScheduleVisit> with SingleTickerProviderStateMixin {
+class _MainScreenState extends State<ScheduleVisit>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
   @override
@@ -28,7 +28,6 @@ class _MainScreenState extends State<ScheduleVisit> with SingleTickerProviderSta
     if (!online) return; // Stop API if no internet
   }
 
-
   @override
   void dispose() {
     _tabController.dispose();
@@ -41,16 +40,15 @@ class _MainScreenState extends State<ScheduleVisit> with SingleTickerProviderSta
       appBar: AppBar(
         title: TabBar(
           controller: _tabController,
-          indicatorColor: Colors.white,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.grey.shade400,
+          indicatorColor: TColors.white,
+          labelColor: TColors.white,
+          unselectedLabelColor: TColors.materialGrey400,
           tabs: const [
-            Tab(text: "Doctor"),
-            Tab(text: "Chemist"),
-            Tab(text: "Stockist"),
+            Tab(text: TTexts.addDoctor),
+            Tab(text: TTexts.clinic),
+            Tab(text: TTexts.uiTextStockist),
           ],
         ),
-
       ),
       body: TabBarView(
         controller: _tabController,

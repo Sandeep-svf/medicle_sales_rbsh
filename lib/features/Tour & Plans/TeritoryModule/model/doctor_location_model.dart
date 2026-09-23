@@ -73,38 +73,30 @@ class DoctorLocationModel extends Equatable {
   }
 
   factory DoctorLocationModel.fromJson(
-      Map<String, dynamic> json,
-      ) {
+    Map<String, dynamic> json,
+  ) {
     return DoctorLocationModel(
       id: json["id"] ?? "",
-
       doctorCode: json["doctorCode"] ?? "",
-
       doctorName: json["doctorName"] ?? "",
-
       areaId: json["areaId"] ?? "",
-
       headquarterId: json["headquarterId"] ?? "",
-
       clinicName: json["clinicName"] ?? "",
-
       speciality: json["speciality"] ?? "",
-
       category: DoctorCategory.values.firstWhere(
-            (e) => e.name.toUpperCase() == (json["category"] ?? "").toString().toUpperCase(),
+        (e) =>
+            e.name.toUpperCase() ==
+            (json["category"] ?? "").toString().toUpperCase(),
         orElse: () => DoctorCategory.c,
       ),
-
       latitude: (json["latitude"] as num?)?.toDouble() ?? 0,
-
       longitude: (json["longitude"] as num?)?.toDouble() ?? 0,
-
       visitStatus: VisitStatus.values.firstWhere(
-            (e) => e.name.toLowerCase() ==
+        (e) =>
+            e.name.toLowerCase() ==
             (json["visitStatus"] ?? "").toString().toLowerCase(),
         orElse: () => VisitStatus.pending,
       ),
-
       active: json["active"] ?? true,
     );
   }
@@ -128,17 +120,17 @@ class DoctorLocationModel extends Equatable {
 
   @override
   List<Object?> get props => [
-    id,
-    doctorCode,
-    doctorName,
-    areaId,
-    headquarterId,
-    clinicName,
-    speciality,
-    category,
-    latitude,
-    longitude,
-    visitStatus,
-    active,
-  ];
+        id,
+        doctorCode,
+        doctorName,
+        areaId,
+        headquarterId,
+        clinicName,
+        speciality,
+        category,
+        latitude,
+        longitude,
+        visitStatus,
+        active,
+      ];
 }

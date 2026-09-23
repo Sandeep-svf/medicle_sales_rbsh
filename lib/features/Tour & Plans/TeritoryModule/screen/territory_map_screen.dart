@@ -1,3 +1,4 @@
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -18,12 +19,11 @@ class TerritoryMapScreen extends GetView<TerritoryController> {
     Get.lazyPut(() => TerritoryController());
 
     return Scaffold(
-      backgroundColor: Colors.grey.shade100,
+      backgroundColor: TColors.materialGrey100,
 
       body: SafeArea(
         child: Stack(
           children: [
-
             /// MAP
             const Positioned.fill(
               child: TerritoryGoogleMap(),
@@ -37,7 +37,6 @@ class TerritoryMapScreen extends GetView<TerritoryController> {
               child: TerritoryTopBar(),
             ),
 
-
             const Positioned(
               top: 150,
               right: 12,
@@ -45,7 +44,7 @@ class TerritoryMapScreen extends GetView<TerritoryController> {
             ),
 
             /// HQ SELECTOR
-           /* const Positioned(
+            /* const Positioned(
               top: 82,
               left: 12,
               right: 12,
@@ -53,7 +52,7 @@ class TerritoryMapScreen extends GetView<TerritoryController> {
             ),*/
 
             /// offline map toggle
-           /* const Positioned(
+            /* const Positioned(
 
               top: 80,
 
@@ -67,11 +66,8 @@ class TerritoryMapScreen extends GetView<TerritoryController> {
 
             /// BOTTOM PANEL
             const Align(
-
               alignment: Alignment.bottomCenter,
-
               child: BeatCreationPanel(),
-
             ),
 
             Positioned(
@@ -80,25 +76,21 @@ class TerritoryMapScreen extends GetView<TerritoryController> {
               child: FloatingActionButton(
                 heroTag: "hq_location",
                 mini: true,
-                backgroundColor: Colors.white,
+                backgroundColor: TColors.white,
                 onPressed: () {
                   controller.goToHeadquarter();
                 },
                 child: const Icon(
                   Icons.location_city,
-                  color: Colors.blue,
+                  color: TColors.materialBlue,
                 ),
               ),
             ),
 
             const Align(
-
               alignment: Alignment.bottomCenter,
-
               child: TerritoryBottomPanel(),
-
             ),
-
           ],
         ),
       ),

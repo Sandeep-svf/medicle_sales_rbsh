@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import '../services/WeatherService.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 
 // =============================================================================
 // 1. THE COMPACT WEATHER WIDGET
@@ -14,15 +17,19 @@ class CompactWeatherWidget extends StatefulWidget {
   State<CompactWeatherWidget> createState() => _CompactWeatherWidgetState();
 }
 
-class _CompactWeatherWidgetState extends State<CompactWeatherWidget> with SingleTickerProviderStateMixin {
+class _CompactWeatherWidgetState extends State<CompactWeatherWidget>
+    with SingleTickerProviderStateMixin {
   late AnimationController _pulseController;
   late Animation<double> _pulseAnim;
 
   @override
   void initState() {
     super.initState();
-    _pulseController = AnimationController(vsync: this, duration: const Duration(seconds: 2))..repeat(reverse: true);
-    _pulseAnim = Tween<double>(begin: 1.0, end: 1.05).animate(CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut));
+    _pulseController =
+        AnimationController(vsync: this, duration: const Duration(seconds: 2))
+          ..repeat(reverse: true);
+    _pulseAnim = Tween<double>(begin: 1.0, end: 1.05).animate(
+        CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut));
   }
 
   @override
@@ -65,34 +72,49 @@ class _CompactWeatherWidgetState extends State<CompactWeatherWidget> with Single
             _showUltraPremiumSheet(context, data);
           },
           child: Container(
-            constraints: const BoxConstraints(maxWidth: 160),
+            constraints: const BoxConstraints(maxWidth: TSizes.v160),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.15),
+              color: TColors.white.withOpacity(0.15),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.white.withOpacity(0.2)),
-              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))],
+              border: Border.all(color: TColors.white.withOpacity(0.2)),
+              boxShadow: [
+                BoxShadow(
+                    color: TColors.pureBlack.withOpacity(0.05),
+                    blurRadius: TSizes.v10,
+                    offset: const Offset(0, 4))
+              ],
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(_WeatherIconMapper.getIcon(code), color: Colors.amber, size: 22),
-                const SizedBox(width: 8),
+                Icon(_WeatherIconMapper.getIcon(code),
+                    color: TColors.materialAmber, size: TSizes.v22),
+                const SizedBox(width: TSizes.v8),
                 Flexible(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text("$temp°C", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16, height: 1.0)),
-                      const SizedBox(height: 2),
+                      Text("$temp°C",
+                          style: const TextStyle(
+                              color: TColors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: TSizes.v16,
+                              height: TSizes.v1)),
+                      const SizedBox(height: TSizes.v2),
                       ScaleTransition(
                         scale: _pulseAnim,
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text("H:$max° L:$min°", style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 9)),
-                            const SizedBox(width: 2),
-                            const Icon(Icons.arrow_forward_ios, color: Colors.white70, size: 8)
+                            Text("H:$max° L:$min°",
+                                style: TextStyle(
+                                    color: TColors.white.withOpacity(0.9),
+                                    fontSize: TSizes.v9)),
+                            const SizedBox(width: TSizes.v2),
+                            const Icon(Icons.arrow_forward_ios,
+                                color: TColors.white70, size: TSizes.v8)
                           ],
                         ),
                       ),
@@ -110,7 +132,7 @@ class _CompactWeatherWidgetState extends State<CompactWeatherWidget> with Single
   void _showUltraPremiumSheet(BuildContext context, Map<String, dynamic> data) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.transparent,
+      backgroundColor: TColors.transparent,
       isScrollControlled: true,
       builder: (context) => _PremiumWeatherSheet(data: data),
     );
@@ -128,7 +150,8 @@ class _PremiumWeatherSheet extends StatefulWidget {
   State<_PremiumWeatherSheet> createState() => _PremiumWeatherSheetState();
 }
 
-class _PremiumWeatherSheetState extends State<_PremiumWeatherSheet> with TickerProviderStateMixin {
+class _PremiumWeatherSheetState extends State<_PremiumWeatherSheet>
+    with TickerProviderStateMixin {
   late List<WeatherHour> _hourlyData;
   late WeatherHour _selectedHour;
   final ScrollController _scrollController = ScrollController();
@@ -141,7 +164,17 @@ class _PremiumWeatherSheetState extends State<_PremiumWeatherSheet> with TickerP
     _hourlyData = WeatherService().getRichHourlyForecast(widget.data);
 
     if (_hourlyData.isEmpty) {
-      _hourlyData = [WeatherHour(time: "N/A", rawTime: DateTime.now(), temp: 0, code: 0, feelsLike: 0, rainChance: 0, windSpeed: 0, humidity: 0)];
+      _hourlyData = [
+        WeatherHour(
+            time: "N/A",
+            rawTime: DateTime.now(),
+            temp: 0,
+            code: 0,
+            feelsLike: 0,
+            rainChance: 0,
+            windSpeed: 0,
+            humidity: 0)
+      ];
     }
 
     final nowStr = DateFormat('h a').format(DateTime.now());
@@ -149,10 +182,13 @@ class _PremiumWeatherSheetState extends State<_PremiumWeatherSheet> with TickerP
     if (initialIndex == -1) initialIndex = 0;
     _selectedHour = _hourlyData[initialIndex];
 
-    _floatController = AnimationController(vsync: this, duration: const Duration(seconds: 3))..repeat(reverse: true);
-    _floatAnim = Tween<Offset>(begin: const Offset(0, 0.05), end: const Offset(0, -0.05)).animate(
-        CurvedAnimation(parent: _floatController, curve: Curves.easeInOut)
-    );
+    _floatController =
+        AnimationController(vsync: this, duration: const Duration(seconds: 3))
+          ..repeat(reverse: true);
+    _floatAnim = Tween<Offset>(
+            begin: const Offset(0, 0.05), end: const Offset(0, -0.05))
+        .animate(
+            CurvedAnimation(parent: _floatController, curve: Curves.easeInOut));
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollToIndex(initialIndex);
@@ -181,11 +217,9 @@ class _PremiumWeatherSheetState extends State<_PremiumWeatherSheet> with TickerP
     double offset = (index * itemWidth) - (screenWidth / 2) + 40;
 
     // animateTo automatically clamps if offset is out of bounds
-    _scrollController.animateTo(
-        offset,
+    _scrollController.animateTo(offset,
         duration: const Duration(milliseconds: 600),
-        curve: Curves.easeOutQuart
-    );
+        curve: Curves.easeOutQuart);
   }
 
   void _onHourSelected(WeatherHour hour) {
@@ -200,41 +234,61 @@ class _PremiumWeatherSheetState extends State<_PremiumWeatherSheet> with TickerP
 
   @override
   Widget build(BuildContext context) {
-    final bool isNight = _selectedHour.rawTime.hour > 18 || _selectedHour.rawTime.hour < 6;
+    final bool isNight =
+        _selectedHour.rawTime.hour > 18 || _selectedHour.rawTime.hour < 6;
     final List<Color> bgColors = isNight
-        ? [const Color(0xFF0F2027), const Color(0xFF203A43), const Color(0xFF2C5364)]
-        : [Colors.white, const Color(0xFFE0EAFC)];
-    final Color textColor = isNight ? Colors.white : const Color(0xFF1E1E2C);
-    final Color accentColor = const Color(0xFFC71D52);
+        ? [TColors.hex_FF0F2027, TColors.hex_FF203A43, TColors.hex_FF2C5364]
+        : [TColors.white, TColors.hex_FFE0EAFC];
+    final Color textColor = isNight ? TColors.white : TColors.hex_FF1E1E2C;
+    final Color accentColor = TColors.hex_FFC71D52;
 
     return Container(
-      height: 620,
+      height: TSizes.v620,
       decoration: BoxDecoration(
-        gradient: LinearGradient(colors: bgColors, begin: Alignment.topCenter, end: Alignment.bottomCenter),
+        gradient: LinearGradient(
+            colors: bgColors,
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(36)),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.4), blurRadius: 50, spreadRadius: 5)],
+        boxShadow: [
+          BoxShadow(
+              color: TColors.pureBlack.withOpacity(0.4),
+              blurRadius: TSizes.v50,
+              spreadRadius: TSizes.v5)
+        ],
       ),
       child: Column(
         children: [
           // Handle
-          Center(child: Container(margin: const EdgeInsets.only(top: 12), width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.withOpacity(0.3), borderRadius: BorderRadius.circular(2)))),
+          Center(
+              child: Container(
+                  margin: const EdgeInsets.only(top: 12),
+                  width: TSizes.v40,
+                  height: TSizes.v4,
+                  decoration: BoxDecoration(
+                      color: TColors.materialGrey.withOpacity(0.3),
+                      borderRadius: BorderRadius.circular(2)))),
 
           // 🟢 FIXED: Wrapped HeroDisplay in Expanded to ensure it takes space,
           // but the overflow fix happens inside _HeroDisplay
           Expanded(
-            child: _HeroDisplay(hour: _selectedHour, textColor: textColor, isNight: isNight, floatAnim: _floatAnim),
+            child: _HeroDisplay(
+                hour: _selectedHour,
+                textColor: textColor,
+                isNight: isNight,
+                floatAnim: _floatAnim),
           ),
 
           // Timeline
           SizedBox(
-            height: 140,
+            height: TSizes.v140,
             child: ListView.separated(
               controller: _scrollController,
               padding: const EdgeInsets.symmetric(horizontal: 24),
               scrollDirection: Axis.horizontal,
               physics: const BouncingScrollPhysics(),
               itemCount: _hourlyData.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 12),
+              separatorBuilder: (_, __) => const SizedBox(width: TSizes.v12),
               itemBuilder: (context, index) {
                 final hour = _hourlyData[index];
                 return _AnimatedTimelineItem(
@@ -248,7 +302,7 @@ class _PremiumWeatherSheetState extends State<_PremiumWeatherSheet> with TickerP
               },
             ),
           ),
-          const SizedBox(height: 40),
+          const SizedBox(height: TSizes.v40),
         ],
       ),
     );
@@ -265,96 +319,153 @@ class _HeroDisplay extends StatelessWidget {
   final bool isNight;
   final Animation<Offset> floatAnim;
 
-  const _HeroDisplay({required this.hour, required this.textColor, required this.isNight, required this.floatAnim});
+  const _HeroDisplay(
+      {required this.hour,
+      required this.textColor,
+      required this.isNight,
+      required this.floatAnim});
 
   @override
   Widget build(BuildContext context) {
     // 🟢 FIXED: Replaced Column+Spacer with SingleChildScrollView
     // This allows the content to scroll if the screen is too short (preventing bottom overflow),
     // while LayoutBuilder ensures it fills height if space IS available.
-    return LayoutBuilder(
-        builder: (context, constraints) {
-          return SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(minHeight: constraints.maxHeight),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 20),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly, // 🟢 Distributes space intelligently
+    return LayoutBuilder(builder: (context, constraints) {
+      return SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minHeight: constraints.maxHeight),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 20),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment
+                  .spaceEvenly, // 🟢 Distributes space intelligently
+              children: [
+                // Top Row
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // Top Row
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text("Forecast", style: TextStyle(color: textColor.withOpacity(0.6), fontSize: 14, fontWeight: FontWeight.w600)),
-                            Text(DateFormat('EEEE, d MMMM').format(hour.rawTime), style: TextStyle(color: textColor, fontSize: 18, fontWeight: FontWeight.bold)),
-                          ],
-                        ),
-                        GestureDetector(
-                          onTap: () => Navigator.pop(context),
-                          child: CircleAvatar(backgroundColor: textColor.withOpacity(0.05), radius: 20, child: Icon(Icons.close, color: textColor, size: 20)),
-                        )
+                        Text(TTexts.uiTextForecast,
+                            style: TextStyle(
+                                color: textColor.withOpacity(0.6),
+                                fontSize: TSizes.v14,
+                                fontWeight: FontWeight.w600)),
+                        Text(DateFormat('EEEE, d MMMM').format(hour.rawTime),
+                            style: TextStyle(
+                                color: textColor,
+                                fontSize: TSizes.v18,
+                                fontWeight: FontWeight.bold)),
                       ],
                     ),
-
-                    const SizedBox(height: 20),
-
-                    // Middle Animated Content
-                    SlideTransition(
-                      position: floatAnim,
-                      child: AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 500),
-                        transitionBuilder: (child, anim) => FadeTransition(opacity: anim, child: ScaleTransition(scale: anim, child: child)),
-                        child: Column(
-                          key: ValueKey(hour.time),
-                          children: [
-                            Container(
-                              width: 100, height: 100,
-                              decoration: BoxDecoration(shape: BoxShape.circle, boxShadow: [BoxShadow(color: (isNight ? Colors.blue : Colors.orange).withOpacity(0.3), blurRadius: 60, spreadRadius: 10)]),
-                              child: Icon(_WeatherIconMapper.getIcon(hour.code), size: 80, color: isNight ? Colors.white : Colors.amber),
-                            ),
-                            const SizedBox(height: 4),
-                            // 🟢 FIXED: Wrapped in FittedBox to prevent font overflow on small widths
-                            FittedBox(child: Text("${hour.temp}°", style: TextStyle(fontSize: 76, fontWeight: FontWeight.w900, color: textColor, height: 1.0))),
-                            Text(_WeatherIconMapper.getDescription(hour.code), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: textColor.withOpacity(0.7))),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    // Bottom Detail Row (Wind/Humidity)
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: textColor.withOpacity(0.03),
-                        borderRadius: BorderRadius.circular(24),
-                        border: Border.all(color: textColor.withOpacity(0.05)),
-                      ),
-                      // 🟢 FIXED: Use IntrinsicHeight to ensure all items align,
-                      // and use Wrap or standard Row. Row is fine here if items are Flexible.
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          _DetailItem(icon: Icons.water_drop, label: "${hour.rainChance}%", sub: "Rain", color: Colors.blueAccent),
-                          _DetailItem(icon: Icons.air, label: "${hour.windSpeed.toInt()} km/h", sub: "Wind", color: Colors.teal),
-                          _DetailItem(icon: Icons.thermostat, label: "${hour.feelsLike}°", sub: "Feels", color: Colors.orange),
-                          _DetailItem(icon: Icons.opacity, label: "${hour.humidity}%", sub: "Humid", color: Colors.purple),
-                        ],
-                      ),
-                    ),
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: CircleAvatar(
+                          backgroundColor: textColor.withOpacity(0.05),
+                          radius: TSizes.v20,
+                          child: Icon(Icons.close,
+                              color: textColor, size: TSizes.v20)),
+                    )
                   ],
                 ),
-              ),
+
+                const SizedBox(height: TSizes.v20),
+
+                // Middle Animated Content
+                SlideTransition(
+                  position: floatAnim,
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 500),
+                    transitionBuilder: (child, anim) => FadeTransition(
+                        opacity: anim,
+                        child: ScaleTransition(scale: anim, child: child)),
+                    child: Column(
+                      key: ValueKey(hour.time),
+                      children: [
+                        Container(
+                          width: TSizes.v100,
+                          height: TSizes.v100,
+                          decoration:
+                              BoxDecoration(shape: BoxShape.circle, boxShadow: [
+                            BoxShadow(
+                                color: (isNight
+                                        ? TColors.materialBlue
+                                        : TColors.materialOrange)
+                                    .withOpacity(0.3),
+                                blurRadius: TSizes.v60,
+                                spreadRadius: TSizes.v10)
+                          ]),
+                          child: Icon(_WeatherIconMapper.getIcon(hour.code),
+                              size: TSizes.v80,
+                              color: isNight
+                                  ? TColors.white
+                                  : TColors.materialAmber),
+                        ),
+                        const SizedBox(height: TSizes.v4),
+                        // 🟢 FIXED: Wrapped in FittedBox to prevent font overflow on small widths
+                        FittedBox(
+                            child: Text("${hour.temp}°",
+                                style: TextStyle(
+                                    fontSize: TSizes.v76,
+                                    fontWeight: FontWeight.w900,
+                                    color: textColor,
+                                    height: TSizes.v1))),
+                        Text(_WeatherIconMapper.getDescription(hour.code),
+                            style: TextStyle(
+                                fontSize: TSizes.v18,
+                                fontWeight: FontWeight.w500,
+                                color: textColor.withOpacity(0.7))),
+                      ],
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: TSizes.v20),
+
+                // Bottom Detail Row (Wind/Humidity)
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: textColor.withOpacity(0.03),
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: textColor.withOpacity(0.05)),
+                  ),
+                  // 🟢 FIXED: Use IntrinsicHeight to ensure all items align,
+                  // and use Wrap or standard Row. Row is fine here if items are Flexible.
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _DetailItem(
+                          icon: Icons.water_drop,
+                          label: "${hour.rainChance}%",
+                          sub: "Rain",
+                          color: TColors.materialBlueAccent),
+                      _DetailItem(
+                          icon: Icons.air,
+                          label: "${hour.windSpeed.toInt()} km/h",
+                          sub: "Wind",
+                          color: TColors.materialTeal),
+                      _DetailItem(
+                          icon: Icons.thermostat,
+                          label: "${hour.feelsLike}°",
+                          sub: "Feels",
+                          color: TColors.materialOrange),
+                      _DetailItem(
+                          icon: Icons.opacity,
+                          label: "${hour.humidity}%",
+                          sub: "Humid",
+                          color: TColors.materialPurple),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          );
-        }
-    );
+          ),
+        ),
+      );
+    });
   }
 }
 
@@ -363,30 +474,37 @@ class _DetailItem extends StatelessWidget {
   final String label;
   final String sub;
   final Color color;
-  const _DetailItem({required this.icon, required this.label, required this.sub, required this.color});
+  const _DetailItem(
+      {required this.icon,
+      required this.label,
+      required this.sub,
+      required this.color});
 
   @override
   Widget build(BuildContext context) {
     // 🟢 FIXED: Wrapped in Flexible to prevent horizontal overflow in the Row
     return Flexible(
       child: Column(
-        mainAxisSize: MainAxisSize.min, // 🟢 Important: shrinks column to fit content
+        mainAxisSize:
+            MainAxisSize.min, // 🟢 Important: shrinks column to fit content
         children: [
           Container(
               padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(color: color.withOpacity(0.1), shape: BoxShape.circle),
-              child: Icon(icon, color: color, size: 20)
-          ),
-          const SizedBox(height: 8),
+              decoration: BoxDecoration(
+                  color: color.withOpacity(0.1), shape: BoxShape.circle),
+              child: Icon(icon, color: color, size: TSizes.v20)),
+          const SizedBox(height: TSizes.v8),
           // 🟢 FIXED: FittedBox prevents text wrapping that causes bottom overflow
           FittedBox(
               fit: BoxFit.scaleDown,
-              child: Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14))
-          ),
+              child: Text(label,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: TSizes.v14))),
           FittedBox(
               fit: BoxFit.scaleDown,
-              child: Text(sub, style: const TextStyle(fontSize: 10, color: Colors.grey))
-          ),
+              child: Text(sub,
+                  style: const TextStyle(
+                      fontSize: TSizes.v10, color: TColors.materialGrey))),
         ],
       ),
     );
@@ -401,13 +519,20 @@ class _AnimatedTimelineItem extends StatefulWidget {
   final Color accentColor;
   final bool isNight;
 
-  const _AnimatedTimelineItem({required this.index, required this.hour, required this.isSelected, required this.onTap, required this.accentColor, required this.isNight});
+  const _AnimatedTimelineItem(
+      {required this.index,
+      required this.hour,
+      required this.isSelected,
+      required this.onTap,
+      required this.accentColor,
+      required this.isNight});
 
   @override
   State<_AnimatedTimelineItem> createState() => _AnimatedTimelineItemState();
 }
 
-class _AnimatedTimelineItemState extends State<_AnimatedTimelineItem> with SingleTickerProviderStateMixin {
+class _AnimatedTimelineItemState extends State<_AnimatedTimelineItem>
+    with SingleTickerProviderStateMixin {
   late AnimationController _ctrl;
   late Animation<Offset> _slideAnim;
   late Animation<double> _fadeAnim;
@@ -415,13 +540,16 @@ class _AnimatedTimelineItemState extends State<_AnimatedTimelineItem> with Singl
   @override
   void initState() {
     super.initState();
-    _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 600));
+    _ctrl = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 600));
     final double delay = (widget.index * 0.05).clamp(0.0, 0.5);
     Future.delayed(Duration(milliseconds: (delay * 1000).toInt()), () {
-      if(mounted) _ctrl.forward();
+      if (mounted) _ctrl.forward();
     });
-    _slideAnim = Tween<Offset>(begin: const Offset(0, 0.5), end: Offset.zero).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOutBack));
-    _fadeAnim = Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOut));
+    _slideAnim = Tween<Offset>(begin: const Offset(0, 0.5), end: Offset.zero)
+        .animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOutBack));
+    _fadeAnim = Tween<double>(begin: 0.0, end: 1.0)
+        .animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOut));
   }
 
   @override
@@ -432,8 +560,12 @@ class _AnimatedTimelineItemState extends State<_AnimatedTimelineItem> with Singl
 
   @override
   Widget build(BuildContext context) {
-    final Color bgColor = widget.isSelected ? widget.accentColor : (widget.isNight ? Colors.white.withOpacity(0.1) : Colors.white);
-    final Color fgColor = widget.isSelected ? Colors.white : (widget.isNight ? Colors.white70 : Colors.black54);
+    final Color bgColor = widget.isSelected
+        ? widget.accentColor
+        : (widget.isNight ? TColors.white.withOpacity(0.1) : TColors.white);
+    final Color fgColor = widget.isSelected
+        ? TColors.white
+        : (widget.isNight ? TColors.white70 : TColors.black54);
 
     return SlideTransition(
       position: _slideAnim,
@@ -444,22 +576,43 @@ class _AnimatedTimelineItemState extends State<_AnimatedTimelineItem> with Singl
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeOutBack,
-            width: 70,
+            width: TSizes.v70,
             margin: EdgeInsets.symmetric(vertical: widget.isSelected ? 0 : 10),
             decoration: BoxDecoration(
               color: bgColor,
               borderRadius: BorderRadius.circular(40),
-              border: widget.isSelected ? null : Border.all(color: Colors.grey.withOpacity(0.2)),
-              boxShadow: widget.isSelected ? [BoxShadow(color: widget.accentColor.withOpacity(0.4), blurRadius: 15, offset: const Offset(0, 8))] : null,
+              border: widget.isSelected
+                  ? null
+                  : Border.all(color: TColors.materialGrey.withOpacity(0.2)),
+              boxShadow: widget.isSelected
+                  ? [
+                      BoxShadow(
+                          color: widget.accentColor.withOpacity(0.4),
+                          blurRadius: TSizes.v15,
+                          offset: const Offset(0, 8))
+                    ]
+                  : null,
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(widget.hour.time, style: TextStyle(color: fgColor, fontSize: 10, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 8),
-                Icon(_WeatherIconMapper.getIcon(widget.hour.code), color: widget.isSelected ? Colors.white : Colors.amber, size: 24),
-                const SizedBox(height: 8),
-                Text("${widget.hour.temp}°", style: TextStyle(color: fgColor, fontSize: 16, fontWeight: FontWeight.bold)),
+                Text(widget.hour.time,
+                    style: TextStyle(
+                        color: fgColor,
+                        fontSize: TSizes.v10,
+                        fontWeight: FontWeight.bold)),
+                const SizedBox(height: TSizes.v8),
+                Icon(_WeatherIconMapper.getIcon(widget.hour.code),
+                    color: widget.isSelected
+                        ? TColors.white
+                        : TColors.materialAmber,
+                    size: TSizes.v24),
+                const SizedBox(height: TSizes.v8),
+                Text("${widget.hour.temp}°",
+                    style: TextStyle(
+                        color: fgColor,
+                        fontSize: TSizes.v16,
+                        fontWeight: FontWeight.bold)),
               ],
             ),
           ),
@@ -469,8 +622,6 @@ class _AnimatedTimelineItemState extends State<_AnimatedTimelineItem> with Singl
   }
 }
 
-
-
 class _WeatherIconMapper {
   static IconData getIcon(int code) {
     if (code < 3) return Icons.wb_sunny_rounded;
@@ -478,6 +629,7 @@ class _WeatherIconMapper {
     if (code < 80) return Icons.umbrella;
     return Icons.thunderstorm;
   }
+
   static String getDescription(int code) {
     if (code == 0) return "Clear Sky";
     if (code < 3) return "Partly Cloudy";

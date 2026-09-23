@@ -16,8 +16,10 @@ class ExpenseDefaultValueModel {
   factory ExpenseDefaultValueModel.fromJson(Map<String, dynamic> json) {
     return ExpenseDefaultValueModel(
       ratePerKm: double.tryParse(json['ratePerKm']?.toString() ?? ''),
-      headOfficeAmount: double.tryParse(json['headOfficeAmount']?.toString() ?? ''),
-      exHeadquartersAmount: double.tryParse(json['exHeadquartersAmount']?.toString() ?? ''),
+      headOfficeAmount:
+          double.tryParse(json['headOfficeAmount']?.toString() ?? ''),
+      exHeadquartersAmount:
+          double.tryParse(json['exHeadquartersAmount']?.toString() ?? ''),
       outsideHeadOfficeAmount: double.tryParse(
         json['outsideHeadOfficeAmount']?.toString() ?? '',
       ),

@@ -1,6 +1,5 @@
 import 'TravelDetails.dart';
 
-
 class ExpenseModel {
   final String id;
   final String userId;
@@ -19,11 +18,14 @@ class ExpenseModel {
   final DateTime createdAt;
   final DateTime updatedAt;
   final String user;
-  final String userName2;  // Duplicate field (userName from original JSON)
-  final String totalDistanceKm2; // Duplicate field (totalDistanceKm from original JSON)
+  final String userName2; // Duplicate field (userName from original JSON)
+  final String
+      totalDistanceKm2; // Duplicate field (totalDistanceKm from original JSON)
   final String ratePerKm2; // Duplicate field (ratePerKm from original JSON)
-  final List<TravelDetail> travelDetails2; // Duplicate field (travelDetails from original JSON)
-  final String? dailyAllowanceType2; // Duplicate field (dailyAllowanceType from original JSON)
+  final List<TravelDetail>
+      travelDetails2; // Duplicate field (travelDetails from original JSON)
+  final String?
+      dailyAllowanceType2; // Duplicate field (dailyAllowanceType from original JSON)
 
   final String? endDate;
   final String? paymentStatus;
@@ -75,7 +77,7 @@ class ExpenseModel {
       date: json['date'] ?? '',
       travelDetails: json['travel_details'] != null
           ? List<TravelDetail>.from(
-          json['travel_details'].map((x) => TravelDetail.fromJson(x)))
+              json['travel_details'].map((x) => TravelDetail.fromJson(x)))
           : [],
       ratePerKm: json['rate_per_km'] ?? '',
       totalDistanceKm: json['total_distance_km'] ?? '',
@@ -94,23 +96,15 @@ class ExpenseModel {
       ratePerKm2: json['ratePerKm'] ?? '',
       travelDetails2: json['travelDetails'] != null
           ? List<TravelDetail>.from(
-          json['travelDetails'].map((x) => TravelDetail.fromJson(x)))
+              json['travelDetails'].map((x) => TravelDetail.fromJson(x)))
           : [],
       dailyAllowanceType2: json['dailyAllowanceType'],
       endDate: json['end_date']?.toString(),
-
       paymentStatus: json['payment_status']?.toString(),
-
       paymentDate: json['payment_date']?.toString(),
-
-      paymentMonthYear:
-      json['payment_month_year']?.toString(),
-
-      transactionId:
-      json['transaction_id']?.toString(),
-
-      paymentNote:
-      json['payment_note']?.toString(),
+      paymentMonthYear: json['payment_month_year']?.toString(),
+      transactionId: json['transaction_id']?.toString(),
+      paymentNote: json['payment_note']?.toString(),
     );
   }
 
@@ -139,15 +133,10 @@ class ExpenseModel {
       'travelDetails': travelDetails2.map((x) => x.toJson()).toList(),
       'dailyAllowanceType': dailyAllowanceType2,
       'end_date': endDate,
-
       'payment_status': paymentStatus,
-
       'payment_date': paymentDate,
-
       'payment_month_year': paymentMonthYear,
-
       'transaction_id': transactionId,
-
       'payment_note': paymentNote,
     };
   }
@@ -180,4 +169,3 @@ class TravelDetail {
     };
   }
 }
-

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-
-import '../../../../utils/constants/sizes.dart';
-import '../../../../utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class VisitFrequency extends StatelessWidget {
   const VisitFrequency({super.key});
@@ -9,20 +8,22 @@ class VisitFrequency extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 2,
+      elevation: TSizes.v2,
       margin: EdgeInsets.all(16),
       child: Padding(
         padding: EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start, // Aligns text to the left
+          crossAxisAlignment:
+              CrossAxisAlignment.start, // Aligns text to the left
           children: [
             Text(
               TTexts.visitFrequency,
               style: Theme.of(context).textTheme.headlineSmall,
             ),
-            SizedBox(height: 12),
+            SizedBox(height: TSizes.v12),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween, // Space between columns
+              mainAxisAlignment:
+                  MainAxisAlignment.spaceBetween, // Space between columns
               children: [
                 /// Left Column: Labels
                 Column(
@@ -31,18 +32,17 @@ class VisitFrequency extends StatelessWidget {
                     Text(TTexts.totalCompletedVisit),
                     const SizedBox(height: TSizes.spaceBtwText),
                     Text(TTexts.frequency),
-
                   ],
                 ),
 
                 /// Right Column: Values
                 const Column(
-                  crossAxisAlignment: CrossAxisAlignment.end, // Align numbers to the right
+                  crossAxisAlignment:
+                      CrossAxisAlignment.end, // Align numbers to the right
                   children: [
-                    Text("514"),
+                    Text(TTexts.uiText514),
                     SizedBox(height: TSizes.spaceBtwText),
-                    Text("4 / Week"),
-
+                    Text(TTexts.uiText4Week),
                   ],
                 ),
               ],

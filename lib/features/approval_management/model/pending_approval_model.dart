@@ -1,6 +1,5 @@
 import '../../Tour & Plans/updated_tour_panes/model/tour_plan_day_model.dart';
 
-
 class PendingApprovalModel {
   final String id;
   final String userId;
@@ -44,18 +43,13 @@ class PendingApprovalModel {
       month: json['month'] ?? 0,
       year: json['year'] ?? 0,
       status: json['status'] ?? '',
-
       approvedById: json['approved_by_id'],
       approvedByName: json['approved_by_name'],
       approvedByRole: json['approved_by_role'],
-
       comments: json['comments'],
-
       createdAt: DateTime.parse(json['created_at']),
       updatedAt: DateTime.parse(json['updated_at']),
-
       user: PendingApprovalUser.fromJson(json['user'] ?? {}),
-
       days: (json['days'] as List? ?? [])
           .map((e) => TourPlanDayModel.fromJson(e))
           .toList(),

@@ -2,14 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:medicle_sales_rbsh/features/Tour%20&%20Plans/TeritoryModule/utils/color_extension.dart';
-
-
-import '../../../../utils/constants/colors.dart';
-import '../../../../utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 import '../controller/territory_controller.dart';
-
 import '../model/beat_model.dart';
 import '../utils/enumsclass.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class BeatCard extends GetView<TerritoryController> {
   final BeatModel beat;
@@ -22,7 +20,7 @@ class BeatCard extends GetView<TerritoryController> {
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 2,
+      elevation: TSizes.v2,
       margin: EdgeInsets.zero,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(18),
@@ -31,27 +29,21 @@ class BeatCard extends GetView<TerritoryController> {
         padding: const EdgeInsets.all(TSizes.md),
         child: Column(
           children: [
-
             Row(
               children: [
-
                 Container(
-                  width: 16,
-                  height: 60,
+                  width: TSizes.v16,
+                  height: TSizes.v60,
                   decoration: BoxDecoration(
                     color: beat.color.toColor(),
                     borderRadius: BorderRadius.circular(20),
                   ),
                 ),
-
-                const SizedBox(width: 14),
-
+                const SizedBox(width: TSizes.v14),
                 Expanded(
                   child: Column(
-                    crossAxisAlignment:
-                    CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-
                       Text(
                         beat.beatName,
                         style: const TextStyle(
@@ -59,34 +51,25 @@ class BeatCard extends GetView<TerritoryController> {
                           fontSize: TSizes.fontSizeLg,
                         ),
                       ),
-
-                      const SizedBox(height: 6),
-
+                      const SizedBox(height: TSizes.v6),
                       Text(
-                        DateFormat("dd MMM yyyy")
-                            .format(beat.createdAt),
+                        DateFormat("dd MMM yyyy").format(beat.createdAt),
                         style: TextStyle(
-                          color: Colors.grey.shade600,
+                          color: TColors.materialGrey600,
                         ),
                       ),
-
                     ],
                   ),
                 ),
-
                 PopupMenuButton<String>(
                   onSelected: (value) {
-
                     switch (value) {
-
                       case "view":
-
                         controller.selectBeat(beat);
 
                         break;
 
                       case "edit":
-
                         controller.editBeat(beat);
 
                         break;
@@ -94,38 +77,28 @@ class BeatCard extends GetView<TerritoryController> {
                       case "delete":
                         controller.deleteBeat(beat);
                         break;
-
                     }
-
                   },
                   itemBuilder: (_) => const [
-
                     PopupMenuItem(
                       value: "view",
-                      child: Text("View"),
+                      child: Text(TTexts.uiTextView),
                     ),
-
                     PopupMenuItem(
                       value: "edit",
-                      child: Text("Edit"),
+                      child: Text(TTexts.uiTextEdit),
                     ),
-
                     PopupMenuItem(
                       value: "delete",
-                      child: Text("Delete"),
+                      child: Text(TTexts.uiTextDelete),
                     ),
-
                   ],
                 ),
-
               ],
             ),
-
-            const SizedBox(height: 18),
-
+            const SizedBox(height: TSizes.v18),
             Row(
               children: [
-
                 Expanded(
                   child: _tile(
                     Icons.location_on,
@@ -133,22 +106,16 @@ class BeatCard extends GetView<TerritoryController> {
                     "Areas",
                   ),
                 ),
-
-                const SizedBox(width: 10),
-
+                const SizedBox(width: TSizes.v10),
                 Expanded(
                   child: _tile(
                     Icons.local_hospital,
-                    controller
-                        .doctorCountOfBeat(beat)
-                        .toString(),
+                    controller.doctorCountOfBeat(beat).toString(),
                     "Doctors",
                   ),
                 ),
-
               ],
             ),
-
           ],
         ),
       ),
@@ -156,46 +123,39 @@ class BeatCard extends GetView<TerritoryController> {
   }
 
   Widget _tile(
-      IconData icon,
-      String value,
-      String title,
-      ) {
+    IconData icon,
+    String value,
+    String title,
+  ) {
     return Container(
       padding: const EdgeInsets.symmetric(
         vertical: 14,
       ),
       decoration: BoxDecoration(
-        color: Colors.grey.shade100,
+        color: TColors.materialGrey100,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
         children: [
-
           Icon(
             icon,
             color: TColors.primary,
           ),
-
-          const SizedBox(height: 6),
-
+          const SizedBox(height: TSizes.v6),
           Text(
             value,
             style: const TextStyle(
               fontWeight: FontWeight.bold,
             ),
           ),
-
           Text(
             title,
             style: const TextStyle(
-              fontSize: 12,
+              fontSize: TSizes.v12,
             ),
           ),
-
         ],
       ),
     );
   }
-
-
 }

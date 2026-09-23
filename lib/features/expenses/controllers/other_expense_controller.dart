@@ -8,27 +8,19 @@ import 'package:medicle_sales_rbsh/utils/http/http_client.dart';
 import '../../../utils/local_storage/auth_manager.dart';
 import '../models/other_expense_request.dart';
 
-
-
 class OtherExpenseController {
-
-  static const String baseUrl =
-      THttpHelper.baseUrl;
+  static const String baseUrl = THttpHelper.baseUrl;
 
   final AuthManager authManager = AuthManager();
 
   /// Upload Bill
   static Future<String?> uploadBill(
-      String filePath,
-      ) async {
+    String filePath,
+  ) async {
     try {
+      final token = await AuthManager().getAuthToken();
 
-      final token =
-      await AuthManager()
-          .getAuthToken();
-
-      var request =
-      http.MultipartRequest(
+      var request = http.MultipartRequest(
         'POST',
         Uri.parse(
           '$baseUrl/expenses/upload-bill',
@@ -36,28 +28,23 @@ class OtherExpenseController {
       );
 
       request.headers.addAll({
-        "Authorization":
-        "Bearer $token",
+        "Authorization": "Bearer $token",
       });
 
       request.files.add(
-        await http.MultipartFile
-            .fromPath(
+        await http.MultipartFile.fromPath(
           'bill',
           filePath,
           contentType: MediaType(
             'image',
             'jpeg',
           ),
-
         ),
       );
 
-      final streamedResponse =
-      await request.send();
+      final streamedResponse = await request.send();
 
-      final response =
-      await http.Response.fromStream(
+      final response = await http.Response.fromStream(
         streamedResponse,
       );
 
@@ -69,10 +56,8 @@ class OtherExpenseController {
         "OtherExpenseController: Upload Response = ${response.body}",
       );
 
-      if (response.statusCode == 200 ||
-          response.statusCode == 201) {
-        final jsonData =
-        jsonDecode(response.body);
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final jsonData = jsonDecode(response.body);
 
         return jsonData['imageUrl'];
       }
@@ -88,26 +73,20 @@ class OtherExpenseController {
 
   /// Create Other Expense
   static Future<bool> createOtherExpense(
-      OtherExpenseRequest request,
-      ) async {
+    OtherExpenseRequest request,
+  ) async {
     try {
-
-      final token =
-      await AuthManager()
-          .getAuthToken();
+      final token = await AuthManager().getAuthToken();
 
       debugPrint(
         "OtherExpenseController: Token = $token",
       );
 
-      final response =
-      await http.post(
+      final response = await http.post(
         Uri.parse("$baseUrl/expenses"),
         headers: {
-          "Content-Type":
-          "application/json",
-          "Authorization":
-          "Bearer $token",
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
         },
         body: jsonEncode(
           request.toJson(),
@@ -122,10 +101,7 @@ class OtherExpenseController {
         "OtherExpenseController: Response = ${response.body}",
       );
 
-      return response.statusCode ==
-          201 ||
-          response.statusCode ==
-              200;
+      return response.statusCode == 201 || response.statusCode == 200;
     } catch (e) {
       debugPrint(
         "OtherExpenseController: Create Expense Exception = $e",

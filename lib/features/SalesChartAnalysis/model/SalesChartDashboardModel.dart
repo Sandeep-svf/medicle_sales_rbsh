@@ -48,14 +48,16 @@ class DashboardData {
       todayBeatAssigned: json['todayBeatAssigned'] != null
           ? TodayBeatAssigned.fromJson(json['todayBeatAssigned'])
           : null,
-
       todayCollaboration: json['todayCollaboration'] != null
           ? TodayCollaboration.fromJson(json['todayCollaboration'])
           : null,
       visits: json['visits'] != null ? Visits.fromJson(json['visits']) : null,
-      expenses: json['expenses'] != null ? Expenses.fromJson(json['expenses']) : null,
-      targets: json['targets'] != null ? Targets.fromJson(json['targets']) : null,
-      summary: json['summary'] != null ? Summary.fromJson(json['summary']) : null,
+      expenses:
+          json['expenses'] != null ? Expenses.fromJson(json['expenses']) : null,
+      targets:
+          json['targets'] != null ? Targets.fromJson(json['targets']) : null,
+      summary:
+          json['summary'] != null ? Summary.fromJson(json['summary']) : null,
     );
   }
 }
@@ -104,14 +106,13 @@ class TodayCollaboration {
       handshakeStatus: json['handshake_status'],
       handshakeTime: json['handshake_time'],
       handshakeDistanceMeters:
-      (json['handshake_distance_meters'] as num?)?.toDouble(),
+          (json['handshake_distance_meters'] as num?)?.toDouble(),
       beatName: json['beat_name'],
       notes: json['notes'],
       totalCollaborators: json['total_collaborators'] ?? 0,
-      collaboratingUsers:
-      (json['collaborating_users'] as List?)
-          ?.map((e) => CollaboratingUser.fromJson(e))
-          .toList() ??
+      collaboratingUsers: (json['collaborating_users'] as List?)
+              ?.map((e) => CollaboratingUser.fromJson(e))
+              .toList() ??
           const [],
     );
   }
@@ -158,7 +159,7 @@ class CollaboratingUser {
       handshakeStatus: json['handshake_status'],
       handshakeTime: json['handshake_time'],
       handshakeDistanceMeters:
-      (json['handshake_distance_meters'] as num?)?.toDouble(),
+          (json['handshake_distance_meters'] as num?)?.toDouble(),
       beatName: json['beat_name'],
       notes: json['notes'],
       user: json['user'] != null
@@ -199,10 +200,6 @@ class CollaborationUser {
     );
   }
 }
-
-
-
-
 
 class User {
   final String? id;
@@ -265,9 +262,14 @@ class Visits {
 
   factory Visits.fromJson(Map<String, dynamic> json) {
     return Visits(
-      doctor: json['doctor'] != null ? VisitDetails.fromJson(json['doctor']) : null,
-      chemist: json['chemist'] != null ? VisitDetails.fromJson(json['chemist']) : null,
-      stockist: json['stockist'] != null ? VisitDetails.fromJson(json['stockist']) : null,
+      doctor:
+          json['doctor'] != null ? VisitDetails.fromJson(json['doctor']) : null,
+      chemist: json['chemist'] != null
+          ? VisitDetails.fromJson(json['chemist'])
+          : null,
+      stockist: json['stockist'] != null
+          ? VisitDetails.fromJson(json['stockist'])
+          : null,
       total: json['total'] ?? 0,
       scheduled: json['scheduled'] ?? 0,
       confirmed: json['confirmed'] ?? 0,
@@ -414,8 +416,7 @@ class Targets {
       monthlyTarget: (json['monthlyTarget'] ?? 0) as int,
       achieved: (json['achieved'] ?? 0) as int,
       remaining: (json['remaining'] ?? 0) as int,
-      achievementPercentage:
-      (json['achievementPercentage'] ?? 0) as int,
+      achievementPercentage: (json['achievementPercentage'] ?? 0) as int,
       status: json['status'],
       deadline: json['deadline'],
       targetMonth: (json['targetMonth'] ?? 0) as int,

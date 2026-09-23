@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:intl/intl.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class ImageOverlayUtil {
   static Future<File> addOverlay({
@@ -26,10 +29,10 @@ class ImageOverlayUtil {
     // Calculate sizes relative to image width/height
     final double overlayHeight = height * 0.15; // 15% of image height
     final double titleFontSize = width * 0.045; // 4.5% of width
-    final double bodyFontSize = width * 0.035;  // 3.5% of width
-    final double smallFontSize = width * 0.03;  // 3.0% of width
-    final double logoSize = width * 0.15;       // 15% of width
-    final double padding = width * 0.04;        // 4% padding
+    final double bodyFontSize = width * 0.035; // 3.5% of width
+    final double smallFontSize = width * 0.03; // 3.0% of width
+    final double logoSize = width * 0.15; // 15% of width
+    final double padding = width * 0.04; // 4% padding
 
     // 2. Prepare Canvas
     final recorder = ui.PictureRecorder();
@@ -51,8 +54,8 @@ class ImageOverlayUtil {
         Offset(0, height - overlayHeight),
         Offset(0, height),
         [
-          Colors.black.withOpacity(0.0), // Transparent top
-          Colors.black.withOpacity(0.8), // Dark bottom
+          TColors.pureBlack.withOpacity(0.0), // Transparent top
+          TColors.pureBlack.withOpacity(0.8), // Dark bottom
         ],
         [0.0, 0.4],
       );
@@ -65,18 +68,22 @@ class ImageOverlayUtil {
 
     try {
       final ByteData logoData = await rootBundle.load(logoPath);
-      final logoCodec = await ui.instantiateImageCodec(logoData.buffer.asUint8List());
+      final logoCodec =
+          await ui.instantiateImageCodec(logoData.buffer.asUint8List());
       final logoFrame = await logoCodec.getNextFrame();
       final ui.Image logoImage = logoFrame.image;
 
       canvas.drawImageRect(
         logoImage,
-        Rect.fromLTWH(0, 0, logoImage.width.toDouble(), logoImage.height.toDouble()),
-        Rect.fromLTWH(padding, height - overlayHeight + padding, logoSize, logoSize),
+        Rect.fromLTWH(
+            0, 0, logoImage.width.toDouble(), logoImage.height.toDouble()),
+        Rect.fromLTWH(
+            padding, height - overlayHeight + padding, logoSize, logoSize),
         Paint(),
       );
     } catch (e) {
-      print("Warning: Logo asset not found ($logoPath). Text will still appear.");
+      print(
+          "Warning: Logo asset not found ($logoPath). Text will still appear.");
     }
 
     // 5. Draw Text
@@ -91,28 +98,34 @@ class ImageOverlayUtil {
     final textSpan = TextSpan(
       children: [
         TextSpan(
-          text: 'Location Verified\n',
+          text: TTexts.uiTextLocationVerified,
           style: TextStyle(
-            color: Colors.white,
+            color: TColors.white,
             fontSize: titleFontSize,
             fontWeight: FontWeight.bold,
-            shadows: [Shadow(color: Colors.black, blurRadius: 2, offset: Offset(2, 2))],
+            shadows: [
+              Shadow(
+                  color: TColors.pureBlack,
+                  blurRadius: TSizes.v2,
+                  offset: Offset(2, 2))
+            ],
           ),
         ),
         TextSpan(
-          text: 'Lat: ${lat.toStringAsFixed(5)}, Lng: ${lng.toStringAsFixed(5)}\n',
+          text:
+              'Lat: ${lat.toStringAsFixed(5)}, Lng: ${lng.toStringAsFixed(5)}\n',
           style: TextStyle(
-            color: Colors.white70,
+            color: TColors.white70,
             fontSize: bodyFontSize,
-            height: 1.5,
+            height: TSizes.v1_5,
           ),
         ),
         TextSpan(
           text: DateFormat('dd MMM yyyy • hh:mm a').format(DateTime.now()),
           style: TextStyle(
-            color: Colors.white60,
+            color: TColors.white60,
             fontSize: smallFontSize,
-            height: 1.5,
+            height: TSizes.v1_5,
           ),
         ),
       ],
@@ -122,7 +135,8 @@ class ImageOverlayUtil {
     textPainter.layout(maxWidth: width - textLeftMargin - padding);
 
     // Center text vertically in the overlay box
-    final double textY = (height - overlayHeight) + (overlayHeight - textPainter.height) / 2;
+    final double textY =
+        (height - overlayHeight) + (overlayHeight - textPainter.height) / 2;
 
     textPainter.paint(
       canvas,
@@ -132,10 +146,12 @@ class ImageOverlayUtil {
     // 6. Save and Return
     final picture = recorder.endRecording();
     final finalImage = await picture.toImage(width.toInt(), height.toInt());
-    final byteData = await finalImage.toByteData(format: ui.ImageByteFormat.png);
+    final byteData =
+        await finalImage.toByteData(format: ui.ImageByteFormat.png);
 
     final tempDir = await getTemporaryDirectory();
-    final file = File('${tempDir.path}/overlay_${DateTime.now().millisecondsSinceEpoch}.png');
+    final file = File(
+        '${tempDir.path}/overlay_${DateTime.now().millisecondsSinceEpoch}.png');
     await file.writeAsBytes(byteData!.buffer.asUint8List());
 
     return file;

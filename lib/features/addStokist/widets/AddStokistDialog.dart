@@ -1,3 +1,4 @@
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 /*
 import 'package:flutter/material.dart';
 
@@ -59,7 +60,7 @@ class _AddClinicDialogState extends State<AddStokistDialog> {
                     Get.snackbar(
                       "📍 Location Selected",
                       "$address\nLat: $lat, Lng: $lng",
-                      backgroundColor: Colors.green,
+                      backgroundColor: TColors.materialGreen,
                       duration: Duration(seconds: 4),
                     );
 
@@ -73,7 +74,7 @@ class _AddClinicDialogState extends State<AddStokistDialog> {
                     Get.snackbar(
                       "Location Not Selected",
                       "Please try again or cancel",
-                      backgroundColor: Colors.orange,
+                      backgroundColor: TColors.materialOrange,
                     );
                   }
                 },

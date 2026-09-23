@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
 import '../../../utils/http/http_client.dart';
 import '../../addDoctor/screens/map.dart';
 import '../controllers/ClinicListController.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 
 class AddClinicDialog extends StatefulWidget {
   final ClinicListController controller;
@@ -23,11 +25,13 @@ class _AddClinicDialogState extends State<AddClinicDialog> {
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController gstController = TextEditingController();
-  final TextEditingController drugLicenseNumberController = TextEditingController();
+  final TextEditingController drugLicenseNumberController =
+      TextEditingController();
   final TextEditingController addressController = TextEditingController();
   final TextEditingController latitudeController = TextEditingController();
   final TextEditingController longitudeController = TextEditingController();
-  final TextEditingController yearsInBusinessController = TextEditingController();
+  final TextEditingController yearsInBusinessController =
+      TextEditingController();
   final TextEditingController turnoverController = TextEditingController();
 
   bool isLoading = false;
@@ -65,7 +69,7 @@ class _AddClinicDialogState extends State<AddClinicDialog> {
         if (mounted) {
           Navigator.pop(context);
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Clinic added successfully")),
+            const SnackBar(content: Text(TTexts.uiTextClinicAddedSuccessfully)),
           );
         }
       } else {
@@ -83,7 +87,7 @@ class _AddClinicDialogState extends State<AddClinicDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text("Add New Chemist"),
+      title: const Text(TTexts.uiTextAddNewChemist),
       content: SingleChildScrollView(
         child: Form(
           key: _formKey,
@@ -92,13 +96,17 @@ class _AddClinicDialogState extends State<AddClinicDialog> {
               _buildTextField(firmNameController, "Firm Name"),
               _buildTextField(contactPersonController, "Contact Person"),
               _buildTextField(designationController, "Designation"),
-              _buildTextField(phoneController, "Phone Number", keyboardType: TextInputType.phone),
-              _buildTextField(emailController, "Email", keyboardType: TextInputType.emailAddress),
+              _buildTextField(phoneController, "Phone Number",
+                  keyboardType: TextInputType.phone),
+              _buildTextField(emailController, "Email",
+                  keyboardType: TextInputType.emailAddress),
               _buildTextField(drugLicenseNumberController, "DrugLicenseNumber"),
               _buildTextField(gstController, "GST No"),
               _buildTextField(addressController, "Address", maxLines: 2),
-              _buildTextField(yearsInBusinessController, "Years in Business", keyboardType: TextInputType.number),
-              _buildTextField(turnoverController, "Annual Turnover", keyboardType: TextInputType.number),
+              _buildTextField(yearsInBusinessController, "Years in Business",
+                  keyboardType: TextInputType.number),
+              _buildTextField(turnoverController, "Annual Turnover",
+                  keyboardType: TextInputType.number),
               TextButton(
                 onPressed: () async {
                   final result = await Navigator.push(
@@ -117,30 +125,35 @@ class _AddClinicDialogState extends State<AddClinicDialog> {
                     Get.snackbar(
                       "📍 Location Selected",
                       "$address\nLat: $lat, Lng: $lng",
-                      backgroundColor: Colors.green,
+                      backgroundColor: TColors.materialGreen,
                       duration: Duration(seconds: 4),
                     );
                   } else {
                     Get.snackbar(
                       "Location Not Selected",
-                      "Please try again or cancel",
-                      backgroundColor: Colors.orange,
+                      TTexts.uiTextPleaseTryAgainOrCancel,
+                      backgroundColor: TColors.materialOrange,
                     );
                   }
                 },
-                child: const Text('Select Location'),
+                child: const Text(TTexts.uiTextSelectLocation),
               ),
             ],
           ),
         ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
+        TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text(TTexts.cancel)),
         ElevatedButton(
           onPressed: isLoading ? null : _submitForm,
           child: isLoading
-              ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2))
-              : const Text("Submit"),
+              ? const SizedBox(
+                  height: TSizes.v18,
+                  width: TSizes.v18,
+                  child: CircularProgressIndicator(strokeWidth: TSizes.v2))
+              : const Text(TTexts.submit),
         ),
       ],
     );
@@ -158,7 +171,8 @@ class _AddClinicDialogState extends State<AddClinicDialog> {
           labelText: label,
           border: const OutlineInputBorder(),
         ),
-        validator: (value) => (value == null || value.isEmpty) ? 'Required' : null,
+        validator: (value) =>
+            (value == null || value.isEmpty) ? 'Required' : null,
       ),
     );
   }

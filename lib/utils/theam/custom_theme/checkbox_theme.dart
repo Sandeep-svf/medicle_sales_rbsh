@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../constants/colors.dart';
 import '../../constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 
 /// Custom Class for Light & Dark Text Themes
 class SCheckboxTheme {
@@ -8,7 +9,8 @@ class SCheckboxTheme {
 
   /// Customizable Light Text Theme
   static CheckboxThemeData lightCheckboxTheme = CheckboxThemeData(
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(TSizes.xs)),
+    shape:
+        RoundedRectangleBorder(borderRadius: BorderRadius.circular(TSizes.xs)),
     checkColor: WidgetStateProperty.resolveWith((states) {
       if (states.contains(WidgetState.selected)) {
         return TColors.white;
@@ -20,14 +22,15 @@ class SCheckboxTheme {
       if (states.contains(WidgetState.selected)) {
         return TColors.primary;
       } else {
-        return Colors.transparent;
+        return TColors.transparent;
       }
     }),
   );
 
   /// Customizable Dark Text Theme
   static CheckboxThemeData darkCheckboxTheme = CheckboxThemeData(
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(TSizes.xs)),
+    shape:
+        RoundedRectangleBorder(borderRadius: BorderRadius.circular(TSizes.xs)),
     checkColor: WidgetStateProperty.resolveWith((states) {
       if (states.contains(WidgetState.selected)) {
         return TColors.white;
@@ -39,7 +42,7 @@ class SCheckboxTheme {
       if (states.contains(WidgetState.selected)) {
         return TColors.primary;
       } else {
-        return Colors.transparent;
+        return TColors.transparent;
       }
     }),
   );

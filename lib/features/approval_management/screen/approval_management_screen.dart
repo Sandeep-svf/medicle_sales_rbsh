@@ -14,12 +14,13 @@ import 'wigets/approve_dialog.dart';
 import 'wigets/collaboration_request_card.dart';
 import 'wigets/pending_approval_card.dart';
 import 'wigets/return_dialog.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class ApprovalManagementScreen extends StatelessWidget {
   ApprovalManagementScreen({super.key});
 
   final ApprovalManagementController controller =
-  Get.put(ApprovalManagementController());
+      Get.put(ApprovalManagementController());
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +28,7 @@ class ApprovalManagementScreen extends StatelessWidget {
       if (controller.isLoading.value) {
         return const Scaffold(
           body: LoadingView(
-            message: "Loading approvals...",
+            message: TTexts.uiTextLoadingApprovals,
           ),
         );
       }
@@ -36,11 +37,11 @@ class ApprovalManagementScreen extends StatelessWidget {
         return Scaffold(
           backgroundColor: TColors.light,
           appBar: AppBar(
-            elevation: 0,
+            elevation: TSizes.v0,
             centerTitle: false,
-            backgroundColor: Colors.white,
-            surfaceTintColor: Colors.transparent,
-            title: const Text("Collaboration Requests"),
+            backgroundColor: TColors.white,
+            surfaceTintColor: TColors.transparent,
+            title: const Text(TTexts.uiTextCollaborationRequests),
           ),
           body: RefreshIndicator(
             onRefresh: controller.refreshData,
@@ -56,32 +57,26 @@ class ApprovalManagementScreen extends StatelessWidget {
         child: Scaffold(
           backgroundColor: TColors.light,
           appBar: AppBar(
-            elevation: 0,
+            elevation: TSizes.v0,
             centerTitle: false,
-            backgroundColor: Colors.white,
-            surfaceTintColor: Colors.transparent,
-           // title: const Text("Approval Management"),
+            backgroundColor: TColors.white,
+            surfaceTintColor: TColors.transparent,
+            // title: const Text("Approval Management"),
             bottom: TabBar(
               indicatorColor: TColors.primary,
               labelColor: TColors.primary,
               unselectedLabelColor: TColors.textSecondary,
               tabs: [
-
+                Tab(
+                  text: "Pending (${controller.pendingApprovals.length})",
+                ),
                 Tab(
                   text:
-                  "Pending (${controller.pendingApprovals.length})",
+                      "Beat Changes (${controller.beatChangeRequests.length})",
                 ),
-
                 Tab(
-                  text:
-                  "Beat Changes (${controller.beatChangeRequests.length})",
+                  text: "Collaboration (${controller.collaborations.length})",
                 ),
-
-                Tab(
-                  text:
-                  "Collaboration (${controller.collaborations.length})",
-                ),
-
               ],
             ),
           ),
@@ -90,13 +85,9 @@ class ApprovalManagementScreen extends StatelessWidget {
             child: _ResponsiveContainer(
               child: TabBarView(
                 children: [
-
                   _buildPendingList(),
-
                   _buildBeatChangeList(),
-
                   _buildCollaborationList(),
-
                 ],
               ),
             ),
@@ -111,8 +102,8 @@ class ApprovalManagementScreen extends StatelessWidget {
       if (controller.pendingApprovals.isEmpty) {
         return const EmptyState(
           icon: Icons.assignment_outlined,
-          title: "No Pending Approvals",
-          subtitle: "There are no pending approvals at the moment.",
+          title: TTexts.uiTextNoPendingApprovals,
+          subtitle: TTexts.uiTextThereAreNoPendingApprovalsAtTheMoment,
         );
       }
 
@@ -137,12 +128,11 @@ class ApprovalManagementScreen extends StatelessWidget {
                         controller.isReturning.value,
                     onView: () {
                       Get.to(
-                            () => TourPlanDetailsScreen(
+                        () => TourPlanDetailsScreen(
                           planId: plan.id,
                         ),
                       );
                     },
-
                     onApprove: () {
                       Get.dialog(
                         ApproveDialog(
@@ -155,7 +145,6 @@ class ApprovalManagementScreen extends StatelessWidget {
                         ),
                       );
                     },
-
                     onReturn: () {
                       Get.dialog(
                         ReturnDialog(
@@ -180,84 +169,62 @@ class ApprovalManagementScreen extends StatelessWidget {
 
   Widget _buildBeatChangeList() {
     return Obx(() {
-
       if (controller.beatChangeRequests.isEmpty) {
         return const EmptyState(
           icon: Icons.swap_horiz,
-          title: "No Beat Change Requests",
-          subtitle: "There are no pending beat change requests.",
+          title: TTexts.uiTextNoBeatChangeRequests,
+          subtitle: TTexts.uiTextThereAreNoPendingBeatChangeRequests,
         );
       }
 
       return LayoutBuilder(
         builder: (context, constraints) {
-
-          final isWide =
-              constraints.maxWidth >= 900;
+          final isWide = constraints.maxWidth >= 900;
 
           return SingleChildScrollView(
-            physics:
-            const AlwaysScrollableScrollPhysics(),
-            padding:
-            const EdgeInsets.all(TSizes.lg),
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(TSizes.lg),
             child: Wrap(
               spacing: TSizes.lg,
               runSpacing: TSizes.lg,
-              children: controller.beatChangeRequests
-                  .map((request) {
-
+              children: controller.beatChangeRequests.map((request) {
                 return SizedBox(
                   width: isWide
-                      ? (constraints.maxWidth -
-                      TSizes.lg) /
-                      2
+                      ? (constraints.maxWidth - TSizes.lg) / 2
                       : constraints.maxWidth,
                   child: BeatChangeRequestCard(
                     request: request,
-
-                    loading:
-                    controller.isBeatResponding.value,
-
+                    loading: controller.isBeatResponding.value,
                     onApprove: () {
-
                       Get.dialog(
                         BeatChangeActionDialog(
                           approve: true,
                           onSubmit: (comments) {
-
                             controller.respondBeatChangeRequest(
                               request: request,
                               approve: true,
                               comments: comments,
                             );
-
                           },
                         ),
                       );
-
                     },
-
                     onReject: () {
-
                       Get.dialog(
                         BeatChangeActionDialog(
                           approve: false,
                           onSubmit: (comments) {
-
                             controller.respondBeatChangeRequest(
                               request: request,
                               approve: false,
                               comments: comments,
                             );
-
                           },
                         ),
                       );
-
                     },
                   ),
                 );
-
               }).toList(),
             ),
           );
@@ -271,8 +238,8 @@ class ApprovalManagementScreen extends StatelessWidget {
       if (controller.collaborations.isEmpty) {
         return const EmptyState(
           icon: Icons.handshake_outlined,
-          title: "No Collaboration Requests",
-          subtitle: "There are no collaboration requests available.",
+          title: TTexts.uiTextNoCollaborationRequests,
+          subtitle: TTexts.uiTextThereAreNoCollaborationRequestsAvailable,
         );
       }
 
@@ -329,7 +296,7 @@ class _ResponsiveContainer extends StatelessWidget {
     return Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(
-          maxWidth: 1200,
+          maxWidth: TSizes.v1200,
         ),
         child: child,
       ),

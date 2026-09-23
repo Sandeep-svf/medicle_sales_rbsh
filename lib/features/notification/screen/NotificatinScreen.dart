@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:quickalert/quickalert.dart';
 import '../controller/NotificationController.dart';
 import '../model/NotificationModel.dart';
-import 'NotificaitonDetailsScreen.dart';  // Import NotificationDetailsScreen
-
+import 'NotificaitonDetailsScreen.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 
 class NotificationScreen extends StatefulWidget {
   @override
@@ -15,16 +17,18 @@ class _NotificationScreenState extends State<NotificationScreen> {
   List<NotificationModel> notifications = [];
   bool isLoading = false; // Flag to track loading state
 
-  final String userId = "67d56a35a2227082ae9282b2";  // Replace with actual user ID
-  final String token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDU2YTM1YTIyMjcwODJhZTkyODJiMiIsInJvbGUiOiJVc2VyIiwiaWF0IjoxNzQ2MTY2ODM1LCJleHAiOjE3NDY3NzE2MzV9.RHujLS1ivUOQQskwQuWzqkyIuT5lti8gRBZeaNsnZCc ";  // Replace with actual token
-
+  final String userId =
+      "67d56a35a2227082ae9282b2"; // Replace with actual user ID
+  final String token =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDU2YTM1YTIyMjcwODJhZTkyODJiMiIsInJvbGUiOiJVc2VyIiwiaWF0IjoxNzQ2MTY2ODM1LCJleHAiOjE3NDY3NzE2MzV9.RHujLS1ivUOQQskwQuWzqkyIuT5lti8gRBZeaNsnZCc "; // Replace with actual token
 
   //
 
   @override
   void initState() {
     super.initState();
-    _notificationController = NotificationController(userId: userId, token: token);
+    _notificationController =
+        NotificationController(userId: userId, token: token);
     fetchNotifications();
   }
 
@@ -34,7 +38,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
       isLoading = true; // Show loader when the API request is in progress
     });
     try {
-      final fetchedNotifications = await _notificationController.fetchNotifications();
+      final fetchedNotifications =
+          await _notificationController.fetchNotifications();
       setState(() {
         notifications = fetchedNotifications;
         isLoading = false;
@@ -50,36 +55,38 @@ class _NotificationScreenState extends State<NotificationScreen> {
   // Delete a notification
   void deleteNotification(String notificationId) async {
     setState(() {
-      isLoading = true; // Show loader when the delete API request is in progress
+      isLoading =
+          true; // Show loader when the delete API request is in progress
     });
     try {
       await _notificationController.deleteNotification(notificationId);
       setState(() {
-        notifications.removeWhere((notification) => notification.id == notificationId);
+        notifications
+            .removeWhere((notification) => notification.id == notificationId);
         isLoading = false;
       });
       QuickAlert.show(
         context: context,
         type: QuickAlertType.success,
-        text: 'Notification deleted successfully',
-        confirmBtnText: 'OK',
+        text: TTexts.uiTextNotificationDeletedSuccessfully,
+        confirmBtnText: TTexts.uiTextOK,
         onConfirmBtnTap: () {
-          Navigator.of(context).pop();  // Close the dialog
+          Navigator.of(context).pop(); // Close the dialog
         },
-        width: 300,
-        title: 'Success',
+        width: TSizes.v300,
+        title: TTexts.uiTextSuccess,
       );
     } catch (e) {
       QuickAlert.show(
         context: context,
         type: QuickAlertType.error,
-        text: 'Failed to delete the notification',
-        confirmBtnText: 'Retry',
+        text: TTexts.uiTextFailedToDeleteTheNotification,
+        confirmBtnText: TTexts.uiTextRetry,
         onConfirmBtnTap: () {
-          Navigator.of(context).pop();  // Close the dialog
+          Navigator.of(context).pop(); // Close the dialog
         },
-        width: 300,
-        title: 'Error',
+        width: TSizes.v300,
+        title: TTexts.uiTextError,
       );
     }
   }
@@ -104,7 +111,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Notifications'),
+        title: const Text(TTexts.uiTextNotifications),
         actions: [
           IconButton(
             icon: const Icon(Icons.clear_all),
@@ -113,24 +120,24 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 notifications.clear();
               });
             },
-            color: Colors.white,
+            color: TColors.white,
           ),
         ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: notifications.isEmpty
-            ? Center(child: Text('No Notifications'))
+            ? Center(child: Text(TTexts.uiTextNoNotifications))
             : ListView.builder(
-          itemCount: notifications.length,
-          itemBuilder: (context, index) {
-            final notification = notifications[index];
-            return NotificationCard(
-              notification: notification, // Pass notification object
-              onDelete: () => deleteNotification(notification.id),
-            );
-          },
-        ),
+                itemCount: notifications.length,
+                itemBuilder: (context, index) {
+                  final notification = notifications[index];
+                  return NotificationCard(
+                    notification: notification, // Pass notification object
+                    onDelete: () => deleteNotification(notification.id),
+                  );
+                },
+              ),
       ),
     );
   }
@@ -168,18 +175,19 @@ class NotificationCard extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
       ),
-      elevation: 5,
-      color: notification.recipients.isEmpty || notification.recipients[0].isRead
-          ? Colors.grey[300]
-          : Colors.white, // Adjust card color based on isRead status
+      elevation: TSizes.v5,
+      color:
+          notification.recipients.isEmpty || notification.recipients[0].isRead
+              ? TColors.materialGrey300
+              : TColors.white, // Adjust card color based on isRead status
       child: ListTile(
         contentPadding: const EdgeInsets.all(16.0),
         title: Text(
           notification.title,
           style: const TextStyle(
             fontWeight: FontWeight.bold,
-            fontSize: 16,
-            color: Colors.black,
+            fontSize: TSizes.v16,
+            color: TColors.pureBlack,
           ),
         ),
         subtitle: Column(
@@ -187,18 +195,20 @@ class NotificationCard extends StatelessWidget {
           children: [
             Text(
               notification.body,
-              style: const TextStyle(fontSize: 14, color: Colors.grey),
+              style: const TextStyle(
+                  fontSize: TSizes.v14, color: TColors.materialGrey),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: TSizes.v8),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   getTimeAgo(notification.createdAt),
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  style: const TextStyle(
+                      fontSize: TSizes.v12, color: TColors.materialGrey),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.delete, color: Colors.red),
+                  icon: const Icon(Icons.delete, color: TColors.materialRed),
                   onPressed: onDelete,
                 ),
               ],
@@ -209,7 +219,8 @@ class NotificationCard extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => NotificationDetailsScreen(notification: notification),
+              builder: (context) =>
+                  NotificationDetailsScreen(notification: notification),
             ),
           );
         },

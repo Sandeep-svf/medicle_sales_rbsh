@@ -25,27 +25,22 @@ class PerformanceController extends GetxController {
   final Rx<PerformanceFilterType> selectedFilter =
       PerformanceFilterType.today.obs;
 
-  final Rxn<DateTime> startDate =
-  Rxn<DateTime>();
+  final Rxn<DateTime> startDate = Rxn<DateTime>();
 
-  final Rxn<DateTime> endDate =
-  Rxn<DateTime>();
+  final Rxn<DateTime> endDate = Rxn<DateTime>();
   //--------------------------------------------------
   // SEARCH
   //--------------------------------------------------
 
-  final TextEditingController searchController =
-  TextEditingController();
+  final TextEditingController searchController = TextEditingController();
 
   //--------------------------------------------------
   // DATA
   //--------------------------------------------------
 
-  final RxList<PerformanceModel> employees =
-      <PerformanceModel>[].obs;
+  final RxList<PerformanceModel> employees = <PerformanceModel>[].obs;
 
-  final RxList<PerformanceModel> filteredEmployees =
-      <PerformanceModel>[].obs;
+  final RxList<PerformanceModel> filteredEmployees = <PerformanceModel>[].obs;
 
   //--------------------------------------------------
   // LOADING
@@ -57,8 +52,7 @@ class PerformanceController extends GetxController {
   // SORT
   //--------------------------------------------------
 
-  final Rx<SortColumn> sortColumn =
-      SortColumn.employee.obs;
+  final Rx<SortColumn> sortColumn = SortColumn.employee.obs;
 
   final RxBool ascending = true.obs;
 
@@ -87,7 +81,7 @@ class PerformanceController extends GetxController {
   // LOAD DASHBOARD
   //--------------------------------------------------
 
-  Future<void> loadDashboard() async{
+  Future<void> loadDashboard() async {
     try {
       if (isLoading.value) return;
 
@@ -159,9 +153,7 @@ class PerformanceController extends GetxController {
     required DateTime start,
     required DateTime end,
   }) async {
-
-    selectedFilter.value =
-        PerformanceFilterType.custom;
+    selectedFilter.value = PerformanceFilterType.custom;
 
     startDate.value = start;
 
@@ -264,15 +256,13 @@ class PerformanceController extends GetxController {
       employees.fold(0, (a, b) => a + b.stockistConfirmed);
 
   double get overallCoverage {
-    final scheduled =
-        totalDoctorsScheduled +
-            totalChemistsScheduled +
-            totalStockistsScheduled;
+    final scheduled = totalDoctorsScheduled +
+        totalChemistsScheduled +
+        totalStockistsScheduled;
 
-    final confirmed =
-        totalDoctorsConfirmed +
-            totalChemistsConfirmed +
-            totalStockistsConfirmed;
+    final confirmed = totalDoctorsConfirmed +
+        totalChemistsConfirmed +
+        totalStockistsConfirmed;
 
     if (scheduled == 0) return 0;
 
@@ -291,13 +281,10 @@ class PerformanceController extends GetxController {
   // GROUP VISITS
   //--------------------------------------------------
 
-  List<PerformanceModel> groupVisits(
-      List<DcrVisitModel> visits) {
-
+  List<PerformanceModel> groupVisits(List<DcrVisitModel> visits) {
     final Map<String, Map<String, dynamic>> grouped = {};
 
     for (final visit in visits) {
-
       final user = visit.user;
 
       if (user == null) continue;
@@ -319,39 +306,29 @@ class PerformanceController extends GetxController {
       final item = grouped[user.id]!;
 
       switch (visit.visitType.toLowerCase()) {
-
         case "doctor":
-
-          item["doctorScheduled"] =
-              (item["doctorScheduled"] as int) + 1;
+          item["doctorScheduled"] = (item["doctorScheduled"] as int) + 1;
 
           if (visit.confirmed) {
-            item["doctorConfirmed"] =
-                (item["doctorConfirmed"] as int) + 1;
+            item["doctorConfirmed"] = (item["doctorConfirmed"] as int) + 1;
           }
 
           break;
 
         case "chemist":
-
-          item["chemistScheduled"] =
-              (item["chemistScheduled"] as int) + 1;
+          item["chemistScheduled"] = (item["chemistScheduled"] as int) + 1;
 
           if (visit.confirmed) {
-            item["chemistConfirmed"] =
-                (item["chemistConfirmed"] as int) + 1;
+            item["chemistConfirmed"] = (item["chemistConfirmed"] as int) + 1;
           }
 
           break;
 
         case "stockist":
-
-          item["stockistScheduled"] =
-              (item["stockistScheduled"] as int) + 1;
+          item["stockistScheduled"] = (item["stockistScheduled"] as int) + 1;
 
           if (visit.confirmed) {
-            item["stockistConfirmed"] =
-                (item["stockistConfirmed"] as int) + 1;
+            item["stockistConfirmed"] = (item["stockistConfirmed"] as int) + 1;
           }
 
           break;
@@ -359,7 +336,6 @@ class PerformanceController extends GetxController {
     }
 
     return grouped.values.map((e) {
-
       return PerformanceModel(
         id: e["id"],
         employeeCode: e["employeeCode"],
@@ -371,7 +347,6 @@ class PerformanceController extends GetxController {
         stockistScheduled: e["stockistScheduled"],
         stockistConfirmed: e["stockistConfirmed"],
       );
-
     }).toList();
   }
 }

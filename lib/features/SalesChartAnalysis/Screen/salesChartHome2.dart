@@ -10,10 +10,6 @@ import 'package:firebase_in_app_messaging/firebase_in_app_messaging.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:provider/provider.dart';
-
-// -----------------------------------------------------------------------------
-// IMPORTS - YOUR DOMAIN
-// -----------------------------------------------------------------------------
 import '../../../utils/check_internet/network_monitor.dart';
 import '../../../utils/local_storage/auth_manager.dart';
 import '../../authentication/models/UserModel.dart';
@@ -24,27 +20,32 @@ import '../model/SalesChartDashboardModel.dart' as dash;
 import '../services/WeatherService.dart';
 import '../widgets/CompactWeatherWidget.dart';
 import '../widgets/morning_action_center.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
+// -----------------------------------------------------------------------------
+// IMPORTS - YOUR DOMAIN
+// -----------------------------------------------------------------------------
 // =============================================================================
 // PART 1: THEME & CONSTANTS
 // =============================================================================
 
 class AppTheme {
-  static const Color primary = Color(0xFFC71D52);
-  static const Color primaryLight = Color(0xFFF499B1);
-  static const Color primaryDeep = Color(0xFF8A1035);
-  static const Color primaryDark = Color(0xFF50041B);
+  static const Color primary = TColors.hex_FFC71D52;
+  static const Color primaryLight = TColors.hex_FFF499B1;
+  static const Color primaryDeep = TColors.hex_FF8A1035;
+  static const Color primaryDark = TColors.hex_FF50041B;
 
-  static const Color secondaryGold = Color(0xFFEFA100);
-  static const Color secondaryTeal = Color(0xFF009688);
-  static const Color secondaryBlue = Color(0xFF2196F3);
-  static const Color secondaryOrange = Color(0xFFFF6D00);
+  static const Color secondaryGold = TColors.hex_FFEFA100;
+  static const Color secondaryTeal = TColors.hex_FF009688;
+  static const Color secondaryBlue = TColors.hex_FF2196F3;
+  static const Color secondaryOrange = TColors.hex_FFFF6D00;
 
-  static const Color background = Color(0xFFF8F5F6);
-  static const Color surface = Colors.white;
+  static const Color background = TColors.hex_FFF8F5F6;
+  static const Color surface = TColors.white;
 
-  static const Color textPrimary = Color(0xFF2D0E15);
-  static const Color textSecondary = Color(0xFF8E8E8E);
+  static const Color textPrimary = TColors.hex_FF2D0E15;
+  static const Color textSecondary = TColors.hex_FF8E8E8E;
 
   static const LinearGradient primaryGradient = LinearGradient(
     colors: [primary, primaryDeep],
@@ -53,29 +54,29 @@ class AppTheme {
   );
 
   static TextStyle get label => const TextStyle(
-    fontFamily: 'Roboto',
-    fontSize: 11,
-    fontWeight: FontWeight.w700,
-    color: textSecondary,
-    letterSpacing: 1.0,
-  );
+        fontFamily: 'Roboto',
+        fontSize: TSizes.v11,
+        fontWeight: FontWeight.w700,
+        color: textSecondary,
+        letterSpacing: 1.0,
+      );
 
   static List<BoxShadow> get cardShadow => [
-    BoxShadow(
-      color: primary.withOpacity(0.06),
-      blurRadius: 15,
-      offset: const Offset(0, 6),
-      spreadRadius: 0,
-    ),
-  ];
+        BoxShadow(
+          color: primary.withOpacity(0.06),
+          blurRadius: TSizes.v15,
+          offset: const Offset(0, 6),
+          spreadRadius: TSizes.v0,
+        ),
+      ];
 
   static List<BoxShadow> get heroShadow => [
-    BoxShadow(
-      color: primary.withOpacity(0.2),
-      blurRadius: 20,
-      offset: const Offset(0, 10),
-    ),
-  ];
+        BoxShadow(
+          color: primary.withOpacity(0.2),
+          blurRadius: TSizes.v20,
+          offset: const Offset(0, 10),
+        ),
+      ];
 }
 
 // =============================================================================
@@ -91,7 +92,8 @@ class SalesChartHomeScreen extends StatefulWidget {
 
 class _SalesChartHomeScreenState extends State<SalesChartHomeScreen>
     with TickerProviderStateMixin {
-  final DashboardController _dashboardController = Get.put(DashboardController());
+  final DashboardController _dashboardController =
+      Get.put(DashboardController());
   final ScrollController _scrollController = ScrollController();
   late AnimationController _entranceController;
 
@@ -108,7 +110,8 @@ class _SalesChartHomeScreenState extends State<SalesChartHomeScreen>
 
   void logDashboardOpen() async {
     await FirebaseAnalytics.instance.logEvent(
-      name: 'sales_dashboard_open', // MUST match the event name in your screenshot exactly
+      name:
+          'sales_dashboard_open', // MUST match the event name in your screenshot exactly
       parameters: null, // Optional: add parameters if needed
     );
   }
@@ -145,7 +148,8 @@ class _SalesChartHomeScreenState extends State<SalesChartHomeScreen>
         // --- RESPONSIVE LAYOUT BUILDER ---
         return LayoutBuilder(builder: (context, constraints) {
           final bool isWideScreen = constraints.maxWidth > 800; // Tablet
-          final bool isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+          final bool isLandscape =
+              MediaQuery.of(context).orientation == Orientation.landscape;
 
           //  FIX 1: Reduce header height in landscape so you can see body content
           // Normal: 260, Landscape: 140 (Compact)
@@ -168,11 +172,11 @@ class _SalesChartHomeScreenState extends State<SalesChartHomeScreen>
 
               // 2. Responsive Body
               SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
                 sliver: SliverToBoxAdapter(
                   child: Column(
                     children: [
-
                       /// NEW SECTION
                       _StaggeredItem(
                         controller: _entranceController,
@@ -184,7 +188,7 @@ class _SalesChartHomeScreenState extends State<SalesChartHomeScreen>
                         ),
                       ),
 
-                      const SizedBox(height: 24),
+                      const SizedBox(height: TSizes.v24),
 
                       /// Existing Revenue Cards
                       ConstrainedBox(
@@ -195,7 +199,6 @@ class _SalesChartHomeScreenState extends State<SalesChartHomeScreen>
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-
                               Expanded(
                                 child: _StaggeredItem(
                                   controller: _entranceController,
@@ -205,9 +208,7 @@ class _SalesChartHomeScreenState extends State<SalesChartHomeScreen>
                                   ),
                                 ),
                               ),
-
-                              const SizedBox(width: 12),
-
+                              const SizedBox(width: TSizes.v12),
                               Expanded(
                                 child: _StaggeredItem(
                                   controller: _entranceController,
@@ -217,21 +218,19 @@ class _SalesChartHomeScreenState extends State<SalesChartHomeScreen>
                                   ),
                                 ),
                               ),
-
                             ],
                           ),
                         ),
                       ),
 
-                      const SizedBox(height: 30),
+                      const SizedBox(height: TSizes.v30),
 
                       if (isWideScreen)
                         _buildTabletLayout(data)
                       else
                         _buildMobileLayout(data),
 
-                      const SizedBox(height: 60),
-
+                      const SizedBox(height: TSizes.v60),
                     ],
                   ),
                 ),
@@ -243,7 +242,7 @@ class _SalesChartHomeScreenState extends State<SalesChartHomeScreen>
       floatingActionButton: FloatingActionButton(
         onPressed: _loadData,
         backgroundColor: AppTheme.primary,
-        child: const Icon(Icons.sync, color: Colors.white),
+        child: const Icon(Icons.sync, color: TColors.white),
       ),
     );
   }
@@ -252,16 +251,16 @@ class _SalesChartHomeScreenState extends State<SalesChartHomeScreen>
   Widget _buildMobileLayout(dynamic data) {
     return Column(
       children: [
-        const _SectionDivider(label: "MISSION CONTROL"),
-        const SizedBox(height: 15),
+        const _SectionDivider(label: TTexts.uiTextMISSIONCONTROL),
+        const SizedBox(height: TSizes.v15),
         _StaggeredItem(
           controller: _entranceController,
           index: 1,
           child: _MissionControlStrips(visits: data.visits),
         ),
-        const SizedBox(height: 30),
-        const _SectionDivider(label: "EXPENSE DNA"),
-        const SizedBox(height: 15),
+        const SizedBox(height: TSizes.v30),
+        const _SectionDivider(label: TTexts.uiTextEXPENSEDNA),
+        const SizedBox(height: TSizes.v15),
         _StaggeredItem(
           controller: _entranceController,
           index: 2,
@@ -280,8 +279,8 @@ class _SalesChartHomeScreenState extends State<SalesChartHomeScreen>
           flex: 4,
           child: Column(
             children: [
-              const _SectionDivider(label: "VISIT CONTROL"),
-              const SizedBox(height: 15),
+              const _SectionDivider(label: TTexts.uiTextVISITCONTROL),
+              const SizedBox(height: TSizes.v15),
               _StaggeredItem(
                 controller: _entranceController,
                 index: 1,
@@ -290,13 +289,13 @@ class _SalesChartHomeScreenState extends State<SalesChartHomeScreen>
             ],
           ),
         ),
-        const SizedBox(width: 24),
+        const SizedBox(width: TSizes.v24),
         Expanded(
           flex: 3,
           child: Column(
             children: [
-              const _SectionDivider(label: "EXPENSE"),
-              const SizedBox(height: 15),
+              const _SectionDivider(label: TTexts.uiTextEXPENSE),
+              const SizedBox(height: TSizes.v15),
               _StaggeredItem(
                 controller: _entranceController,
                 index: 2,
@@ -313,8 +312,6 @@ class _SalesChartHomeScreenState extends State<SalesChartHomeScreen>
 // =============================================================================
 // PART 3: HEADER (ADAPTIVE)
 // =============================================================================
-
-
 
 class _GlassWaveHeaderDelegate extends SliverPersistentHeaderDelegate {
   final dash.User? user;
@@ -337,10 +334,12 @@ class _GlassWaveHeaderDelegate extends SliverPersistentHeaderDelegate {
   }
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
     final double availableScroll = maxExtent - minExtent;
-    final double progress =
-    availableScroll == 0 ? 0 : (shrinkOffset / availableScroll).clamp(0.0, 1.0);
+    final double progress = availableScroll == 0
+        ? 0
+        : (shrinkOffset / availableScroll).clamp(0.0, 1.0);
 
     final isCollapsed = progress > 0.6;
     final safeTop = topPadding + 10;
@@ -352,15 +351,18 @@ class _GlassWaveHeaderDelegate extends SliverPersistentHeaderDelegate {
         children: [
           // Background
           Positioned(
-            top: 0, left: 0, right: 0,
+            top: 0,
+            left: 0,
+            right: 0,
             height: math.max(
               minExtent,
               expandedHeight - shrinkOffset,
             ),
-
             child: ClipRRect(
-              borderRadius: const BorderRadius.vertical(bottom: Radius.circular(40)),
-              child: CustomPaint(painter: _WaveGradientPainter(color: AppTheme.primary)),
+              borderRadius:
+                  const BorderRadius.vertical(bottom: Radius.circular(40)),
+              child: CustomPaint(
+                  painter: _WaveGradientPainter(color: AppTheme.primary)),
             ),
           ),
 
@@ -380,22 +382,24 @@ class _GlassWaveHeaderDelegate extends SliverPersistentHeaderDelegate {
                     AnimatedOpacity(
                       duration: const Duration(milliseconds: 300),
                       opacity: isCollapsed ? 1.0 : 0.0,
-                      child: const Text("Dashboard",
-                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+                      child: const Text(TTexts.uiTextDashboard,
+                          style: TextStyle(
+                              color: TColors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: TSizes.v18)),
                     ),
                     _GlassBadge(
                         child: Row(children: [
-                          const LiveClockWidget(),
-                          const SizedBox(width: 8),
-                          _StatusDot()
-                        ])),
+                      const LiveClockWidget(),
+                      const SizedBox(width: TSizes.v8),
+                      _StatusDot()
+                    ])),
                   ],
                 ),
 
                 // 2. Expanded Content (Greeting + Weather)
                 if (progress < 0.5) ...[
                   SizedBox(height: isCompact ? 8 : 24),
-
                   Opacity(
                     opacity: (1 - progress * 2.5).clamp(0.0, 1.0),
                     child: Row(
@@ -408,21 +412,26 @@ class _GlassWaveHeaderDelegate extends SliverPersistentHeaderDelegate {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(_timeGreeting,
-                                  style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 16)),
+                                  style: TextStyle(
+                                      color: TColors.white.withOpacity(0.9),
+                                      fontSize: TSizes.v16)),
                               Text(
                                 user?.name ?? "User",
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 28,
+                                    color: TColors.white,
+                                    fontSize: TSizes.v28,
                                     fontWeight: FontWeight.w900,
-                                    height: 1.1),
+                                    height: TSizes.v1_1),
                               ),
                               if (!isCompact) ...[
-                                const SizedBox(height: 4),
-                                const Text("Your field metrics are synced.",
-                                    style: TextStyle(color: Colors.white54, fontSize: 12)),
+                                const SizedBox(height: TSizes.v4),
+                                const Text(
+                                    TTexts.uiTextYourFieldMetricsAreSynced,
+                                    style: TextStyle(
+                                        color: TColors.white54,
+                                        fontSize: TSizes.v12)),
                               ],
                             ],
                           ),
@@ -461,7 +470,8 @@ class _GlassWaveHeaderDelegate extends SliverPersistentHeaderDelegate {
 // =============================================================================
 
 // Helper for currency formatting
-final _currencyFormat = NumberFormat.compactCurrency(symbol: '₹', decimalDigits: 1);
+final _currencyFormat =
+    NumberFormat.compactCurrency(symbol: '₹', decimalDigits: 1);
 
 class _RevenueIntelligenceCard extends StatelessWidget {
   final dash.Targets? targets;
@@ -471,7 +481,8 @@ class _RevenueIntelligenceCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final double monthlyTarget = (targets?.monthlyTarget ?? 1).toDouble();
     final double achieved = (targets?.achieved ?? 0).toDouble();
-    double percent = (monthlyTarget == 0) ? 0 : (achieved / monthlyTarget).clamp(0.0, 1.0);
+    double percent =
+        (monthlyTarget == 0) ? 0 : (achieved / monthlyTarget).clamp(0.0, 1.0);
 
     // --- Intelligence Calculations ---
     final now = DateTime.now();
@@ -491,7 +502,7 @@ class _RevenueIntelligenceCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: TColors.white,
         borderRadius: BorderRadius.circular(24),
         boxShadow: AppTheme.cardShadow,
       ),
@@ -503,16 +514,18 @@ class _RevenueIntelligenceCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  const Icon(Icons.monetization_on_outlined, size: 14, color: AppTheme.textSecondary),
-                  const SizedBox(width: 4),
-                  Text("REVENUE", style: AppTheme.label),
+                  const Icon(Icons.monetization_on_outlined,
+                      size: TSizes.v14, color: AppTheme.textSecondary),
+                  const SizedBox(width: TSizes.v4),
+                  Text(TTexts.uiTextREVENUE, style: AppTheme.label),
                 ],
               ),
               // Show explicit Target here
-              Text(
-                  "Target: ${_currencyFormat.format(monthlyTarget)}",
-                  style: const TextStyle(fontSize: 10, color: AppTheme.textSecondary, fontWeight: FontWeight.w600)
-              ),
+              Text("Target: ${_currencyFormat.format(monthlyTarget)}",
+                  style: const TextStyle(
+                      fontSize: TSizes.v10,
+                      color: AppTheme.textSecondary,
+                      fontWeight: FontWeight.w600)),
             ],
           ),
           const Spacer(),
@@ -525,7 +538,10 @@ class _RevenueIntelligenceCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text("Achieved", style: TextStyle(color: AppTheme.textSecondary, fontSize: 11)),
+                    const Text(TTexts.uiTextAchieved,
+                        style: TextStyle(
+                            color: AppTheme.textSecondary,
+                            fontSize: TSizes.v11)),
                     FittedBox(
                       fit: BoxFit.scaleDown,
                       alignment: Alignment.centerLeft,
@@ -533,37 +549,38 @@ class _RevenueIntelligenceCard extends StatelessWidget {
                         _currencyFormat.format(achieved),
                         style: const TextStyle(
                             color: AppTheme.textPrimary,
-                            fontSize: 24, // Made slightly bigger
-                            fontWeight: FontWeight.w900
-                        ),
+                            fontSize: TSizes.v24, // Made slightly bigger
+                            fontWeight: FontWeight.w900),
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: TSizes.v4),
                     // New: Remaining Amount
                     Text(
                       "Remaining: ${_currencyFormat.format(remaining)}",
                       style: TextStyle(
-                          fontSize: 11,
+                          fontSize: TSizes.v11,
                           color: AppTheme.textSecondary.withOpacity(0.8),
-                          fontWeight: FontWeight.w500
-                      ),
+                          fontWeight: FontWeight.w500),
                     ),
                   ],
                 ),
               ),
               // Right Side: Radial Indicator
               SizedBox(
-                height: 70,
-                width: 70,
+                height: TSizes.v70,
+                width: TSizes.v70,
                 child: CustomPaint(
-                  painter: _SimpleRadialPainter(percent: percent, color: AppTheme.primary),
+                  painter: _SimpleRadialPainter(
+                      percent: percent, color: AppTheme.primary),
                   child: Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text("${(percent * 100).toInt()}%",
                             style: const TextStyle(
-                                color: AppTheme.primary, fontWeight: FontWeight.bold, fontSize: 14)),
+                                color: AppTheme.primary,
+                                fontWeight: FontWeight.bold,
+                                fontSize: TSizes.v14)),
                       ],
                     ),
                   ),
@@ -585,24 +602,31 @@ class _RevenueIntelligenceCard extends StatelessWidget {
               children: [
                 // Variance Pill
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
-                      color: isBehind ? AppTheme.primary.withOpacity(0.1) : Colors.green.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(4)
-                  ),
+                      color: isBehind
+                          ? AppTheme.primary.withOpacity(0.1)
+                          : TColors.materialGreen.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(4)),
                   child: Row(
                     children: [
                       Icon(isBehind ? Icons.trending_down : Icons.trending_up,
-                          size: 10, color: isBehind ? AppTheme.primary : Colors.green),
-                      const SizedBox(width: 4),
+                          size: TSizes.v10,
+                          color: isBehind
+                              ? AppTheme.primary
+                              : TColors.materialGreen),
+                      const SizedBox(width: TSizes.v4),
                       Text(
                         isBehind
                             ? _currencyFormat.format(variance.abs())
                             : "+${_currencyFormat.format(variance)}",
                         style: TextStyle(
-                            fontSize: 10,
+                            fontSize: TSizes.v10,
                             fontWeight: FontWeight.bold,
-                            color: isBehind ? AppTheme.primary : Colors.green),
+                            color: isBehind
+                                ? AppTheme.primary
+                                : TColors.materialGreen),
                       ),
                     ],
                   ),
@@ -612,7 +636,10 @@ class _RevenueIntelligenceCard extends StatelessWidget {
                 Flexible(
                   child: Text(
                     "Proj: ${_currencyFormat.format(projected)}",
-                    style: const TextStyle(fontSize: 10, color: AppTheme.textSecondary, fontWeight: FontWeight.w600),
+                    style: const TextStyle(
+                        fontSize: TSizes.v10,
+                        color: AppTheme.textSecondary,
+                        fontWeight: FontWeight.w600),
                     overflow: TextOverflow.ellipsis,
                   ),
                 )
@@ -644,13 +671,14 @@ class _PerformancePaceCard extends StatelessWidget {
     // If daysLeft is 0, avoid division by zero
     final double requiredDaily = daysLeft > 0 ? (remaining / daysLeft) : 0;
 
-    final double salesPercent = (monthly == 0) ? 0 : (achieved / monthly).clamp(0.0, 1.0);
+    final double salesPercent =
+        (monthly == 0) ? 0 : (achieved / monthly).clamp(0.0, 1.0);
     final bool isOnTrack = salesPercent >= timePercent;
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: TColors.white,
         borderRadius: BorderRadius.circular(24),
         boxShadow: AppTheme.cardShadow,
       ),
@@ -662,16 +690,18 @@ class _PerformancePaceCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  const Icon(Icons.speed_rounded, size: 14, color: AppTheme.textSecondary),
-                  const SizedBox(width: 4),
-                  Text("PACE", style: AppTheme.label),
+                  const Icon(Icons.speed_rounded,
+                      size: TSizes.v14, color: AppTheme.textSecondary),
+                  const SizedBox(width: TSizes.v4),
+                  Text(TTexts.uiTextPACE, style: AppTheme.label),
                 ],
               ),
               // Show Time Info
-              Text(
-                  "$daysLeft Days Left",
-                  style: const TextStyle(fontSize: 10, color: AppTheme.textSecondary, fontWeight: FontWeight.w600)
-              ),
+              Text("$daysLeft Days Left",
+                  style: const TextStyle(
+                      fontSize: TSizes.v10,
+                      color: AppTheme.textSecondary,
+                      fontWeight: FontWeight.w600)),
             ],
           ),
 
@@ -682,8 +712,8 @@ class _PerformancePaceCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 SizedBox(
-                  height: 60,
-                  width: 60,
+                  height: TSizes.v60,
+                  width: TSizes.v60,
                   child: CustomPaint(
                     painter: _DualRadialPainter(
                       innerPercent: salesPercent,
@@ -692,25 +722,34 @@ class _PerformancePaceCard extends StatelessWidget {
                     ),
                     child: Center(
                       child: Icon(
-                        isOnTrack ? Icons.thumb_up_alt_rounded : Icons.bolt_rounded,
-                        color: isOnTrack ? Colors.green : AppTheme.primary,
-                        size: 20,
+                        isOnTrack
+                            ? Icons.thumb_up_alt_rounded
+                            : Icons.bolt_rounded,
+                        color: isOnTrack
+                            ? TColors.materialGreen
+                            : AppTheme.primary,
+                        size: TSizes.v20,
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: TSizes.v12),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(isOnTrack ? "On Track" : "Boost Required",
                         style: TextStyle(
-                            color: isOnTrack ? Colors.green : AppTheme.primary,
-                            fontSize: 14,
+                            color: isOnTrack
+                                ? TColors.materialGreen
+                                : AppTheme.primary,
+                            fontSize: TSizes.v14,
                             fontWeight: FontWeight.bold)),
                     Text(
-                      isOnTrack ? "Maintain daily avg." : "Increase daily visits.",
-                      style: const TextStyle(color: AppTheme.textSecondary, fontSize: 10),
+                      isOnTrack
+                          ? "Maintain daily avg."
+                          : "Increase daily visits.",
+                      style: const TextStyle(
+                          color: AppTheme.textSecondary, fontSize: TSizes.v10),
                     ),
                   ],
                 )
@@ -725,29 +764,35 @@ class _PerformancePaceCard extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-                color: isOnTrack ? Colors.green.withOpacity(0.05) : AppTheme.primary.withOpacity(0.05),
-                borderRadius: BorderRadius.circular(8)
-            ),
+                color: isOnTrack
+                    ? TColors.materialGreen.withOpacity(0.05)
+                    : AppTheme.primary.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(8)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text("REQUIRED / DAY", style: TextStyle(fontSize: 8, color: AppTheme.textSecondary, letterSpacing: 0.5)),
-                const SizedBox(height: 2),
+                const Text(TTexts.uiTextREQUIREDDAY,
+                    style: TextStyle(
+                        fontSize: TSizes.v8,
+                        color: AppTheme.textSecondary,
+                        letterSpacing: 0.5)),
+                const SizedBox(height: TSizes.v2),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                        _currencyFormat.format(requiredDaily),
+                    Text(_currencyFormat.format(requiredDaily),
                         style: TextStyle(
-                            fontSize: 16,
+                            fontSize: TSizes.v16,
                             fontWeight: FontWeight.w800,
-                            color: isOnTrack ? Colors.green[700] : AppTheme.primary
-                        )
-                    ),
-                    Text(
-                        isOnTrack ? "You are safe" : "To hit target",
-                        style: TextStyle(fontSize: 10, color: isOnTrack ? Colors.green : AppTheme.primary.withOpacity(0.8))
-                    )
+                            color: isOnTrack
+                                ? TColors.materialGreen700
+                                : AppTheme.primary)),
+                    Text(isOnTrack ? "You are safe" : "To hit target",
+                        style: TextStyle(
+                            fontSize: TSizes.v10,
+                            color: isOnTrack
+                                ? TColors.materialGreen
+                                : AppTheme.primary.withOpacity(0.8)))
                   ],
                 ),
               ],
@@ -774,29 +819,29 @@ class _MissionControlStrips extends StatelessWidget {
     return Column(
       children: [
         _MissionStrip(
-          title: "Doctor Visits",
+          title: TTexts.uiTextDoctorVisits,
           confirmed: visits?.doctor?.confirmed ?? 0,
           total: visits?.doctor?.total ?? 0,
           color: TColors.primary,
           icon: Icons.medical_services,
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: TSizes.v12),
         _MissionStrip(
-          title: "Chemist Visits",
+          title: TTexts.uiTextChemistVisits,
           confirmed: visits?.chemist?.confirmed ?? 0,
           total: visits?.chemist?.total ?? 0,
           color: TColors.primary,
           icon: Icons.science,
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: TSizes.v12),
         _MissionStrip(
-          title: "Stockist Visits",
+          title: TTexts.uiTextStockistVisits,
           confirmed: visits?.stockist?.confirmed ?? 0,
           total: visits?.stockist?.total ?? 0,
           color: TColors.primary,
           icon: Icons.store,
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: TSizes.v12),
         _TotalActivityStrip(
           total: visits?.total ?? 0,
           scheduled: visits?.scheduled ?? 0,
@@ -828,7 +873,7 @@ class _MissionStrip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: TColors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: AppTheme.cardShadow,
       ),
@@ -837,10 +882,11 @@ class _MissionStrip extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-                color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
-            child: Icon(icon, color: color, size: 20),
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12)),
+            child: Icon(icon, color: color, size: TSizes.v20),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: TSizes.v16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -851,7 +897,7 @@ class _MissionStrip extends StatelessWidget {
                     Text(title,
                         style: const TextStyle(
                             fontWeight: FontWeight.bold,
-                            fontSize: 14,
+                            fontSize: TSizes.v14,
                             color: AppTheme.textPrimary)),
                     RichText(
                       text: TextSpan(children: [
@@ -860,23 +906,24 @@ class _MissionStrip extends StatelessWidget {
                             style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: color,
-                                fontSize: 16)),
+                                fontSize: TSizes.v16)),
                         TextSpan(
                             text: "/$total",
                             style: const TextStyle(
-                                color: AppTheme.textSecondary, fontSize: 12)),
+                                color: AppTheme.textSecondary,
+                                fontSize: TSizes.v12)),
                       ]),
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: TSizes.v8),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(2),
                   child: LinearProgressIndicator(
                     value: progress,
                     backgroundColor: AppTheme.background,
                     color: color,
-                    minHeight: 6,
+                    minHeight: TSizes.v6,
                   ),
                 ),
               ],
@@ -910,16 +957,17 @@ class _TotalActivityStrip extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                    color: Colors.white24, borderRadius: BorderRadius.circular(8)),
+                    color: TColors.white24,
+                    borderRadius: BorderRadius.circular(8)),
                 child: const Icon(Icons.analytics_outlined,
-                    color: Colors.white, size: 20),
+                    color: TColors.white, size: TSizes.v20),
               ),
-              const SizedBox(width: 16),
-              const Text("Total Field Activity",
+              const SizedBox(width: TSizes.v16),
+              const Text(TTexts.uiTextTotalFieldActivity,
                   style: TextStyle(
-                      color: Colors.white,
+                      color: TColors.white,
                       fontWeight: FontWeight.bold,
-                      fontSize: 14)),
+                      fontSize: TSizes.v14)),
             ],
           ),
           Column(
@@ -927,11 +975,12 @@ class _TotalActivityStrip extends StatelessWidget {
             children: [
               Text("$total",
                   style: const TextStyle(
-                      color: Colors.white,
+                      color: TColors.white,
                       fontWeight: FontWeight.w900,
-                      fontSize: 20)),
+                      fontSize: TSizes.v20)),
               Text("Target: $scheduled",
-                  style: const TextStyle(color: Colors.white70, fontSize: 10)),
+                  style: const TextStyle(
+                      color: TColors.white70, fontSize: TSizes.v10)),
             ],
           )
         ],
@@ -954,21 +1003,21 @@ class _ExpenseHeroTiles extends StatelessWidget {
     return Column(
       children: [
         _ExpenseTile(
-            label: "Approved",
+            label: TTexts.uiTextApproved,
             count: expenses!.approved,
             amount: expenses!.approvedAmount,
-            color: Colors.green,
+            color: TColors.materialGreen,
             icon: Icons.check_circle_outline),
-        const SizedBox(height: 12),
+        const SizedBox(height: TSizes.v12),
         _ExpenseTile(
-            label: "Pending",
+            label: TTexts.pending,
             count: expenses!.pending,
             amount: expenses!.pendingAmount,
-            color: const Color(0xFFFBC02D),
+            color: TColors.hex_FFFBC02D,
             icon: Icons.access_time),
-        const SizedBox(height: 12),
+        const SizedBox(height: TSizes.v12),
         _ExpenseTile(
-            label: "Rejected",
+            label: TTexts.uiTextRejected,
             count: expenses!.rejected,
             amount: expenses!.rejectedAmount,
             color: AppTheme.primary,
@@ -987,20 +1036,20 @@ class _ExpenseTile extends StatelessWidget {
 
   const _ExpenseTile(
       {required this.label,
-        required this.count,
-        required this.amount,
-        required this.color,
-        required this.icon});
+      required this.count,
+      required this.amount,
+      required this.color,
+      required this.icon});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: TColors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: AppTheme.cardShadow,
-        border: Border(left: BorderSide(color: color, width: 4)),
+        border: Border(left: BorderSide(color: color, width: TSizes.v4)),
       ),
       child: Row(
         children: [
@@ -1008,26 +1057,26 @@ class _ExpenseTile extends StatelessWidget {
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
                 color: color.withOpacity(0.1), shape: BoxShape.circle),
-            child: Icon(icon, color: color, size: 20),
+            child: Icon(icon, color: color, size: TSizes.v20),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: TSizes.v16),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(label,
                   style: const TextStyle(
-                      fontSize: 13,
+                      fontSize: TSizes.v13,
                       color: AppTheme.textPrimary,
                       fontWeight: FontWeight.bold)),
               Text("$count Claims",
                   style: const TextStyle(
-                      fontSize: 11, color: AppTheme.textSecondary)),
+                      fontSize: TSizes.v11, color: AppTheme.textSecondary)),
             ],
           ),
           const Spacer(),
           Text("₹${NumberFormat.compact().format(amount)}",
               style: const TextStyle(
-                  fontSize: 18,
+                  fontSize: TSizes.v18,
                   fontWeight: FontWeight.w900,
                   color: AppTheme.textPrimary)),
         ],
@@ -1068,8 +1117,8 @@ class _DualRadialPainter extends CustomPainter {
   final Color primary;
   _DualRadialPainter(
       {required this.innerPercent,
-        required this.outerPercent,
-        required this.primary});
+      required this.outerPercent,
+      required this.primary});
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
@@ -1079,13 +1128,13 @@ class _DualRadialPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
       ..strokeWidth = 6
-      ..color = Colors.grey.shade200;
+      ..color = TColors.materialGrey200;
     canvas.drawCircle(center, radius, bgP);
     final timeP = Paint()
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
       ..strokeWidth = 6
-      ..color = Colors.grey.shade400;
+      ..color = TColors.materialGrey400;
     canvas.drawArc(Rect.fromCircle(center: center, radius: radius),
         -math.pi / 2, 2 * math.pi * outerPercent, false, timeP);
     // Inner (Sales)
@@ -1115,9 +1164,9 @@ class _WaveGradientPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
       ..shader = LinearGradient(
-          colors: [color, color.withOpacity(0.8)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight)
+              colors: [color, color.withOpacity(0.8)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight)
           .createShader(Rect.fromLTWH(0, 0, size.width, size.height));
     final path = Path();
     path.lineTo(0, size.height * 0.75);
@@ -1142,19 +1191,22 @@ class _SectionDivider extends StatelessWidget {
     return Row(
       children: [
         Container(
-            width: 4,
-            height: 16,
+            width: TSizes.v4,
+            height: TSizes.v16,
             decoration: BoxDecoration(
-                color: AppTheme.primary, borderRadius: BorderRadius.circular(2))),
-        const SizedBox(width: 8),
+                color: AppTheme.primary,
+                borderRadius: BorderRadius.circular(2))),
+        const SizedBox(width: TSizes.v8),
         Text(label,
             style: const TextStyle(
-                fontSize: 12,
+                fontSize: TSizes.v12,
                 fontWeight: FontWeight.w900,
                 color: AppTheme.textSecondary,
                 letterSpacing: 1.5)),
-        const SizedBox(width: 8),
-        Expanded(child: Divider(color: Colors.grey.shade200, thickness: 1)),
+        const SizedBox(width: TSizes.v8),
+        Expanded(
+            child:
+                Divider(color: TColors.materialGrey200, thickness: TSizes.v1)),
       ],
     );
   }
@@ -1187,8 +1239,7 @@ class _AnimatedMoneyState extends State<_AnimatedMoney>
     return AnimatedBuilder(
       animation: _anim,
       builder: (_, __) => Text(
-          NumberFormat.currency(
-              symbol: '₹ ', decimalDigits: 0, locale: "en_IN")
+          NumberFormat.currency(symbol: '₹ ', decimalDigits: 0, locale: "en_IN")
               .format(_anim.value),
           style: widget.style),
     );
@@ -1206,7 +1257,8 @@ class _StaggeredItem extends StatelessWidget {
     final start = (index * 0.1).clamp(0.0, 1.0);
     final end = (start + 0.5).clamp(0.0, 1.0);
     final curve = CurvedAnimation(
-        parent: controller, curve: Interval(start, end, curve: Curves.easeOutCubic));
+        parent: controller,
+        curve: Interval(start, end, curve: Curves.easeOutCubic));
     return AnimatedBuilder(
         animation: controller,
         builder: (_, __) => Transform.translate(
@@ -1226,7 +1278,7 @@ class _GlassBadge extends StatelessWidget {
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            color: Colors.white.withOpacity(0.2),
+            color: TColors.white.withOpacity(0.2),
             child: child),
       ),
     );
@@ -1240,10 +1292,11 @@ class _StatusDot extends StatelessWidget {
     return ValueListenableBuilder<bool>(
       valueListenable: monitor.isOnline,
       builder: (_, isOnline, __) => Container(
-          width: 8,
-          height: 8,
+          width: TSizes.v8,
+          height: TSizes.v8,
           decoration: BoxDecoration(
-              color: isOnline ? Colors.greenAccent : Colors.red,
+              color:
+                  isOnline ? TColors.materialGreenAccent : TColors.materialRed,
               shape: BoxShape.circle)),
     );
   }
@@ -1255,10 +1308,8 @@ class _ErrorView extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Center(
       child: TextButton(
-          onPressed: onRetry, child: const Text("Retry Connection")));
+          onPressed: onRetry, child: const Text(TTexts.uiTextRetryConnection)));
 }
-
-
 
 /*class SalesChartHomeScreen extends StatefulWidget {
   @override
@@ -1282,7 +1333,7 @@ class _SalesChartHomeScreenState extends State<SalesChartHomeScreen> {
     // Check if the data is still loading
     if (_dashboardController.isLoading) {
       return Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: TColors.white,
         body: Center(child: CircularProgressIndicator()),
       );
     }
@@ -1292,7 +1343,7 @@ class _SalesChartHomeScreenState extends State<SalesChartHomeScreen> {
 
     if (dashboardData == null) {
       return Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: TColors.white,
         body: Center(child: Text("No data available")),
       );
     }
@@ -1306,7 +1357,7 @@ class _SalesChartHomeScreenState extends State<SalesChartHomeScreen> {
     final summary = dashboardData.summary!;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: TColors.white,
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16),
         child: Column(
@@ -1315,12 +1366,12 @@ class _SalesChartHomeScreenState extends State<SalesChartHomeScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white,
-                border: Border.all(color: Colors.red, width: 1),
+                color: TColors.white,
+                border: Border.all(color: TColors.materialRed, width: 1),
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.red.withOpacity(0.1),
+                    color: TColors.materialRed.withOpacity(0.1),
                     blurRadius: 8,
                     offset: const Offset(0, 4),
                   ),
@@ -1346,12 +1397,12 @@ class _SalesChartHomeScreenState extends State<SalesChartHomeScreen> {
                       return Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: Colors.white,
-                          border: Border.all(color: Colors.red, width: 1),
+                          color: TColors.white,
+                          border: Border.all(color: TColors.materialRed, width: 1),
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.red.withOpacity(0.1),
+                              color: TColors.materialRed.withOpacity(0.1),
                               blurRadius: 8,
                               offset: const Offset(0, 4),
                             ),
@@ -1370,7 +1421,7 @@ class _SalesChartHomeScreenState extends State<SalesChartHomeScreen> {
                               style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.red.shade800,
+                                color: TColors.materialRed800,
                               ),
                             ),
                             const SizedBox(height: 20),
@@ -1379,7 +1430,7 @@ class _SalesChartHomeScreenState extends State<SalesChartHomeScreen> {
                               style: const TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.black87,
+                                color: TColors.black87,
                               ),
                             ),
                             const SizedBox(height: 4),
@@ -1387,7 +1438,7 @@ class _SalesChartHomeScreenState extends State<SalesChartHomeScreen> {
                               user.email, // ✅ from SharedPreferences
                               style: TextStyle(
                                 fontSize: 14,
-                                color: Colors.grey[700],
+                                color: TColors.materialGrey700,
                               ),
                             ),
                           ],
@@ -1402,7 +1453,7 @@ class _SalesChartHomeScreenState extends State<SalesChartHomeScreen> {
                         style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: Colors.black87,
+                          color: TColors.black87,
                         ),
                       ),
 
@@ -1421,7 +1472,7 @@ class _SalesChartHomeScreenState extends State<SalesChartHomeScreen> {
                         style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: Colors.black87,
+                          color: TColors.black87,
                         ),
                       ),
                     ],
@@ -1476,9 +1527,9 @@ class _SalesChartHomeScreenState extends State<SalesChartHomeScreen> {
               SizedBox(height: 8),
               CircularProgressIndicator(
                 value: done / total,
-                color: Colors.red,
+                color: TColors.materialRed,
                 strokeWidth: 6,
-                backgroundColor: Colors.red.withOpacity(0.2),
+                backgroundColor: TColors.materialRed.withOpacity(0.2),
               ),
               SizedBox(height: 8),
               Text('$done / $total'),
@@ -1490,13 +1541,13 @@ class _SalesChartHomeScreenState extends State<SalesChartHomeScreen> {
     );
   }
 
-  Widget _todaySummary(Expenses expenses) {
+  Widget _todaySummary(dash.Expenses expenses) {
     return Container(
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.red.withOpacity(0.05),
+        color: TColors.materialRed.withOpacity(0.05),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.red.withOpacity(0.2)),
+        border: Border.all(color: TColors.materialRed.withOpacity(0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1504,9 +1555,9 @@ class _SalesChartHomeScreenState extends State<SalesChartHomeScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _statusCircle("Pending", expenses.pending ?? 0, Colors.orange),
-              _statusCircle("Approved", expenses.approved ?? 0, Colors.green),
-              _statusCircle("Rejected", expenses.rejected ?? 0, Colors.red),
+              _statusCircle("Pending", expenses.pending ?? 0, TColors.materialOrange),
+              _statusCircle("Approved", expenses.approved ?? 0, TColors.materialGreen),
+              _statusCircle("Rejected", expenses.rejected ?? 0, TColors.materialRed),
             ],
           ),
           SizedBox(height: 12),
@@ -1517,13 +1568,13 @@ class _SalesChartHomeScreenState extends State<SalesChartHomeScreen> {
     );
   }
 
-  Widget _monthlyTargetSummary(Targets targets) {
+  Widget _monthlyTargetSummary(dash.Targets targets) {
     return Container(
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.red.withOpacity(0.05),
+        color: TColors.materialRed.withOpacity(0.05),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.red.withOpacity(0.2)),
+        border: Border.all(color: TColors.materialRed.withOpacity(0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1533,9 +1584,9 @@ class _SalesChartHomeScreenState extends State<SalesChartHomeScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _statusCircle("Target", targets.monthlyTarget ?? 0, Colors.deepPurple),
-              _statusCircle("Achieved", targets.achieved ?? 0, Colors.green),
-              _statusCircle("Left", targets.remaining ?? 0, Colors.orange),
+              _statusCircle("Target", targets.monthlyTarget ?? 0, TColors.materialDeepPurple),
+              _statusCircle("Achieved", targets.achieved ?? 0, TColors.materialGreen),
+              _statusCircle("Left", targets.remaining ?? 0, TColors.materialOrange),
             ],
           ),
           SizedBox(height: 12),
@@ -1578,13 +1629,13 @@ class _SalesChartHomeScreenState extends State<SalesChartHomeScreen> {
   }
 
   // Today Appointments Summary widget to show the appointment counts
-  Widget _todayAppointmentsSummary(Visits visits) {
+  Widget _todayAppointmentsSummary(dash.Visits visits) {
     return Container(
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.red.withOpacity(0.05),
+        color: TColors.materialRed.withOpacity(0.05),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.red.withOpacity(0.2)),
+        border: Border.all(color: TColors.materialRed.withOpacity(0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1594,9 +1645,9 @@ class _SalesChartHomeScreenState extends State<SalesChartHomeScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _appointmentIconCircle("Doctors", visits.doctor?.total ?? 0, Colors.blueAccent),
-              _appointmentIconCircle("Chemists", visits.chemist?.total ?? 0, Colors.indigo),
-              _appointmentIconCircle("Stockists", visits.stockist?.total ?? 0, Colors.teal),
+              _appointmentIconCircle("Doctors", visits.doctor?.total ?? 0, TColors.materialBlueAccent),
+              _appointmentIconCircle("Chemists", visits.chemist?.total ?? 0, TColors.materialIndigo),
+              _appointmentIconCircle("Stockists", visits.stockist?.total ?? 0, TColors.materialTeal),
             ],
           ),
           const SizedBox(height: 12),
@@ -1623,18 +1674,13 @@ class _SalesChartHomeScreenState extends State<SalesChartHomeScreen> {
   }
 }*/
 
-
-
-
-
-
 /*class SalesChartHomeScreen extends StatefulWidget {
   @override
   _DashboardScreenState createState() => _DashboardScreenState();
 }
 
 class _DashboardScreenState extends State<SalesChartHomeScreen> with TickerProviderStateMixin {
-  final Color primaryColor = Color(0xFFC71D52);
+  final Color primaryColor = TColors.hex_FFC71D52;
 
   late AnimationController doctorController;
   late AnimationController chemistController;
@@ -1701,7 +1747,7 @@ class _DashboardScreenState extends State<SalesChartHomeScreen> with TickerProvi
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: TColors.white,
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16),
         child: Column(
@@ -1722,12 +1768,12 @@ class _DashboardScreenState extends State<SalesChartHomeScreen> with TickerProvi
                 return Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.white,
-                    border: Border.all(color: Colors.red, width: 1),
+                    color: TColors.white,
+                    border: Border.all(color: TColors.materialRed, width: 1),
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.red.withOpacity(0.1),
+                        color: TColors.materialRed.withOpacity(0.1),
                         blurRadius: 8,
                         offset: const Offset(0, 4),
                       ),
@@ -1746,7 +1792,7 @@ class _DashboardScreenState extends State<SalesChartHomeScreen> with TickerProvi
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
-                              color: Colors.red.shade800,
+                              color: TColors.materialRed800,
                             ),
                           ),
                           const SizedBox(height: 20),
@@ -1755,7 +1801,7 @@ class _DashboardScreenState extends State<SalesChartHomeScreen> with TickerProvi
                             style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
-                              color: Colors.black87,
+                              color: TColors.black87,
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -1763,7 +1809,7 @@ class _DashboardScreenState extends State<SalesChartHomeScreen> with TickerProvi
                             user.email, // ✅ from SharedPreferences
                             style: TextStyle(
                               fontSize: 14,
-                              color: Colors.grey[700],
+                              color: TColors.materialGrey700,
                             ),
                           ),
                         ],
@@ -1778,17 +1824,17 @@ class _DashboardScreenState extends State<SalesChartHomeScreen> with TickerProvi
                             style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
-                              color: Colors.black87,
+                              color: TColors.black87,
                             ),
                           ),
-                          *//* Text(
+                          */ /* Text(
                 DateFormat('hh:mm a').format(DateTime.now()),
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: Colors.red.shade600,
+                  color: TColors.materialRed600,
                 ),
-              ),*//*
+              ),*/ /*
                         ],
                       ),
                     ],
@@ -1878,9 +1924,9 @@ class _DashboardScreenState extends State<SalesChartHomeScreen> with TickerProvi
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _statusCircle("Pending", pending, Colors.orange),
-              _statusCircle("Approved", approved, Colors.green),
-              _statusCircle("Rejected", rejected, Colors.red),
+              _statusCircle("Pending", pending, TColors.materialOrange),
+              _statusCircle("Approved", approved, TColors.materialGreen),
+              _statusCircle("Rejected", rejected, TColors.materialRed),
             ],
           ),
           SizedBox(height: 12),
@@ -1909,9 +1955,9 @@ class _DashboardScreenState extends State<SalesChartHomeScreen> with TickerProvi
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _appointmentIconCircle("Doctors", doctorTotal, Colors.blueAccent),
-              _appointmentIconCircle("Chemists", chemistTotal, Colors.indigo),
-              _appointmentIconCircle("Stockists", stockistTotal, Colors.teal),
+              _appointmentIconCircle("Doctors", doctorTotal, TColors.materialBlueAccent),
+              _appointmentIconCircle("Chemists", chemistTotal, TColors.materialIndigo),
+              _appointmentIconCircle("Stockists", stockistTotal, TColors.materialTeal),
             ],
           ),
           const SizedBox(height: 12),
@@ -1943,9 +1989,9 @@ class _DashboardScreenState extends State<SalesChartHomeScreen> with TickerProvi
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _statusCircle("Target", target ~/ 1000, Colors.deepPurple),
-              _statusCircle("Achieved", achieved ~/ 1000, Colors.green),
-              _statusCircle("Left", remaining ~/ 1000, Colors.orange),
+              _statusCircle("Target", target ~/ 1000, TColors.materialDeepPurple),
+              _statusCircle("Achieved", achieved ~/ 1000, TColors.materialGreen),
+              _statusCircle("Left", remaining ~/ 1000, TColors.materialOrange),
             ],
           ),
           const SizedBox(height: 12),

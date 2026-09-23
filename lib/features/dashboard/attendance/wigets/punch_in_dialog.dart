@@ -1,11 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
-
-import '../../../../utils/constants/colors.dart';
-import '../../../../utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 import '../controller/attendance_controller.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class PunchInDialog extends GetView<AttendanceController> {
   const PunchInDialog({super.key});
@@ -22,14 +21,13 @@ class PunchInDialog extends GetView<AttendanceController> {
         child: Padding(
           padding: const EdgeInsets.all(TSizes.lg),
           child: Obx(
-                () => Column(
+            () => Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-
                 /// Icon
                 Container(
-                  width: 72,
-                  height: 72,
+                  width: TSizes.v72,
+                  height: TSizes.v72,
                   decoration: BoxDecoration(
                     color: TColors.primary.withOpacity(.1),
                     shape: BoxShape.circle,
@@ -37,42 +35,42 @@ class PunchInDialog extends GetView<AttendanceController> {
                   child: const Icon(
                     Icons.fingerprint,
                     color: TColors.primary,
-                    size: 40,
+                    size: TSizes.v40,
                   ),
                 ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: TSizes.v20),
 
                 const Text(
-                  "Good Morning 👋",
+                  TTexts.uiTextGoodMorning,
                   style: TextStyle(
-                    fontSize: 22,
+                    fontSize: TSizes.v22,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
 
-                const SizedBox(height: 10),
+                const SizedBox(height: TSizes.v10),
 
                 Text(
                   DateTime.now().toString().split(" ").first,
                   style: TextStyle(
-                    color: Colors.grey.shade600,
-                    fontSize: 14,
+                    color: TColors.materialGrey600,
+                    fontSize: TSizes.v14,
                   ),
                 ),
 
-                const SizedBox(height: 25),
+                const SizedBox(height: TSizes.v25),
 
                 const Text(
-                  "Please Punch In to continue using the application.",
+                  TTexts.uiTextPleasePunchInToContinueUsingTheApplication,
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 15,
-                    height: 1.5,
+                    fontSize: TSizes.v15,
+                    height: TSizes.v1_5,
                   ),
                 ),
 
-                const SizedBox(height: 30),
+                const SizedBox(height: TSizes.v30),
 
                 Container(
                   padding: const EdgeInsets.symmetric(
@@ -80,56 +78,51 @@ class PunchInDialog extends GetView<AttendanceController> {
                     vertical: 14,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
+                    color: TColors.materialGrey100,
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: Row(
                     children: [
-
                       const Expanded(
                         child: Text(
-                          "Punch In",
+                          TTexts.uiTextPunchIn,
                           style: TextStyle(
-                            fontSize: 17,
+                            fontSize: TSizes.v17,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
-
                       controller.isPunching.value
                           ? const SizedBox(
-                        width: 28,
-                        height: 28,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 3,
-                        ),
-                      )
+                              width: TSizes.v28,
+                              height: TSizes.v28,
+                              child: CircularProgressIndicator(
+                                strokeWidth: TSizes.v3,
+                              ),
+                            )
                           : CupertinoSwitch(
-                        value: false,
-                        activeColor: TColors.primary,
-                        onChanged: (value) async {
+                              value: false,
+                              activeColor: TColors.primary,
+                              onChanged: (value) async {
+                                if (!value) return;
 
-                          if (!value) return;
-
-                          await controller.punchIn();
-
-                        },
-                      ),
+                                await controller.punchIn();
+                              },
+                            ),
                     ],
                   ),
                 ),
 
-                const SizedBox(height: 18),
+                const SizedBox(height: TSizes.v18),
 
                 Text(
-                  "Attendance is required before accessing the dashboard.",
+                  TTexts.uiTextAttendanceIsRequiredBeforeAccessingTheDashboard,
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: Colors.grey.shade600,
-                    fontSize: 12,
+                    color: TColors.materialGrey600,
+                    fontSize: TSizes.v12,
                   ),
                 ),
-
               ],
             ),
           ),

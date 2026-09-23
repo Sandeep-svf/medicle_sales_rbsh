@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
-import '../../../utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import '../controller/investment_controller.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class InvestmentSearchBar extends GetView<InvestmentController> {
   const InvestmentSearchBar({super.key});
@@ -11,7 +12,7 @@ class InvestmentSearchBar extends GetView<InvestmentController> {
   Widget build(BuildContext context) {
     return TextField(
       decoration: InputDecoration(
-        hintText: "Search doctor...",
+        hintText: TTexts.uiTextSearchDoctor_7c8fc5ad,
         prefixIcon: const Icon(
           Icons.search,
           color: TColors.primary,
@@ -29,7 +30,7 @@ class InvestmentSearchBar extends GetView<InvestmentController> {
           );
         }),
         filled: true,
-        fillColor: Colors.white,
+        fillColor: TColors.white,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide.none,

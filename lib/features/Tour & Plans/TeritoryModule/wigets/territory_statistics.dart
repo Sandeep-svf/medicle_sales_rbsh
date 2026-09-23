@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
-
-import '../../../../utils/constants/colors.dart';
-import '../../../../utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 import '../controller/territory_controller.dart';
 
 class TerritoryStatistics extends GetView<TerritoryController> {
@@ -11,13 +9,9 @@ class TerritoryStatistics extends GetView<TerritoryController> {
 
   @override
   Widget build(BuildContext context) {
-
     return Obx(() {
-
       return Row(
-
         children: [
-
           Expanded(
             child: _item(
               Icons.location_on,
@@ -25,7 +19,6 @@ class TerritoryStatistics extends GetView<TerritoryController> {
               "Areas",
             ),
           ),
-
           Expanded(
             child: _item(
               Icons.local_hospital,
@@ -33,7 +26,6 @@ class TerritoryStatistics extends GetView<TerritoryController> {
               "Doctors",
             ),
           ),
-
           Expanded(
             child: _item(
               Icons.route,
@@ -41,48 +33,32 @@ class TerritoryStatistics extends GetView<TerritoryController> {
               "Beats",
             ),
           ),
-
         ],
-
       );
-
     });
-
   }
 
   Widget _item(
-      IconData icon,
-      String value,
-      String title,
-      ) {
-
+    IconData icon,
+    String value,
+    String title,
+  ) {
     return Container(
-
       margin: const EdgeInsets.symmetric(horizontal: 4),
-
       padding: const EdgeInsets.symmetric(
         vertical: 16,
       ),
-
       decoration: BoxDecoration(
-
-        color: Colors.grey.shade100,
-
+        color: TColors.materialGrey100,
         borderRadius: BorderRadius.circular(16),
-
       ),
-
       child: Column(
-
         children: [
-
           Icon(
             icon,
             color: TColors.primary,
           ),
-
-          const SizedBox(height: 8),
-
+          const SizedBox(height: TSizes.v8),
           Text(
             value,
             style: const TextStyle(
@@ -90,20 +66,14 @@ class TerritoryStatistics extends GetView<TerritoryController> {
               fontWeight: FontWeight.bold,
             ),
           ),
-
           Text(
             title,
             style: const TextStyle(
               fontSize: TSizes.fontSizeSm,
             ),
           ),
-
         ],
-
       ),
-
     );
-
   }
-
 }

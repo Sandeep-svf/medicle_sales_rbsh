@@ -2,9 +2,10 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
-
 import '../controllers/doctor_offline_controller.dart';
 import 'widgets/doctor_detail_content.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class DoctorOfflineDetailScreen extends StatefulWidget {
   const DoctorOfflineDetailScreen({
@@ -95,11 +96,12 @@ class _DoctorOfflineDetailScreenState extends State<DoctorOfflineDetailScreen>
                                               BorderRadius.circular(16),
                                           child: Image.memory(
                                             snapshot.data!,
-                                            height: 240,
+                                            height: TSizes.v240,
                                             fit: BoxFit.contain,
                                             errorBuilder: (_, __, ___) =>
                                                 const Text(
-                                              'Saved photo could not be displayed.',
+                                              TTexts
+                                                  .uiTextSavedPhotoCouldNotBeDisplayed,
                                             ),
                                           ),
                                         ),
@@ -129,12 +131,12 @@ class _DoctorUnavailable extends StatelessWidget {
           children: [
             Icon(
               Icons.person_off_outlined,
-              size: 48,
+              size: TSizes.v48,
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: TSizes.v16),
             Text(
-              'This doctor is no longer available.',
+              TTexts.uiTextThisDoctorIsNoLongerAvailable,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.titleMedium,
             ),

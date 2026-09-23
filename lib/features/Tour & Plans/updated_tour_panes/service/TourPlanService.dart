@@ -5,24 +5,21 @@ import '../model/beat_model.dart';
 import '../model/tour_plan_model.dart';
 
 class TourPlanService {
-
   /// -----------------------------------------------------------
   /// Beats
   /// -----------------------------------------------------------
 
   Future<List<BeatModel>> getBeats() async {
     try {
-      final response =
-      await THttpHelper.authGet("beats");
+      final response = await THttpHelper.authGet("beats");
 
       if (response["success"] == true) {
-        final List data =
-            response["data"] ?? [];
+        final List data = response["data"] ?? [];
 
         return data
             .map(
               (e) => BeatModel.fromJson(e),
-        )
+            )
             .toList();
       }
     } catch (e) {
@@ -38,30 +35,25 @@ class TourPlanService {
   /// Available Users
   /// -----------------------------------------------------------
 
-  Future<List<AvailableUserModel>>
-  getAvailableUsers(
-      DateTime date,
-      ) async {
+  Future<List<AvailableUserModel>> getAvailableUsers(
+    DateTime date,
+  ) async {
     try {
-      final formattedDate =
-          "${date.year}-"
+      final formattedDate = "${date.year}-"
           "${date.month.toString().padLeft(2, '0')}-"
           "${date.day.toString().padLeft(2, '0')}";
 
-      final response =
-      await THttpHelper.authGet(
+      final response = await THttpHelper.authGet(
         "tour-plans/users/availability?date=$formattedDate",
       );
 
       if (response["success"] == true) {
-        final List data =
-            response["data"] ?? [];
+        final List data = response["data"] ?? [];
 
         return data
             .map(
-              (e) =>
-              AvailableUserModel.fromJson(e),
-        )
+              (e) => AvailableUserModel.fromJson(e),
+            )
             .toList();
       }
     } catch (e) {
@@ -78,11 +70,10 @@ class TourPlanService {
   /// -----------------------------------------------------------
 
   Future<String?> saveDraft(
-      Map<String, dynamic> body,
-      ) async {
+    Map<String, dynamic> body,
+  ) async {
     try {
-      final response =
-      await THttpHelper.authPost(
+      final response = await THttpHelper.authPost(
         "tour-plans/draft",
         body,
       );
@@ -104,11 +95,10 @@ class TourPlanService {
   /// -----------------------------------------------------------
 
   Future<bool> submitDraft(
-      String draftId,
-      ) async {
+    String draftId,
+  ) async {
     try {
-      final response =
-      await THttpHelper.authPost(
+      final response = await THttpHelper.authPost(
         "tour-plans/$draftId/submit",
         {},
       );
@@ -127,8 +117,7 @@ class TourPlanService {
   /// Tour Plan List
   /// -----------------------------------------------------------
 
-  Future<List<TourPlanModel>>
-  getTourPlans() async {
+  Future<List<TourPlanModel>> getTourPlans() async {
     try {
       final response = await THttpHelper.authGet(
         "tour-plans",
@@ -136,8 +125,7 @@ class TourPlanService {
 
       if (response["success"] != true) {
         throw Exception(
-          response["message"]?.toString() ??
-              "Unable to load Tour Plans.",
+          response["message"]?.toString() ?? "Unable to load Tour Plans.",
         );
       }
 
@@ -163,13 +151,11 @@ class TourPlanService {
   /// Tour Plan Details
   /// -----------------------------------------------------------
 
-  Future<TourPlanModel?>
-  getTourPlanDetails(
-      String id,
-      ) async {
+  Future<TourPlanModel?> getTourPlanDetails(
+    String id,
+  ) async {
     try {
-      final response =
-      await THttpHelper.authGet(
+      final response = await THttpHelper.authGet(
         "tour-plans/$id",
       );
 

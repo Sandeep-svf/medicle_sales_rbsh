@@ -7,7 +7,7 @@ class StockistVisit {
   final String userId;
 
   // Server date as string + parsed
-  final String? dateStr;     // e.g., "2025-04-25"
+  final String? dateStr; // e.g., "2025-04-25"
   final DateTime? date;
 
   final String? notes;
@@ -56,11 +56,18 @@ class StockistVisit {
       final s = v?.toString().trim();
       return (s == null || s.isEmpty) ? null : s;
     }
-    DateTime? _iso(dynamic v) => v == null ? null : DateTime.tryParse(v.toString());
+
+    DateTime? _iso(dynamic v) =>
+        v == null ? null : DateTime.tryParse(v.toString());
     DateTime? _ymd(String? raw) {
       if (raw == null) return null;
-      try { return DateFormat('yyyy-MM-dd').parse(raw, true).toLocal(); } catch (_) { return null; }
+      try {
+        return DateFormat('yyyy-MM-dd').parse(raw, true).toLocal();
+      } catch (_) {
+        return null;
+      }
     }
+
     double? _dbl(dynamic v) {
       if (v == null) return null;
       if (v is num) return v.toDouble();
@@ -68,8 +75,8 @@ class StockistVisit {
     }
 
     final rawDate = _sn(j['date']);
-    final latStr  = _sn(j['latitude']);
-    final lngStr  = _sn(j['longitude']);
+    final latStr = _sn(j['latitude']);
+    final lngStr = _sn(j['longitude']);
 
     return StockistVisit(
       id: _s(j['id']).trim(),
@@ -92,18 +99,18 @@ class StockistVisit {
   }
 
   Map<String, dynamic> toJson() => {
-    "id": id,
-    "stockist_id": stockistId,
-    "user_id": userId,
-    "date": dateStr,                 // keep server format
-    "notes": notes,
-    "confirmed": confirmed,
-    "latitude": latitudeStr,         // keep original strings
-    "longitude": longitudeStr,
-    "created_at": createdAt?.toIso8601String(),
-    "updated_at": updatedAt?.toIso8601String(),
-    "Stockist": stockist?.toJson(),
-  };
+        "id": id,
+        "stockist_id": stockistId,
+        "user_id": userId,
+        "date": dateStr, // keep server format
+        "notes": notes,
+        "confirmed": confirmed,
+        "latitude": latitudeStr, // keep original strings
+        "longitude": longitudeStr,
+        "created_at": createdAt?.toIso8601String(),
+        "updated_at": updatedAt?.toIso8601String(),
+        "Stockist": stockist?.toJson(),
+      };
 
   // Helpers for list encode/decode
   static List<StockistVisit> listFromRawJson(String raw) {
@@ -196,26 +203,35 @@ class StockistInfo {
       final s = v?.toString().trim();
       return (s == null || s.isEmpty) ? null : s;
     }
+
     double? _dbl(dynamic v) {
       if (v == null) return null;
       if (v is num) return v.toDouble();
       return double.tryParse(v.toString());
     }
+
     int? _int(dynamic v) {
       if (v == null) return null;
       if (v is int) return v;
       return int.tryParse(v.toString());
     }
+
     bool _bool(dynamic v) {
       if (v is bool) return v;
       if (v is num) return v != 0;
       if (v is String) return v.toLowerCase() == 'true';
       return false;
     }
-    DateTime? _iso(dynamic v) => v == null ? null : DateTime.tryParse(v.toString());
+
+    DateTime? _iso(dynamic v) =>
+        v == null ? null : DateTime.tryParse(v.toString());
 
     List<String> _strList(dynamic v) {
-      if (v is List) return v.map((e) => e?.toString() ?? "").where((s) => s.isNotEmpty).toList();
+      if (v is List)
+        return v
+            .map((e) => e?.toString() ?? "")
+            .where((s) => s.isNotEmpty)
+            .toList();
       return const <String>[];
     }
 
@@ -242,7 +258,8 @@ class StockistInfo {
       website: _sn(j['website']),
       yearsInBusiness: _int(j['years_in_business']),
       areasOfOperation: _strList(j['areas_of_operation']),
-      currentPharmaDistributorships: _strList(j['current_pharma_distributorships']),
+      currentPharmaDistributorships:
+          _strList(j['current_pharma_distributorships']),
       warehouseFacility: _bool(j['warehouse_facility']),
       storageFacilitySize: _int(j['storage_facility_size']),
       coldStorageAvailable: _bool(j['cold_storage_available']),
@@ -257,33 +274,33 @@ class StockistInfo {
   }
 
   Map<String, dynamic> toJson() => {
-    "id": id,
-    "firm_name": firmName,
-    "registered_business_name": registeredBusinessName,
-    "nature_of_business": natureOfBusiness,
-    "gst_number": gstNumber,
-    "drug_license_number": drugLicenseNumber,
-    "pan_number": panNumber,
-    "registered_office_address": registeredOfficeAddress,
-    "latitude": latitudeStr,     // keep original strings
-    "longitude": longitudeStr,
-    "contact_person": contactPerson,
-    "designation": designation,
-    "mobile_number": mobileNumber,
-    "email_address": emailAddress,
-    "website": website,
-    "years_in_business": yearsInBusiness,
-    "areas_of_operation": areasOfOperation,
-    "current_pharma_distributorships": currentPharmaDistributorships,
-    "warehouse_facility": warehouseFacility,
-    "storage_facility_size": storageFacilitySize,
-    "cold_storage_available": coldStorageAvailable,
-    "number_of_sales_representatives": numberOfSalesRepresentatives,
-    "bank_details": bankDetails?.toJson(),
-    "head_office_id": headOfficeId,
-    "created_at": createdAt?.toIso8601String(),
-    "updated_at": updatedAt?.toIso8601String(),
-  };
+        "id": id,
+        "firm_name": firmName,
+        "registered_business_name": registeredBusinessName,
+        "nature_of_business": natureOfBusiness,
+        "gst_number": gstNumber,
+        "drug_license_number": drugLicenseNumber,
+        "pan_number": panNumber,
+        "registered_office_address": registeredOfficeAddress,
+        "latitude": latitudeStr, // keep original strings
+        "longitude": longitudeStr,
+        "contact_person": contactPerson,
+        "designation": designation,
+        "mobile_number": mobileNumber,
+        "email_address": emailAddress,
+        "website": website,
+        "years_in_business": yearsInBusiness,
+        "areas_of_operation": areasOfOperation,
+        "current_pharma_distributorships": currentPharmaDistributorships,
+        "warehouse_facility": warehouseFacility,
+        "storage_facility_size": storageFacilitySize,
+        "cold_storage_available": coldStorageAvailable,
+        "number_of_sales_representatives": numberOfSalesRepresentatives,
+        "bank_details": bankDetails?.toJson(),
+        "head_office_id": headOfficeId,
+        "created_at": createdAt?.toIso8601String(),
+        "updated_at": updatedAt?.toIso8601String(),
+      };
 }
 
 class BankDetails {
@@ -305,6 +322,7 @@ class BankDetails {
       final s = v?.toString().trim();
       return (s == null || s.isEmpty) ? null : s;
     }
+
     return BankDetails(
       branch: _sn(j['branch']),
       bankName: _sn(j['bankName']),
@@ -314,16 +332,12 @@ class BankDetails {
   }
 
   Map<String, dynamic> toJson() => {
-    "branch": branch,
-    "bankName": bankName,
-    "ifscCode": ifscCode,
-    "accountNumber": accountNumber,
-  };
+        "branch": branch,
+        "bankName": bankName,
+        "ifscCode": ifscCode,
+        "accountNumber": accountNumber,
+      };
 }
-
-
-
-
 
 /*
 import 'dart:convert';

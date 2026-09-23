@@ -8,7 +8,7 @@ class WeeklySalesChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 2,
+      elevation: TSizes.v2,
       margin: const EdgeInsets.all(16),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -21,7 +21,7 @@ class WeeklySalesChart extends StatelessWidget {
             ),
             const SizedBox(height: TSizes.spaceBtwSections),
             SizedBox(
-              height: 250,
+              height: TSizes.v250,
               child: AnimatedLineChart(),
             ),
           ],
@@ -64,7 +64,7 @@ class _AnimatedLineChartState extends State<AnimatedLineChart> {
               .asMap()
               .entries
               .map((entry) =>
-              FlSpot(entry.key.toDouble(), entry.value.sales.toDouble()))
+                  FlSpot(entry.key.toDouble(), entry.value.sales.toDouble()))
               .toList(),
           isCurved: true,
           color: TColors.primary,
@@ -73,7 +73,7 @@ class _AnimatedLineChartState extends State<AnimatedLineChart> {
           belowBarData: BarAreaData(
             show: true,
             gradient: LinearGradient(
-              colors: [TColors.primary.withOpacity(0.3), Colors.transparent],
+              colors: [TColors.primary.withOpacity(0.3), TColors.transparent],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
             ),
@@ -115,7 +115,8 @@ class _AnimatedLineChartState extends State<AnimatedLineChart> {
             return touchedSpots.map((spot) {
               return LineTooltipItem(
                 "${spot.y.toInt()} sales",
-                const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                const TextStyle(
+                    color: TColors.white, fontWeight: FontWeight.bold),
               );
             }).toList();
           },

@@ -9,8 +9,7 @@ class ApprovalManagementService {
   static const String _tag = "[ApprovalManagementService]";
 
   /// Fetch Pending Beat Change Requests
-  Future<List<BeatChangeRequestModel>>
-  fetchPendingBeatChangeRequests() async {
+  Future<List<BeatChangeRequestModel>> fetchPendingBeatChangeRequests() async {
     debugPrint("$_tag GET -> tour-plans/pending-change-requests");
 
     final response = await THttpHelper.authGet(
@@ -24,9 +23,7 @@ class ApprovalManagementService {
 
       debugPrint("$_tag Beat Change Requests Count = ${list.length}");
 
-      return list
-          .map((e) => BeatChangeRequestModel.fromJson(e))
-          .toList();
+      return list.map((e) => BeatChangeRequestModel.fromJson(e)).toList();
     }
 
     debugPrint("$_tag Request Failed");
@@ -38,8 +35,7 @@ class ApprovalManagementService {
   Future<List<PendingApprovalModel>> fetchPendingApprovals() async {
     debugPrint("$_tag GET -> tour-plans/pending-approvals");
 
-    final response =
-    await THttpHelper.authGet('tour-plans/pending-approvals');
+    final response = await THttpHelper.authGet('tour-plans/pending-approvals');
 
     debugPrint("$_tag Response: $response");
 
@@ -48,9 +44,7 @@ class ApprovalManagementService {
 
       debugPrint("$_tag Pending Approvals Count = ${list.length}");
 
-      return list
-          .map((e) => PendingApprovalModel.fromJson(e))
-          .toList();
+      return list.map((e) => PendingApprovalModel.fromJson(e)).toList();
     }
 
     debugPrint("$_tag Request Failed");
@@ -101,8 +95,7 @@ class ApprovalManagementService {
   }
 
   /// Fetch Incoming Collaboration Requests
-  Future<List<CollaborationRequestModel>>
-  fetchIncomingCollaborations() async {
+  Future<List<CollaborationRequestModel>> fetchIncomingCollaborations() async {
     debugPrint("$_tag GET -> tour-plans/collaboration/incoming");
 
     final response = await THttpHelper.authGet(
@@ -120,9 +113,8 @@ class ApprovalManagementService {
         debugPrint("$_tag Collaboration[$i] = ${list[i]}");
       }
 
-      final parsed = list
-          .map((e) => CollaborationRequestModel.fromJson(e))
-          .toList();
+      final parsed =
+          list.map((e) => CollaborationRequestModel.fromJson(e)).toList();
 
       debugPrint("$_tag Parsed Collaboration Count = ${parsed.length}");
 
@@ -153,8 +145,7 @@ class ApprovalManagementService {
 
     if (response["success"] != true) {
       throw Exception(
-        response["message"] ??
-            "Unable to respond collaboration request.",
+        response["message"] ?? "Unable to respond collaboration request.",
       );
     }
   }
@@ -181,8 +172,7 @@ class ApprovalManagementService {
 
     if (response["success"] != true) {
       throw Exception(
-        response["message"] ??
-            "Unable to respond to beat change request.",
+        response["message"] ?? "Unable to respond to beat change request.",
       );
     }
   }

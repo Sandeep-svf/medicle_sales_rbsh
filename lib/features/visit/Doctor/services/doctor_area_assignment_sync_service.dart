@@ -6,6 +6,7 @@ import '../../../../utils/http/http_client.dart';
 import '../../../../utils/local_storage/auth_manager.dart';
 import '../../../doctor_offline/models/doctor.dart';
 import '../repository/pending_area_assignment_repository.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class DoctorAreaAssignmentSyncService {
   DoctorAreaAssignmentSyncService({
@@ -65,7 +66,7 @@ class DoctorAreaAssignmentSyncService {
       for (final assignment in pending) {
         await _repository.markError(
           localId: assignment.localId,
-          message: 'Authentication required before area upload.',
+          message: TTexts.uiTextAuthenticationRequiredBeforeAreaUpload,
         );
       }
       return assignedAreas;
@@ -82,7 +83,7 @@ class DoctorAreaAssignmentSyncService {
       if (!_hasText(serverDoctorId)) {
         await _repository.markError(
           localId: assignment.localId,
-          message: 'Waiting for doctor synchronization.',
+          message: TTexts.uiTextWaitingForDoctorSynchronization,
         );
         continue;
       }

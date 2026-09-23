@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-
-import '../../../utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import '../model/handshake_available_user.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class HandshakeUserTile extends StatelessWidget {
   const HandshakeUserTile({
@@ -20,7 +20,7 @@ class HandshakeUserTile extends StatelessWidget {
     final enabled = user.available && onTap != null;
 
     return Material(
-      color: Colors.transparent,
+      color: TColors.transparent,
       child: InkWell(
         onTap: enabled ? onTap : null,
         borderRadius: BorderRadius.circular(16),
@@ -38,8 +38,8 @@ class HandshakeUserTile extends StatelessWidget {
           child: Row(
             children: [
               Container(
-                width: 44,
-                height: 44,
+                width: TSizes.v44,
+                height: TSizes.v44,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: selected ? TColors.primary : TColors.primary_shade100,
@@ -48,13 +48,13 @@ class HandshakeUserTile extends StatelessWidget {
                 child: Text(
                   user.initials,
                   style: TextStyle(
-                    color: selected ? Colors.white : TColors.primary,
-                    fontSize: 13,
+                    color: selected ? TColors.white : TColors.primary,
+                    fontSize: TSizes.v13,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: TSizes.v12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -65,49 +65,49 @@ class HandshakeUserTile extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         color: TColors.textPrimary,
-                        fontSize: 13,
+                        fontSize: TSizes.v13,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                    const SizedBox(height: 5),
+                    const SizedBox(height: TSizes.v5),
                     Wrap(
-                      spacing: 6,
-                      runSpacing: 4,
+                      spacing: TSizes.v6,
+                      runSpacing: TSizes.v4,
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         _InfoBadge(
                           label: user.displayRole,
                           foregroundColor: TColors.primary,
-                          backgroundColor: Colors.white,
+                          backgroundColor: TColors.white,
                         ),
                         _InfoBadge(
                           label: 'Code: ${user.displayEmployeeCode}',
                           foregroundColor: TColors.textSecondary,
-                          backgroundColor: Colors.white,
+                          backgroundColor: TColors.white,
                         ),
                       ],
                     ),
                   ],
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: TSizes.v8),
               AnimatedContainer(
                 duration: const Duration(milliseconds: 220),
-                width: 26,
-                height: 26,
+                width: TSizes.v26,
+                height: TSizes.v26,
                 decoration: BoxDecoration(
-                  color: selected ? TColors.primary : Colors.transparent,
+                  color: selected ? TColors.primary : TColors.transparent,
                   shape: BoxShape.circle,
                   border: Border.all(
                     color: selected ? TColors.primary : TColors.darkGrey,
-                    width: 1.5,
+                    width: TSizes.v1_5,
                   ),
                 ),
                 child: selected
                     ? const Icon(
                         Icons.check_rounded,
-                        color: Colors.white,
-                        size: 17,
+                        color: TColors.white,
+                        size: TSizes.v17,
                       )
                     : null,
               ),
@@ -142,7 +142,7 @@ class _InfoBadge extends StatelessWidget {
         label,
         style: TextStyle(
           color: foregroundColor,
-          fontSize: 9,
+          fontSize: TSizes.v9,
           fontWeight: FontWeight.w700,
         ),
       ),

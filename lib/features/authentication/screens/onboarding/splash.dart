@@ -9,7 +9,6 @@ import 'package:in_app_update/in_app_update.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../../../../utils/constants/image_strings.dart';
-import '../../../../utils/constants/text_strings.dart';
 import '../../../../utils/local_storage/auth_manager.dart';
 
 import '../../../TrackingOptimizedBgLocation/service/tracking_service_manager.dart';
@@ -19,6 +18,9 @@ import '../../../TrackingOptimizedBgLocation/utils/samsung_battery_settings.dart
 import '../../../dashboard/screen/dashboard.dart';
 
 import '../login/login.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -41,24 +43,23 @@ class _SplashScreenState extends State<SplashScreen> {
     super.initState();
 
     // Listen to foreground Firebase notifications.
-    _foregroundMessageSubscription =
-        FirebaseMessaging.onMessage.listen(
-              (RemoteMessage message) {
-            final notification = message.notification;
+    _foregroundMessageSubscription = FirebaseMessaging.onMessage.listen(
+      (RemoteMessage message) {
+        final notification = message.notification;
 
-            if (notification != null) {
-              _showPushNotification(
-                title: notification.title ?? 'New Message',
-                body: notification.body ?? '',
-              );
-            }
-          },
-        );
+        if (notification != null) {
+          _showPushNotification(
+            title: notification.title ?? 'New Message',
+            body: notification.body ?? '',
+          );
+        }
+      },
+    );
 
     // IMPORTANT:
     // Permission dialogs should only start after first frame.
     WidgetsBinding.instance.addPostFrameCallback(
-          (_) {
+      (_) {
         _startFlow();
       },
     );
@@ -111,15 +112,13 @@ class _SplashScreenState extends State<SplashScreen> {
       // STEP 3: CHECK SAMSUNG TRACKING HEALTH
       // -----------------------------------------------------
 
-      final samsungSetupRequired =
-      await _isSamsungBackgroundSetupRequired();
+      final samsungSetupRequired = await _isSamsungBackgroundSetupRequired();
 
       // -----------------------------------------------------
       // STEP 4: START / VERIFY TRACKING SERVICE
       // -----------------------------------------------------
 
-      final serviceReady =
-      await _ensureTrackingServiceRunning();
+      final serviceReady = await _ensureTrackingServiceRunning();
 
       if (!serviceReady) {
         debugPrint(
@@ -139,8 +138,7 @@ class _SplashScreenState extends State<SplashScreen> {
           forceReview: true,
         );
 
-        final serviceStillReady =
-        await _ensureTrackingServiceRunning();
+        final serviceStillReady = await _ensureTrackingServiceRunning();
 
         if (!serviceStillReady) {
           _startupRunning = false;
@@ -170,8 +168,6 @@ class _SplashScreenState extends State<SplashScreen> {
     }
   }
 
-
-
   // =========================================================
 // SAMSUNG BACKGROUND USAGE LIMITS
 //
@@ -190,8 +186,7 @@ class _SplashScreenState extends State<SplashScreen> {
     }
 
     try {
-      final isSamsung =
-      await SamsungBatterySettings.isSamsungDevice();
+      final isSamsung = await SamsungBatterySettings.isSamsungDevice();
       if (!isSamsung) {
         return false;
       }
@@ -212,7 +207,7 @@ class _SplashScreenState extends State<SplashScreen> {
       if (!healthy) {
         debugPrint(
           '[SAMSUNG_BATTERY] Tracking heartbeat is stale. '
-              'Samsung setup will be reviewed.',
+          'Samsung setup will be reviewed.',
         );
       }
 
@@ -238,8 +233,7 @@ class _SplashScreenState extends State<SplashScreen> {
       // CHECK SAMSUNG
       // -----------------------------------------------------
 
-      final isSamsung =
-      await SamsungBatterySettings.isSamsungDevice();
+      final isSamsung = await SamsungBatterySettings.isSamsungDevice();
 
       debugPrint(
         '[SAMSUNG_BATTERY] Samsung device: $isSamsung',
@@ -259,20 +253,19 @@ class _SplashScreenState extends State<SplashScreen> {
 
       final appStateDao = AppStateDao();
 
-      final setupDone =
-      await appStateDao.get(
+      final setupDone = await appStateDao.get(
         'samsung_background_setup_done',
       );
 
       debugPrint(
         '[SAMSUNG_BATTERY] '
-            'Saved setup status: $setupDone',
+        'Saved setup status: $setupDone',
       );
 
       if (setupDone == 'true' && !forceReview) {
         debugPrint(
           '[SAMSUNG_BATTERY] '
-              'Samsung background setup already completed.',
+          'Samsung background setup already completed.',
         );
 
         return;
@@ -326,7 +319,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
       debugPrint(
         '[SAMSUNG_BATTERY] '
-            'Opening Deep sleeping apps...',
+        'Opening Deep sleeping apps...',
       );
 
       await SamsungBatterySettings.openDeepSleepingApps();
@@ -349,7 +342,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
       debugPrint(
         '[SAMSUNG_BATTERY] '
-            'Opening Never sleeping apps...',
+        'Opening Never sleeping apps...',
       );
 
       await SamsungBatterySettings.openNeverSleepingApps();
@@ -364,13 +357,12 @@ class _SplashScreenState extends State<SplashScreen> {
       // FINAL USER CONFIRMATION
       // -----------------------------------------------------
 
-      final confirmed =
-      await _showSamsungSetupConfirmation();
+      final confirmed = await _showSamsungSetupConfirmation();
 
       if (!confirmed) {
         debugPrint(
           '[SAMSUNG_BATTERY] '
-              'Setup not confirmed. Rechecking.',
+          'Setup not confirmed. Rechecking.',
         );
 
         // Do not save completion.
@@ -398,7 +390,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
       debugPrint(
         '[SAMSUNG_BATTERY] '
-            'Samsung background setup completed.',
+        'Samsung background setup completed.',
       );
     } catch (e, s) {
       debugPrint(
@@ -418,8 +410,6 @@ class _SplashScreenState extends State<SplashScreen> {
       // foreground tracking service still remain configured.
     }
   }
-
-
 
   Future<void> _waitForSettingsRoundTrip() async {
     if (!mounted) {
@@ -445,15 +435,14 @@ class _SplashScreenState extends State<SplashScreen> {
         return;
       }
 
-      final state =
-          WidgetsBinding.instance.lifecycleState;
+      final state = WidgetsBinding.instance.lifecycleState;
 
       if (state != AppLifecycleState.resumed) {
         appLeftForeground = true;
 
         debugPrint(
           '[SAMSUNG_BATTERY] '
-              'App moved to background/settings.',
+          'App moved to background/settings.',
         );
 
         break;
@@ -468,7 +457,7 @@ class _SplashScreenState extends State<SplashScreen> {
     if (!appLeftForeground) {
       debugPrint(
         '[SAMSUNG_BATTERY] '
-            'Settings lifecycle transition not detected.',
+        'Settings lifecycle transition not detected.',
       );
 
       return;
@@ -479,13 +468,12 @@ class _SplashScreenState extends State<SplashScreen> {
     // -------------------------------------------------------
 
     while (mounted) {
-      final state =
-          WidgetsBinding.instance.lifecycleState;
+      final state = WidgetsBinding.instance.lifecycleState;
 
       if (state == AppLifecycleState.resumed) {
         debugPrint(
           '[SAMSUNG_BATTERY] '
-              'Returned from Samsung settings.',
+          'Returned from Samsung settings.',
         );
 
         // Let Android/Flutter settle.
@@ -502,7 +490,6 @@ class _SplashScreenState extends State<SplashScreen> {
     }
   }
 
-
   Future<void> _showSamsungBackgroundIntro() async {
     if (!mounted) {
       return;
@@ -516,15 +503,15 @@ class _SplashScreenState extends State<SplashScreen> {
           canPop: false,
           child: AlertDialog(
             title: const Text(
-              'Samsung Background Tracking',
+              TTexts.uiTextSamsungBackgroundTracking,
             ),
             content: const Text(
-              'Samsung can automatically restrict apps '
+              TTexts.uiTextSamsungCanAutomaticallyRestrictApps +
                   'that run for long periods in the background.\n\n'
-                  'Gluckscare requires continuous background '
-                  'location tracking for sales activity.\n\n'
-                  'We will check three Samsung background '
-                  'usage settings.',
+                      'Gluckscare requires continuous background '
+                      'location tracking for sales activity.\n\n'
+                      'We will check three Samsung background '
+                      'usage settings.',
             ),
             actions: [
               TextButton(
@@ -532,7 +519,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   Navigator.of(context).pop();
                 },
                 child: const Text(
-                  'Continue',
+                  TTexts.uiTextContinue,
                 ),
               ),
             ],
@@ -555,13 +542,13 @@ class _SplashScreenState extends State<SplashScreen> {
           canPop: false,
           child: AlertDialog(
             title: const Text(
-              'Step 1 of 3',
+              TTexts.uiTextStep1Of3,
             ),
             content: const Text(
-              'Sleeping apps will open.\n\n'
+              TTexts.uiTextSleepingAppsWillOpen +
                   'If Gluckscare is listed there, '
-                  'REMOVE it from Sleeping apps.\n\n'
-                  'Then return to Gluckscare.',
+                      'REMOVE it from Sleeping apps.\n\n'
+                      'Then return to Gluckscare.',
             ),
             actions: [
               TextButton(
@@ -569,7 +556,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   Navigator.of(context).pop();
                 },
                 child: const Text(
-                  'Open Sleeping Apps',
+                  TTexts.uiTextOpenSleepingApps,
                 ),
               ),
             ],
@@ -579,8 +566,7 @@ class _SplashScreenState extends State<SplashScreen> {
     );
   }
 
-  Future<void>
-  _showSamsungDeepSleepingInstruction() async {
+  Future<void> _showSamsungDeepSleepingInstruction() async {
     if (!mounted) {
       return;
     }
@@ -593,14 +579,14 @@ class _SplashScreenState extends State<SplashScreen> {
           canPop: false,
           child: AlertDialog(
             title: const Text(
-              'Step 2 of 3',
+              TTexts.uiTextStep2Of3,
             ),
             content: const Text(
-              'Deep sleeping apps will open.\n\n'
+              TTexts.uiTextDeepSleepingAppsWillOpen +
                   'Gluckscare MUST NOT be listed here.\n\n'
-                  'If Gluckscare is present, REMOVE it '
-                  'from Deep sleeping apps.\n\n'
-                  'Then return to Gluckscare.',
+                      'If Gluckscare is present, REMOVE it '
+                      'from Deep sleeping apps.\n\n'
+                      'Then return to Gluckscare.',
             ),
             actions: [
               TextButton(
@@ -608,7 +594,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   Navigator.of(context).pop();
                 },
                 child: const Text(
-                  'Open Deep Sleeping Apps',
+                  TTexts.uiTextOpenDeepSleepingApps,
                 ),
               ),
             ],
@@ -618,8 +604,7 @@ class _SplashScreenState extends State<SplashScreen> {
     );
   }
 
-  Future<void>
-  _showSamsungNeverSleepingInstruction() async {
+  Future<void> _showSamsungNeverSleepingInstruction() async {
     if (!mounted) {
       return;
     }
@@ -632,15 +617,15 @@ class _SplashScreenState extends State<SplashScreen> {
           canPop: false,
           child: AlertDialog(
             title: const Text(
-              'Step 3 of 3',
+              TTexts.uiTextStep3Of3,
             ),
             content: const Text(
-              'Never auto sleeping apps will open.\n\n'
+              TTexts.uiTextNeverAutoSleepingAppsWillOpen +
                   'Tap + and ADD Gluckscare to this list.\n\n'
-                  'This helps prevent Samsung from '
-                  'automatically putting Gluckscare into '
-                  'Sleeping or Deep sleeping mode.\n\n'
-                  'After adding it, return to Gluckscare.',
+                      'This helps prevent Samsung from '
+                      'automatically putting Gluckscare into '
+                      'Sleeping or Deep sleeping mode.\n\n'
+                      'After adding it, return to Gluckscare.',
             ),
             actions: [
               TextButton(
@@ -648,7 +633,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   Navigator.of(context).pop();
                 },
                 child: const Text(
-                  'Open Never Sleeping Apps',
+                  TTexts.uiTextOpenNeverSleepingApps,
                 ),
               ),
             ],
@@ -657,7 +642,6 @@ class _SplashScreenState extends State<SplashScreen> {
       },
     );
   }
-
 
   Future<bool> _showSamsungSetupConfirmation() async {
     if (!mounted) {
@@ -672,13 +656,13 @@ class _SplashScreenState extends State<SplashScreen> {
           canPop: false,
           child: AlertDialog(
             title: const Text(
-              'Confirm Background Setup',
+              TTexts.uiTextConfirmBackgroundSetup,
             ),
             content: const Text(
-              'Please confirm all three settings:\n\n'
+              TTexts.uiTextPleaseConfirmAllThreeSettings +
                   '✓ Gluckscare is NOT in Sleeping apps.\n\n'
-                  '✓ Gluckscare is NOT in Deep sleeping apps.\n\n'
-                  '✓ Gluckscare IS in Never auto sleeping apps.',
+                      '✓ Gluckscare is NOT in Deep sleeping apps.\n\n'
+                      '✓ Gluckscare IS in Never auto sleeping apps.',
             ),
             actions: [
               TextButton(
@@ -688,7 +672,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   );
                 },
                 child: const Text(
-                  'Check Again',
+                  TTexts.uiTextCheckAgain,
                 ),
               ),
               TextButton(
@@ -698,7 +682,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   );
                 },
                 child: const Text(
-                  'Configured',
+                  TTexts.uiTextConfigured,
                 ),
               ),
             ],
@@ -724,20 +708,18 @@ class _SplashScreenState extends State<SplashScreen> {
       '[SPLASH] Checking tracking permissions...',
     );
 
-    final existingForeground =
-    await Permission.location.status;
+    final existingForeground = await Permission.location.status;
 
-    final existingBackground =
-    await Permission.locationAlways.status;
+    final existingBackground = await Permission.locationAlways.status;
 
     debugPrint(
       '[SPLASH] Existing foreground location: '
-          '$existingForeground',
+      '$existingForeground',
     );
 
     debugPrint(
       '[SPLASH] Existing background location: '
-          '$existingBackground',
+      '$existingBackground',
     );
 
     // -------------------------------------------------------
@@ -747,8 +729,7 @@ class _SplashScreenState extends State<SplashScreen> {
     // permissions are NOT shown this again.
     // -------------------------------------------------------
 
-    if (!existingForeground.isGranted ||
-        !existingBackground.isGranted) {
+    if (!existingForeground.isGranted || !existingBackground.isGranted) {
       await _showDisclosureDialog();
     }
 
@@ -756,8 +737,7 @@ class _SplashScreenState extends State<SplashScreen> {
     // FOREGROUND LOCATION
     // -------------------------------------------------------
 
-    final foregroundGranted =
-    await _ensureForegroundLocation();
+    final foregroundGranted = await _ensureForegroundLocation();
 
     if (!foregroundGranted) {
       return false;
@@ -770,8 +750,7 @@ class _SplashScreenState extends State<SplashScreen> {
     // Always ask AFTER foreground location.
     // -------------------------------------------------------
 
-    final backgroundGranted =
-    await _ensureBackgroundLocation();
+    final backgroundGranted = await _ensureBackgroundLocation();
 
     if (!backgroundGranted) {
       return false;
@@ -781,8 +760,7 @@ class _SplashScreenState extends State<SplashScreen> {
     // NOTIFICATION
     // -------------------------------------------------------
 
-    final notificationGranted =
-    await _ensureNotificationPermission();
+    final notificationGranted = await _ensureNotificationPermission();
 
     if (!notificationGranted) {
       return false;
@@ -792,8 +770,7 @@ class _SplashScreenState extends State<SplashScreen> {
     // GPS / LOCATION SERVICE
     // -------------------------------------------------------
 
-    final locationServiceEnabled =
-    await _ensureLocationServiceEnabled();
+    final locationServiceEnabled = await _ensureLocationServiceEnabled();
 
     if (!locationServiceEnabled) {
       return false;
@@ -825,14 +802,14 @@ class _SplashScreenState extends State<SplashScreen> {
           canPop: false,
           child: AlertDialog(
             title: const Text(
-              'Location Access Required',
+              TTexts.uiTextLocationAccessRequired,
             ),
             content: const Text(
-              'Gluckscare collects location data to support '
+              TTexts.uiTextGluckscareCollectsLocationDataToSupport +
                   'sales activity tracking, including when the app '
-                  'is minimized, the screen is off, or the app is '
-                  'not actively being used.\n\n'
-                  'Location access is required for this application.',
+                      'is minimized, the screen is off, or the app is '
+                      'not actively being used.\n\n'
+                      'Location access is required for this application.',
             ),
             actions: [
               TextButton(
@@ -840,7 +817,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   Navigator.of(context).pop();
                 },
                 child: const Text(
-                  'Continue',
+                  TTexts.uiTextContinue,
                 ),
               ),
             ],
@@ -856,8 +833,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<bool> _ensureForegroundLocation() async {
     while (mounted) {
-      var status =
-      await Permission.location.status;
+      var status = await Permission.location.status;
 
       debugPrint(
         '[SPLASH] Foreground location status: $status',
@@ -869,12 +845,11 @@ class _SplashScreenState extends State<SplashScreen> {
 
       // If it is not permanently denied, request normally.
       if (!status.isPermanentlyDenied) {
-        status =
-        await Permission.location.request();
+        status = await Permission.location.request();
 
         debugPrint(
           '[SPLASH] Foreground location request result: '
-              '$status',
+          '$status',
         );
 
         if (status.isGranted) {
@@ -886,19 +861,15 @@ class _SplashScreenState extends State<SplashScreen> {
         return false;
       }
 
-      final action =
-      await _showMandatoryPermissionDialog(
-        title: 'Location Permission Required',
-        message:
-        'Gluckscare requires location access for '
+      final action = await _showMandatoryPermissionDialog(
+        title: TTexts.uiTextLocationPermissionRequired,
+        message: TTexts.uiTextGluckscareRequiresLocationAccessFor +
             'sales tracking.\n\n'
-            'Please allow location permission to continue.',
-        showSettings:
-        status.isPermanentlyDenied,
+                'Please allow location permission to continue.',
+        showSettings: status.isPermanentlyDenied,
       );
 
-      if (action ==
-          _MandatoryPermissionAction.settings) {
+      if (action == _MandatoryPermissionAction.settings) {
         await openAppSettings();
 
         await Future.delayed(
@@ -918,8 +889,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<bool> _ensureBackgroundLocation() async {
     while (mounted) {
-      var status =
-      await Permission.locationAlways.status;
+      var status = await Permission.locationAlways.status;
 
       debugPrint(
         '[SPLASH] Background location status: $status',
@@ -930,12 +900,11 @@ class _SplashScreenState extends State<SplashScreen> {
       }
 
       if (!status.isPermanentlyDenied) {
-        status =
-        await Permission.locationAlways.request();
+        status = await Permission.locationAlways.request();
 
         debugPrint(
           '[SPLASH] Background location request result: '
-              '$status',
+          '$status',
         );
 
         if (status.isGranted) {
@@ -947,19 +916,16 @@ class _SplashScreenState extends State<SplashScreen> {
         return false;
       }
 
-      final action =
-      await _showMandatoryPermissionDialog(
-        title: 'Background Location Required',
-        message:
-        'Gluckscare must track sales activity while the '
+      final action = await _showMandatoryPermissionDialog(
+        title: TTexts.uiTextBackgroundLocationRequired,
+        message: TTexts.uiTextGluckscareMustTrackSalesActivityWhileThe +
             'app is minimized or the screen is off.\n\n'
-            'Please open App Settings → Permissions → '
-            'Location and select "Allow all the time".',
+                'Please open App Settings → Permissions → '
+                'Location and select "Allow all the time".',
         showSettings: true,
       );
 
-      if (action ==
-          _MandatoryPermissionAction.settings) {
+      if (action == _MandatoryPermissionAction.settings) {
         await openAppSettings();
 
         // Allow Android time to resume this app and refresh
@@ -983,8 +949,7 @@ class _SplashScreenState extends State<SplashScreen> {
     }
 
     while (mounted) {
-      var status =
-      await Permission.notification.status;
+      var status = await Permission.notification.status;
 
       debugPrint(
         '[SPLASH] Notification permission status: $status',
@@ -995,8 +960,7 @@ class _SplashScreenState extends State<SplashScreen> {
       }
 
       if (!status.isPermanentlyDenied) {
-        status =
-        await Permission.notification.request();
+        status = await Permission.notification.request();
 
         debugPrint(
           '[SPLASH] Notification request result: $status',
@@ -1011,19 +975,15 @@ class _SplashScreenState extends State<SplashScreen> {
         return false;
       }
 
-      final action =
-      await _showMandatoryPermissionDialog(
-        title: 'Notification Permission Required',
-        message:
-        'Notification permission is required so '
+      final action = await _showMandatoryPermissionDialog(
+        title: TTexts.uiTextNotificationPermissionRequired,
+        message: TTexts.uiTextNotificationPermissionIsRequiredSo +
             'Gluckscare can display the active location '
-            'tracking service.',
-        showSettings:
-        status.isPermanentlyDenied,
+                'tracking service.',
+        showSettings: status.isPermanentlyDenied,
       );
 
-      if (action ==
-          _MandatoryPermissionAction.settings) {
+      if (action == _MandatoryPermissionAction.settings) {
         await openAppSettings();
 
         await Future.delayed(
@@ -1041,8 +1001,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<bool> _ensureLocationServiceEnabled() async {
     while (mounted) {
-      final enabled =
-      await geo.Geolocator.isLocationServiceEnabled();
+      final enabled = await geo.Geolocator.isLocationServiceEnabled();
 
       debugPrint(
         '[SPLASH] GPS/location service enabled: $enabled',
@@ -1075,8 +1034,7 @@ class _SplashScreenState extends State<SplashScreen> {
   // NO CONTINUE WITHOUT PERMISSION
   // =========================================================
 
-  Future<_MandatoryPermissionAction>
-  _showMandatoryPermissionDialog({
+  Future<_MandatoryPermissionAction> _showMandatoryPermissionDialog({
     required String title,
     required String message,
     required bool showSettings,
@@ -1085,8 +1043,7 @@ class _SplashScreenState extends State<SplashScreen> {
       return _MandatoryPermissionAction.retry;
     }
 
-    final result =
-    await showDialog<_MandatoryPermissionAction>(
+    final result = await showDialog<_MandatoryPermissionAction>(
       context: context,
       barrierDismissible: false,
       builder: (_) {
@@ -1103,10 +1060,9 @@ class _SplashScreenState extends State<SplashScreen> {
                   );
                 },
                 child: const Text(
-                  'Retry',
+                  TTexts.uiTextRetry,
                 ),
               ),
-
               if (showSettings)
                 TextButton(
                   onPressed: () {
@@ -1115,7 +1071,7 @@ class _SplashScreenState extends State<SplashScreen> {
                     );
                   },
                   child: const Text(
-                    'Open Settings',
+                    TTexts.uiTextOpenSettings,
                   ),
                 ),
             ],
@@ -1124,8 +1080,7 @@ class _SplashScreenState extends State<SplashScreen> {
       },
     );
 
-    return result ??
-        _MandatoryPermissionAction.retry;
+    return result ?? _MandatoryPermissionAction.retry;
   }
 
   // =========================================================
@@ -1145,10 +1100,10 @@ class _SplashScreenState extends State<SplashScreen> {
           canPop: false,
           child: AlertDialog(
             title: const Text(
-              'Location Service Required',
+              TTexts.uiTextLocationServiceRequired,
             ),
             content: const Text(
-              'Device location/GPS must be turned on '
+              TTexts.uiTextDeviceLocationGPSMustBeTurnedOn +
                   'for sales tracking to work.',
             ),
             actions: [
@@ -1157,7 +1112,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   Navigator.of(context).pop();
                 },
                 child: const Text(
-                  'Open Location Settings',
+                  TTexts.uiTextOpenLocationSettings,
                 ),
               ),
             ],
@@ -1188,10 +1143,7 @@ class _SplashScreenState extends State<SplashScreen> {
         // CHECK CURRENT STATUS
         // =====================================================
 
-        final status =
-        await Permission
-            .ignoreBatteryOptimizations
-            .status;
+        final status = await Permission.ignoreBatteryOptimizations.status;
 
         debugPrint(
           '[SPLASH] Battery optimization status: $status',
@@ -1222,17 +1174,17 @@ class _SplashScreenState extends State<SplashScreen> {
               canPop: false,
               child: AlertDialog(
                 title: const Text(
-                  'Background Tracking Required',
+                  TTexts.uiTextBackgroundTrackingRequired,
                 ),
                 content: const Text(
-                  'Gluckscare needs to continue location '
+                  TTexts.uiTextGluckscareNeedsToContinueLocation +
                       'tracking while the screen is off or the '
-                      'app is minimized.\n\n'
-                      'On the next screen, please select '
-                      '"Allow" to stop battery optimization '
-                      'for Gluckscare.\n\n'
-                      'This setting is required for reliable '
-                      'background tracking.',
+                          'app is minimized.\n\n'
+                          'On the next screen, please select '
+                          '"Allow" to stop battery optimization '
+                          'for Gluckscare.\n\n'
+                          'This setting is required for reliable '
+                          'background tracking.',
                 ),
                 actions: [
                   TextButton(
@@ -1240,7 +1192,7 @@ class _SplashScreenState extends State<SplashScreen> {
                       Navigator.of(context).pop();
                     },
                     child: const Text(
-                      'Continue',
+                      TTexts.uiTextContinue,
                     ),
                   ),
                 ],
@@ -1258,13 +1210,11 @@ class _SplashScreenState extends State<SplashScreen> {
         // =====================================================
 
         final requestResult =
-        await Permission
-            .ignoreBatteryOptimizations
-            .request();
+            await Permission.ignoreBatteryOptimizations.request();
 
         debugPrint(
           '[SPLASH] Battery optimization request result: '
-              '$requestResult',
+          '$requestResult',
         );
 
         // Give Android a moment to update PowerManager state.
@@ -1279,14 +1229,11 @@ class _SplashScreenState extends State<SplashScreen> {
         // Check the ACTUAL status again.
         // =====================================================
 
-        final afterRequest =
-        await Permission
-            .ignoreBatteryOptimizations
-            .status;
+        final afterRequest = await Permission.ignoreBatteryOptimizations.status;
 
         debugPrint(
           '[SPLASH] Battery optimization status after request: '
-              '$afterRequest',
+          '$afterRequest',
         );
 
         if (afterRequest.isGranted) {
@@ -1346,10 +1293,7 @@ class _SplashScreenState extends State<SplashScreen> {
   Future<bool> _ensureTrackingServiceRunning() async {
     while (mounted) {
       try {
-        final running =
-        await TrackingServiceManager
-            .instance
-            .isRunning();
+        final running = await TrackingServiceManager.instance.isRunning();
 
         if (running) {
           debugPrint(
@@ -1363,10 +1307,7 @@ class _SplashScreenState extends State<SplashScreen> {
           '[SPLASH] Starting tracking service...',
         );
 
-        final started =
-        await TrackingServiceManager
-            .instance
-            .ensureRunning();
+        final started = await TrackingServiceManager.instance.ensureRunning();
 
         if (started) {
           debugPrint(
@@ -1410,12 +1351,12 @@ class _SplashScreenState extends State<SplashScreen> {
           canPop: false,
           child: AlertDialog(
             title: const Text(
-              'Tracking Service Required',
+              TTexts.uiTextTrackingServiceRequired,
             ),
             content: const Text(
-              'Gluckscare could not start the location '
+              TTexts.uiTextGluckscareCouldNotStartTheLocation +
                   'tracking service.\n\n'
-                  'Please retry to continue.',
+                      'Please retry to continue.',
             ),
             actions: [
               TextButton(
@@ -1423,7 +1364,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   Navigator.of(context).pop();
                 },
                 child: const Text(
-                  'Retry',
+                  TTexts.uiTextRetry,
                 ),
               ),
             ],
@@ -1443,16 +1384,14 @@ class _SplashScreenState extends State<SplashScreen> {
         '[SPLASH] Checking Play Store update...',
       );
 
-      final info =
-      await InAppUpdate.checkForUpdate();
+      final info = await InAppUpdate.checkForUpdate();
 
       debugPrint(
         '[SPLASH] Update availability: '
-            '${info.updateAvailability}',
+        '${info.updateAvailability}',
       );
 
-      if (info.updateAvailability ==
-          UpdateAvailability.updateAvailable) {
+      if (info.updateAvailability == UpdateAvailability.updateAvailable) {
         if (!mounted) {
           return;
         }
@@ -1507,8 +1446,7 @@ class _SplashScreenState extends State<SplashScreen> {
                       '[SPLASH] Starting immediate update...',
                     );
 
-                    await InAppUpdate
-                        .performImmediateUpdate();
+                    await InAppUpdate.performImmediateUpdate();
 
                     debugPrint(
                       '[SPLASH] Immediate update completed.',
@@ -1546,20 +1484,18 @@ class _SplashScreenState extends State<SplashScreen> {
   Future<void> _navigateAfterDelay() async {
     final auth = AuthManager();
 
-    final userId =
-    await auth.getUserId();
+    final userId = await auth.getUserId();
 
-    final token =
-    await auth.getAuthToken();
+    final token = await auth.getAuthToken();
 
     debugPrint(
       '[SPLASH] Auth userId exists: '
-          '${userId != null}',
+      '${userId != null}',
     );
 
     debugPrint(
       '[SPLASH] Auth token exists: '
-          '${token != null}',
+      '${token != null}',
     );
 
     await Future.delayed(
@@ -1570,8 +1506,7 @@ class _SplashScreenState extends State<SplashScreen> {
       return;
     }
 
-    if (userId != null &&
-        token != null) {
+    if (userId != null && token != null) {
       debugPrint(
         '[SPLASH] Navigating to Dashboard.',
       );
@@ -1579,8 +1514,7 @@ class _SplashScreenState extends State<SplashScreen> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (_) =>
-              DashboardScreen(),
+          builder: (_) => DashboardScreen(),
         ),
       );
 
@@ -1604,8 +1538,7 @@ class _SplashScreenState extends State<SplashScreen> {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (_) =>
-        const LoginScreen(),
+        builder: (_) => const LoginScreen(),
       ),
     );
   }
@@ -1627,11 +1560,10 @@ class _SplashScreenState extends State<SplashScreen> {
           canPop: false,
           child: AlertDialog(
             title: const Text(
-              'Unable to Start',
+              TTexts.uiTextUnableToStart,
             ),
             content: const Text(
-              'Gluckscare could not complete startup. '
-                  'Please retry.',
+              TTexts.uiTextGluckscareCouldNotCompleteStartup + 'Please retry.',
             ),
             actions: [
               TextButton(
@@ -1643,7 +1575,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   _startFlow();
                 },
                 child: const Text(
-                  'Retry',
+                  TTexts.uiTextRetry,
                 ),
               ),
             ],
@@ -1661,11 +1593,9 @@ class _SplashScreenState extends State<SplashScreen> {
     required String title,
     required String body,
   }) {
-    final plugin =
-    FlutterLocalNotificationsPlugin();
+    final plugin = FlutterLocalNotificationsPlugin();
 
-    const details =
-    NotificationDetails(
+    const details = NotificationDetails(
       android: AndroidNotificationDetails(
         'push_channel',
         'Push Notifications',
@@ -1675,9 +1605,7 @@ class _SplashScreenState extends State<SplashScreen> {
     );
 
     plugin.show(
-      DateTime.now()
-          .millisecondsSinceEpoch ~/
-          1000,
+      DateTime.now().millisecondsSinceEpoch ~/ 1000,
       title,
       body,
       details,
@@ -1690,8 +1618,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   void dispose() {
-    _foregroundMessageSubscription
-        ?.cancel();
+    _foregroundMessageSubscription?.cancel();
 
     super.dispose();
   }
@@ -1703,18 +1630,17 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: TColors.white,
       body: Center(
         child: Image.asset(
           TImages.lightAppLogo,
-          height: 150,
+          height: TSizes.v150,
         ),
       ),
     );
   }
 
-  Future<void>
-  _showBatteryOptimizationDeniedDialog() async {
+  Future<void> _showBatteryOptimizationDeniedDialog() async {
     if (!mounted) {
       return;
     }
@@ -1727,15 +1653,15 @@ class _SplashScreenState extends State<SplashScreen> {
           canPop: false,
           child: AlertDialog(
             title: const Text(
-              'Permission Required',
+              TTexts.uiTextPermissionRequired,
             ),
             content: const Text(
-              'Battery optimization is still enabled '
+              TTexts.uiTextBatteryOptimizationIsStillEnabled +
                   'for Gluckscare.\n\n'
-                  'Background location tracking may stop when '
-                  'the screen is off or the app is minimized.\n\n'
-                  'Please allow Gluckscare to run without '
-                  'battery optimization.',
+                      'Background location tracking may stop when '
+                      'the screen is off or the app is minimized.\n\n'
+                      'Please allow Gluckscare to run without '
+                      'battery optimization.',
             ),
             actions: [
               TextButton(
@@ -1743,7 +1669,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   Navigator.of(context).pop();
                 },
                 child: const Text(
-                  'Try Again',
+                  TTexts.uiTextTryAgain,
                 ),
               ),
             ],
@@ -1753,8 +1679,7 @@ class _SplashScreenState extends State<SplashScreen> {
     );
   }
 
-  Future<void>
-  _showBatteryOptimizationErrorDialog() async {
+  Future<void> _showBatteryOptimizationErrorDialog() async {
     if (!mounted) {
       return;
     }
@@ -1767,12 +1692,12 @@ class _SplashScreenState extends State<SplashScreen> {
           canPop: false,
           child: AlertDialog(
             title: const Text(
-              'Battery Setting Required',
+              TTexts.uiTextBatterySettingRequired,
             ),
             content: const Text(
-              'Gluckscare could not verify the battery '
+              TTexts.uiTextGluckscareCouldNotVerifyTheBattery +
                   'optimization setting.\n\n'
-                  'Please retry to continue.',
+                      'Please retry to continue.',
             ),
             actions: [
               TextButton(
@@ -1780,7 +1705,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   Navigator.of(context).pop();
                 },
                 child: const Text(
-                  'Retry',
+                  TTexts.uiTextRetry,
                 ),
               ),
             ],

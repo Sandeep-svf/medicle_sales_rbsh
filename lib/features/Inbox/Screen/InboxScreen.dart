@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:medicle_sales_rbsh/features/Inbox/service/MailService.dart';
 
-
 import '../service/AuthService.dart';
-
-
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class InboxScreen extends StatefulWidget {
   const InboxScreen({super.key});
@@ -64,7 +62,7 @@ class _InboxScreenState extends State<InboxScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Inbox')),
+      appBar: AppBar(title: const Text(TTexts.inbox)),
       body: ListView.builder(
         itemCount: mails.length,
         itemBuilder: (context, index) {

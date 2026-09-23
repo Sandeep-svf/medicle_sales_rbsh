@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
-
 import '../controller/performance_controller.dart';
 import '../wigets/dashboard_header.dart';
 import '../wigets/kpi_card.dart';
 import '../wigets/performance_table.dart';
-
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class PerformanceDashboard extends GetView<PerformanceController> {
   const PerformanceDashboard({super.key});
@@ -19,20 +18,18 @@ class PerformanceDashboard extends GetView<PerformanceController> {
         MediaQuery.of(context).orientation == Orientation.landscape;
 
     return Scaffold(
-      backgroundColor: const Color(0xffF7F8FC),
-
+      backgroundColor: TColors.hex_FFF7F8FC,
       appBar: AppBar(
         title: const Text(
           "Performance Dashboard",
           style: TextStyle(
-            color: Colors.white,
+            color: TColors.white,
             fontWeight: FontWeight.bold,
           ),
         ),
         backgroundColor: TColors.primary,
         centerTitle: false,
       ),
-
       body: Obx(() {
         if (controller.isLoading.value) {
           return const Center(
@@ -48,24 +45,16 @@ class PerformanceDashboard extends GetView<PerformanceController> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-
                 /// HEADER
                 DashboardHeader(
                   searchController: controller.searchController,
                   onChanged: controller.search,
-
-                  selectedFilter:
-                  controller.selectedFilter.value,
-
+                  selectedFilter: controller.selectedFilter.value,
                   onToday: controller.loadToday,
-
                   onWeekly: controller.loadWeekly,
-
                   onMonthly: controller.loadMonthly,
-
                   onCustom: () async {
-                    final range =
-                    await showDateRangePicker(
+                    final range = await showDateRangePicker(
                       context: context,
                       firstDate: DateTime(2024),
                       lastDate: DateTime.now(),
@@ -78,64 +67,57 @@ class PerformanceDashboard extends GetView<PerformanceController> {
                       end: range.end,
                     );
                   },
-
                   onSortTap: () {},
-
                   onExportTap: () {},
                 ),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: TSizes.v24),
 
                 /// KPI CARDS
                 GridView.count(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   crossAxisCount: isLandscape ? 4 : 4,
-                  crossAxisSpacing: 16,
-                  mainAxisSpacing: 16,
+                  crossAxisSpacing: TSizes.v16,
+                  mainAxisSpacing: TSizes.v16,
                   childAspectRatio: isLandscape ? 1.55 : 1.2,
                   children: [
-
                     KpiCard(
                       title: "Doctors",
                       icon: Icons.medical_services,
                       scheduled: controller.totalDoctorsScheduled,
                       confirmed: controller.totalDoctorsConfirmed,
-                      color: Colors.blue,
+                      color: TColors.materialBlue,
                       index: 0,
                     ),
-
                     KpiCard(
                       title: "Chemists",
                       icon: Icons.local_pharmacy,
                       scheduled: controller.totalChemistsScheduled,
                       confirmed: controller.totalChemistsConfirmed,
-                      color: Colors.purple,
+                      color: TColors.materialPurple,
                       index: 1,
                     ),
-
                     KpiCard(
                       title: "Stockists",
                       icon: Icons.store,
                       scheduled: controller.totalStockistsScheduled,
                       confirmed: controller.totalStockistsConfirmed,
-                      color: Colors.green,
+                      color: TColors.materialGreen,
                       index: 2,
                     ),
-
                     KpiCard(
                       title: "Coverage",
                       icon: Icons.trending_up,
                       scheduled: 100,
-                      confirmed:
-                      (controller.overallCoverage * 100).round(),
+                      confirmed: (controller.overallCoverage * 100).round(),
                       color: TColors.primary,
                       index: 3,
                     ),
                   ],
                 ),
 
-                const SizedBox(height: 28),
+                const SizedBox(height: TSizes.v28),
 
                 /// TABLE
                 PerformanceTable(
@@ -145,7 +127,7 @@ class PerformanceDashboard extends GetView<PerformanceController> {
                   onSort: controller.sort,
                 ),
 
-                const SizedBox(height: 30),
+                const SizedBox(height: TSizes.v30),
               ],
             ),
           ),

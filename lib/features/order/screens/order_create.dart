@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../product/model/ProductModel.dart';
-import '../../../utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import '../models/order_models.dart';
 import '../repositories/order_repository.dart';
 import '../widgets/order_widgets.dart';
@@ -16,6 +16,8 @@ import '../../doctor_offline/doctor_offline_module.dart';
 import '../../doctor_offline/models/doctor.dart';
 import '../../../utils/local_storage/auth_manager.dart';
 import 'order_detail.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class OrderAttachment {
   const OrderAttachment(this.bytes, this.name, this.mime);
@@ -167,16 +169,16 @@ class _OrderCreateScreenState extends State<OrderCreateScreen> {
     return await showDialog<bool>(
             context: context,
             builder: (context) => AlertDialog(
-                  title: const Text('Discard this order?'),
+                  title: const Text(TTexts.uiTextDiscardThisOrder),
                   content: const Text(
-                      'This order has not been saved. Continue editing to keep your changes.'),
+                      TTexts.uiTextThisOrderHasNotBeenSavedContinueEditing),
                   actions: [
                     TextButton(
                         onPressed: () => Navigator.pop(context, false),
-                        child: const Text('Keep editing')),
+                        child: const Text(TTexts.uiTextKeepEditing)),
                     FilledButton(
                         onPressed: () => Navigator.pop(context, true),
-                        child: const Text('Discard'))
+                        child: const Text(TTexts.uiTextDiscard))
                   ],
                 )) ??
         false;
@@ -194,7 +196,9 @@ class _OrderCreateScreenState extends State<OrderCreateScreen> {
         picked = await widget.pickAttachment!();
       } else if (camera) {
         final image = await ImagePicker().pickImage(
-            source: ImageSource.camera, imageQuality: 85, maxWidth: 2200);
+            source: ImageSource.camera,
+            imageQuality: 85,
+            maxWidth: TSizes.v2200);
         if (image != null) {
           picked = OrderAttachment(
               await image.readAsBytes(), image.name, 'image/jpeg');
@@ -235,7 +239,7 @@ class _OrderCreateScreenState extends State<OrderCreateScreen> {
       if (mounted) {
         setState(() => _error = error is FormatException
             ? error.message
-            : 'Could not open the attachment. Please try again.');
+            : TTexts.uiTextCouldNotOpenTheAttachmentPleaseTryAgain);
       }
     } finally {
       if (mounted) setState(() => _picking = false);
@@ -247,7 +251,7 @@ class _OrderCreateScreenState extends State<OrderCreateScreen> {
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      backgroundColor: Colors.white,
+      backgroundColor: TColors.white,
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (_) => OrderProductPicker(
@@ -379,8 +383,7 @@ class _OrderCreateScreenState extends State<OrderCreateScreen> {
     } catch (_) {
       if (_saved && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text(
-                'Order saved. Open it from your order list to view the PDF.')));
+            content: Text(TTexts.uiTextOrderSavedOpenItFromYourOrderList)));
         Navigator.pop(context, true);
         return;
       }
@@ -401,10 +404,10 @@ class _OrderCreateScreenState extends State<OrderCreateScreen> {
                 onWillPop: _leave,
                 child: Scaffold(
                   appBar: AppBar(
-                    title: const Text('New order',
+                    title: const Text(TTexts.uiTextNewOrder,
                         style: TextStyle(fontWeight: FontWeight.w800)),
-                    backgroundColor: Colors.white,
-                    surfaceTintColor: Colors.white,
+                    backgroundColor: TColors.white,
+                    surfaceTintColor: TColors.white,
                     bottom: PreferredSize(
                         preferredSize: const Size.fromHeight(62),
                         child: Padding(
@@ -450,11 +453,12 @@ class _OrderCreateScreenState extends State<OrderCreateScreen> {
                                                                 Icons
                                                                     .fact_check_outlined
                                                               ][i],
-                                                        size: 17,
+                                                        size: TSizes.v17,
                                                         color: i == _step
-                                                            ? Colors.white
+                                                            ? TColors.white
                                                             : TColors.primary),
-                                                    const SizedBox(width: 5),
+                                                    const SizedBox(
+                                                        width: TSizes.v5),
                                                     Flexible(
                                                         child: Text(
                                                             [
@@ -465,11 +469,12 @@ class _OrderCreateScreenState extends State<OrderCreateScreen> {
                                                             style: TextStyle(
                                                                 color: i ==
                                                                         _step
-                                                                    ? Colors
+                                                                    ? TColors
                                                                         .white
                                                                     : TColors
                                                                         .primary,
-                                                                fontSize: 12,
+                                                                fontSize:
+                                                                    TSizes.v12,
                                                                 fontWeight:
                                                                     FontWeight
                                                                         .w700)))
@@ -480,7 +485,7 @@ class _OrderCreateScreenState extends State<OrderCreateScreen> {
                       child: Container(
                           padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
                           decoration: const BoxDecoration(
-                              color: Colors.white,
+                              color: TColors.white,
                               border: Border(
                                   top: BorderSide(
                                       color: TColors.borderSecondary))),
@@ -489,8 +494,8 @@ class _OrderCreateScreenState extends State<OrderCreateScreen> {
                               OutlinedButton(
                                   onPressed:
                                       _saving ? null : () => _go(_step - 1),
-                                  child: const Text('Back')),
-                              const SizedBox(width: 12)
+                                  child: const Text(TTexts.uiTextBack)),
+                              const SizedBox(width: TSizes.v12)
                             ],
                             Expanded(
                                 child: FilledButton.icon(
@@ -504,7 +509,7 @@ class _OrderCreateScreenState extends State<OrderCreateScreen> {
                                         ? const SizedBox.square(
                                             dimension: 18,
                                             child: CircularProgressIndicator(
-                                                strokeWidth: 2))
+                                                strokeWidth: TSizes.v2))
                                         : Icon(_step == 2
                                             ? Icons.save_outlined
                                             : Icons.arrow_forward_rounded),
@@ -527,7 +532,7 @@ class _OrderCreateScreenState extends State<OrderCreateScreen> {
                                 Center(
                                     child: ConstrainedBox(
                                         constraints: const BoxConstraints(
-                                            maxWidth: 1120),
+                                            maxWidth: TSizes.v1120),
                                         child: Column(
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
@@ -587,16 +592,15 @@ class _OrderCreateScreenState extends State<OrderCreateScreen> {
   Widget _customer() => Column(children: [
         if (_customerType == 'Doctor') ...[
           OrderSection(
-              title: 'Choose from your doctors',
-              subtitle:
-                  'Fill clinic, phone, area and delivery address in one step.',
+              title: TTexts.uiTextChooseFromYourDoctors,
+              subtitle: TTexts.uiTextFillClinicPhoneAreaAndDeliveryAddressIn,
               icon: Icons.person_search_outlined,
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     if (_loadingDoctors) const LinearProgressIndicator(),
                     if (_doctorError != null) Text(_doctorError!),
-                    Wrap(spacing: 12, runSpacing: 8, children: [
+                    Wrap(spacing: TSizes.v12, runSpacing: TSizes.v8, children: [
                       FilledButton.icon(
                           onPressed: _loadingDoctors ? null : _selectDoctor,
                           icon: const Icon(Icons.search),
@@ -606,7 +610,7 @@ class _OrderCreateScreenState extends State<OrderCreateScreen> {
                       if (_doctorError != null)
                         TextButton(
                             onPressed: _loadDoctors,
-                            child: const Text('Retry')),
+                            child: const Text(TTexts.uiTextRetry)),
                     ]),
                     if (_doctor != null)
                       Padding(
@@ -617,17 +621,18 @@ class _OrderCreateScreenState extends State<OrderCreateScreen> {
                                   color: TColors.primary,
                                   fontWeight: FontWeight.w600))),
                   ])),
-          const SizedBox(height: 18),
+          const SizedBox(height: TSizes.v18),
         ],
         OrderSection(
-            title: 'Who is this order for?',
-            subtitle: 'Customer and delivery information',
+            title: TTexts.uiTextWhoIsThisOrderFor,
+            subtitle: TTexts.uiTextCustomerAndDeliveryInformation,
             icon: Icons.person_outline,
             child: OrderFields(children: [
               DropdownButtonFormField<String>(
                   isExpanded: true,
                   value: _customerType,
-                  decoration: const InputDecoration(labelText: 'Customer type'),
+                  decoration: const InputDecoration(
+                      labelText: TTexts.uiTextCustomerType),
                   items: orderCustomerTypes
                       .map((e) => DropdownMenuItem(value: e, child: Text(e)))
                       .toList(),
@@ -647,7 +652,7 @@ class _OrderCreateScreenState extends State<OrderCreateScreen> {
                   keyboardType: TextInputType.phone,
                   maxLength: 16,
                   decoration: const InputDecoration(
-                      labelText: 'Contact phone', counterText: ''),
+                      labelText: TTexts.uiTextContactPhone, counterText: ''),
                   validator: (v) => v != null &&
                           v.isNotEmpty &&
                           !RegExp(r'^\+?[0-9 ()-]{7,16}$').hasMatch(v)
@@ -658,10 +663,10 @@ class _OrderCreateScreenState extends State<OrderCreateScreen> {
               _field(_address, 'Delivery address', maxLines: 2),
               _field(_stockist, 'Supplying stockist / distributor'),
             ])),
-        const SizedBox(height: 18),
+        const SizedBox(height: TSizes.v18),
         OrderSection(
-            title: 'Order preferences',
-            subtitle: 'Plan delivery and payment terms',
+            title: TTexts.uiTextOrderPreferences,
+            subtitle: TTexts.uiTextPlanDeliveryAndPaymentTerms,
             icon: Icons.local_shipping_outlined,
             child: OrderFields(children: [
               _dateField('Order date', _date, () => _chooseDate(false)),
@@ -671,7 +676,8 @@ class _OrderCreateScreenState extends State<OrderCreateScreen> {
               DropdownButtonFormField<String>(
                   isExpanded: true,
                   value: _priority,
-                  decoration: const InputDecoration(labelText: 'Priority'),
+                  decoration:
+                      const InputDecoration(labelText: TTexts.uiTextPriority),
                   items: ['Normal', 'Urgent']
                       .map((e) => DropdownMenuItem(value: e, child: Text(e)))
                       .toList(),
@@ -679,7 +685,8 @@ class _OrderCreateScreenState extends State<OrderCreateScreen> {
               DropdownButtonFormField<String>(
                   isExpanded: true,
                   value: _terms,
-                  decoration: const InputDecoration(labelText: 'Payment terms'),
+                  decoration: const InputDecoration(
+                      labelText: TTexts.uiTextPaymentTerms),
                   items: orderPaymentTerms
                       .map((e) => DropdownMenuItem(value: e, child: Text(e)))
                       .toList(),
@@ -689,8 +696,8 @@ class _OrderCreateScreenState extends State<OrderCreateScreen> {
                     controller: _credit,
                     keyboardType: TextInputType.number,
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    decoration:
-                        const InputDecoration(labelText: 'Credit days *'),
+                    decoration: const InputDecoration(
+                        labelText: TTexts.uiTextCreditDays),
                     validator: (v) {
                       final n = int.tryParse(v ?? '') ?? 0;
                       return n < 1 || n > 365 ? 'Enter 1–365 days' : null;
@@ -702,17 +709,17 @@ class _OrderCreateScreenState extends State<OrderCreateScreen> {
         final content =
             Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           OrderSection(
-              title: 'Build your order',
+              title: TTexts.uiTextBuildYourOrder,
               subtitle: '${_products.length} products in your catalogue',
               icon: Icons.medication_outlined,
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Wrap(spacing: 12, runSpacing: 8, children: [
+                    Wrap(spacing: TSizes.v12, runSpacing: TSizes.v8, children: [
                       FilledButton.icon(
                           onPressed: _addProducts,
                           icon: const Icon(Icons.add),
-                          label: const Text('Add products')),
+                          label: const Text(TTexts.uiTextAddProducts)),
                       if (widget.refreshProducts != null)
                         TextButton.icon(
                             onPressed: _refreshing ? null : _refreshCatalogue,
@@ -725,11 +732,13 @@ class _OrderCreateScreenState extends State<OrderCreateScreen> {
                       const Padding(
                           padding: EdgeInsets.only(top: 18),
                           child: Text(
-                              'Select products, enter quantities and choose how each product is packed.',
+                              TTexts
+                                  .uiTextSelectProductsEnterQuantitiesAndChooseHowEach,
                               style: TextStyle(
-                                  color: TColors.textSecondary, height: 1.5))),
+                                  color: TColors.textSecondary,
+                                  height: TSizes.v1_5))),
                   ])),
-          const SizedBox(height: 18),
+          const SizedBox(height: TSizes.v18),
           ..._lines.map((line) => OrderLineEditor(
               key: ValueKey(line.productId),
               item: line,
@@ -743,8 +752,8 @@ class _OrderCreateScreenState extends State<OrderCreateScreen> {
         return constraints.maxWidth >= 900
             ? Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Expanded(child: content),
-                const SizedBox(width: 20),
-                SizedBox(width: 300, child: summary)
+                const SizedBox(width: TSizes.v20),
+                SizedBox(width: TSizes.v300, child: summary)
               ])
             : Column(children: [content, summary]);
       });
@@ -754,8 +763,8 @@ class _OrderCreateScreenState extends State<OrderCreateScreen> {
             title: _name.text,
             subtitle: '$_customerType · $_priority priority',
             icon: Icons.task_alt,
-            trailing:
-                TextButton(onPressed: () => _go(0), child: const Text('Edit')),
+            trailing: TextButton(
+                onPressed: () => _go(0), child: const Text(TTexts.uiTextEdit)),
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               if (_clinic.text.isNotEmpty) Text(_clinic.text),
@@ -764,8 +773,8 @@ class _OrderCreateScreenState extends State<OrderCreateScreen> {
                     padding: const EdgeInsets.only(top: 6),
                     child: Text(_address.text,
                         style: const TextStyle(color: TColors.textSecondary))),
-              const SizedBox(height: 12),
-              Wrap(spacing: 8, runSpacing: 8, children: [
+              const SizedBox(height: TSizes.v12),
+              Wrap(spacing: TSizes.v8, runSpacing: TSizes.v8, children: [
                 OrderTag(orderDateLabel(_date), icon: Icons.event),
                 OrderTag(_terms == 'Credit'
                     ? '${_credit.text} days credit'
@@ -775,13 +784,13 @@ class _OrderCreateScreenState extends State<OrderCreateScreen> {
                 if (_po.text.isNotEmpty) OrderTag('PO ${_po.text}')
               ]),
             ])),
-        const SizedBox(height: 18),
+        const SizedBox(height: TSizes.v18),
         OrderSummary(items: _lines, showLines: true),
-        const SizedBox(height: 18),
+        const SizedBox(height: TSizes.v18),
         OrderSection(
-            title: 'Order document',
+            title: TTexts.uiTextOrderDocument,
             subtitle:
-                'A shareable PDF is created automatically. Customer proof is optional.',
+                TTexts.uiTextAShareablePDFIsCreatedAutomaticallyCustomerProof,
             icon: Icons.attach_file,
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -797,7 +806,7 @@ class _OrderCreateScreenState extends State<OrderCreateScreen> {
                               ? Icons.picture_as_pdf_outlined
                               : Icons.image_outlined,
                           color: TColors.success),
-                      const SizedBox(width: 10),
+                      const SizedBox(width: TSizes.v10),
                       Expanded(
                           child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -808,10 +817,10 @@ class _OrderCreateScreenState extends State<OrderCreateScreen> {
                                     fontWeight: FontWeight.w700)),
                             Text(
                                 '${(_attachment!.bytes.length / 1024).toStringAsFixed(0)} KB · stored with your order',
-                                style: const TextStyle(fontSize: 11))
+                                style: const TextStyle(fontSize: TSizes.v11))
                           ])),
                       IconButton(
-                          tooltip: 'Remove attachment',
+                          tooltip: TTexts.uiTextRemoveAttachment,
                           onPressed: () => setState(() => _attachment = null),
                           icon: const Icon(Icons.close)),
                     ])),
@@ -821,15 +830,15 @@ class _OrderCreateScreenState extends State<OrderCreateScreen> {
                       child: ClipRRect(
                           borderRadius: BorderRadius.circular(12),
                           child: Image.memory(_attachment!.bytes,
-                              height: 130,
+                              height: TSizes.v130,
                               cacheHeight: 260,
                               fit: BoxFit.cover,
                               errorBuilder: (_, __, ___) =>
-                                  const Text('Image attached')))),
-                const SizedBox(height: 12),
+                                  const Text(TTexts.uiTextImageAttached)))),
+                const SizedBox(height: TSizes.v12),
               ],
               if (_picking) const LinearProgressIndicator(),
-              Wrap(spacing: 12, runSpacing: 8, children: [
+              Wrap(spacing: TSizes.v12, runSpacing: TSizes.v8, children: [
                 OutlinedButton.icon(
                     onPressed: _picking ? null : () => _pick(),
                     icon: const Icon(Icons.upload_file_outlined),
@@ -838,16 +847,17 @@ class _OrderCreateScreenState extends State<OrderCreateScreen> {
                 OutlinedButton.icon(
                     onPressed: _picking ? null : () => _pick(camera: true),
                     icon: const Icon(Icons.photo_camera_outlined),
-                    label: const Text('Take photo'))
+                    label: const Text(TTexts.uiTextTakePhoto_7ebd5d4c))
               ]),
-              const SizedBox(height: 16),
+              const SizedBox(height: TSizes.v16),
               _field(_notes, 'Order remarks / delivery instructions',
                   maxLines: 3),
-              const SizedBox(height: 16),
-              const Text(
-                  'Save now, even offline. Preview or share the order PDF after saving. Server upload is not available yet; your order stays on this device.',
+              const SizedBox(height: TSizes.v16),
+              const Text(TTexts.uiTextSaveNowEvenOfflinePreviewOrShareThe,
                   style: TextStyle(
-                      fontSize: 12, color: TColors.textSecondary, height: 1.5)),
+                      fontSize: TSizes.v12,
+                      color: TColors.textSecondary,
+                      height: TSizes.v1_5)),
             ])),
       ]);
 
@@ -876,8 +886,8 @@ class _OrderCreateScreenState extends State<OrderCreateScreen> {
           child: InputDecorator(
               decoration: InputDecoration(
                   labelText: label,
-                  suffixIcon:
-                      const Icon(Icons.calendar_today_outlined, size: 18)),
+                  suffixIcon: const Icon(Icons.calendar_today_outlined,
+                      size: TSizes.v18)),
               child: Text(date == null ? 'Not specified' : orderDateLabel(date),
-                  style: const TextStyle(fontSize: 14))));
+                  style: const TextStyle(fontSize: TSizes.v14))));
 }

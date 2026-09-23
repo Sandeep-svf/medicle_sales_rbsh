@@ -34,11 +34,9 @@ class PerformanceModel {
       stockistScheduled == 0 ? 0 : stockistConfirmed / stockistScheduled;
 
   double get overallCoverage {
-    final scheduled =
-        doctorScheduled + chemistScheduled + stockistScheduled;
+    final scheduled = doctorScheduled + chemistScheduled + stockistScheduled;
 
-    final confirmed =
-        doctorConfirmed + chemistConfirmed + stockistConfirmed;
+    final confirmed = doctorConfirmed + chemistConfirmed + stockistConfirmed;
 
     if (scheduled == 0) return 0;
 

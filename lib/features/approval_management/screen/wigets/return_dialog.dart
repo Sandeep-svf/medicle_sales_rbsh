@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../../../../utils/constants/colors.dart';
 import '../../../../utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class ReturnDialog extends StatefulWidget {
   const ReturnDialog({
@@ -35,7 +36,7 @@ class _ReturnDialogState extends State<ReturnDialog> {
       ),
       child: ConstrainedBox(
         constraints: const BoxConstraints(
-          maxWidth: 520,
+          maxWidth: TSizes.v520,
         ),
         child: Padding(
           padding: const EdgeInsets.all(TSizes.lg),
@@ -44,31 +45,27 @@ class _ReturnDialogState extends State<ReturnDialog> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "Return Tour Plan",
+                TTexts.uiTextReturnTourPlan,
                 style: Theme.of(context).textTheme.titleLarge,
               ),
-
               const SizedBox(
                 height: TSizes.sm,
               ),
-
               Text(
-                "Please provide the reason for returning this tour plan.",
+                TTexts.uiTextPleaseProvideTheReasonForReturningThisTour,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: TColors.textSecondary,
-                ),
+                      color: TColors.textSecondary,
+                    ),
               ),
-
               const SizedBox(
                 height: TSizes.lg,
               ),
-
               TextField(
                 controller: controller,
                 minLines: 4,
                 maxLines: 6,
                 decoration: InputDecoration(
-                  hintText: "Return comments...",
+                  hintText: TTexts.uiTextReturnComments,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(
                       TSizes.inputFieldRadius,
@@ -76,23 +73,19 @@ class _ReturnDialogState extends State<ReturnDialog> {
                   ),
                 ),
               ),
-
               const SizedBox(
                 height: TSizes.lg,
               ),
-
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   OutlinedButton(
                     onPressed: Get.back,
-                    child: const Text("Cancel"),
+                    child: const Text(TTexts.cancel),
                   ),
-
                   const SizedBox(
                     width: TSizes.md,
                   ),
-
                   FilledButton(
                     style: FilledButton.styleFrom(
                       backgroundColor: TColors.warning,
@@ -104,7 +97,7 @@ class _ReturnDialogState extends State<ReturnDialog> {
                       );
                       Get.back();
                     },
-                    child: const Text("Return"),
+                    child: const Text(TTexts.uiTextReturn),
                   ),
                 ],
               ),

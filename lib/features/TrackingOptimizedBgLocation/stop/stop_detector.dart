@@ -26,9 +26,9 @@ class StopDetector {
   /// - newly opened StopPoint
   /// - null if no new stop
   StopPoint? processLocation(
-      LocationPoint point,
-      DateTime localNow,
-      ) {
+    LocationPoint point,
+    DateTime localNow,
+  ) {
     _handleDailyReset(localNow);
 
     // If stop already active → update or close
@@ -77,8 +77,7 @@ class StopDetector {
       return null;
     }
 
-    final duration =
-    point.timestampUtc.difference(_candidateStartTime!);
+    final duration = point.timestampUtc.difference(_candidateStartTime!);
 
     if (duration >= stopTimeThreshold) {
       return _openStop(point);

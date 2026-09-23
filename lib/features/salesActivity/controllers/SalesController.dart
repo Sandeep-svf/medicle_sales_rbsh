@@ -8,7 +8,6 @@ import '../../../utils/local_storage/auth_manager.dart';
 import '../models/SalesModel.dart';
 
 class SalesController with ChangeNotifier {
-
   AuthManager authManager = AuthManager();
 
   List<SalesLogModel> _salesList = [];
@@ -21,29 +20,26 @@ class SalesController with ChangeNotifier {
   final String fetchApiUrl = THttpHelper.baseUrl;
   final String addApiUrl = THttpHelper.baseUrl;
 
-
   /// Fetch sales list from the server
   Future<void> fetchSalesList() async {
-
     String? userId = await authManager.getUserId();
 
     if (kDebugMode) {
       print("Sales Controller: user id: $userId");
     }
 
-
     _isLoading = true;
     notifyListeners();
 
-
     try {
-      final response = await http.get(Uri.parse("$fetchApiUrl/sales/user/$userId"));
+      final response =
+          await http.get(Uri.parse("$fetchApiUrl/sales/user/$userId"));
 
       if (kDebugMode) {
         print("Sales Controller: user id: $fetchApiUrl/sales/user/$userId");
       }
 
-     // final response = await http.get(Uri.parse("$fetchApiUrl/sales/user/${userId!}"));
+      // final response = await http.get(Uri.parse("$fetchApiUrl/sales/user/${userId!}"));
 
       if (response.statusCode == 200) {
         List<dynamic> data = jsonDecode(response.body);

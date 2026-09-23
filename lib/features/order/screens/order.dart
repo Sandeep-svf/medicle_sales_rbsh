@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import '../../../utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import '../../product/model/ProductModel.dart';
 import '../../visit/Doctor/controllers/doctor_visit_product_controller.dart';
 import '../database/order_database.dart';
@@ -10,6 +10,8 @@ import '../services/order_sync_service.dart';
 import '../widgets/order_widgets.dart';
 import 'order_create.dart';
 import 'order_detail.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class OrderScreen extends StatefulWidget {
   const OrderScreen(
@@ -200,15 +202,15 @@ class _OrderScreenState extends State<OrderScreen> with WidgetsBindingObserver {
           appBar: widget.embedded
               ? null
               : AppBar(
-                  title: const Text('Order Management'),
-                  backgroundColor: Colors.white,
-                  surfaceTintColor: Colors.white),
+                  title: const Text(TTexts.order),
+                  backgroundColor: TColors.white,
+                  surfaceTintColor: TColors.white),
           floatingActionButton: FloatingActionButton.extended(
               onPressed: _repository == null ? null : _create,
               backgroundColor: TColors.primary,
-              foregroundColor: Colors.white,
+              foregroundColor: TColors.white,
               icon: const Icon(Icons.add),
-              label: const Text('New order',
+              label: const Text(TTexts.uiTextNewOrder,
                   style: TextStyle(fontWeight: FontWeight.w700))),
           body: SafeArea(
               child: RefreshIndicator(
@@ -236,17 +238,17 @@ class _OrderScreenState extends State<OrderScreen> with WidgetsBindingObserver {
                                           CrossAxisAlignment.stretch,
                                       children: [
                                     _header(),
-                                    const SizedBox(height: 20),
+                                    const SizedBox(height: TSizes.v20),
                                     Row(children: [
                                       const Expanded(
-                                          child: Text('Your orders',
+                                          child: Text(TTexts.uiTextYourOrders,
                                               style: TextStyle(
-                                                  fontSize: 19,
+                                                  fontSize: TSizes.v19,
                                                   fontWeight:
                                                       FontWeight.w800))),
                                       IconButton(
-                                          tooltip:
-                                              'Refresh orders and products',
+                                          tooltip: TTexts
+                                              .uiTextRefreshOrdersAndProducts,
                                           onPressed: _refreshing
                                               ? null
                                               : () => _refresh(notify: true),
@@ -255,42 +257,45 @@ class _OrderScreenState extends State<OrderScreen> with WidgetsBindingObserver {
                                                   dimension: 20,
                                                   child:
                                                       CircularProgressIndicator(
-                                                          strokeWidth: 2))
+                                                          strokeWidth:
+                                                              TSizes.v2))
                                               : const Icon(Icons.sync))
                                     ]),
                                     const Text(
-                                        'Saved on this device · pending orders stay visible',
+                                        TTexts
+                                            .uiTextSavedOnThisDevicePendingOrdersStayVisible,
                                         style: TextStyle(
                                             color: TColors.textSecondary,
-                                            fontSize: 12)),
-                                    const SizedBox(height: 14),
+                                            fontSize: TSizes.v12)),
+                                    const SizedBox(height: TSizes.v14),
                                     Text(
                                         '${orders.length} ${orders.length == 1 ? 'order' : 'orders'}${_filter == 'All orders' ? '' : ' · $_filter'}',
                                         style: const TextStyle(
-                                            fontSize: 12,
+                                            fontSize: TSizes.v12,
                                             fontWeight: FontWeight.w600,
                                             color: TColors.textSecondary)),
-                                    const SizedBox(height: 14),
+                                    const SizedBox(height: TSizes.v14),
                                     TextField(
                                         controller: _search,
                                         onChanged: (_) => setState(() {}),
                                         decoration: InputDecoration(
                                             prefixIcon:
                                                 const Icon(Icons.search),
-                                            hintText:
-                                                'Search customer, product or reference',
+                                            hintText: TTexts
+                                                .uiTextSearchCustomerProductOrReference,
                                             suffixIcon: _search.text.isEmpty
                                                 ? null
                                                 : IconButton(
-                                                    tooltip: 'Clear search',
+                                                    tooltip: TTexts
+                                                        .uiTextClearSearch,
                                                     onPressed: () =>
                                                         setState(_search.clear),
                                                     icon: const Icon(
                                                         Icons.close)))),
-                                    const SizedBox(height: 12),
+                                    const SizedBox(height: TSizes.v12),
                                     Wrap(
-                                        spacing: 8,
-                                        runSpacing: 6,
+                                        spacing: TSizes.v8,
+                                        runSpacing: TSizes.v6,
                                         crossAxisAlignment:
                                             WrapCrossAlignment.center,
                                         children: [
@@ -302,7 +307,7 @@ class _OrderScreenState extends State<OrderScreen> with WidgetsBindingObserver {
                                           ].map((label) => ChoiceChip(
                                               label: Text(label,
                                                   style: const TextStyle(
-                                                      fontSize: 11)),
+                                                      fontSize: TSizes.v11)),
                                               selected: _filter == label,
                                               onSelected: (_) => setState(
                                                   () => _filter = label))),
@@ -310,15 +315,15 @@ class _OrderScreenState extends State<OrderScreen> with WidgetsBindingObserver {
                                               onPressed: () => setState(() =>
                                                   _oldestFirst = !_oldestFirst),
                                               icon: const Icon(Icons.swap_vert,
-                                                  size: 16),
+                                                  size: TSizes.v16),
                                               label: Text(
                                                   _oldestFirst
                                                       ? 'Oldest first'
                                                       : 'Newest first',
                                                   style: const TextStyle(
-                                                      fontSize: 11))),
+                                                      fontSize: TSizes.v11))),
                                         ]),
-                                    const SizedBox(height: 14),
+                                    const SizedBox(height: TSizes.v14),
                                   ]))),
                           if (_loading)
                             const SliverToBoxAdapter(
@@ -334,7 +339,8 @@ class _OrderScreenState extends State<OrderScreen> with WidgetsBindingObserver {
                                       Text(_loadError!),
                                       TextButton(
                                           onPressed: _initialize,
-                                          child: const Text('Try again'))
+                                          child: const Text(
+                                              TTexts.uiTextTryAgain_042c862e))
                                     ])))
                           else if (orders.isEmpty)
                             SliverToBoxAdapter(
@@ -350,16 +356,16 @@ class _OrderScreenState extends State<OrderScreen> with WidgetsBindingObserver {
                                           child: const Icon(
                                               Icons.inventory_2_outlined,
                                               color: TColors.primary,
-                                              size: 44)),
-                                      const SizedBox(height: 18),
+                                              size: TSizes.v44)),
+                                      const SizedBox(height: TSizes.v18),
                                       Text(
                                           _orders.isEmpty
                                               ? 'Ready for your next order'
                                               : 'No matching orders',
                                           style: const TextStyle(
-                                              fontSize: 19,
+                                              fontSize: TSizes.v19,
                                               fontWeight: FontWeight.w800)),
-                                      const SizedBox(height: 10),
+                                      const SizedBox(height: TSizes.v10),
                                       Text(
                                           _orders.isEmpty
                                               ? 'Choose a saved doctor, add medicines and quantities, then save and share your order PDF.'
@@ -367,14 +373,15 @@ class _OrderScreenState extends State<OrderScreen> with WidgetsBindingObserver {
                                           textAlign: TextAlign.center,
                                           style: const TextStyle(
                                               color: TColors.textSecondary,
-                                              height: 1.6)),
+                                              height: TSizes.v1_6)),
                                       if (_orders.isNotEmpty)
                                         TextButton(
                                             onPressed: () => setState(() {
                                                   _search.clear();
                                                   _filter = 'All orders';
                                                 }),
-                                            child: const Text('Clear filters')),
+                                            child: const Text(
+                                                TTexts.uiTextClearFilters)),
                                     ])))
                           else
                             SliverPadding(
@@ -383,7 +390,7 @@ class _OrderScreenState extends State<OrderScreen> with WidgetsBindingObserver {
                                 sliver: SliverList.separated(
                                     itemCount: (orders.length / columns).ceil(),
                                     separatorBuilder: (_, __) =>
-                                        const SizedBox(height: 14),
+                                        const SizedBox(height: TSizes.v14),
                                     itemBuilder: (context, index) {
                                       return Row(
                                           crossAxisAlignment:
@@ -393,7 +400,8 @@ class _OrderScreenState extends State<OrderScreen> with WidgetsBindingObserver {
                                                 column < columns;
                                                 column++) ...[
                                               if (column > 0)
-                                                const SizedBox(width: 16),
+                                                const SizedBox(
+                                                    width: TSizes.v16),
                                               Expanded(
                                                   child: index * columns +
                                                               column <
@@ -461,25 +469,25 @@ class _OrderScreenState extends State<OrderScreen> with WidgetsBindingObserver {
                         top: -95,
                         child: IgnorePointer(
                             child: Container(
-                                width: 260,
-                                height: 260,
+                                width: TSizes.v260,
+                                height: TSizes.v260,
                                 decoration: BoxDecoration(
                                     shape: BoxShape.circle,
                                     border: Border.all(
-                                        color:
-                                            Colors.white.withValues(alpha: .10),
-                                        width: 36))))),
+                                        color: TColors.white
+                                            .withValues(alpha: .10),
+                                        width: TSizes.v36))))),
                     Positioned(
                         right: 90,
                         bottom: -70,
                         child: IgnorePointer(
                             child: Container(
-                                width: 170,
-                                height: 170,
+                                width: TSizes.v170,
+                                height: TSizes.v170,
                                 decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    color:
-                                        Colors.white.withValues(alpha: .04))))),
+                                    color: TColors.white
+                                        .withValues(alpha: .04))))),
                     Padding(
                         padding: const EdgeInsets.all(22),
                         child: LayoutBuilder(builder: (context, constraints) {
@@ -489,79 +497,86 @@ class _OrderScreenState extends State<OrderScreen> with WidgetsBindingObserver {
                               children: [
                                 const Row(children: [
                                   Icon(Icons.local_pharmacy_outlined,
-                                      size: 18, color: Colors.white70),
-                                  SizedBox(width: 8),
-                                  Text('YOUR ORDER DESK',
+                                      size: TSizes.v18, color: TColors.white70),
+                                  SizedBox(width: TSizes.v8),
+                                  Text(TTexts.uiTextYOURORDERDESK,
                                       style: TextStyle(
-                                          color: Colors.white70,
-                                          fontSize: 11,
+                                          color: TColors.white70,
+                                          fontSize: TSizes.v11,
                                           fontWeight: FontWeight.w700,
                                           letterSpacing: 1.5)),
                                 ]),
-                                const SizedBox(height: 12),
-                                Text('Care in every order.',
+                                const SizedBox(height: TSizes.v12),
+                                Text(TTexts.uiTextCareInEveryOrder,
                                     style: TextStyle(
-                                        color: Colors.white,
+                                        color: TColors.white,
                                         fontSize: wide ? 30 : 25,
-                                        height: 1.2,
+                                        height: TSizes.v1_2,
                                         fontWeight: FontWeight.w800)),
-                                const SizedBox(height: 8),
+                                const SizedBox(height: TSizes.v8),
                                 const Text(
-                                    'Capture medicines. Save offline. Share a PDF.',
+                                    TTexts
+                                        .uiTextCaptureMedicinesSaveOfflineShareAPDF,
                                     style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 13,
-                                        height: 1.5)),
-                                const SizedBox(height: 12),
+                                        color: TColors.white,
+                                        fontSize: TSizes.v13,
+                                        height: TSizes.v1_5)),
+                                const SizedBox(height: TSizes.v12),
                                 const Row(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
                                       Icon(Icons.phone_android_rounded,
-                                          size: 15, color: Colors.white70),
-                                      SizedBox(width: 6),
+                                          size: TSizes.v15,
+                                          color: TColors.white70),
+                                      SizedBox(width: TSizes.v6),
                                       Expanded(
                                           child: Text(
-                                              'Stored on this device · upload coming soon',
+                                              TTexts
+                                                  .uiTextStoredOnThisDeviceUploadComingSoon,
                                               style: TextStyle(
-                                                  color: Colors.white70,
-                                                  fontSize: 11,
-                                                  height: 1.5))),
+                                                  color: TColors.white70,
+                                                  fontSize: TSizes.v11,
+                                                  height: TSizes.v1_5))),
                                     ]),
                               ]);
-                          final metrics =
-                              Wrap(spacing: 10, runSpacing: 10, children: [
-                            _metric(_orders.length, 'Saved',
-                                Icons.inventory_2_outlined, 'All orders'),
-                            _metric(
-                                _orders
-                                    .where((o) => o.priority == 'Urgent')
-                                    .length,
-                                'Urgent',
-                                Icons.bolt_outlined,
-                                'Urgent'),
-                            _metric(
-                                _orders
-                                    .where((o) =>
-                                        o.syncState == OrderSyncState.failed)
-                                    .length,
-                                'Need retry',
-                                Icons.sync_problem_outlined,
-                                'Needs retry'),
-                          ]);
+                          final metrics = Wrap(
+                              spacing: TSizes.v10,
+                              runSpacing: TSizes.v10,
+                              children: [
+                                _metric(_orders.length, 'Saved',
+                                    Icons.inventory_2_outlined, 'All orders'),
+                                _metric(
+                                    _orders
+                                        .where((o) => o.priority == 'Urgent')
+                                        .length,
+                                    'Urgent',
+                                    Icons.bolt_outlined,
+                                    'Urgent'),
+                                _metric(
+                                    _orders
+                                        .where((o) =>
+                                            o.syncState ==
+                                            OrderSyncState.failed)
+                                        .length,
+                                    'Need retry',
+                                    Icons.sync_problem_outlined,
+                                    'Needs retry'),
+                              ]);
                           return wide
                               ? Row(
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                       Expanded(child: intro),
-                                      const SizedBox(width: 24),
-                                      SizedBox(width: 320, child: metrics),
+                                      const SizedBox(width: TSizes.v24),
+                                      SizedBox(
+                                          width: TSizes.v320, child: metrics),
                                     ])
                               : Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                       intro,
-                                      const SizedBox(height: 20),
+                                      const SizedBox(height: TSizes.v20),
                                       metrics,
                                     ]);
                         })),
@@ -576,7 +591,7 @@ class _OrderScreenState extends State<OrderScreen> with WidgetsBindingObserver {
           button: true,
           label: '$value $label orders. Filter $filter',
           child: Material(
-            color: Colors.white.withValues(alpha: .10),
+            color: TColors.white.withValues(alpha: .10),
             borderRadius: BorderRadius.circular(14),
             child: InkWell(
               onTap: () => setState(() => _filter = filter),
@@ -587,8 +602,8 @@ class _OrderScreenState extends State<OrderScreen> with WidgetsBindingObserver {
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(icon, size: 18, color: Colors.white70),
-                      const SizedBox(height: 6),
+                      Icon(icon, size: TSizes.v18, color: TColors.white70),
+                      const SizedBox(height: TSizes.v6),
                       AnimatedSwitcher(
                           duration: MediaQuery.disableAnimationsOf(context)
                               ? Duration.zero
@@ -596,12 +611,12 @@ class _OrderScreenState extends State<OrderScreen> with WidgetsBindingObserver {
                           child: Text('$value',
                               key: ValueKey(value),
                               style: const TextStyle(
-                                  fontSize: 24,
+                                  fontSize: TSizes.v24,
                                   fontWeight: FontWeight.w800,
-                                  color: Colors.white))),
+                                  color: TColors.white))),
                       Text(label,
                           style: const TextStyle(
-                              fontSize: 11, color: Colors.white70)),
+                              fontSize: TSizes.v11, color: TColors.white70)),
                     ]),
               ),
             ),
@@ -618,7 +633,7 @@ class OrderListCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Material(
-      color: Colors.white,
+      color: TColors.white,
       borderRadius: BorderRadius.circular(18),
       child: InkWell(
           onTap: onView,
@@ -632,14 +647,14 @@ class OrderListCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
+                        spacing: TSizes.v8,
+                        runSpacing: TSizes.v8,
                         crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
                           Text(order.reference,
                               style: const TextStyle(
                                   color: TColors.textSecondary,
-                                  fontSize: 11,
+                                  fontSize: TSizes.v11,
                                   fontWeight: FontWeight.w700)),
                           OrderTag(order.statusLabel,
                               color: order.syncState == OrderSyncState.failed
@@ -651,11 +666,11 @@ class OrderListCard extends StatelessWidget {
                           if (order.priority == 'Urgent')
                             const OrderTag('Urgent', color: TColors.warning)
                         ]),
-                    const SizedBox(height: 14),
+                    const SizedBox(height: TSizes.v14),
                     Text(order.doctorName,
                         style: const TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.w800)),
-                    const SizedBox(height: 4),
+                            fontSize: TSizes.v18, fontWeight: FontWeight.w800)),
+                    const SizedBox(height: TSizes.v4),
                     Text(
                         [
                           order.customerType,
@@ -664,8 +679,9 @@ class OrderListCard extends StatelessWidget {
                           orderDateLabel(order.orderDate)
                         ].join(' · '),
                         style: const TextStyle(
-                            fontSize: 12, color: TColors.textSecondary)),
-                    const SizedBox(height: 16),
+                            fontSize: TSizes.v12,
+                            color: TColors.textSecondary)),
+                    const SizedBox(height: TSizes.v16),
                     Text(
                         order.items
                                 .take(2)
@@ -677,9 +693,9 @@ class OrderListCard extends StatelessWidget {
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
-                            fontWeight: FontWeight.w600, fontSize: 13)),
-                    const SizedBox(height: 10),
-                    Wrap(spacing: 8, runSpacing: 8, children: [
+                            fontWeight: FontWeight.w600, fontSize: TSizes.v13)),
+                    const SizedBox(height: TSizes.v10),
+                    Wrap(spacing: TSizes.v8, runSpacing: TSizes.v8, children: [
                       OrderTag('${order.items.length} products',
                           icon: Icons.medication_outlined,
                           color: TColors.textSecondary),
@@ -698,14 +714,14 @@ class OrderListCard extends StatelessWidget {
                           padding: const EdgeInsets.only(top: 12),
                           child: Text(order.lastError!,
                               style: const TextStyle(
-                                  fontSize: 12, color: TColors.error),
+                                  fontSize: TSizes.v12, color: TColors.error),
                               maxLines: 3,
                               overflow: TextOverflow.ellipsis)),
-                    const Divider(height: 28),
+                    const Divider(height: TSizes.v28),
                     Wrap(
                         alignment: WrapAlignment.spaceBetween,
-                        spacing: 20,
-                        runSpacing: 8,
+                        spacing: TSizes.v20,
+                        runSpacing: TSizes.v8,
                         crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
                           Column(
@@ -713,7 +729,7 @@ class OrderListCard extends StatelessWidget {
                               children: [
                                 Text(orderMoney(order.totals.totalPaise),
                                     style: const TextStyle(
-                                        fontSize: 19,
+                                        fontSize: TSizes.v19,
                                         fontWeight: FontWeight.w800,
                                         color: TColors.primary_shade700)),
                                 Text(
@@ -721,20 +737,21 @@ class OrderListCard extends StatelessWidget {
                                         ? 'Estimated value'
                                         : 'Estimate · rates incomplete',
                                     style: const TextStyle(
-                                        fontSize: 10,
+                                        fontSize: TSizes.v10,
                                         color: TColors.textSecondary))
                               ]),
-                          Wrap(spacing: 8, children: [
+                          Wrap(spacing: TSizes.v8, children: [
                             if (order.syncState == OrderSyncState.failed)
                               TextButton.icon(
                                   onPressed: onRetry,
-                                  icon: const Icon(Icons.sync, size: 16),
-                                  label: const Text('Retry uploads')),
+                                  icon:
+                                      const Icon(Icons.sync, size: TSizes.v16),
+                                  label: const Text(TTexts.uiTextRetryUploads)),
                             OutlinedButton.icon(
                                 onPressed: onView,
                                 icon: const Icon(Icons.arrow_outward_rounded,
-                                    size: 16),
-                                label: const Text('View order'))
+                                    size: TSizes.v16),
+                                label: const Text(TTexts.uiTextViewOrder))
                           ]),
                         ]),
                   ]))));

@@ -128,11 +128,9 @@ import 'DoctroController.dart';
   }
 }*/
 
-
 import 'package:connectivity_plus/connectivity_plus.dart';
 import '../models/DoctorOfflineModel.dart';
-
-
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class AddDoctorController {
   static const String _baseUrl = THttpHelper.baseUrl;
@@ -165,9 +163,11 @@ class AddDoctorController {
     final String apiUrl = '$_baseUrl/doctors';
     _debug('Preparing doctor data for submission...');
 
-    final annDate = anniversaryController.text.isEmpty ? null : anniversaryController.text;
+    final annDate =
+        anniversaryController.text.isEmpty ? null : anniversaryController.text;
     final dobDate = dobController.text.isEmpty ? null : dobController.text;
-    final yearOfExp = experienceController.text.isEmpty ? null : experienceController.text;
+    final yearOfExp =
+        experienceController.text.isEmpty ? null : experienceController.text;
 
     final doctorModel = DoctorOfflineModel(
       name: nameController.text,
@@ -197,14 +197,14 @@ class AddDoctorController {
         await _doctorService.saveOfflineDoctor(doctorModel);
         CircularLoaderController.hideLoader();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No Internet. Doctor saved offline.')),
+          const SnackBar(
+              content: Text(TTexts.uiTextNoInternetDoctorSavedOffline)),
         );
         Navigator.pop(context);
         return;
       }
 
       _debug('Internet available. Proceeding with online API call...');
-
 
       _debug('Internet available. Proceeding with online API call...');
       final token = await AuthManager().getAuthToken();
@@ -228,13 +228,15 @@ class AddDoctorController {
         await doctorListController.fetchDoctorList();
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Doctor added successfully!')),
+          const SnackBar(content: Text(TTexts.uiTextDoctorAddedSuccessfully)),
         );
         Navigator.pop(context);
       } else {
-        _debug('Failed to add doctor. Server responded with ${response.statusCode}');
+        _debug(
+            'Failed to add doctor. Server responded with ${response.statusCode}');
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Something went wrong.')),
+          const SnackBar(
+              content: Text(TTexts.uiTextSomethingWentWrong_bee54c9c)),
         );
       }
     } catch (e, stack) {
@@ -247,8 +249,6 @@ class AddDoctorController {
       );
     }
   }
-
-
 
   static Future<bool> isInternetAvailable() async {
     try {
@@ -268,6 +268,4 @@ class AddDoctorController {
       return false;
     }
   }
-
 }
-

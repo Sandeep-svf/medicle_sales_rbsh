@@ -5,6 +5,8 @@ import 'package:medicle_sales_rbsh/features/Investment_Management/wigets/create_
 
 import '../../controller/add_investment_controller.dart';
 import 'investment_textfield.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class UpiForm extends GetView<AddInvestmentController> {
   const UpiForm({super.key});
@@ -12,28 +14,28 @@ class UpiForm extends GetView<AddInvestmentController> {
   @override
   Widget build(BuildContext context) {
     return SectionCard(
-      title: "UPI Payment",
+      title: TTexts.uiTextUPIPayment,
       icon: Icons.qr_code_scanner,
       child: Column(
         children: [
           InvestmentTextField(
             controller: controller.amountController,
-            label: "Amount",
+            label: TTexts.amount,
             icon: Icons.currency_rupee,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             validator: controller.validateAmount,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: TSizes.v16),
           InvestmentTextField(
             controller: controller.upiController,
-            label: "UPI ID",
+            label: TTexts.uiTextUPIID,
             icon: Icons.qr_code,
             validator: (value) => controller.validateRequired(value, "UPI ID"),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: TSizes.v16),
           InvestmentTextField(
             controller: controller.purposeController,
-            label: "Purpose",
+            label: TTexts.uiTextPurpose,
             icon: Icons.description,
             maxLines: 3,
             validator: (value) => controller.validateRequired(value, "Purpose"),

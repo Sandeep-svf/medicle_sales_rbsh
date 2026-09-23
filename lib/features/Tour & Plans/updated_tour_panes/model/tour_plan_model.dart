@@ -44,7 +44,8 @@ class TourPlanModel {
       approvedByRole: _nullableString(json["approved_by_role"]),
       comments: _nullableString(json["comments"]),
       createdAt: createdAt ?? DateTime.fromMillisecondsSinceEpoch(0),
-      updatedAt: updatedAt ?? createdAt ?? DateTime.fromMillisecondsSinceEpoch(0),
+      updatedAt:
+          updatedAt ?? createdAt ?? DateTime.fromMillisecondsSinceEpoch(0),
       days: (json["days"] as List? ?? const [])
           .whereType<Map>()
           .map((e) => TourPlanDayModel.fromJson(Map<String, dynamic>.from(e)))

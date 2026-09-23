@@ -10,7 +10,6 @@ import '../models/doctor_details_model.dart';
 import 'dart:convert';
 import 'dart:developer';
 
-
 class DoctorDetailsController extends GetxController {
   DoctorDetailsController(this.doctorId);
 
@@ -62,8 +61,7 @@ class DoctorDetailsController extends GetxController {
       );
 
       if (response.statusCode == 200) {
-        final Map<String, dynamic> json =
-        jsonDecode(response.body);
+        final Map<String, dynamic> json = jsonDecode(response.body);
 
         log(
           "Parsed JSON => $json",

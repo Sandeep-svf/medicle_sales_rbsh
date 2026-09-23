@@ -2,17 +2,18 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:http_parser/http_parser.dart';
-
 import '../../../utils/camera/CameraLocationResult.dart';
 import '../../../utils/camera/image_overlay_utils.dart';
-import '../../../utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import '../../../utils/http/http_client.dart';
 import '../../../utils/local_storage/auth_manager.dart';
 import '../screens/map.dart';
 import 'DoctroController.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class AddDoctorNewController extends GetxController {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
@@ -67,7 +68,6 @@ class AddDoctorNewController extends GetxController {
   var imageCapturedAt = Rxn<DateTime>();
   var isImageProcessing = false.obs;
 
-
   final List<String> genders = ['Male', 'Female', 'Other'];
 
   @override
@@ -79,9 +79,6 @@ class AddDoctorNewController extends GetxController {
       showPincodeDialog();
     });
   }
-
-
-
 
   // --- 1. FETCH HEAD OFFICES ---
   Future<void> fetchHeadOffices() async {
@@ -103,10 +100,12 @@ class AddDoctorNewController extends GetxController {
         if (jsonResponse['success'] == true) {
           final List<dynamic> dataList = jsonResponse['data'];
 
-          headOffices.assignAll(dataList.map((e) => {
-            'id': e['id'].toString(),
-            'name': e['name'].toString(),
-          }).toList());
+          headOffices.assignAll(dataList
+              .map((e) => {
+                    'id': e['id'].toString(),
+                    'name': e['name'].toString(),
+                  })
+              .toList());
         }
       }
     } catch (e) {
@@ -115,7 +114,6 @@ class AddDoctorNewController extends GetxController {
       isLoadingHeadOffices.value = false;
     }
   }
-
 
   // fetch address by pincode
   Future<bool> fetchAddressByPincode(String pincode) async {
@@ -129,7 +127,7 @@ class AddDoctorNewController extends GetxController {
       if (response.statusCode != 200) {
         Get.snackbar(
           "Error",
-          "Unable to fetch pincode details",
+          TTexts.uiTextUnableToFetchPincodeDetails,
         );
         return false;
       }
@@ -176,10 +174,9 @@ class AddDoctorNewController extends GetxController {
   }
 
   void fillAddress(
-
-      Map<String, dynamic> office,
-      String pincode,
-      ) {
+    Map<String, dynamic> office,
+    String pincode,
+  ) {
     selectedPostOffice.value = office['Name'];
 
     postOfficeController.text = office['Name'] ?? '';
@@ -194,10 +191,9 @@ class AddDoctorNewController extends GetxController {
 
     countryController.text = office['Country'] ?? '';
 
-    pincodeController.text =
-        pincode;
+    pincodeController.text = pincode;
 
-   /* address1Controller.text =
+    /* address1Controller.text =
     "${office['Name']}, "
         "${office['Block'] ?? ''}, "
         "${office['District'] ?? ''}, "
@@ -211,7 +207,7 @@ class AddDoctorNewController extends GetxController {
     );
   }
 
- /* Future<void> showPostOfficeSelection(
+  /* Future<void> showPostOfficeSelection(
       List offices,
       String pincode,
       ) async {
@@ -247,7 +243,7 @@ class AddDoctorNewController extends GetxController {
             child: Container(
               height: Get.height * .75,
               decoration: const BoxDecoration(
-                color: Colors.white,
+                color: TColors.white,
                 borderRadius: BorderRadius.vertical(
                   top: Radius.circular(28),
                 ),
@@ -262,7 +258,7 @@ class AddDoctorNewController extends GetxController {
                     width: 60,
                     height: 5,
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade300,
+                      color: TColors.materialGrey300,
                       borderRadius: BorderRadius.circular(20),
                     ),
                   ),
@@ -282,7 +278,7 @@ class AddDoctorNewController extends GetxController {
                   Text(
                     "${offices.length} Post Offices Found",
                     style: TextStyle(
-                      color: Colors.green.shade700,
+                      color: TColors.materialGreen700,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -295,7 +291,7 @@ class AddDoctorNewController extends GetxController {
                       "Choose the correct Post Office for PIN $pincode",
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: Colors.grey.shade600,
+                        color: TColors.materialGrey600,
                       ),
                     ),
                   ),
@@ -310,7 +306,7 @@ class AddDoctorNewController extends GetxController {
                         hintText: "Search Area",
                         prefixIcon: const Icon(Icons.search),
                         filled: true,
-                        fillColor: Colors.grey.shade100,
+                        fillColor: TColors.materialGrey100,
                         border: OutlineInputBorder(
                           borderRadius:
                           BorderRadius.circular(14),
@@ -376,8 +372,8 @@ class AddDoctorNewController extends GetxController {
                                   end:
                                   Alignment.bottomCenter,
                                   colors: [
-                                    Colors.white.withOpacity(0),
-                                    Colors.white,
+                                    TColors.white.withOpacity(0),
+                                    TColors.white,
                                   ],
                                 ),
                               ),
@@ -391,11 +387,11 @@ class AddDoctorNewController extends GetxController {
                   Container(
                     padding: const EdgeInsets.all(18),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: TColors.white,
                       boxShadow: [
                         BoxShadow(
                           color:
-                          Colors.black.withOpacity(.08),
+                          TColors.pureBlack.withOpacity(.08),
                           blurRadius: 15,
                           offset: const Offset(0, -5),
                         ),
@@ -420,7 +416,7 @@ class AddDoctorNewController extends GetxController {
                               backgroundColor:
                               TColors.primary,
                               foregroundColor:
-                              Colors.white,
+                              TColors.white,
                               minimumSize:
                               const Size.fromHeight(52),
                             ),
@@ -450,15 +446,14 @@ class AddDoctorNewController extends GetxController {
         },
       ),
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor: TColors.transparent,
     );
   }*/
 
-
   Future<void> showPostOfficeSelection(
-      List offices,
-      String pincode,
-      ) async {
+    List offices,
+    String pincode,
+  ) async {
     int selectedIndex = 0;
     String search = "";
 
@@ -467,8 +462,8 @@ class AddDoctorNewController extends GetxController {
         builder: (context, setState) {
           final filtered = offices.where((office) {
             final text =
-            "${office['Name']} ${office['Block']} ${office['District']}"
-                .toLowerCase();
+                "${office['Name']} ${office['Block']} ${office['District']}"
+                    .toLowerCase();
 
             return text.contains(search.toLowerCase());
           }).toList();
@@ -483,98 +478,84 @@ class AddDoctorNewController extends GetxController {
             child: Container(
               height: Get.height * .82,
               decoration: const BoxDecoration(
-                color: Color(0xffF6F7FB),
+                color: TColors.hex_FFF6F7FB,
                 borderRadius: BorderRadius.vertical(
                   top: Radius.circular(30),
                 ),
               ),
               child: Column(
                 children: [
-
-                  const SizedBox(height: 12),
-
+                  const SizedBox(height: TSizes.v12),
                   Container(
-                    width: 70,
-                    height: 5,
+                    width: TSizes.v70,
+                    height: TSizes.v5,
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade400,
+                      color: TColors.materialGrey400,
                       borderRadius: BorderRadius.circular(20),
                     ),
                   ),
-
-                  const SizedBox(height: 22),
-
+                  const SizedBox(height: TSizes.v22),
                   Container(
-                    height: 70,
-                    width: 70,
+                    height: TSizes.v70,
+                    width: TSizes.v70,
                     decoration: BoxDecoration(
                       color: TColors.primary.withOpacity(.12),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
                       Icons.location_city,
-                      size: 36,
+                      size: TSizes.v36,
                       color: TColors.primary,
                     ),
                   ),
-
-                  const SizedBox(height: 18),
-
+                  const SizedBox(height: TSizes.v18),
                   const Text(
-                    "Select Post Office",
+                    TTexts.uiTextSelectPostOffice,
                     style: TextStyle(
-                      fontSize: 24,
+                      fontSize: TSizes.v24,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-
-                  const SizedBox(height: 8),
-
+                  const SizedBox(height: TSizes.v8),
                   Text(
-                    "Choose the correct Post Office",
+                    TTexts.uiTextChooseTheCorrectPostOffice,
                     style: TextStyle(
-                      color: Colors.grey.shade600,
+                      color: TColors.materialGrey600,
                     ),
                   ),
-
-                  const SizedBox(height: 18),
-
+                  const SizedBox(height: TSizes.v18),
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
                       vertical: 8,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.green.shade50,
+                      color: TColors.materialGreen50,
                       borderRadius: BorderRadius.circular(40),
                       border: Border.all(
-                        color: Colors.green.shade200,
+                        color: TColors.materialGreen200,
                       ),
                     ),
                     child: Text(
                       "${offices.length} Post Offices Available",
                       style: TextStyle(
-                        color: Colors.green.shade800,
+                        color: TColors.materialGreen800,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
-
-                  const SizedBox(height: 20),
-
+                  const SizedBox(height: TSizes.v20),
                   Padding(
-                    padding:
-                    const EdgeInsets.symmetric(horizontal: 18),
+                    padding: const EdgeInsets.symmetric(horizontal: 18),
                     child: TextField(
                       decoration: InputDecoration(
-                        hintText: "Search Post Office...",
+                        hintText: TTexts.uiTextSearchPostOffice,
                         prefixIcon: const Icon(Icons.search),
                         filled: true,
-                        fillColor: Colors.white,
+                        fillColor: TColors.white,
                         border: OutlineInputBorder(
                           borderSide: BorderSide.none,
-                          borderRadius:
-                          BorderRadius.circular(18),
+                          borderRadius: BorderRadius.circular(18),
                         ),
                       ),
                       onChanged: (v) {
@@ -584,9 +565,7 @@ class AddDoctorNewController extends GetxController {
                       },
                     ),
                   ),
-
-                  const SizedBox(height: 15),
-
+                  const SizedBox(height: TSizes.v15),
                   Expanded(
                     child: Scrollbar(
                       thumbVisibility: true,
@@ -600,101 +579,83 @@ class AddDoctorNewController extends GetxController {
                         itemBuilder: (_, index) {
                           final office = filtered[index];
 
-                          final selected =
-                              selectedIndex == index;
+                          final selected = selectedIndex == index;
 
                           return AnimatedContainer(
                             duration: const Duration(
                               milliseconds: 250,
                             ),
-                            margin:
-                            const EdgeInsets.only(bottom: 12),
+                            margin: const EdgeInsets.only(bottom: 12),
                             decoration: BoxDecoration(
                               color: selected
-                                  ? TColors.primary
-                                  .withOpacity(.08)
-                                  : Colors.white,
-                              borderRadius:
-                              BorderRadius.circular(18),
+                                  ? TColors.primary.withOpacity(.08)
+                                  : TColors.white,
+                              borderRadius: BorderRadius.circular(18),
                               border: Border.all(
                                 color: selected
                                     ? TColors.primary
-                                    : Colors.grey.shade200,
+                                    : TColors.materialGrey200,
                                 width: selected ? 2 : 1,
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black
-                                      .withOpacity(.04),
-                                  blurRadius: 10,
+                                  color: TColors.pureBlack.withOpacity(.04),
+                                  blurRadius: TSizes.v10,
                                   offset: const Offset(0, 3),
                                 )
                               ],
                             ),
                             child: InkWell(
-                              borderRadius:
-                              BorderRadius.circular(18),
+                              borderRadius: BorderRadius.circular(18),
                               onTap: () {
                                 setState(() {
                                   selectedIndex = index;
                                 });
                               },
                               child: Padding(
-                                padding:
-                                const EdgeInsets.all(16),
+                                padding: const EdgeInsets.all(16),
                                 child: Row(
                                   children: [
-
                                     AnimatedContainer(
-                                      duration:
-                                      const Duration(
+                                      duration: const Duration(
                                         milliseconds: 200,
                                       ),
-                                      height: 28,
-                                      width: 28,
+                                      height: TSizes.v28,
+                                      width: TSizes.v28,
                                       decoration: BoxDecoration(
                                         color: selected
-                                            ? Colors.green
-                                            : Colors.white,
-                                        shape:
-                                        BoxShape.circle,
+                                            ? TColors.materialGreen
+                                            : TColors.white,
+                                        shape: BoxShape.circle,
                                         border: Border.all(
                                           color: selected
-                                              ? Colors.green
-                                              : Colors.grey,
+                                              ? TColors.materialGreen
+                                              : TColors.materialGrey,
                                         ),
                                       ),
                                       child: selected
                                           ? const Icon(
-                                        Icons.check,
-                                        color: Colors
-                                            .white,
-                                        size: 18,
-                                      )
+                                              Icons.check,
+                                              color: TColors.white,
+                                              size: TSizes.v18,
+                                            )
                                           : null,
                                     ),
-
-                                    const SizedBox(width: 16),
-
+                                    const SizedBox(width: TSizes.v16),
                                     Expanded(
                                       child: Column(
                                         crossAxisAlignment:
-                                        CrossAxisAlignment
-                                            .start,
+                                            CrossAxisAlignment.start,
                                         children: [
-
                                           Text(
                                             office['Name'],
-                                            style:
-                                            const TextStyle(
-                                              fontWeight:
-                                              FontWeight
-                                                  .bold,
-                                              fontSize: 16,
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: TSizes.v16,
                                             ),
                                           ),
 
-                                         /* const SizedBox(
+                                          /* const SizedBox(
                                               height: 4),
 
                                           Text(
@@ -702,44 +663,31 @@ class AddDoctorNewController extends GetxController {
                                                 '',
                                             style:
                                             TextStyle(
-                                              color: Colors
-                                                  .grey
-                                                  .shade700,
+                                              color: TColors.materialGrey700,
                                             ),
                                           ),*/
 
-                                          const SizedBox(
-                                              height: 6),
-
+                                          const SizedBox(height: TSizes.v6),
                                           Row(
                                             children: [
                                               const Icon(
-                                                Icons
-                                                    .location_on,
-                                                size: 15,
-                                                color:
-                                                Colors.red,
+                                                Icons.location_on,
+                                                size: TSizes.v15,
+                                                color: TColors.materialRed,
                                               ),
-                                              const SizedBox(
-                                                  width: 4),
+                                              const SizedBox(width: TSizes.v4),
                                               Expanded(
                                                 child: Text(
                                                   "${office['Block']} • ${office['District']}",
-                                                  style:
-                                                  TextStyle(
-                                                    color: Colors
-                                                        .grey
-                                                        .shade600,
+                                                  style: TextStyle(
+                                                    color:
+                                                        TColors.materialGrey600,
                                                   ),
                                                 ),
                                               ),
                                             ],
                                           ),
-
-                                          const SizedBox(
-                                              height: 6),
-
-
+                                          const SizedBox(height: TSizes.v6),
                                         ],
                                       ),
                                     ),
@@ -752,62 +700,47 @@ class AddDoctorNewController extends GetxController {
                       ),
                     ),
                   ),
-
                   Container(
                     padding: const EdgeInsets.all(18),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: TColors.white,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(.08),
-                          blurRadius: 20,
+                          color: TColors.pureBlack.withOpacity(.08),
+                          blurRadius: TSizes.v20,
                           offset: const Offset(0, -5),
                         ),
                       ],
                     ),
                     child: Row(
                       children: [
-
                         Expanded(
                           child: OutlinedButton(
                             style: OutlinedButton.styleFrom(
-                              minimumSize:
-                              const Size.fromHeight(55),
-                              shape:
-                              RoundedRectangleBorder(
-                                borderRadius:
-                                BorderRadius.circular(16),
+                              minimumSize: const Size.fromHeight(55),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
                               ),
                             ),
                             onPressed: Get.back,
-                            child: const Text("Cancel"),
+                            child: const Text(TTexts.cancel),
                           ),
                         ),
-
-                        const SizedBox(width: 14),
-
+                        const SizedBox(width: TSizes.v14),
                         Expanded(
                           flex: 2,
                           child: ElevatedButton.icon(
-                            style:
-                            ElevatedButton.styleFrom(
-                              backgroundColor:
-                              TColors.primary,
-                              foregroundColor:
-                              Colors.white,
-                              minimumSize:
-                              const Size.fromHeight(55),
-                              shape:
-                              RoundedRectangleBorder(
-                                borderRadius:
-                                BorderRadius.circular(16),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: TColors.primary,
+                              foregroundColor: TColors.white,
+                              minimumSize: const Size.fromHeight(55),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
                               ),
                             ),
                             icon: const Icon(Icons.arrow_forward),
-                            label:
-                            const Text("Continue"),
+                            label: const Text(TTexts.uiTextContinue),
                             onPressed: () {
-
                               fillAddress(
                                 Map<String, dynamic>.from(
                                   filtered[selectedIndex],
@@ -829,10 +762,9 @@ class AddDoctorNewController extends GetxController {
         },
       ),
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor: TColors.transparent,
     );
   }
-
 
   Future<void> createArea({
     required String name,
@@ -846,10 +778,10 @@ class AddDoctorNewController extends GetxController {
 
       print(
         '[AddDoctorNewController] Payload => '
-            'name=$name, '
-            'pincode=$pincode, '
-            'postOffice=$postOffice, '
-            'headOfficeId=${selectedHeadOfficeId.value}',
+        'name=$name, '
+        'pincode=$pincode, '
+        'postOffice=$postOffice, '
+        'headOfficeId=${selectedHeadOfficeId.value}',
       );
 
       final token = await AuthManager().getAuthToken();
@@ -876,18 +808,14 @@ class AddDoctorNewController extends GetxController {
         '[AddDoctorNewController] Response Body => ${response.body}',
       );
 
-      if (response.statusCode == 200 ||
-          response.statusCode == 201) {
-
-        final jsonResponse =
-        json.decode(response.body);
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final jsonResponse = json.decode(response.body);
 
         print(
           '[AddDoctorNewController] Parsed Response => $jsonResponse',
         );
 
-        final createdAreaId =
-        jsonResponse['data']?['id'];
+        final createdAreaId = jsonResponse['data']?['id'];
 
         print(
           '[AddDoctorNewController] Created Area ID => $createdAreaId',
@@ -911,9 +839,9 @@ class AddDoctorNewController extends GetxController {
 
         Get.snackbar(
           "Success",
-          "Area Created",
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
+          TTexts.uiTextAreaCreated,
+          backgroundColor: TColors.materialGreen,
+          colorText: TColors.white,
         );
       } else {
         print(
@@ -973,23 +901,24 @@ class AddDoctorNewController extends GetxController {
   Future<void> submit(BuildContext context) async {
     // 1. Validation for REQUIRED fields only
     if (!formKey.currentState!.validate()) {
-      Get.snackbar("Required", "Please fill required fields (marked *).",
-          backgroundColor: Colors.orange, colorText: Colors.white);
+      Get.snackbar("Required", TTexts.uiTextPleaseFillRequiredFieldsMarked,
+          backgroundColor: TColors.materialOrange, colorText: TColors.white);
       return;
     }
 
     if (selectedHeadOfficeId.value == null) {
-      Get.snackbar("Missing Info", "Please select a Head Office.",
-          backgroundColor: Colors.orange, colorText: Colors.white);
+      Get.snackbar(
+          "Missing Info", TTexts.uiTextPleaseSelectAHeadOffice_260391c0,
+          backgroundColor: TColors.materialOrange, colorText: TColors.white);
       return;
     }
 
     if (selectedGender.value == null) {
       Get.snackbar(
         "Required",
-        "Please select gender",
-        backgroundColor: Colors.orange,
-        colorText: Colors.white,
+        TTexts.uiTextPleaseSelectGender,
+        backgroundColor: TColors.materialOrange,
+        colorText: TColors.white,
       );
       return;
     }
@@ -997,21 +926,21 @@ class AddDoctorNewController extends GetxController {
     if (selectedAreaId.value == null) {
       Get.snackbar(
         "Missing Info",
-        "Please select Area",
-        backgroundColor: Colors.orange,
-        colorText: Colors.white,
+        TTexts.uiTextPleaseSelectArea,
+        backgroundColor: TColors.materialOrange,
+        colorText: TColors.white,
       );
       return;
     }
 
     if (doctorImage.value == null) {
-      Get.snackbar("Missing Photo", "Please capture the doctor's photo.",
-          backgroundColor: Colors.red, colorText: Colors.white);
+      Get.snackbar("Missing Photo", TTexts.uiTextPleaseCaptureTheDoctorSPhoto,
+          backgroundColor: TColors.materialRed, colorText: TColors.white);
       return;
     }
     if (latitude.value == 0.0) {
-      Get.snackbar("Missing Location", "Please select location on map.",
-          backgroundColor: Colors.red, colorText: Colors.white);
+      Get.snackbar("Missing Location", TTexts.uiTextPleaseSelectLocationOnMap,
+          backgroundColor: TColors.materialRed, colorText: TColors.white);
       return;
     }
 
@@ -1052,7 +981,8 @@ class AddDoctorNewController extends GetxController {
       request.fields['location'] = address1Controller.text.trim();
       request.fields['email'] = emailController.text.trim();
       request.fields['phone'] = phoneController.text.trim();
-      request.fields['registration_number'] = registrationController.text.trim();
+      request.fields['registration_number'] =
+          registrationController.text.trim();
 
       // --- UPDATED PART: DATES (Send null) ---
       // Logic: In Multipart, we cannot send actual 'null'.
@@ -1087,8 +1017,10 @@ class AddDoctorNewController extends GetxController {
       print('[DEBUG] Response Status: ${response.statusCode}');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        Get.snackbar("Success", "Doctor Created Successfully",
-            backgroundColor: Colors.green, colorText: Colors.white, duration: const Duration(seconds: 2));
+        Get.snackbar("Success", TTexts.uiTextDoctorCreatedSuccessfully,
+            backgroundColor: TColors.materialGreen,
+            colorText: TColors.white,
+            duration: const Duration(seconds: 2));
 
         if (Get.isRegistered<DoctorListController>()) {
           Get.find<DoctorListController>().fetchDoctorList();
@@ -1105,15 +1037,16 @@ class AddDoctorNewController extends GetxController {
           var jsonBody = json.decode(response.body);
           if (jsonBody['message'] != null) errorMsg = jsonBody['message'];
         } catch (_) {}
-        Get.snackbar("Error", errorMsg, backgroundColor: Colors.red, colorText: Colors.white);
+        Get.snackbar("Error", errorMsg,
+            backgroundColor: TColors.materialRed, colorText: TColors.white);
       }
-
     } catch (e) {
       if (Get.isDialogOpen == true) {
         Get.back();
       }
       print("[ERROR] Submit Exception: $e");
-      Get.snackbar("Error", "An error occurred: $e", backgroundColor: Colors.red, colorText: Colors.white);
+      Get.snackbar("Error", "An error occurred: $e",
+          backgroundColor: TColors.materialRed, colorText: TColors.white);
     }
   }
 
@@ -1128,7 +1061,7 @@ class AddDoctorNewController extends GetxController {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.light(primary: TColors.primary),
-            dialogBackgroundColor: Colors.white,
+            dialogBackgroundColor: TColors.white,
           ),
           child: child!,
         );
@@ -1149,7 +1082,8 @@ class AddDoctorNewController extends GetxController {
   Future<void> captureImage() async {
     try {
       isImageProcessing.value = true;
-      final CameraLocationResult? result = await CameraLocationService.captureImageWithLocation();
+      final CameraLocationResult? result =
+          await CameraLocationService.captureImageWithLocation();
       if (result == null) return;
 
       final File layeredImage = await ImageOverlayUtil.addOverlay(
@@ -1161,7 +1095,8 @@ class AddDoctorNewController extends GetxController {
       doctorImage.value = layeredImage;
       imageCapturedAt.value = DateTime.now();
     } catch (e) {
-      Get.snackbar("Error", "$e", backgroundColor: Colors.red, colorText: Colors.white);
+      Get.snackbar("Error", "$e",
+          backgroundColor: TColors.materialRed, colorText: TColors.white);
     } finally {
       isImageProcessing.value = false;
     }
@@ -1173,15 +1108,21 @@ class AddDoctorNewController extends GetxController {
     if (result != null && result is Map<String, dynamic>) {
       latitude.value = result['latitude'] ?? 0.0;
       longitude.value = result['longitude'] ?? 0.0;
-     // address1Controller.text = result['address'] ?? '';
+      // address1Controller.text = result['address'] ?? '';
 
-      if (result.containsKey('state')) stateController.text = result['state'] ?? '';
-      if (result.containsKey('pincode')) pincodeController.text = result['pincode'] ?? '';
-      if (result.containsKey('country')) countryController.text = result['country'] ?? '';
-      if (result.containsKey('postOffice')) postOfficeController.text = result['postOffice'] ?? '';
+      if (result.containsKey('state'))
+        stateController.text = result['state'] ?? '';
+      if (result.containsKey('pincode'))
+        pincodeController.text = result['pincode'] ?? '';
+      if (result.containsKey('country'))
+        countryController.text = result['country'] ?? '';
+      if (result.containsKey('postOffice'))
+        postOfficeController.text = result['postOffice'] ?? '';
 
       isLocationSet.value = true;
-      Get.snackbar("Location Fetched", "Coordinates set.", backgroundColor: Colors.green.withOpacity(0.9), colorText: Colors.white);
+      Get.snackbar("Location Fetched", TTexts.uiTextCoordinatesSet,
+          backgroundColor: TColors.materialGreen.withOpacity(0.9),
+          colorText: TColors.white);
     }
   }
 
@@ -1197,11 +1138,8 @@ class AddDoctorNewController extends GetxController {
     }
 
     final existingArea = areas.firstWhereOrNull(
-          (e) =>
-      (e['name'] ?? '')
-          .toString()
-          .trim()
-          .toLowerCase() ==
+      (e) =>
+          (e['name'] ?? '').toString().trim().toLowerCase() ==
           postOffice.trim().toLowerCase(),
     );
 
@@ -1220,13 +1158,20 @@ class AddDoctorNewController extends GetxController {
 
   @override
   void onClose() {
-    nameController.dispose(); specializationController.dispose();
-    emailController.dispose(); phoneController.dispose();
-    registrationController.dispose(); experienceController.dispose();
-    dobController.dispose(); anniversaryController.dispose();
-    address1Controller.dispose(); address2Controller.dispose();
-    stateController.dispose(); pincodeController.dispose();
-    countryController.dispose(); postOfficeController.dispose();
+    nameController.dispose();
+    specializationController.dispose();
+    emailController.dispose();
+    phoneController.dispose();
+    registrationController.dispose();
+    experienceController.dispose();
+    dobController.dispose();
+    anniversaryController.dispose();
+    address1Controller.dispose();
+    address2Controller.dispose();
+    stateController.dispose();
+    pincodeController.dispose();
+    countryController.dispose();
+    postOfficeController.dispose();
     super.onClose();
   }
 
@@ -1245,100 +1190,99 @@ class AddDoctorNewController extends GetxController {
           ),
           child: Container(
             padding: const EdgeInsets.all(24),
-            width: 420,
+            width: TSizes.v420,
             child: Obx(
-                  () => Column(
+              () => Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-
                   /// HEADER
                   Row(
                     children: [
                       const Expanded(
                         child: Text(
-                          "Doctor Location Setup",
+                          TTexts.uiTextDoctorLocationSetup,
                           style: TextStyle(
-                            fontSize: 22,
+                            fontSize: TSizes.v22,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
-
                       InkWell(
                         onTap: () => Get.back(),
                         borderRadius: BorderRadius.circular(30),
                         child: Container(
                           padding: const EdgeInsets.all(6),
                           decoration: BoxDecoration(
-                            color: Colors.grey.shade200,
+                            color: TColors.materialGrey200,
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
                             Icons.close,
-                            size: 20,
+                            size: TSizes.v20,
                           ),
                         ),
                       ),
                     ],
                   ),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: TSizes.v20),
 
                   /// Illustration
                   Container(
-                    height: 90,
-                    width: 90,
+                    height: TSizes.v90,
+                    width: TSizes.v90,
                     decoration: BoxDecoration(
                       color: TColors.primary.withOpacity(.10),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
                       Icons.location_city,
-                      size: 50,
+                      size: TSizes.v50,
                       color: TColors.primary,
                     ),
                   ),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: TSizes.v20),
 
                   Text(
-                    "Enter doctor's area pincode. We will automatically fetch State, Post Office, Country and Address details.",
+                    TTexts.uiTextEnterDoctorSAreaPincodeWeWillAutomatically,
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      color: Colors.grey.shade600,
-                      height: 1.5,
+                      color: TColors.materialGrey600,
+                      height: TSizes.v1_5,
                     ),
                   ),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: TSizes.v20),
 
                   Container(
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: Colors.blue.shade50,
+                      color: TColors.materialBlue50,
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(
-                        color: Colors.blue.shade100,
+                        color: TColors.materialBlue100,
                       ),
                     ),
                     child: const Row(
                       children: [
                         Icon(
                           Icons.info_outline,
-                          color: Colors.blue,
+                          color: TColors.materialBlue,
                         ),
-                        SizedBox(width: 10),
+                        SizedBox(width: TSizes.v10),
                         Expanded(
                           child: Text(
-                            "Address fields will be auto-filled after successful verification.",
-                            style: TextStyle(fontSize: 13),
+                            TTexts
+                                .uiTextAddressFieldsWillBeAutoFilledAfterSuccessful,
+                            style: TextStyle(fontSize: TSizes.v13),
                           ),
                         )
                       ],
                     ),
                   ),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: TSizes.v20),
 
                   TextField(
                     controller: pinController,
@@ -1346,34 +1290,33 @@ class AddDoctorNewController extends GetxController {
                     maxLength: 6,
                     textAlign: TextAlign.center,
                     style: const TextStyle(
-                      fontSize: 22,
+                      fontSize: TSizes.v22,
                       letterSpacing: 6,
                       fontWeight: FontWeight.bold,
                     ),
                     decoration: InputDecoration(
-                      hintText: "201306",
+                      hintText: TTexts.uiText201306,
                       hintStyle: TextStyle(
-                        color: Colors.grey.shade400,
-                        fontSize: 18,
+                        color: TColors.materialGrey400,
+                        fontSize: TSizes.v18,
                         letterSpacing: 2,
                         fontWeight: FontWeight.w500,
                       ),
                       counterText: "",
                       prefixIcon: const Icon(Icons.pin_drop),
-                      errorText: errorText.value.isEmpty
-                          ? null
-                          : errorText.value,
+                      errorText:
+                          errorText.value.isEmpty ? null : errorText.value,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
                     ),
                   ),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: TSizes.v20),
 
                   SizedBox(
                     width: double.infinity,
-                    height: 54,
+                    height: TSizes.v54,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: TColors.primary,
@@ -1384,53 +1327,52 @@ class AddDoctorNewController extends GetxController {
                       onPressed: isLoading.value
                           ? null
                           : () async {
-                        final pin = pinController.text.trim();
+                              final pin = pinController.text.trim();
 
-                        errorText.value = '';
+                              errorText.value = '';
 
-                        if (pin.length != 6) {
-                          errorText.value =
-                          "Please enter valid pincode";
-                          return;
-                        }
+                              if (pin.length != 6) {
+                                errorText.value = "Please enter valid pincode";
+                                return;
+                              }
 
-                        isLoading.value = true;
+                              isLoading.value = true;
 
-                        final success =
-                        await fetchAddressByPincode(pin);
+                              final success = await fetchAddressByPincode(pin);
 
-                        isLoading.value = false;
+                              isLoading.value = false;
 
-                        if (success) {
-                          Get.back();
+                              if (success) {
+                                Get.back();
 
-                          Get.snackbar(
-                            "Address Verified",
-                            "Location details fetched successfully",
-                            backgroundColor: Colors.green,
-                            colorText: Colors.white,
-                          );
-                        } else {
-                          errorText.value =
-                          "Invalid pincode or no address found";
-                        }
-                      },
+                                Get.snackbar(
+                                  "Address Verified",
+                                  TTexts
+                                      .uiTextLocationDetailsFetchedSuccessfully,
+                                  backgroundColor: TColors.materialGreen,
+                                  colorText: TColors.white,
+                                );
+                              } else {
+                                errorText.value =
+                                    "Invalid pincode or no address found";
+                              }
+                            },
                       child: isLoading.value
                           ? const SizedBox(
-                        height: 22,
-                        width: 22,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
+                              height: TSizes.v22,
+                              width: TSizes.v22,
+                              child: CircularProgressIndicator(
+                                strokeWidth: TSizes.v2,
+                                color: TColors.white,
+                              ),
+                            )
                           : const Text(
-                        "Verify & Continue",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                              TTexts.uiTextVerifyContinue,
+                              style: TextStyle(
+                                fontSize: TSizes.v16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                     ),
                   ),
                 ],

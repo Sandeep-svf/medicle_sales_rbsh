@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 /// Production-ready Internet checker.
 /// Checks both connection type and actual internet reachability.
@@ -15,7 +17,8 @@ Future<bool> checkInternetConnection(BuildContext context) async {
     }
 
     // Step 2: Ping a reliable host (Google DNS or Cloudflare)
-    final result = await InternetAddress.lookup('one.one.one.one'); // Cloudflare DNS (faster)
+    final result = await InternetAddress.lookup(
+        'one.one.one.one'); // Cloudflare DNS (faster)
     if (result.isNotEmpty && result.first.rawAddress.isNotEmpty) {
       return true; //  Internet reachable
     } else {
@@ -36,8 +39,8 @@ Future<bool> checkInternetConnection(BuildContext context) async {
 void _showNoInternetSnackBar(BuildContext context) {
   ScaffoldMessenger.of(context).showSnackBar(
     const SnackBar(
-      content: Text("⚠️ No Internet Connection"),
-      backgroundColor: Colors.redAccent,
+      content: Text(TTexts.uiTextNoInternetConnection),
+      backgroundColor: TColors.materialRedAccent,
       duration: Duration(seconds: 2),
     ),
   );

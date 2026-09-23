@@ -1,3 +1,4 @@
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -22,6 +23,7 @@ import '../repositories/pending_doctor_location_repository.dart';
 import '../repositories/doctor_search_index.dart';
 import '../services/doctor_connectivity_monitor.dart';
 import '../sync/doctor_sync_coordinator.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class DoctorFilterOption {
   const DoctorFilterOption({required this.value, required this.label});
@@ -167,7 +169,7 @@ class DoctorOfflineController extends GetxController
       onError: (_) {
         _syncStatus = DoctorSyncStatus(
           phase: DoctorSyncPhase.storageUnavailable,
-          message: 'The encrypted doctor cache could not be read.',
+          message: TTexts.uiTextTheEncryptedDoctorCacheCouldNotBeRead,
           downloadedCount: _allDoctors.length,
           hasCachedData: _allDoctors.isNotEmpty,
           lastSuccessfulSyncUtc: _syncStatus.lastSuccessfulSyncUtc,
@@ -333,8 +335,8 @@ class DoctorOfflineController extends GetxController
       Get.snackbar(
         'Location Request Failed',
         error.toString().replaceFirst('Exception: ', ''),
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
+        backgroundColor: TColors.materialRed,
+        colorText: TColors.white,
       );
     }
   }
@@ -362,9 +364,9 @@ class DoctorOfflineController extends GetxController
     _notifyUi();
     Get.snackbar(
       'Saved Offline',
-      'The location request will be sent when internet is available.',
-      backgroundColor: Colors.orange,
-      colorText: Colors.white,
+      TTexts.uiTextTheLocationRequestWillBeSentWhenInternet,
+      backgroundColor: TColors.materialOrange,
+      colorText: TColors.white,
     );
   }
 
@@ -446,8 +448,8 @@ class DoctorOfflineController extends GetxController
       approvalRequired
           ? 'Doctor location is pending admin approval.'
           : 'Doctor location updated successfully.',
-      backgroundColor: Colors.green,
-      colorText: Colors.white,
+      backgroundColor: TColors.materialGreen,
+      colorText: TColors.white,
     );
     _selectionNotice = approvalRequired
         ? 'Location update request is pending admin approval.'

@@ -32,7 +32,7 @@ class PdfService {
       }).toList();
     }
     return [];
-  }*//*
+  }*/ /*
 
 
   Future<List<PdfItem>> fetchList() async {
@@ -112,10 +112,11 @@ class PdfService {
   final Dio _dio;
 
   PdfService([Dio? dio])
-      : _dio = dio ?? Dio(BaseOptions(
-    connectTimeout: const Duration(seconds: 20),
-    receiveTimeout: const Duration(seconds: 30),
-  ));
+      : _dio = dio ??
+            Dio(BaseOptions(
+              connectTimeout: const Duration(seconds: 20),
+              receiveTimeout: const Duration(seconds: 30),
+            ));
 
   Future<List<PdfItem>> fetchList() async {
     final url = "${THttpHelper.baseUrl}/pdfs";
@@ -161,9 +162,9 @@ class PdfService {
   }
 
   Future<String> downloadPdf(
-      String signedUrl, {
-        String? preferredFileName,
-      }) async {
+    String signedUrl, {
+    String? preferredFileName,
+  }) async {
     print("PdfService downloadPdf → $signedUrl");
     final docs = await getApplicationDocumentsDirectory();
     final cacheDir = Directory(p.join(docs.path, 'pdf_cache'));
@@ -171,9 +172,10 @@ class PdfService {
       await cacheDir.create(recursive: true);
     }
 
-    final fileName = (preferredFileName == null || preferredFileName.trim().isEmpty)
-        ? Uri.parse(signedUrl).pathSegments.last
-        : preferredFileName;
+    final fileName =
+        (preferredFileName == null || preferredFileName.trim().isEmpty)
+            ? Uri.parse(signedUrl).pathSegments.last
+            : preferredFileName;
     final filePath = p.join(cacheDir.path, fileName);
 
     final resp = await _dio.get<List<int>>(
@@ -187,4 +189,3 @@ class PdfService {
     return filePath;
   }
 }
-

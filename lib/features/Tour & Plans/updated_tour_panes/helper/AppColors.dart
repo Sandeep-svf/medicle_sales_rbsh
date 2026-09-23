@@ -25,10 +25,11 @@ class AppColors {
 
   // Assigned Beats
   static const Color beatBg = TColors.white;
-  static const Color beatText = TColors.primary_shade700; // Darker primary for readable text
+  static const Color beatText =
+      TColors.primary_shade700; // Darker primary for readable text
 
   // Approved Leaves (Uses your info color to distinguish from primary actions)
-  static const Color leaveBg = Color(0xFFE3F2FD); // Soft info background
+  static const Color leaveBg = TColors.hex_FFE3F2FD; // Soft info background
   static const Color leaveText = TColors.info;
 
   // Validation Modal Statuses

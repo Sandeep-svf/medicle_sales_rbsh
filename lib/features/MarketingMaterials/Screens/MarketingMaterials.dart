@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:medicle_sales_rbsh/features/MarketingMaterials/Screens/pramotion.dart';
 import 'brochure.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 
 class MarketingmaterialsScreen extends StatelessWidget {
   const MarketingmaterialsScreen({super.key});
@@ -25,8 +27,8 @@ class MarketingmaterialsScreen extends StatelessWidget {
                   "assets/images/pdf.png", // Replace with actual image path
                   "Brochure",
                   cardWidth,
-                      () {
-                   /* Navigator.push(
+                  () {
+                    /* Navigator.push(
                       context,
                       MaterialPageRoute(
                           builder: (context) => const BrochureScreen()),
@@ -40,8 +42,8 @@ class MarketingmaterialsScreen extends StatelessWidget {
                   "assets/images/dummy.jpeg", // Replace with actual image path
                   "Promotion",
                   cardWidth,
-                      () {
-                   /* Navigator.push(
+                  () {
+                    /* Navigator.push(
                       context,
                       MaterialPageRoute(
                           builder: (context) => const PromotionScreen()),
@@ -62,17 +64,18 @@ class MarketingmaterialsScreen extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Card(
-        elevation: 6,
+        elevation: TSizes.v6,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: SizedBox(
           width: cardWidth,
-          height: 250,
+          height: TSizes.v250,
           child: Column(
             children: [
               // Image takes most of the space
               Expanded(
                 child: ClipRRect(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(12)),
                   child: Image.asset(
                     imagePath,
                     width: cardWidth,
@@ -86,13 +89,14 @@ class MarketingmaterialsScreen extends StatelessWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.all(10.0),
                 decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.vertical(bottom: Radius.circular(12)),
+                  color: TColors.white,
+                  borderRadius:
+                      BorderRadius.vertical(bottom: Radius.circular(12)),
                 ),
                 child: Text(
                   title,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 18),
+                  style: const TextStyle(fontSize: TSizes.v18),
                 ),
               ),
             ],

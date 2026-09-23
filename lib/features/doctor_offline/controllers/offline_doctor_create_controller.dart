@@ -2,19 +2,20 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:get/get.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:intl/intl.dart';
-import 'package:http/http.dart' as http;
 import '../services/doctor_creation_store.dart';
 import '../models/doctor.dart';
-
 import '../../../utils/camera/CameraLocationResult.dart';
 import '../../../utils/camera/image_overlay_utils.dart';
-import '../../../utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import '../../../utils/http/http_client.dart';
 import '../../../utils/local_storage/auth_manager.dart';
 import '../ui/doctor_location_picker.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class OfflineDoctorCreateController extends GetxController {
   OfflineDoctorCreateController(
@@ -127,7 +128,7 @@ class OfflineDoctorCreateController extends GetxController {
     if (await _refreshConnectivity()) return true;
     Get.snackbar(
       'Internet required',
-      'New areas can be created only online. Select an existing cached area.',
+      TTexts.uiTextNewAreasCanBeCreatedOnlyOnlineSelect,
     );
     return false;
   }
@@ -217,7 +218,7 @@ class OfflineDoctorCreateController extends GetxController {
       if (response.statusCode != 200) {
         Get.snackbar(
           "Error",
-          "Unable to fetch pincode details",
+          TTexts.uiTextUnableToFetchPincodeDetails,
         );
         return false;
       }
@@ -326,81 +327,81 @@ class OfflineDoctorCreateController extends GetxController {
             child: Container(
               height: Get.height * .82,
               decoration: const BoxDecoration(
-                color: Color(0xffF6F7FB),
+                color: TColors.hex_FFF6F7FB,
                 borderRadius: BorderRadius.vertical(
                   top: Radius.circular(30),
                 ),
               ),
               child: Column(
                 children: [
-                  const SizedBox(height: 12),
+                  const SizedBox(height: TSizes.v12),
                   Container(
-                    width: 70,
-                    height: 5,
+                    width: TSizes.v70,
+                    height: TSizes.v5,
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade400,
+                      color: TColors.materialGrey400,
                       borderRadius: BorderRadius.circular(20),
                     ),
                   ),
-                  const SizedBox(height: 22),
+                  const SizedBox(height: TSizes.v22),
                   Container(
-                    height: 70,
-                    width: 70,
+                    height: TSizes.v70,
+                    width: TSizes.v70,
                     decoration: BoxDecoration(
                       color: TColors.primary.withValues(alpha: .12),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
                       Icons.location_city,
-                      size: 36,
+                      size: TSizes.v36,
                       color: TColors.primary,
                     ),
                   ),
-                  const SizedBox(height: 18),
+                  const SizedBox(height: TSizes.v18),
                   const Text(
-                    "Select Post Office",
+                    TTexts.uiTextSelectPostOffice,
                     style: TextStyle(
-                      fontSize: 24,
+                      fontSize: TSizes.v24,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: TSizes.v8),
                   Text(
-                    "Choose the correct Post Office",
+                    TTexts.uiTextChooseTheCorrectPostOffice,
                     style: TextStyle(
-                      color: Colors.grey.shade600,
+                      color: TColors.materialGrey600,
                     ),
                   ),
-                  const SizedBox(height: 18),
+                  const SizedBox(height: TSizes.v18),
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
                       vertical: 8,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.green.shade50,
+                      color: TColors.materialGreen50,
                       borderRadius: BorderRadius.circular(40),
                       border: Border.all(
-                        color: Colors.green.shade200,
+                        color: TColors.materialGreen200,
                       ),
                     ),
                     child: Text(
                       "${offices.length} Post Offices Available",
                       style: TextStyle(
-                        color: Colors.green.shade800,
+                        color: TColors.materialGreen800,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: TSizes.v20),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 18),
                     child: TextField(
                       decoration: InputDecoration(
-                        hintText: "Search Post Office...",
+                        hintText: TTexts.uiTextSearchPostOffice,
                         prefixIcon: const Icon(Icons.search),
                         filled: true,
-                        fillColor: Colors.white,
+                        fillColor: TColors.white,
                         border: OutlineInputBorder(
                           borderSide: BorderSide.none,
                           borderRadius: BorderRadius.circular(18),
@@ -413,7 +414,7 @@ class OfflineDoctorCreateController extends GetxController {
                       },
                     ),
                   ),
-                  const SizedBox(height: 15),
+                  const SizedBox(height: TSizes.v15),
                   Expanded(
                     child: Scrollbar(
                       thumbVisibility: true,
@@ -437,18 +438,19 @@ class OfflineDoctorCreateController extends GetxController {
                             decoration: BoxDecoration(
                               color: selected
                                   ? TColors.primary.withValues(alpha: .08)
-                                  : Colors.white,
+                                  : TColors.white,
                               borderRadius: BorderRadius.circular(18),
                               border: Border.all(
                                 color: selected
                                     ? TColors.primary
-                                    : Colors.grey.shade200,
+                                    : TColors.materialGrey200,
                                 width: selected ? 2 : 1,
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withValues(alpha: .04),
-                                  blurRadius: 10,
+                                  color:
+                                      TColors.pureBlack.withValues(alpha: .04),
+                                  blurRadius: TSizes.v10,
                                   offset: const Offset(0, 3),
                                 )
                               ],
@@ -468,28 +470,28 @@ class OfflineDoctorCreateController extends GetxController {
                                       duration: const Duration(
                                         milliseconds: 200,
                                       ),
-                                      height: 28,
-                                      width: 28,
+                                      height: TSizes.v28,
+                                      width: TSizes.v28,
                                       decoration: BoxDecoration(
                                         color: selected
-                                            ? Colors.green
-                                            : Colors.white,
+                                            ? TColors.materialGreen
+                                            : TColors.white,
                                         shape: BoxShape.circle,
                                         border: Border.all(
                                           color: selected
-                                              ? Colors.green
-                                              : Colors.grey,
+                                              ? TColors.materialGreen
+                                              : TColors.materialGrey,
                                         ),
                                       ),
                                       child: selected
                                           ? const Icon(
                                               Icons.check,
-                                              color: Colors.white,
-                                              size: 18,
+                                              color: TColors.white,
+                                              size: TSizes.v18,
                                             )
                                           : null,
                                     ),
-                                    const SizedBox(width: 16),
+                                    const SizedBox(width: TSizes.v16),
                                     Expanded(
                                       child: Column(
                                         crossAxisAlignment:
@@ -499,7 +501,7 @@ class OfflineDoctorCreateController extends GetxController {
                                             office['Name'],
                                             style: const TextStyle(
                                               fontWeight: FontWeight.bold,
-                                              fontSize: 16,
+                                              fontSize: TSizes.v16,
                                             ),
                                           ),
 
@@ -511,32 +513,31 @@ class OfflineDoctorCreateController extends GetxController {
                                                 '',
                                             style:
                                             TextStyle(
-                                              color: Colors
-                                                  .grey
-                                                  .shade700,
+                                              color: TColors.materialGrey700,
                                             ),
                                           ),*/
 
-                                          const SizedBox(height: 6),
+                                          const SizedBox(height: TSizes.v6),
                                           Row(
                                             children: [
                                               const Icon(
                                                 Icons.location_on,
-                                                size: 15,
-                                                color: Colors.red,
+                                                size: TSizes.v15,
+                                                color: TColors.materialRed,
                                               ),
-                                              const SizedBox(width: 4),
+                                              const SizedBox(width: TSizes.v4),
                                               Expanded(
                                                 child: Text(
                                                   "${office['Block']} • ${office['District']}",
                                                   style: TextStyle(
-                                                    color: Colors.grey.shade600,
+                                                    color:
+                                                        TColors.materialGrey600,
                                                   ),
                                                 ),
                                               ),
                                             ],
                                           ),
-                                          const SizedBox(height: 6),
+                                          const SizedBox(height: TSizes.v6),
                                         ],
                                       ),
                                     ),
@@ -552,11 +553,11 @@ class OfflineDoctorCreateController extends GetxController {
                   Container(
                     padding: const EdgeInsets.all(18),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: TColors.white,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: .08),
-                          blurRadius: 20,
+                          color: TColors.pureBlack.withValues(alpha: .08),
+                          blurRadius: TSizes.v20,
                           offset: const Offset(0, -5),
                         ),
                       ],
@@ -572,23 +573,23 @@ class OfflineDoctorCreateController extends GetxController {
                               ),
                             ),
                             onPressed: Get.back,
-                            child: const Text("Cancel"),
+                            child: const Text(TTexts.cancel),
                           ),
                         ),
-                        const SizedBox(width: 14),
+                        const SizedBox(width: TSizes.v14),
                         Expanded(
                           flex: 2,
                           child: ElevatedButton.icon(
                             style: ElevatedButton.styleFrom(
                               backgroundColor: TColors.primary,
-                              foregroundColor: Colors.white,
+                              foregroundColor: TColors.white,
                               minimumSize: const Size.fromHeight(55),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
                               ),
                             ),
                             icon: const Icon(Icons.arrow_forward),
-                            label: const Text("Continue"),
+                            label: const Text(TTexts.uiTextContinue),
                             onPressed: () {
                               fillAddress(
                                 Map<String, dynamic>.from(
@@ -611,7 +612,7 @@ class OfflineDoctorCreateController extends GetxController {
         },
       ),
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor: TColors.transparent,
     );
   }
 
@@ -646,7 +647,7 @@ class OfflineDoctorCreateController extends GetxController {
 
         final createdAreaId = jsonResponse['data']?['id']?.toString();
         if (createdAreaId == null || createdAreaId.isEmpty) {
-          Get.snackbar('Error', 'The server did not return an area ID.');
+          Get.snackbar('Error', TTexts.uiTextTheServerDidNotReturnAnAreaID);
           return false;
         }
 
@@ -657,9 +658,9 @@ class OfflineDoctorCreateController extends GetxController {
 
         Get.snackbar(
           "Success",
-          "Area Created",
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
+          TTexts.uiTextAreaCreated,
+          backgroundColor: TColors.materialGreen,
+          colorText: TColors.white,
         );
         return true;
       } else {}
@@ -716,18 +717,18 @@ class OfflineDoctorCreateController extends GetxController {
   Future<void> submit(BuildContext context) async {
     if (saving.value || !(formKey.currentState?.validate() ?? false)) return;
     if (selectedHeadOfficeId.value == null || selectedGender.value == null) {
-      Get.snackbar('Required', 'Select head office and gender.');
+      Get.snackbar('Required', TTexts.uiTextSelectHeadOfficeAndGender);
       return;
     }
     if (doctorImage.value == null || !isLocationSet.value) {
-      Get.snackbar('Required', 'Capture a photo and select the location.');
+      Get.snackbar('Required', TTexts.uiTextCaptureAPhotoAndSelectTheLocation);
       return;
     }
     if (selectedAreaId.value == null ||
         areaNameController.text.trim().isEmpty) {
       Get.snackbar(
         'Area required',
-        'Select an existing area. New areas can be created only online.',
+        TTexts.uiTextSelectAnExistingAreaNewAreasCanBe,
       );
       return;
     }
@@ -779,7 +780,7 @@ class OfflineDoctorCreateController extends GetxController {
       if (context.mounted) Navigator.of(context).pop(true);
     } catch (_) {
       Get.snackbar('Could not save',
-          'Please check the fields, photo and available device storage, then retry.');
+          TTexts.uiTextPleaseCheckTheFieldsPhotoAndAvailableDevice);
     } finally {
       saving.value = false;
     }
@@ -796,7 +797,7 @@ class OfflineDoctorCreateController extends GetxController {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.light(primary: TColors.primary),
-            dialogTheme: const DialogThemeData(backgroundColor: Colors.white),
+            dialogTheme: const DialogThemeData(backgroundColor: TColors.white),
           ),
           child: child!,
         );
@@ -834,7 +835,7 @@ class OfflineDoctorCreateController extends GetxController {
       imageCapturedAt.value = DateTime.now();
     } catch (e) {
       Get.snackbar("Error", "$e",
-          backgroundColor: Colors.red, colorText: Colors.white);
+          backgroundColor: TColors.materialRed, colorText: TColors.white);
     } finally {
       isImageProcessing.value = false;
     }
@@ -862,9 +863,9 @@ class OfflineDoctorCreateController extends GetxController {
       }
 
       isLocationSet.value = true;
-      Get.snackbar("Location Fetched", "Coordinates set.",
-          backgroundColor: Colors.green.withValues(alpha: 0.9),
-          colorText: Colors.white);
+      Get.snackbar("Location Fetched", TTexts.uiTextCoordinatesSet,
+          backgroundColor: TColors.materialGreen.withValues(alpha: 0.9),
+          colorText: TColors.white);
     }
   }
 
@@ -950,7 +951,7 @@ class OfflineDoctorCreateController extends GetxController {
           ),
           child: Container(
             padding: const EdgeInsets.all(24),
-            width: 420,
+            width: TSizes.v420,
             child: Obx(
               () => Column(
                 mainAxisSize: MainAxisSize.min,
@@ -960,9 +961,9 @@ class OfflineDoctorCreateController extends GetxController {
                     children: [
                       const Expanded(
                         child: Text(
-                          "Doctor Location Setup",
+                          TTexts.uiTextDoctorLocationSetup,
                           style: TextStyle(
-                            fontSize: 22,
+                            fontSize: TSizes.v22,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -973,75 +974,76 @@ class OfflineDoctorCreateController extends GetxController {
                         child: Container(
                           padding: const EdgeInsets.all(6),
                           decoration: BoxDecoration(
-                            color: Colors.grey.shade200,
+                            color: TColors.materialGrey200,
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
                             Icons.close,
-                            size: 20,
+                            size: TSizes.v20,
                           ),
                         ),
                       ),
                     ],
                   ),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: TSizes.v20),
 
                   /// Illustration
                   Container(
-                    height: 90,
-                    width: 90,
+                    height: TSizes.v90,
+                    width: TSizes.v90,
                     decoration: BoxDecoration(
                       color: TColors.primary.withValues(alpha: .10),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
                       Icons.location_city,
-                      size: 50,
+                      size: TSizes.v50,
                       color: TColors.primary,
                     ),
                   ),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: TSizes.v20),
 
                   Text(
-                    "Enter doctor's area pincode. We will automatically fetch State, Post Office, Country and Address details.",
+                    TTexts.uiTextEnterDoctorSAreaPincodeWeWillAutomatically,
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      color: Colors.grey.shade600,
-                      height: 1.5,
+                      color: TColors.materialGrey600,
+                      height: TSizes.v1_5,
                     ),
                   ),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: TSizes.v20),
 
                   Container(
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: Colors.blue.shade50,
+                      color: TColors.materialBlue50,
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(
-                        color: Colors.blue.shade100,
+                        color: TColors.materialBlue100,
                       ),
                     ),
                     child: const Row(
                       children: [
                         Icon(
                           Icons.info_outline,
-                          color: Colors.blue,
+                          color: TColors.materialBlue,
                         ),
-                        SizedBox(width: 10),
+                        SizedBox(width: TSizes.v10),
                         Expanded(
                           child: Text(
-                            "Address fields will be auto-filled after successful verification.",
-                            style: TextStyle(fontSize: 13),
+                            TTexts
+                                .uiTextAddressFieldsWillBeAutoFilledAfterSuccessful,
+                            style: TextStyle(fontSize: TSizes.v13),
                           ),
                         )
                       ],
                     ),
                   ),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: TSizes.v20),
 
                   TextField(
                     controller: pinController,
@@ -1049,15 +1051,15 @@ class OfflineDoctorCreateController extends GetxController {
                     maxLength: 6,
                     textAlign: TextAlign.center,
                     style: const TextStyle(
-                      fontSize: 22,
+                      fontSize: TSizes.v22,
                       letterSpacing: 6,
                       fontWeight: FontWeight.bold,
                     ),
                     decoration: InputDecoration(
-                      hintText: "201306",
+                      hintText: TTexts.uiText201306,
                       hintStyle: TextStyle(
-                        color: Colors.grey.shade400,
-                        fontSize: 18,
+                        color: TColors.materialGrey400,
+                        fontSize: TSizes.v18,
                         letterSpacing: 2,
                         fontWeight: FontWeight.w500,
                       ),
@@ -1071,11 +1073,11 @@ class OfflineDoctorCreateController extends GetxController {
                     ),
                   ),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: TSizes.v20),
 
                   SizedBox(
                     width: double.infinity,
-                    height: 54,
+                    height: TSizes.v54,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: TColors.primary,
@@ -1106,9 +1108,10 @@ class OfflineDoctorCreateController extends GetxController {
 
                                 Get.snackbar(
                                   "Address Verified",
-                                  "Location details fetched successfully",
-                                  backgroundColor: Colors.green,
-                                  colorText: Colors.white,
+                                  TTexts
+                                      .uiTextLocationDetailsFetchedSuccessfully,
+                                  backgroundColor: TColors.materialGreen,
+                                  colorText: TColors.white,
                                 );
                               } else {
                                 errorText.value =
@@ -1117,17 +1120,17 @@ class OfflineDoctorCreateController extends GetxController {
                             },
                       child: isLoading.value
                           ? const SizedBox(
-                              height: 22,
-                              width: 22,
+                              height: TSizes.v22,
+                              width: TSizes.v22,
                               child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
+                                strokeWidth: TSizes.v2,
+                                color: TColors.white,
                               ),
                             )
                           : const Text(
-                              "Verify & Continue",
+                              TTexts.uiTextVerifyContinue,
                               style: TextStyle(
-                                fontSize: 16,
+                                fontSize: TSizes.v16,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),

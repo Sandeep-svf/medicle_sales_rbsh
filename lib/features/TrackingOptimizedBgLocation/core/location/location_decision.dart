@@ -4,5 +4,6 @@ enum LocationDecision {
   rejectedDistanceAndTime,
   rejectedSpeed,
   rejectedTimestamp,
-  rejectedStationary, rejectedNoise,
+  rejectedStationary,
+  rejectedNoise,
 }

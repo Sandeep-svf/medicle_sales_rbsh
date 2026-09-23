@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 
 class GpsImagePreviewWidget extends StatelessWidget {
   final File image;
@@ -27,8 +29,8 @@ class GpsImagePreviewWidget extends StatelessWidget {
           /// IMAGE
           Image.file(
             image,
-            width: 420,
-            height: 220,
+            width: TSizes.v420,
+            height: TSizes.v220,
             fit: BoxFit.cover,
           ),
 
@@ -42,8 +44,8 @@ class GpsImagePreviewWidget extends StatelessWidget {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    Colors.black.withOpacity(0.8),
-                    Colors.black.withOpacity(0.3),
+                    TColors.pureBlack.withOpacity(0.8),
+                    TColors.pureBlack.withOpacity(0.3),
                   ],
                   begin: Alignment.bottomCenter,
                   end: Alignment.topCenter,
@@ -54,18 +56,19 @@ class GpsImagePreviewWidget extends StatelessWidget {
                 children: [
                   /// MAP THUMBNAIL (OPTIONAL)
                   Container(
-                    height: 70,
-                    width: 70,
+                    height: TSizes.v70,
+                    width: TSizes.v70,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.white54),
+                      border: Border.all(color: TColors.white54),
                       image: const DecorationImage(
-                        image: AssetImage("assets/logos/faviicons_glucks_care_dark.jpg"),
+                        image: AssetImage(
+                            "assets/logos/faviicons_glucks_care_dark.jpg"),
                         fit: BoxFit.cover,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: TSizes.v10),
 
                   /// LOCATION TEXT
                   Expanded(
@@ -75,32 +78,31 @@ class GpsImagePreviewWidget extends StatelessWidget {
                         Text(
                           address ?? "Location captured",
                           style: const TextStyle(
-                            color: Colors.white,
+                            color: TColors.white,
                             fontWeight: FontWeight.bold,
-                            fontSize: 13,
+                            fontSize: TSizes.v13,
                           ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: TSizes.v4),
                         Text(
                           "Lat ${latitude.toStringAsFixed(6)}, "
-                              "Lng ${longitude.toStringAsFixed(6)}",
+                          "Lng ${longitude.toStringAsFixed(6)}",
                           style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 11,
+                            color: TColors.white70,
+                            fontSize: TSizes.v11,
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: TSizes.v4),
                         Text(
                           "${DateFormat("EEE, dd/MM/yyyy • hh:mm a").format(capturedAt)} "
-                              "GMT${_formatGmtOffset(capturedAt)}",
+                          "GMT${_formatGmtOffset(capturedAt)}",
                           style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 11,
+                            color: TColors.white70,
+                            fontSize: TSizes.v11,
                           ),
                         ),
-
                       ],
                     ),
                   ),
@@ -117,9 +119,7 @@ class GpsImagePreviewWidget extends StatelessWidget {
     final offset = dateTime.timeZoneOffset;
     final sign = offset.isNegative ? '-' : '+';
     final hours = offset.inHours.abs().toString().padLeft(2, '0');
-    final minutes =
-    (offset.inMinutes.abs() % 60).toString().padLeft(2, '0');
+    final minutes = (offset.inMinutes.abs() % 60).toString().padLeft(2, '0');
     return "$sign$hours:$minutes";
   }
-
 }

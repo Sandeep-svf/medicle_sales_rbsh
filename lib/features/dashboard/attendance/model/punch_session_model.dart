@@ -11,12 +11,9 @@ class PunchSessionModel {
 
   factory PunchSessionModel.fromJson(Map<String, dynamic> json) {
     return PunchSessionModel(
-      punchIn: json["punchIn"] != null
-          ? DateTime.parse(json["punchIn"])
-          : null,
-      punchOut: json["punchOut"] != null
-          ? DateTime.parse(json["punchOut"])
-          : null,
+      punchIn: json["punchIn"] != null ? DateTime.parse(json["punchIn"]) : null,
+      punchOut:
+          json["punchOut"] != null ? DateTime.parse(json["punchOut"]) : null,
       durationMinutes: json["durationMinutes"] ?? 0,
     );
   }

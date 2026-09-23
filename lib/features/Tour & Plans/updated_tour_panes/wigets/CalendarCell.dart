@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../../../utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import '../DayType.dart';
 import '../model/TourDay.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class CalendarCell extends StatelessWidget {
   final TourDay day;
@@ -17,7 +19,6 @@ class CalendarCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     debugPrint("========== CalendarCell ==========");
     debugPrint("CalendarCell Date       : ${day.date}");
     debugPrint("CalendarCell DayType    : ${day.type}");
@@ -46,13 +47,13 @@ class CalendarCell extends StatelessWidget {
         break;
 
       case DayType.office:
-        bgColor = Colors.indigo.withOpacity(.08);
-        borderColor = Colors.indigo;
+        bgColor = TColors.materialIndigo.withOpacity(.08);
+        borderColor = TColors.materialIndigo;
         break;
 
       case DayType.transit:
-        bgColor = Colors.orange.withOpacity(.08);
-        borderColor = Colors.orange;
+        bgColor = TColors.materialOrange.withOpacity(.08);
+        borderColor = TColors.materialOrange;
         break;
 
       case DayType.leave:
@@ -80,15 +81,25 @@ class CalendarCell extends StatelessWidget {
         decoration: BoxDecoration(
           color: bgColor,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: isSelected ? TColors.primary : borderColor, width: isSelected ? 2.2 : 1.2),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 4, offset: const Offset(0, 2))],
+          border: Border.all(
+              color: isSelected ? TColors.primary : borderColor,
+              width: isSelected ? 2.2 : 1.2),
+          boxShadow: [
+            BoxShadow(
+                color: TColors.pureBlack.withOpacity(0.03),
+                blurRadius: TSizes.v4,
+                offset: const Offset(0, 2))
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               day.date.day.toString(),
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: TColors.textPrimary),
+              style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: TSizes.v14,
+                  color: TColors.textPrimary),
             ),
             const Spacer(),
             _buildCellContent(),
@@ -99,30 +110,28 @@ class CalendarCell extends StatelessWidget {
   }
 
   Widget _buildCellContent() {
-
     // Weekly Off (Sunday)
     if (day.isWeeklyOff) {
       return const Text(
-        "Weekly Off",
+        TTexts.uiTextWeeklyOff,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
         style: TextStyle(
-          fontSize: 11,
+          fontSize: TSizes.v11,
           fontWeight: FontWeight.w600,
-          color: Colors.red,
+          color: TColors.materialRed,
         ),
       );
     }
 
     // Holiday
-    if (day.type == DayType.holiday &&
-        !day.isWeeklyOff) {
+    if (day.type == DayType.holiday && !day.isWeeklyOff) {
       return Text(
         day.holidayName ?? "Holiday",
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
         style: const TextStyle(
-          fontSize: 11,
+          fontSize: TSizes.v11,
           fontWeight: FontWeight.w600,
         ),
       );
@@ -131,27 +140,24 @@ class CalendarCell extends StatelessWidget {
     // Field
     if (day.type == DayType.field) {
       return Text(
-        (day.beatName?.trim().isNotEmpty ?? false)
-            ? day.beatName!
-            : "NO BEAT",
+        (day.beatName?.trim().isNotEmpty ?? false) ? day.beatName! : "NO BEAT",
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
         style: const TextStyle(
-          fontSize: 11,
+          fontSize: TSizes.v11,
           fontWeight: FontWeight.w600,
         ),
       );
     }
 
     // Other day types
-    if (day.apiDayType != null &&
-        day.apiDayType!.trim().isNotEmpty) {
+    if (day.apiDayType != null && day.apiDayType!.trim().isNotEmpty) {
       return Text(
         day.apiDayType!,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
         style: const TextStyle(
-          fontSize: 11,
+          fontSize: TSizes.v11,
           fontWeight: FontWeight.w500,
         ),
       );
@@ -159,12 +165,12 @@ class CalendarCell extends StatelessWidget {
 
     // Default
     return const Text(
-      "NOT ASSIGNED",
+      TTexts.uiTextNOTASSIGNED,
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
       style: TextStyle(
-        fontSize: 11,
-        color: Colors.grey,
+        fontSize: TSizes.v11,
+        color: TColors.materialGrey,
       ),
     );
   }

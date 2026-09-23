@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-
-import '../../../utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import '../model/handshake_available_user.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class HandshakeConfirmation {
   const HandshakeConfirmation({required this.notes});
@@ -38,18 +39,19 @@ Future<HandshakeConfirmation?> showHandshakeConfirmationDialog({
               backgroundColor: TColors.primary_shade50,
               child: Icon(Icons.fact_check_outlined, color: TColors.primary),
             ),
-            SizedBox(width: 12),
+            SizedBox(width: TSizes.v12),
             Expanded(
               child: Text(
-                'Verify Handshake Request',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                TTexts.uiTextVerifyHandshakeRequest,
+                style: TextStyle(
+                    fontSize: TSizes.v18, fontWeight: FontWeight.w800),
               ),
             ),
           ],
         ),
         content: ConstrainedBox(
           constraints: BoxConstraints(
-            maxWidth: 560,
+            maxWidth: TSizes.v560,
             maxHeight: MediaQuery.sizeOf(dialogContext).height * .68,
           ),
           child: SingleChildScrollView(
@@ -66,30 +68,31 @@ Future<HandshakeConfirmation?> showHandshakeConfirmationDialog({
                   child: Column(
                     children: [
                       _SummaryRow(
-                        label: 'Date',
+                        label: TTexts.date,
                         value: DateFormat('dd MMM yyyy').format(date),
                       ),
                       _SummaryRow(
-                        label: 'Beat',
+                        label: TTexts.uiTextBeat,
                         value: (beatName ?? '').trim().isEmpty
                             ? 'Not available'
                             : beatName!.trim(),
                       ),
-                      _SummaryRow(label: 'Day ID', value: dayId),
+                      _SummaryRow(label: TTexts.uiTextDayID, value: dayId),
                       _SummaryRow(
-                        label: 'Selected',
+                        label: TTexts.uiTextSelected,
                         value: '${selectedUsers.length} user(s)',
                         showDivider: false,
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: TSizes.v16),
                 const Text(
-                  'Selected Users',
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
+                  TTexts.uiTextSelectedUsers,
+                  style: TextStyle(
+                      fontSize: TSizes.v13, fontWeight: FontWeight.w800),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: TSizes.v8),
                 ...selectedUsers.map(
                   (user) => Container(
                     width: double.infinity,
@@ -110,30 +113,30 @@ Future<HandshakeConfirmation?> showHandshakeConfirmationDialog({
                             color: TColors.textPrimary,
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: TSizes.v4),
                         Text(
                           '${user.displayRole} • Employee Code: ${user.displayEmployeeCode}',
                           style: const TextStyle(
                             color: TColors.textSecondary,
-                            fontSize: 11,
+                            fontSize: TSizes.v11,
                           ),
                         ),
-                        const SizedBox(height: 3),
+                        const SizedBox(height: TSizes.v3),
                         SelectableText(
                           'User ID: ${user.id}',
                           style: const TextStyle(
                             color: TColors.textSecondary,
-                            fontSize: 10,
+                            fontSize: TSizes.v10,
                           ),
                         ),
-                        const SizedBox(height: 3),
+                        const SizedBox(height: TSizes.v3),
                         Text(
                           user.available ? 'Available' : 'Unavailable',
                           style: TextStyle(
                             color: user.available
                                 ? TColors.success
                                 : TColors.error,
-                            fontSize: 10,
+                            fontSize: TSizes.v10,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
@@ -141,14 +144,14 @@ Future<HandshakeConfirmation?> showHandshakeConfirmationDialog({
                     ),
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: TSizes.v8),
                 TextField(
                   controller: notesController,
                   maxLines: 3,
                   maxLength: 250,
                   decoration: InputDecoration(
-                    labelText: 'Notes',
-                    hintText: 'Example: Joint doctor visits in North Zone',
+                    labelText: TTexts.notes,
+                    hintText: TTexts.uiTextExampleJointDoctorVisitsInNorthZone,
                     alignLabelWithHint: true,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(14),
@@ -162,20 +165,20 @@ Future<HandshakeConfirmation?> showHandshakeConfirmationDialog({
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Cancel'),
+            child: const Text(TTexts.cancel),
           ),
           ElevatedButton.icon(
             style: ElevatedButton.styleFrom(
               backgroundColor: TColors.primary,
-              foregroundColor: Colors.white,
+              foregroundColor: TColors.white,
             ),
             onPressed: () {
               Navigator.of(dialogContext).pop(
                 HandshakeConfirmation(notes: notesController.text.trim()),
               );
             },
-            icon: const Icon(Icons.send_rounded, size: 18),
-            label: const Text('Confirm & Send'),
+            icon: const Icon(Icons.send_rounded, size: TSizes.v18),
+            label: const Text(TTexts.uiTextConfirmSend),
           ),
         ],
       );
@@ -212,12 +215,12 @@ class _SummaryRow extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 76,
+            width: TSizes.v76,
             child: Text(
               label,
               style: const TextStyle(
                 color: TColors.textSecondary,
-                fontSize: 11,
+                fontSize: TSizes.v11,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -227,7 +230,7 @@ class _SummaryRow extends StatelessWidget {
               value,
               style: const TextStyle(
                 color: TColors.textPrimary,
-                fontSize: 11,
+                fontSize: TSizes.v11,
                 fontWeight: FontWeight.w700,
               ),
             ),

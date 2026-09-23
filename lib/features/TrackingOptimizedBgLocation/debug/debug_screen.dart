@@ -4,7 +4,6 @@ import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:medicle_sales_rbsh/features/TrackingOptimizedBgLocation/core/model/location_point.dart';
 import 'package:permission_handler/permission_handler.dart';
-
 import '../background/location_service.dart';
 import '../storage/upload_queue_dao.dart';
 import '../storage/upload_queue_drainer.dart';
@@ -12,6 +11,9 @@ import '../utils/oem_settings_helper.dart';
 import 'tracking_debug_state.dart';
 import '../core/model/stop_point.dart';
 import 'debug_repository.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 
 class DebugScreen extends StatefulWidget {
   const DebugScreen({super.key});
@@ -28,7 +30,6 @@ class _DebugScreenState extends State<DebugScreen> {
 
   late final UploadQueueDao _uploadQueueDao;
   late final UploadQueueDrainer _drainer;
-
 
   final repo = DebugRepository();
   final service = FlutterBackgroundService();
@@ -54,9 +55,8 @@ class _DebugScreenState extends State<DebugScreen> {
   List<String> get debugPoints {
     return TrackingDebugState.points
         .takeLast(5) // show last 5 points only
-        .map((p) =>
-    '${p.latitude.toStringAsFixed(6)}, '
-        '${p.longitude.toStringAsFixed(6)}')
+        .map((p) => '${p.latitude.toStringAsFixed(6)}, '
+            '${p.longitude.toStringAsFixed(6)}')
         .toList();
   }
 
@@ -69,6 +69,7 @@ class _DebugScreenState extends State<DebugScreen> {
 
     _init();
   }
+
   Future<void> createTrackingChannel() async {
     final plugin = FlutterLocalNotificationsPlugin();
 
@@ -81,11 +82,9 @@ class _DebugScreenState extends State<DebugScreen> {
 
     await plugin
         .resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>()
+            AndroidFlutterLocalNotificationsPlugin>()
         ?.createNotificationChannel(channel);
   }
-
-
 
   @override
   void dispose() {
@@ -106,7 +105,7 @@ class _DebugScreenState extends State<DebugScreen> {
     // Drain every 10 seconds
     _drainTimer = Timer.periodic(
       const Duration(seconds: 10),
-          (_) async {
+      (_) async {
         debugPrint("[DRAIN] Timer fired");
         await _drainer.drainOnce();
       },
@@ -114,11 +113,10 @@ class _DebugScreenState extends State<DebugScreen> {
 
     _refreshTimer = Timer.periodic(
       const Duration(seconds: 5),
-          (_) {
+      (_) {
         if (mounted) _load();
       },
     );
-
   }
 
   // ---------------- PERMISSIONS ----------------
@@ -156,7 +154,6 @@ class _DebugScreenState extends State<DebugScreen> {
     }
   }
 
-
   Future<void> requestBatteryWhitelist() async {
     final status = await Permission.ignoreBatteryOptimizations.status;
 
@@ -184,7 +181,6 @@ class _DebugScreenState extends State<DebugScreen> {
         ),
       );
 
-
       //  LISTEN FOR DEBUG STATE (THIS WAS MISSING)
       service.on('debug_state').listen((event) {
         if (event == null) return;
@@ -198,8 +194,7 @@ class _DebugScreenState extends State<DebugScreen> {
           TrackingDebugState.rejectedGps =
               event['rejectedGps'] ?? TrackingDebugState.rejectedGps;
 
-          TrackingDebugState.lastSpeed =
-              (event['lastSpeed'] ?? 0.0).toDouble();
+          TrackingDebugState.lastSpeed = (event['lastSpeed'] ?? 0.0).toDouble();
 
           final stopMinutes = event['activeStopMinutes'];
           if (stopMinutes != null) {
@@ -208,7 +203,6 @@ class _DebugScreenState extends State<DebugScreen> {
           }
         });
       });
-
 
       await service.startService();
     }
@@ -220,7 +214,6 @@ class _DebugScreenState extends State<DebugScreen> {
       final lat = event['lat'] as double?;
       final lng = event['lng'] as double?;
       final speed = (event['speed'] as num?)?.toDouble() ?? 0.0;
-
 
       debugPrint('$_log GPS event received → $event');
 
@@ -241,9 +234,9 @@ class _DebugScreenState extends State<DebugScreen> {
         }
       });
 
-      debugPrint('$_log UI updated → lastLatLng=$_lastLatLng, gpsCount=$_gpsCount');
+      debugPrint(
+          '$_log UI updated → lastLatLng=$_lastLatLng, gpsCount=$_gpsCount');
     });
-
 
     // THIS IS THE MISSING LINE
     service.invoke('request_last_location');
@@ -252,15 +245,12 @@ class _DebugScreenState extends State<DebugScreen> {
     if (mounted) setState(() {});
   }
 
-
-
   // ---------------- DATA ----------------
 
   Future<void> _load() async {
     if (!mounted) return;
 
-    final today =
-    DateTime.now().toIso8601String().substring(0, 10);
+    final today = DateTime.now().toIso8601String().substring(0, 10);
 
     debugPrint('$_log Loading summary stats for $today');
 
@@ -268,7 +258,8 @@ class _DebugScreenState extends State<DebugScreen> {
     stopSeconds = await repo.totalStopDurationToday(today);
     distance = await repo.totalDistanceToday(today);
 
-    debugPrint('$_log Stats → stops=$stops, stopSeconds=$stopSeconds, distance=$distance');
+    debugPrint(
+        '$_log Stats → stops=$stops, stopSeconds=$stopSeconds, distance=$distance');
 
     //  LOAD DB DATA (THIS WAS MISSING)
     _dbLocations = await repo.recentLocations();
@@ -286,54 +277,40 @@ class _DebugScreenState extends State<DebugScreen> {
       final s = _dbStops.first;
       debugPrint(
         '$_log Latest stop → duration=${s.duration.inMinutes} min '
-            'lat=${s.latitude}, lng=${s.longitude}',
+        'lat=${s.latitude}, lng=${s.longitude}',
       );
     }
 
     if (mounted) setState(() {});
   }
 
-
-
   // ---------------- UI ----------------
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Tracking Debug')),
+      appBar: AppBar(title: const Text(TTexts.uiTextTrackingDebug)),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-
           const Divider(),
           const Text(
-            'Debug screen – not for MR users',
-            style: TextStyle(color: Colors.red),
+            TTexts.uiTextDebugScreenNotForMRUsers,
+            style: TextStyle(color: TColors.materialRed),
           ),
-
           const Divider(),
-
           _statusTile(),
           const Divider(),
-
           _debugBadge(),
-
-
           _tile('Last GPS', _lastLatLng),
           _tile('GPS Points Count', _gpsCount.toString()),
-
-
           ..._gpsPoints.map(
-                (p) => _tile('GPS', p),
+            (p) => _tile('GPS', p),
           ),
-
-
           ElevatedButton(
             onPressed: () => OemSettingsHelper.open(),
-            child: const Text('Disable Battery Optimization (OEM)'),
+            child: const Text(TTexts.uiTextDisableBatteryOptimizationOEM),
           ),
-
-
           _tile('Stops Today', stops.toString()),
           _tile(
             'Total Stop Time',
@@ -343,25 +320,21 @@ class _DebugScreenState extends State<DebugScreen> {
             'Distance Today',
             '${(distance / 1000).toStringAsFixed(2)} km',
           ),
-
-          const Text('DB: Location Points', style: TextStyle(fontWeight: FontWeight.bold)),
-
+          const Text(TTexts.uiTextDBLocationPoints,
+              style: TextStyle(fontWeight: FontWeight.bold)),
           ..._dbLocations.map((p) => _tile(
-            'LOC',
-            '${p.latitude.toStringAsFixed(6)}, ${p.longitude.toStringAsFixed(6)}',
-          )),
-
+                'LOC',
+                '${p.latitude.toStringAsFixed(6)}, ${p.longitude.toStringAsFixed(6)}',
+              )),
           const Divider(),
-          const Text('DB: Stops', style: TextStyle(fontWeight: FontWeight.bold)),
-
+          const Text(TTexts.uiTextDBStops,
+              style: TextStyle(fontWeight: FontWeight.bold)),
           ..._dbStops.map((s) => _tile(
-            'STOP',
-            '${s.duration.inMinutes} min @ '
-                '${s.latitude.toStringAsFixed(5)}, '
-                '${s.longitude.toStringAsFixed(5)}',
-          )),
-
-
+                'STOP',
+                '${s.duration.inMinutes} min @ '
+                    '${s.latitude.toStringAsFixed(5)}, '
+                    '${s.longitude.toStringAsFixed(5)}',
+              )),
         ],
       ),
     );
@@ -369,11 +342,11 @@ class _DebugScreenState extends State<DebugScreen> {
 
   Widget _statusTile() {
     return ListTile(
-      title: const Text('Tracking Service'),
+      title: const Text(TTexts.uiTextTrackingService),
       trailing: Text(
         serviceRunning ? 'RUNNING' : 'STOPPED',
         style: TextStyle(
-          color: serviceRunning ? Colors.green : Colors.red,
+          color: serviceRunning ? TColors.materialGreen : TColors.materialRed,
           fontWeight: FontWeight.bold,
         ),
       ),
@@ -387,13 +360,12 @@ class _DebugScreenState extends State<DebugScreen> {
         value,
         style: const TextStyle(
           fontWeight: FontWeight.bold,
-          fontSize: 16,
+          fontSize: TSizes.v16,
         ),
       ),
     );
   }
 }
-
 
 Widget _debugBadge() {
   final stop = TrackingDebugState.activeStop;
@@ -402,7 +374,7 @@ Widget _debugBadge() {
     padding: const EdgeInsets.all(12),
     margin: const EdgeInsets.symmetric(vertical: 12),
     decoration: BoxDecoration(
-      color: Colors.black87,
+      color: TColors.black87,
       borderRadius: BorderRadius.circular(8),
     ),
     child: Column(
@@ -416,9 +388,7 @@ Widget _debugBadge() {
         ),
         _badgeRow(
           'Active Stop',
-          stop == null
-              ? 'NO'
-              : 'YES (${stop.duration.inMinutes} min)',
+          stop == null ? 'NO' : 'YES (${stop.duration.inMinutes} min)',
         ),
       ],
     ),
@@ -431,11 +401,11 @@ Widget _badgeRow(String label, String value) {
     child: Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: const TextStyle(color: Colors.white70)),
+        Text(label, style: const TextStyle(color: TColors.white70)),
         Text(
           value,
           style: const TextStyle(
-            color: Colors.greenAccent,
+            color: TColors.materialGreenAccent,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -444,11 +414,9 @@ Widget _badgeRow(String label, String value) {
   );
 }
 
-
 extension TakeLast<E> on List<E> {
   List<E> takeLast(int n) {
     if (length <= n) return this;
     return sublist(length - n);
   }
 }
-

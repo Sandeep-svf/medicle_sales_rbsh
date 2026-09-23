@@ -38,46 +38,30 @@ class BeatChangeRequestModel {
   });
 
   factory BeatChangeRequestModel.fromJson(
-      Map<String, dynamic> json,
-      ) {
+    Map<String, dynamic> json,
+  ) {
     final tourPlan = json["tourPlan"] ?? {};
 
     final user = tourPlan["user"] ?? {};
 
     final currentBeat = json["beat1"] ?? {};
 
-    final requestedBeat =
-        json["changeRequestBeat1"] ?? {};
+    final requestedBeat = json["changeRequestBeat1"] ?? {};
 
     return BeatChangeRequestModel(
       id: json["id"] ?? "",
-
       date: json["date"] ?? "",
-
       dayType: json["day_type"] ?? "",
-
       status: json["change_request_status"] ?? "",
-
       reason: json["change_request_reason"] ?? "",
-
       comments: json["change_request_comments"],
-
       currentBeatId: currentBeat["id"] ?? "",
-
       currentBeatName: currentBeat["name"] ?? "",
-
-      requestedBeatId:
-      requestedBeat["id"] ?? "",
-
-      requestedBeatName:
-      requestedBeat["name"] ?? "",
-
+      requestedBeatId: requestedBeat["id"] ?? "",
+      requestedBeatName: requestedBeat["name"] ?? "",
       employeeId: user["id"] ?? "",
-
       employeeName: user["name"] ?? "",
-
-      employeeCode:
-      user["employee_code"] ?? "",
+      employeeCode: user["employee_code"] ?? "",
     );
   }
 }

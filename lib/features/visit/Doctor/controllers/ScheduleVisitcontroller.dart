@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:medicle_sales_rbsh/utils/http/http_client.dart';
 
 import '../../../../utils/local_storage/auth_manager.dart';
-
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class DoctorVisitController {
   static const String url = '${THttpHelper.baseUrl}/doctor-visits';
@@ -26,9 +26,10 @@ class DoctorVisitController {
 
     if (userId == null) {
       print("DoctorVisitController: User is not authenticated");
-      if (context.mounted) {  // Check if context is still mounted
+      if (context.mounted) {
+        // Check if context is still mounted
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('User is not authenticated.')),
+          const SnackBar(content: Text(TTexts.uiTextUserIsNotAuthenticated)),
         );
       }
       return;
@@ -36,23 +37,23 @@ class DoctorVisitController {
 
     if (doctorId == null) {
       print("DoctorVisitController: Failed to load doctor, doctorId is null");
-      if (context.mounted) {  // Check if context is still mounted
+      if (context.mounted) {
+        // Check if context is still mounted
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to load doctor.')),
+          const SnackBar(content: Text(TTexts.uiTextFailedToLoadDoctor)),
         );
       }
       return;
     }
 
-
     // Parse the input string into a DateTime object
     DateTime parsedDate = DateFormat('d-M-yyyy').parse(date);
     // Format the DateTime object into the desired format
-    String formattedDate = DateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").format(parsedDate);
+    String formattedDate =
+        DateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").format(parsedDate);
 
     // Print the formatted date
-    print(formattedDate);  // Output: 2025-04-26T00:00:00.000Z
-
+    print(formattedDate); // Output: 2025-04-26T00:00:00.000Z
 
     final Map<String, dynamic> requestBody = {
       'doctor_id': doctorId,
@@ -75,27 +76,34 @@ class DoctorVisitController {
         body: json.encode(requestBody),
       );
 
-      print("DoctorVisitController: Response status code: ${response.statusCode}");
+      print(
+          "DoctorVisitController: Response status code: ${response.statusCode}");
       print("DoctorVisitController: Response body: ${response.body}");
 
       if (response.statusCode == 201) {
         print("DoctorVisitController: Doctor visit successfully created");
-        if (context.mounted) {  // Check if context is still mounted
+        if (context.mounted) {
+          // Check if context is still mounted
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Doctor schedule successfully created!')),
+            const SnackBar(
+                content: Text(TTexts.uiTextDoctorScheduleSuccessfullyCreated)),
           );
         }
       } else {
-        print("DoctorVisitController: Failed to create doctor visit, response not 201");
-        if (context.mounted) {  // Check if context is still mounted
+        print(
+            "DoctorVisitController: Failed to create doctor visit, response not 201");
+        if (context.mounted) {
+          // Check if context is still mounted
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Something went wrong!')),
+            const SnackBar(
+                content: Text(TTexts.uiTextSomethingWentWrong_2dc9d374)),
           );
         }
       }
     } catch (error) {
       print("DoctorVisitController: Network error: $error");
-      if (context.mounted) {  // Check if context is still mounted
+      if (context.mounted) {
+        // Check if context is still mounted
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Network error: $error')),
         );

@@ -1,4 +1,6 @@
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:flutter/material.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class EntityMarker extends StatelessWidget {
   final IconData icon;
@@ -17,26 +19,26 @@ class EntityMarker extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 38,
-        height: 38,
+        width: TSizes.v38,
+        height: TSizes.v38,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: TColors.white,
           shape: BoxShape.circle,
           border: Border.all(
             color: color,
-            width: 2,
+            width: TSizes.v2,
           ),
           boxShadow: const [
             BoxShadow(
-              color: Colors.black12,
-              blurRadius: 6,
+              color: TColors.black12,
+              blurRadius: TSizes.v6,
             ),
           ],
         ),
         child: Icon(
           icon,
           color: color,
-          size: 20,
+          size: TSizes.v20,
         ),
       ),
     );

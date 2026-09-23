@@ -3,7 +3,6 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class MediaPermissionHelper {
-
   /// Request camera permission
   static Future<bool> requestCamera() async {
     final status = await Permission.camera.request();

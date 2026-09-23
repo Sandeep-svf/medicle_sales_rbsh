@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-
-import '../../../../utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class AddRequestHeader extends StatelessWidget {
   const AddRequestHeader({
@@ -29,16 +29,16 @@ class AddRequestHeader extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(.15),
+              color: TColors.white.withOpacity(.15),
               borderRadius: BorderRadius.circular(14),
             ),
             child: const Icon(
               Icons.account_balance_wallet_outlined,
-              color: Colors.white,
-              size: 30,
+              color: TColors.white,
+              size: TSizes.v30,
             ),
           ),
-          const SizedBox(width: 18),
+          const SizedBox(width: TSizes.v18),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -48,19 +48,19 @@ class AddRequestHeader extends StatelessWidget {
                       ? "Edit Investment Request"
                       : "Create Investment Request",
                   style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 22,
+                    color: TColors.white,
+                    fontSize: TSizes.v22,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: TSizes.v6),
                 Text(
                   isEditing
                       ? "Update the request details and submit it again."
                       : "Fill the required details and submit the investment request.",
                   style: const TextStyle(
-                    color: Colors.white70,
-                    height: 1.4,
+                    color: TColors.white70,
+                    height: TSizes.v1_4,
                   ),
                 ),
               ],

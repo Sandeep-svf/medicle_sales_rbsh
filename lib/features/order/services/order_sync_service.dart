@@ -6,6 +6,7 @@ import 'package:http_parser/http_parser.dart';
 import '../../../utils/local_storage/auth_manager.dart';
 import '../models/order_models.dart';
 import '../repositories/order_repository.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 abstract interface class OrderRemoteDataSource {
   Future<void> send(LocalOrder order);
@@ -195,7 +196,7 @@ class OrderSyncService {
               order.localId,
               error is OrderSyncException
                   ? error.message
-                  : 'Upload interrupted. Your order is saved for retry.');
+                  : TTexts.uiTextUploadInterruptedYourOrderIsSavedForRetry);
           failed++;
         }
         if (!_disposed) await onChanged?.call();

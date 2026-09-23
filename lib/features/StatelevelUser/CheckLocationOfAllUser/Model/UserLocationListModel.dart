@@ -87,8 +87,7 @@ void main() {
 
   // If this JSON represents multiple user locations
   List<UserLocationListModel> locationList = List<UserLocationListModel>.from(
-      jsonMap['location']?.map((x) => UserLocationListModel.fromJson(x))
-  );
+      jsonMap['location']?.map((x) => UserLocationListModel.fromJson(x)));
 
   print(locationList);
 }

@@ -21,7 +21,8 @@ class MailService {
     }
   }
 
-  static Future<bool> sendEmail(String token, String to, String subject, String body) async {
+  static Future<bool> sendEmail(
+      String token, String to, String subject, String body) async {
     final emailPayload = {
       "message": {
         "subject": subject,
@@ -51,8 +52,4 @@ class MailService {
 
     return response.statusCode == 202;
   }
-
-
-
-
 }

@@ -1,3 +1,4 @@
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:get/get.dart';
@@ -7,6 +8,7 @@ import 'package:medicle_sales_rbsh/utils/local_storage/auth_manager.dart';
 
 import '../model/HolidayLeaves.dart';
 import '../model/LeaveType.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class LeaveController extends GetxController {
   final Dio _dio = Dio();
@@ -69,7 +71,8 @@ class LeaveController extends GetxController {
   Future<void> _fetchHolidays() async {
     try {
       final currentYear = DateTime.now().year;
-      final response = await _dio.get('/holidays/calendar', queryParameters: {'year': currentYear});
+      final response = await _dio
+          .get('/holidays/calendar', queryParameters: {'year': currentYear});
 
       if (response.data['success'] == true) {
         List data = response.data['data'];
@@ -83,12 +86,15 @@ class LeaveController extends GetxController {
 
   Future<void> _fetchLeaveTypes() async {
     try {
-      final response = await _dio.get('/leave-types', queryParameters: {'isActive': true});
+      final response =
+          await _dio.get('/leave-types', queryParameters: {'isActive': true});
       if (response.data['success'] == true) {
         List data = response.data['data'];
         leaveTypes.value = data.map((e) => LeaveType.fromJson(e)).toList();
       }
-    } catch (e) { print("$_tag Error Leave Types: $e"); }
+    } catch (e) {
+      print("$_tag Error Leave Types: $e");
+    }
   }
 
   Future<void> _fetchBalances() async {
@@ -96,9 +102,12 @@ class LeaveController extends GetxController {
       final response = await _dio.get('/leaves/balance');
       if (response.data['success'] == true) {
         List data = response.data['data'];
-        leaveBalances.value = data.map((e) => LeaveBalance.fromJson(e)).toList();
+        leaveBalances.value =
+            data.map((e) => LeaveBalance.fromJson(e)).toList();
       }
-    } catch (e) { print("$_tag Error Balances: $e"); }
+    } catch (e) {
+      print("$_tag Error Balances: $e");
+    }
   }
 
   Future<void> _fetchMyLeaves() async {
@@ -108,7 +117,9 @@ class LeaveController extends GetxController {
         List data = response.data['data'];
         leaveHistory.value = data.map((e) => LeaveHistory.fromJson(e)).toList();
       }
-    } catch (e) { print("$_tag Error History: $e"); }
+    } catch (e) {
+      print("$_tag Error History: $e");
+    }
   }
 
   Future<void> applyLeave({
@@ -128,7 +139,11 @@ class LeaveController extends GetxController {
         "reason": reason,
         "isHalfDay": isHalfDay,
         "halfDayType": isHalfDay ? (halfDayType ?? "") : "",
-        "emergencyContact": { "name": "Admin", "phone": "0000", "relation": "Office" },
+        "emergencyContact": {
+          "name": "Admin",
+          "phone": "0000",
+          "relation": "Office"
+        },
         "handoverNotes": "N/A"
       };
 
@@ -136,11 +151,13 @@ class LeaveController extends GetxController {
 
       if (response.data['success'] == true) {
         Get.back();
-        Get.snackbar("Success", "Leave applied successfully!", backgroundColor: Colors.green.withOpacity(0.2));
+        Get.snackbar("Success", TTexts.uiTextLeaveAppliedSuccessfully,
+            backgroundColor: TColors.materialGreen.withOpacity(0.2));
         fetchAllData();
       }
     } catch (e) {
-      Get.snackbar("Error", "Failed to apply: ${e.toString()}", backgroundColor: Colors.red.withOpacity(0.2));
+      Get.snackbar("Error", "Failed to apply: ${e.toString()}",
+          backgroundColor: TColors.materialRed.withOpacity(0.2));
     } finally {
       isSubmitting(false);
     }
@@ -148,19 +165,21 @@ class LeaveController extends GetxController {
 
   Future<void> cancelLeave(String leaveId) async {
     try {
-      Get.dialog(const Center(child: CircularProgressIndicator()), barrierDismissible: false);
+      Get.dialog(const Center(child: CircularProgressIndicator()),
+          barrierDismissible: false);
       final response = await _dio.put('/leaves/$leaveId/cancel');
       Get.back();
 
       if (response.data['success'] == true) {
-        Get.snackbar("Success", "Leave cancelled", backgroundColor: Colors.green.withOpacity(0.1));
+        Get.snackbar("Success", TTexts.uiTextLeaveCancelled,
+            backgroundColor: TColors.materialGreen.withOpacity(0.1));
         fetchAllData();
       } else {
         Get.snackbar("Error", response.data['message']);
       }
     } catch (e) {
       Get.back();
-      Get.snackbar("Error", "Failed to cancel");
+      Get.snackbar("Error", TTexts.uiTextFailedToCancel);
     }
   }
 

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-
-import '../../../utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import '../model/handshake_available_user.dart';
 import '../services/handshake_service.dart';
 import '../widgets/handshake_confirmation_dialog.dart';
 import '../widgets/handshake_user_tile.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class HandshakePageResult {
   const HandshakePageResult({
@@ -169,21 +170,21 @@ class _HandshakeUserListScreenState extends State<HandshakeUserListScreen> {
       backgroundColor: TColors.light,
       appBar: AppBar(
         backgroundColor: TColors.primary,
-        foregroundColor: Colors.white,
-        title: const Text('Available Handshake Users'),
+        foregroundColor: TColors.white,
+        title: const Text(TTexts.uiTextAvailableHandshakeUsers),
         actions: [
           Center(
             child: Container(
               margin: const EdgeInsets.only(right: 16),
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: .16),
+                color: TColors.white.withValues(alpha: .16),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
                 '${_selectedIds.length} selected',
                 style: const TextStyle(
-                  fontSize: 11,
+                  fontSize: TSizes.v11,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -199,7 +200,7 @@ class _HandshakeUserListScreenState extends State<HandshakeUserListScreen> {
               controller: _searchController,
               onChanged: (value) => setState(() => _search = value),
               decoration: InputDecoration(
-                hintText: 'Search by name, role or employee code',
+                hintText: TTexts.uiTextSearchByNameRoleOrEmployeeCode,
                 prefixIcon: const Icon(Icons.search),
                 suffixIcon: _search.isEmpty
                     ? null
@@ -211,7 +212,7 @@ class _HandshakeUserListScreenState extends State<HandshakeUserListScreen> {
                         icon: const Icon(Icons.close),
                       ),
                 filled: true,
-                fillColor: Colors.white,
+                fillColor: TColors.white,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
                   borderSide: BorderSide.none,
@@ -226,16 +227,16 @@ class _HandshakeUserListScreenState extends State<HandshakeUserListScreen> {
                   ? ListView(
                       physics: const AlwaysScrollableScrollPhysics(),
                       children: const [
-                        SizedBox(height: 130),
+                        SizedBox(height: TSizes.v130),
                         Icon(
                           Icons.person_search_outlined,
-                          size: 56,
+                          size: TSizes.v56,
                           color: TColors.darkGrey,
                         ),
-                        SizedBox(height: 12),
+                        SizedBox(height: TSizes.v12),
                         Center(
                           child: Text(
-                            'No available users found',
+                            TTexts.uiTextNoAvailableUsersFound,
                             style: TextStyle(
                               color: TColors.textSecondary,
                               fontWeight: FontWeight.w600,
@@ -248,7 +249,8 @@ class _HandshakeUserListScreenState extends State<HandshakeUserListScreen> {
                       padding: const EdgeInsets.fromLTRB(16, 6, 16, 24),
                       physics: const AlwaysScrollableScrollPhysics(),
                       itemCount: filteredUsers.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 10),
+                      separatorBuilder: (_, __) =>
+                          const SizedBox(height: TSizes.v10),
                       itemBuilder: (context, index) {
                         final user = filteredUsers[index];
                         return HandshakeUserTile(
@@ -267,7 +269,7 @@ class _HandshakeUserListScreenState extends State<HandshakeUserListScreen> {
         child: Container(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
           decoration: const BoxDecoration(
-            color: Colors.white,
+            color: TColors.white,
             border: Border(
               top: BorderSide(color: TColors.borderSecondary),
             ),
@@ -286,35 +288,35 @@ class _HandshakeUserListScreenState extends State<HandshakeUserListScreen> {
                         fontWeight: FontWeight.w800,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: TSizes.v2),
                     const Text(
-                      'A verification popup appears before sending.',
+                      TTexts.uiTextAVerificationPopupAppearsBeforeSending,
                       style: TextStyle(
                         color: TColors.textSecondary,
-                        fontSize: 10,
+                        fontSize: TSizes.v10,
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: TSizes.v12),
               ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: TColors.primary,
-                  foregroundColor: Colors.white,
+                  foregroundColor: TColors.white,
                   minimumSize: const Size(142, 48),
                 ),
                 onPressed: _selectedIds.isEmpty || _submitting ? null : _submit,
                 icon: _submitting
                     ? const SizedBox(
-                        width: 17,
-                        height: 17,
+                        width: TSizes.v17,
+                        height: TSizes.v17,
                         child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
+                          strokeWidth: TSizes.v2,
+                          color: TColors.white,
                         ),
                       )
-                    : const Icon(Icons.send_rounded, size: 18),
+                    : const Icon(Icons.send_rounded, size: TSizes.v18),
                 label: Text(_submitting ? 'Sending...' : 'Submit'),
               ),
             ],

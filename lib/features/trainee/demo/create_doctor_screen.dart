@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
-
-
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 void main() {
   runApp(const MyApp());
@@ -16,10 +16,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Doctor Tutorial Demo',
+      title: TTexts.uiTextDoctorTutorialDemo,
       theme: ThemeData(
         useMaterial3: true,
-        colorSchemeSeed: Colors.blue,
+        colorSchemeSeed: TColors.materialBlue,
       ),
       home: const CreateDoctorScreen(),
     );
@@ -138,7 +138,6 @@ class _CreateDoctorScreenState extends State<CreateDoctorScreen> {
 
   @override
   void dispose() {
-
     flutterTts.stop();
 
     doctorName.dispose();
@@ -151,7 +150,6 @@ class _CreateDoctorScreenState extends State<CreateDoctorScreen> {
   }
 
   Future<void> initTts() async {
-
     flutterTts = FlutterTts();
 
     await flutterTts.setLanguage("en-IN");
@@ -163,21 +161,16 @@ class _CreateDoctorScreenState extends State<CreateDoctorScreen> {
     await flutterTts.setVolume(1.0);
 
     await flutterTts.awaitSpeakCompletion(true);
-
   }
 
   Future speak(String text) async {
-
     await flutterTts.stop();
 
     await flutterTts.speak(text);
-
   }
 
   String? validator(String? value) {
-    if (value == null || value
-        .trim()
-        .isEmpty) {
+    if (value == null || value.trim().isEmpty) {
       return "Required";
     }
     return null;
@@ -187,80 +180,73 @@ class _CreateDoctorScreenState extends State<CreateDoctorScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Create Doctor"),
+        title: const Text(TTexts.uiTextCreateDoctor),
       ),
       body: Form(
         key: _formKey,
         child: ListView(
           padding: const EdgeInsets.all(20),
           children: [
-
             //--------------------------------------------------
             // Header
             //--------------------------------------------------
 
             Card(
               key: headerKey,
-              elevation: 2,
+              elevation: TSizes.v2,
               child: Padding(
                 padding: const EdgeInsets.all(20),
                 child: Column(
                   children: const [
-
                     Icon(
                       Icons.medical_services,
-                      size: 60,
+                      size: TSizes.v60,
                     ),
-
-                    SizedBox(height: 10),
-
+                    SizedBox(height: TSizes.v10),
                     Text(
-                      "Doctor Registration",
+                      TTexts.uiTextDoctorRegistration,
                       style: TextStyle(
-                        fontSize: 22,
+                        fontSize: TSizes.v22,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-
-                    SizedBox(height: 8),
-
+                    SizedBox(height: TSizes.v8),
                     Text(
-                      "Please fill all mandatory details.",
+                      TTexts.uiTextPleaseFillAllMandatoryDetails,
                     ),
-
                   ],
                 ),
               ),
             ),
 
-            const SizedBox(height: 25),
+            const SizedBox(height: TSizes.v25),
 
             //--------------------------------------------------
             // Basic Information
             //--------------------------------------------------
 
             const Text(
-              "Basic Information",
+              TTexts.uiTextBasicInformation,
               style: TextStyle(
-                fontSize: 20,
+                fontSize: TSizes.v20,
                 fontWeight: FontWeight.bold,
               ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: TSizes.v20),
 
             TextFormField(
               key: doctorNameKey,
               controller: doctorName,
               validator: validator,
               decoration: const InputDecoration(
-                labelText: "Doctor Name *",
+                labelText: TTexts.uiTextDoctorName_dd38da5f,
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.person),
               ),
             ),
 
-            const SizedBox(height: 18),
+            const SizedBox(height: TSizes.v18),
 
             TextFormField(
               key: mobileKey,
@@ -268,13 +254,13 @@ class _CreateDoctorScreenState extends State<CreateDoctorScreen> {
               keyboardType: TextInputType.phone,
               validator: validator,
               decoration: const InputDecoration(
-                labelText: "Mobile Number *",
+                labelText: TTexts.uiTextMobileNumber_5c5448f1,
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.phone),
               ),
             ),
 
-            const SizedBox(height: 18),
+            const SizedBox(height: TSizes.v18),
 
             TextFormField(
               key: emailKey,
@@ -282,31 +268,29 @@ class _CreateDoctorScreenState extends State<CreateDoctorScreen> {
               keyboardType: TextInputType.emailAddress,
               validator: validator,
               decoration: const InputDecoration(
-                labelText: "Email *",
+                labelText: TTexts.uiTextEmail,
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.email),
               ),
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: TSizes.v18),
 
             DropdownButtonFormField<String>(
               key: specializationKey,
               value: specialization,
-              validator: (v) =>
-              v == null ? "Select Specialization" : null,
+              validator: (v) => v == null ? "Select Specialization" : null,
               decoration: const InputDecoration(
-                labelText: "Specialization *",
+                labelText: TTexts.uiTextSpecialization,
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.local_hospital),
               ),
               items: specializations
                   .map(
-                    (e) =>
-                    DropdownMenuItem(
+                    (e) => DropdownMenuItem(
                       value: e,
                       child: Text(e),
                     ),
-              )
+                  )
                   .toList(),
               onChanged: (v) {
                 setState(() {
@@ -315,52 +299,50 @@ class _CreateDoctorScreenState extends State<CreateDoctorScreen> {
               },
             ),
 
-            const SizedBox(height: 18),
+            const SizedBox(height: TSizes.v18),
 
             TextFormField(
               key: qualificationKey,
               controller: qualification,
               validator: validator,
               decoration: const InputDecoration(
-                labelText: "Qualification *",
+                labelText: TTexts.uiTextQualification_16abd5ca,
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.school),
               ),
             ),
 
-            const SizedBox(height: 18),
+            const SizedBox(height: TSizes.v18),
 
             TextFormField(
               key: registrationKey,
               controller: registrationNo,
               validator: validator,
               decoration: const InputDecoration(
-                labelText: "Medical Registration No *",
+                labelText: TTexts.uiTextMedicalRegistrationNo,
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.badge),
               ),
             ),
 
-            const SizedBox(height: 18),
+            const SizedBox(height: TSizes.v18),
 
             DropdownButtonFormField<String>(
               key: genderKey,
               value: gender,
-              validator: (v) =>
-              v == null ? "Select Gender" : null,
+              validator: (v) => v == null ? "Select Gender" : null,
               decoration: const InputDecoration(
-                labelText: "Gender *",
+                labelText: TTexts.uiTextGender,
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.people),
               ),
               items: genders
                   .map(
-                    (e) =>
-                    DropdownMenuItem(
+                    (e) => DropdownMenuItem(
                       value: e,
                       child: Text(e),
                     ),
-              )
+                  )
                   .toList(),
               onChanged: (v) {
                 setState(() {
@@ -369,26 +351,24 @@ class _CreateDoctorScreenState extends State<CreateDoctorScreen> {
               },
             ),
 
-            const SizedBox(height: 18),
+            const SizedBox(height: TSizes.v18),
 
             DropdownButtonFormField<String>(
               key: priorityKey,
               value: priority,
-              validator: (v) =>
-              v == null ? "Select Priority" : null,
+              validator: (v) => v == null ? "Select Priority" : null,
               decoration: const InputDecoration(
-                labelText: "Priority *",
+                labelText: TTexts.uiTextPriority_7568d321,
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.star),
               ),
               items: priorities
                   .map(
-                    (e) =>
-                    DropdownMenuItem(
+                    (e) => DropdownMenuItem(
                       value: e,
                       child: Text(e),
                     ),
-              )
+                  )
                   .toList(),
               onChanged: (v) {
                 setState(() {
@@ -397,325 +377,294 @@ class _CreateDoctorScreenState extends State<CreateDoctorScreen> {
               },
             ),
 
-            const SizedBox(height: 25),
+            const SizedBox(height: TSizes.v25),
 
             //----------------------------------------
             // Organization Details
             //----------------------------------------
 
             const Text(
-              "Organization Details",
+              TTexts.uiTextOrganizationDetails,
               style: TextStyle(
-                fontSize: 20,
+                fontSize: TSizes.v20,
                 fontWeight: FontWeight.bold,
               ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: TSizes.v20),
 
             DropdownButtonFormField<String>(
               key: headOfficeKey,
               decoration: const InputDecoration(
-                labelText: "Head Office *",
+                labelText: TTexts.uiTextHeadOffice_523ae239,
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.apartment),
               ),
               items: const [
-
                 DropdownMenuItem(
                   value: "Delhi",
-                  child: Text("Delhi"),
+                  child: Text(TTexts.uiTextDelhi),
                 ),
-
                 DropdownMenuItem(
                   value: "Noida",
-                  child: Text("Noida"),
+                  child: Text(TTexts.uiTextNoida),
                 ),
-
                 DropdownMenuItem(
                   value: "Lucknow",
-                  child: Text("Lucknow"),
+                  child: Text(TTexts.uiTextLucknow),
                 ),
-
               ],
               validator: (v) => v == null ? "Required" : null,
               onChanged: (v) {},
             ),
 
-            const SizedBox(height: 18),
+            const SizedBox(height: TSizes.v18),
 
             DropdownButtonFormField<String>(
               key: territoryKey,
               decoration: const InputDecoration(
-                labelText: "Territory *",
+                labelText: TTexts.uiTextTerritory_e403f98a,
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.location_city),
               ),
               items: const [
-
                 DropdownMenuItem(
                   value: "Sector 18",
-                  child: Text("Sector 18"),
+                  child: Text(TTexts.uiTextSector18),
                 ),
-
                 DropdownMenuItem(
                   value: "Sector 62",
-                  child: Text("Sector 62"),
+                  child: Text(TTexts.uiTextSector62),
                 ),
-
                 DropdownMenuItem(
                   value: "Greater Noida",
-                  child: Text("Greater Noida"),
+                  child: Text(TTexts.uiTextGreaterNoida),
                 ),
-
               ],
               validator: (v) => v == null ? "Required" : null,
               onChanged: (v) {},
             ),
 
-            const SizedBox(height: 18),
+            const SizedBox(height: TSizes.v18),
 
             DropdownButtonFormField<String>(
               key: doctorClassKey,
               decoration: const InputDecoration(
-                labelText: "Doctor Class *",
+                labelText: TTexts.uiTextDoctorClass_53b18a3a,
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.category),
               ),
               items: const [
-
                 DropdownMenuItem(
                   value: "A",
-                  child: Text("A"),
+                  child: Text(TTexts.uiTextA),
                 ),
-
                 DropdownMenuItem(
                   value: "B",
-                  child: Text("B"),
+                  child: Text(TTexts.uiTextB),
                 ),
-
                 DropdownMenuItem(
                   value: "C",
-                  child: Text("C"),
+                  child: Text(TTexts.uiTextC),
                 ),
-
               ],
               validator: (v) => v == null ? "Required" : null,
               onChanged: (v) {},
             ),
 
-            const SizedBox(height: 25),
+            const SizedBox(height: TSizes.v25),
 
             //----------------------------------------
             // Clinic Information
             //----------------------------------------
 
             const Text(
-              "Clinic Information",
+              TTexts.uiTextClinicInformation,
               style: TextStyle(
-                fontSize: 20,
+                fontSize: TSizes.v20,
                 fontWeight: FontWeight.bold,
               ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: TSizes.v20),
             TextFormField(
               key: clinicKey,
               validator: validator,
               decoration: const InputDecoration(
-                labelText: "Clinic / Hospital Name *",
+                labelText: TTexts.uiTextClinicHospitalName,
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.local_hospital),
               ),
             ),
 
-            const SizedBox(height: 18),
+            const SizedBox(height: TSizes.v18),
 
             TextFormField(
               key: addressKey,
               validator: validator,
               maxLines: 3,
               decoration: const InputDecoration(
-                labelText: "Address *",
+                labelText: TTexts.uiTextAddress_d89c9350,
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.home),
               ),
             ),
 
-            const SizedBox(height: 18),
+            const SizedBox(height: TSizes.v18),
 
             Row(
               children: [
-
                 Expanded(
                   child: TextFormField(
                     key: cityKey,
                     validator: validator,
                     decoration: const InputDecoration(
-                      labelText: "City *",
+                      labelText: TTexts.uiTextCity_4ced02cb,
                       border: OutlineInputBorder(),
                     ),
                   ),
                 ),
-
-                const SizedBox(width: 15),
-
+                const SizedBox(width: TSizes.v15),
                 Expanded(
                   child: TextFormField(
                     key: stateKey,
                     validator: validator,
                     decoration: const InputDecoration(
-                      labelText: "State *",
+                      labelText: TTexts.uiTextState_21bd05b0,
                       border: OutlineInputBorder(),
                     ),
                   ),
                 ),
-
               ],
             ),
 
-            const SizedBox(height: 18),
+            const SizedBox(height: TSizes.v18),
 
             Row(
               children: [
-
                 Expanded(
                   child: TextFormField(
                     key: pincodeKey,
                     validator: validator,
                     keyboardType: TextInputType.number,
                     decoration: const InputDecoration(
-                      labelText: "Pincode *",
+                      labelText: TTexts.uiTextPincode_5e13f180,
                       border: OutlineInputBorder(),
                     ),
                   ),
                 ),
-
-                const SizedBox(width: 15),
-
+                const SizedBox(width: TSizes.v15),
                 Expanded(
                   child: TextFormField(
                     keyboardType: TextInputType.phone,
                     decoration: const InputDecoration(
-                      labelText: "Landline",
+                      labelText: TTexts.uiTextLandline,
                       border: OutlineInputBorder(),
                     ),
                   ),
                 ),
-
               ],
             ),
 
-            const SizedBox(height: 18),
+            const SizedBox(height: TSizes.v18),
 
             TextFormField(
               maxLines: 2,
               decoration: const InputDecoration(
-                labelText: "Remarks",
+                labelText: TTexts.uiTextRemarks,
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.note_alt_outlined),
               ),
             ),
 
-            const SizedBox(height: 25),
+            const SizedBox(height: TSizes.v25),
 
             //--------------------------------
             // Visit Information
             //--------------------------------
 
             const Text(
-              "Visit Information",
+              TTexts.uiTextVisitInformation,
               style: TextStyle(
-                fontSize: 20,
+                fontSize: TSizes.v20,
                 fontWeight: FontWeight.bold,
               ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: TSizes.v20),
 
             DropdownButtonFormField<String>(
               key: visitFrequencyKey,
               validator: (v) => v == null ? "Required" : null,
               decoration: const InputDecoration(
-                labelText: "Visit Frequency *",
+                labelText: TTexts.uiTextVisitFrequency,
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.repeat),
               ),
               items: const [
-
                 DropdownMenuItem(
                   value: "Weekly",
-                  child: Text("Weekly"),
+                  child: Text(TTexts.uiTextWeekly),
                 ),
-
                 DropdownMenuItem(
                   value: "Fortnightly",
-                  child: Text("Fortnightly"),
+                  child: Text(TTexts.uiTextFortnightly),
                 ),
-
                 DropdownMenuItem(
                   value: "Monthly",
-                  child: Text("Monthly"),
+                  child: Text(TTexts.uiTextMonthly),
                 ),
-
               ],
               onChanged: (v) {},
             ),
 
-            const SizedBox(height: 18),
+            const SizedBox(height: TSizes.v18),
 
             DropdownButtonFormField<String>(
               key: visitDayKey,
               validator: (v) => v == null ? "Required" : null,
               decoration: const InputDecoration(
-                labelText: "Preferred Visit Day *",
+                labelText: TTexts.uiTextPreferredVisitDay_c6d40b43,
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.calendar_today),
               ),
               items: const [
-
                 DropdownMenuItem(
                   value: "Monday",
-                  child: Text("Monday"),
+                  child: Text(TTexts.uiTextMonday),
                 ),
-
                 DropdownMenuItem(
                   value: "Tuesday",
-                  child: Text("Tuesday"),
+                  child: Text(TTexts.uiTextTuesday),
                 ),
-
                 DropdownMenuItem(
                   value: "Wednesday",
-                  child: Text("Wednesday"),
+                  child: Text(TTexts.uiTextWednesday),
                 ),
-
                 DropdownMenuItem(
                   value: "Thursday",
-                  child: Text("Thursday"),
+                  child: Text(TTexts.uiTextThursday),
                 ),
-
                 DropdownMenuItem(
                   value: "Friday",
-                  child: Text("Friday"),
+                  child: Text(TTexts.uiTextFriday),
                 ),
-
                 DropdownMenuItem(
                   value: "Saturday",
-                  child: Text("Saturday"),
+                  child: Text(TTexts.uiTextSaturday),
                 ),
-
               ],
               onChanged: (v) {},
             ),
 
-            const SizedBox(height: 18),
+            const SizedBox(height: TSizes.v18),
 
             TextFormField(
               key: visitTimeKey,
               validator: validator,
               readOnly: true,
               decoration: const InputDecoration(
-                labelText: "Preferred Time *",
+                labelText: TTexts.uiTextPreferredTime,
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.access_time),
                 suffixIcon: Icon(Icons.arrow_drop_down),
@@ -725,137 +674,125 @@ class _CreateDoctorScreenState extends State<CreateDoctorScreen> {
               },
             ),
 
-            const SizedBox(height: 30),
+            const SizedBox(height: TSizes.v30),
 
             //--------------------------------
             // Geo Location
             //--------------------------------
 
             const Text(
-              "Geo Location",
+              TTexts.uiTextGeoLocation,
               style: TextStyle(
-                fontSize: 20,
+                fontSize: TSizes.v20,
                 fontWeight: FontWeight.bold,
               ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: TSizes.v20),
             Container(
               key: geoKey,
-              height: 180,
+              height: TSizes.v180,
               decoration: BoxDecoration(
-                color: Colors.grey.shade200,
+                color: TColors.materialGrey200,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey),
+                border: Border.all(color: TColors.materialGrey),
               ),
               child: const Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-
                     Icon(
                       Icons.map,
-                      size: 60,
-                      color: Colors.grey,
+                      size: TSizes.v60,
+                      color: TColors.materialGrey,
                     ),
-
-                    SizedBox(height: 10),
-
+                    SizedBox(height: TSizes.v10),
                     Text(
-                      "Map Preview",
+                      TTexts.uiTextMapPreview,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-
-                    SizedBox(height: 5),
-
+                    SizedBox(height: TSizes.v5),
                     Text(
-                      "Latitude & Longitude will appear here",
+                      TTexts.uiTextLatitudeLongitudeWillAppearHere,
                     ),
-
                   ],
                 ),
               ),
             ),
 
-            const SizedBox(height: 15),
+            const SizedBox(height: TSizes.v15),
 
             SizedBox(
               width: double.infinity,
-              height: 50,
+              height: TSizes.v50,
               child: OutlinedButton.icon(
                 onPressed: () {
                   // TODO:
                   // Capture Current Location
-
                 },
                 icon: const Icon(Icons.my_location),
-                label: const Text("Capture Current Location"),
+                label: const Text(TTexts.uiTextCaptureCurrentLocation),
               ),
             ),
 
-            const SizedBox(height: 30),
+            const SizedBox(height: TSizes.v30),
 
             //-----------------------------------------
             // Doctor Photograph
             //-----------------------------------------
 
             const Text(
-              "Doctor Photograph",
+              TTexts.uiTextDoctorPhotograph,
               style: TextStyle(
-                fontSize: 20,
+                fontSize: TSizes.v20,
                 fontWeight: FontWeight.bold,
               ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: TSizes.v20),
 
             GestureDetector(
               key: imageKey,
               onTap: () {
                 // TODO:
                 // Pick Image
-
               },
               child: Container(
-                height: 180,
+                height: TSizes.v180,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: Colors.blue,
-                    width: 2,
+                    color: TColors.materialBlue,
+                    width: TSizes.v2,
                   ),
                 ),
                 child: const Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-
                       Icon(
                         Icons.add_a_photo,
-                        size: 60,
-                        color: Colors.blue,
+                        size: TSizes.v60,
+                        color: TColors.materialBlue,
                       ),
-
-                      SizedBox(height: 12),
-
+                      SizedBox(height: TSizes.v12),
                       Text(
-                        "Upload Doctor Photograph",
+                        TTexts.uiTextUploadDoctorPhotograph,
                         style: TextStyle(
-                          color: Colors.blue,
-                          fontSize: 16,
+                          color: TColors.materialBlue,
+                          fontSize: TSizes.v16,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-
                     ],
                   ),
                 ),
               ),
             ),
 
-            const SizedBox(height: 35),
+            const SizedBox(height: TSizes.v35),
 
             //-----------------------------------------
             // Buttons
@@ -863,7 +800,6 @@ class _CreateDoctorScreenState extends State<CreateDoctorScreen> {
 
             Row(
               children: [
-
                 Expanded(
                   child: OutlinedButton(
                     style: OutlinedButton.styleFrom(
@@ -876,13 +812,11 @@ class _CreateDoctorScreenState extends State<CreateDoctorScreen> {
                       _formKey.currentState?.reset();
                     },
                     child: const Text(
-                      "Reset",
+                      TTexts.uiTextReset,
                     ),
                   ),
                 ),
-
-                const SizedBox(width: 15),
-
+                const SizedBox(width: TSizes.v15),
                 Expanded(
                   flex: 2,
                   child: ElevatedButton.icon(
@@ -898,7 +832,7 @@ class _CreateDoctorScreenState extends State<CreateDoctorScreen> {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text(
-                              "Doctor Created Successfully",
+                              TTexts.uiTextDoctorCreatedSuccessfully,
                             ),
                           ),
                         );
@@ -906,16 +840,14 @@ class _CreateDoctorScreenState extends State<CreateDoctorScreen> {
                     },
                     icon: const Icon(Icons.save),
                     label: const Text(
-                      "Create Doctor",
+                      TTexts.uiTextCreateDoctor,
                     ),
                   ),
                 ),
-
               ],
             ),
 
-            const SizedBox(height: 40),
-
+            const SizedBox(height: TSizes.v40),
           ],
         ),
       ),
@@ -928,27 +860,18 @@ class _CreateDoctorScreenState extends State<CreateDoctorScreen> {
 
   void _showTutorial() {
     tutorialCoachMark = TutorialCoachMark(
-
       targets: targets,
-
       colorShadow: TColors.primary,
-
       opacityShadow: 0.85,
-
       paddingFocus: 10,
-
       hideSkip: false,
-
       textSkip: "SKIP",
-
       onFinish: () {
         debugPrint("Tutorial Finished");
       },
-
       onSkip: () {
         return true;
       },
-
     );
 
     tutorialCoachMark.show(context: context);
@@ -967,30 +890,20 @@ class _CreateDoctorScreenState extends State<CreateDoctorScreen> {
         keyTarget: headerKey,
         enableOverlayTab: true,
         contents: [
-
           TargetContent(
             align: ContentAlign.bottom,
             builder: (context, controller) {
               WidgetsBinding.instance.addPostFrameCallback((_) {
-
-                speak(
-                    "Enter the doctor's full registered name.");
-
+                speak("Enter the doctor's full registered name.");
               });
               return _tutorialCard(
-
-                title: "👋 Welcome",
-
-                description:
-                "This screen helps you register a doctor. "
+                title: TTexts.uiTextWelcome,
+                description: "This screen helps you register a doctor. "
                     "Let's go through every field.",
-
                 controller: controller,
-
               );
             },
           ),
-
         ],
       ),
     );
@@ -1004,23 +917,16 @@ class _CreateDoctorScreenState extends State<CreateDoctorScreen> {
         identify: "doctor_name",
         keyTarget: doctorNameKey,
         contents: [
-
           TargetContent(
             align: ContentAlign.bottom,
             builder: (context, controller) {
               return _tutorialCard(
-
-                title: "Doctor Name",
-
-                description:
-                "Enter the doctor's full registered name.",
-
+                title: TTexts.uiTextDoctorName,
+                description: "Enter the doctor's full registered name.",
                 controller: controller,
-
               );
             },
           ),
-
         ],
       ),
     );
@@ -1034,23 +940,16 @@ class _CreateDoctorScreenState extends State<CreateDoctorScreen> {
         identify: "mobile",
         keyTarget: mobileKey,
         contents: [
-
           TargetContent(
             align: ContentAlign.bottom,
             builder: (context, controller) {
               return _tutorialCard(
-
-                title: "Mobile Number",
-
-                description:
-                "Enter doctor's mobile number.",
-
+                title: TTexts.uiTextMobileNumber,
+                description: "Enter doctor's mobile number.",
                 controller: controller,
-
               );
             },
           ),
-
         ],
       ),
     );
@@ -1064,23 +963,16 @@ class _CreateDoctorScreenState extends State<CreateDoctorScreen> {
         identify: "email",
         keyTarget: emailKey,
         contents: [
-
           TargetContent(
             align: ContentAlign.bottom,
             builder: (context, controller) {
               return _tutorialCard(
-
-                title: "Email",
-
-                description:
-                "Doctor's email address.",
-
+                title: TTexts.email,
+                description: "Doctor's email address.",
                 controller: controller,
-
               );
             },
           ),
-
         ],
       ),
     );
@@ -1094,23 +986,16 @@ class _CreateDoctorScreenState extends State<CreateDoctorScreen> {
         identify: "specialization",
         keyTarget: specializationKey,
         contents: [
-
           TargetContent(
             align: ContentAlign.bottom,
             builder: (context, controller) {
               return _tutorialCard(
-
-                title: "Specialization",
-
-                description:
-                "Choose doctor's specialization.",
-
+                title: TTexts.specialization,
+                description: "Choose doctor's specialization.",
                 controller: controller,
-
               );
             },
           ),
-
         ],
       ),
     );
@@ -1124,23 +1009,16 @@ class _CreateDoctorScreenState extends State<CreateDoctorScreen> {
         identify: "qualification",
         keyTarget: qualificationKey,
         contents: [
-
           TargetContent(
             align: ContentAlign.bottom,
             builder: (context, controller) {
               return _tutorialCard(
-
-                title: "Qualification",
-
-                description:
-                "Example: MBBS, MD, DM.",
-
+                title: TTexts.uiTextQualification,
+                description: "Example: MBBS, MD, DM.",
                 controller: controller,
-
               );
             },
           ),
-
         ],
       ),
     );
@@ -1154,27 +1032,19 @@ class _CreateDoctorScreenState extends State<CreateDoctorScreen> {
         identify: "registration",
         keyTarget: registrationKey,
         contents: [
-
           TargetContent(
             align: ContentAlign.bottom,
             builder: (context, controller) {
               return _tutorialCard(
-
-                title: "Medical Registration",
-
-                description:
-                "Enter valid medical council registration number.",
-
+                title: TTexts.uiTextMedicalRegistration,
+                description: "Enter valid medical council registration number.",
                 controller: controller,
-
               );
             },
           ),
-
         ],
       ),
     );
-
 
     //------------------------------------------------
     // Gender
@@ -1189,7 +1059,7 @@ class _CreateDoctorScreenState extends State<CreateDoctorScreen> {
             align: ContentAlign.bottom,
             builder: (context, controller) {
               return _tutorialCard(
-                title: "Gender",
+                title: TTexts.gender,
                 description: "Select doctor's gender.",
                 controller: controller,
               );
@@ -1212,9 +1082,9 @@ class _CreateDoctorScreenState extends State<CreateDoctorScreen> {
             align: ContentAlign.bottom,
             builder: (context, controller) {
               return _tutorialCard(
-                title: "Priority",
+                title: TTexts.uiTextPriority,
                 description:
-                "Priority determines visit frequency.\n\nA → High\nB → Medium\nC → Low",
+                    "Priority determines visit frequency.\n\nA → High\nB → Medium\nC → Low",
                 controller: controller,
               );
             },
@@ -1236,9 +1106,9 @@ class _CreateDoctorScreenState extends State<CreateDoctorScreen> {
             align: ContentAlign.bottom,
             builder: (context, controller) {
               return _tutorialCard(
-                title: "Head Office",
+                title: TTexts.uiTextHeadOffice,
                 description:
-                "Choose the Head Office to which this doctor belongs.",
+                    "Choose the Head Office to which this doctor belongs.",
                 controller: controller,
               );
             },
@@ -1260,9 +1130,8 @@ class _CreateDoctorScreenState extends State<CreateDoctorScreen> {
             align: ContentAlign.bottom,
             builder: (context, controller) {
               return _tutorialCard(
-                title: "Territory",
-                description:
-                "Select the territory assigned to this doctor.",
+                title: TTexts.uiTextTerritory,
+                description: "Select the territory assigned to this doctor.",
                 controller: controller,
               );
             },
@@ -1284,9 +1153,8 @@ class _CreateDoctorScreenState extends State<CreateDoctorScreen> {
             align: ContentAlign.bottom,
             builder: (context, controller) {
               return _tutorialCard(
-                title: "Doctor Class",
-                description:
-                "Doctor Class is used for business segmentation.",
+                title: TTexts.uiTextDoctorClass,
+                description: "Doctor Class is used for business segmentation.",
                 controller: controller,
               );
             },
@@ -1308,9 +1176,8 @@ class _CreateDoctorScreenState extends State<CreateDoctorScreen> {
             align: ContentAlign.bottom,
             builder: (context, controller) {
               return _tutorialCard(
-                title: "Clinic / Hospital",
-                description:
-                "Enter clinic or hospital name.",
+                title: TTexts.uiTextClinicHospital,
+                description: "Enter clinic or hospital name.",
                 controller: controller,
               );
             },
@@ -1332,9 +1199,8 @@ class _CreateDoctorScreenState extends State<CreateDoctorScreen> {
             align: ContentAlign.bottom,
             builder: (context, controller) {
               return _tutorialCard(
-                title: "Address",
-                description:
-                "Enter complete clinic address.",
+                title: TTexts.uiTextAddress,
+                description: "Enter complete clinic address.",
                 controller: controller,
               );
             },
@@ -1356,9 +1222,8 @@ class _CreateDoctorScreenState extends State<CreateDoctorScreen> {
             align: ContentAlign.bottom,
             builder: (context, controller) {
               return _tutorialCard(
-                title: "City",
-                description:
-                "Enter doctor's practicing city.",
+                title: TTexts.uiTextCity,
+                description: "Enter doctor's practicing city.",
                 controller: controller,
               );
             },
@@ -1380,9 +1245,8 @@ class _CreateDoctorScreenState extends State<CreateDoctorScreen> {
             align: ContentAlign.bottom,
             builder: (context, controller) {
               return _tutorialCard(
-                title: "State",
-                description:
-                "Select the state.",
+                title: TTexts.uiTextState,
+                description: "Select the state.",
                 controller: controller,
               );
             },
@@ -1404,9 +1268,8 @@ class _CreateDoctorScreenState extends State<CreateDoctorScreen> {
             align: ContentAlign.bottom,
             builder: (context, controller) {
               return _tutorialCard(
-                title: "Pincode",
-                description:
-                "Enter the clinic pincode.",
+                title: TTexts.uiTextPincode,
+                description: "Enter the clinic pincode.",
                 controller: controller,
               );
             },
@@ -1414,7 +1277,6 @@ class _CreateDoctorScreenState extends State<CreateDoctorScreen> {
         ],
       ),
     );
-
 
     //------------------------------------------------
     // Visit Frequency
@@ -1429,9 +1291,9 @@ class _CreateDoctorScreenState extends State<CreateDoctorScreen> {
             align: ContentAlign.bottom,
             builder: (context, controller) {
               return _tutorialCard(
-                title: "Visit Frequency",
+                title: TTexts.visitFrequency,
                 description:
-                "Choose how frequently this doctor should be visited.",
+                    "Choose how frequently this doctor should be visited.",
                 controller: controller,
               );
             },
@@ -1453,9 +1315,8 @@ class _CreateDoctorScreenState extends State<CreateDoctorScreen> {
             align: ContentAlign.bottom,
             builder: (context, controller) {
               return _tutorialCard(
-                title: "Preferred Visit Day",
-                description:
-                "Select the preferred day to visit this doctor.",
+                title: TTexts.uiTextPreferredVisitDay,
+                description: "Select the preferred day to visit this doctor.",
                 controller: controller,
               );
             },
@@ -1477,9 +1338,8 @@ class _CreateDoctorScreenState extends State<CreateDoctorScreen> {
             align: ContentAlign.bottom,
             builder: (context, controller) {
               return _tutorialCard(
-                title: "Preferred Visit Time",
-                description:
-                "Select the preferred consultation time.",
+                title: TTexts.uiTextPreferredVisitTime,
+                description: "Select the preferred consultation time.",
                 controller: controller,
               );
             },
@@ -1501,9 +1361,9 @@ class _CreateDoctorScreenState extends State<CreateDoctorScreen> {
             align: ContentAlign.top,
             builder: (context, controller) {
               return _tutorialCard(
-                title: "Geo Location",
+                title: TTexts.uiTextGeoLocation,
                 description:
-                "Capture the doctor's clinic GPS location. This helps during visit verification and navigation.",
+                    "Capture the doctor's clinic GPS location. This helps during visit verification and navigation.",
                 controller: controller,
               );
             },
@@ -1525,9 +1385,9 @@ class _CreateDoctorScreenState extends State<CreateDoctorScreen> {
             align: ContentAlign.top,
             builder: (context, controller) {
               return _tutorialCard(
-                title: "Doctor Photograph",
+                title: TTexts.uiTextDoctorPhotograph,
                 description:
-                "Upload a clear clinic or doctor photograph for verification.",
+                    "Upload a clear clinic or doctor photograph for verification.",
                 controller: controller,
               );
             },
@@ -1549,58 +1409,49 @@ class _CreateDoctorScreenState extends State<CreateDoctorScreen> {
             align: ContentAlign.top,
             builder: (context, controller) {
               return Container(
-                width: 340,
+                width: TSizes.v340,
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: TColors.white,
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-
                     const Text(
-                      "🎉 You're Ready!",
+                      TTexts.uiTextYouReReady,
                       style: TextStyle(
-                        fontSize: 22,
+                        fontSize: TSizes.v22,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-
-                    const SizedBox(height: 12),
-
+                    const SizedBox(height: TSizes.v12),
                     const Text(
-                      "All mandatory fields have been explained.\n\nFill the form and tap 'Create Doctor' to save the doctor.",
+                      TTexts.uiTextAllMandatoryFieldsHaveBeenExplainedFillThe,
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: TSizes.v16,
                       ),
                     ),
-
-                    const SizedBox(height: 20),
-
+                    const SizedBox(height: TSizes.v20),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-
                         TextButton(
                           onPressed: () {
                             controller.skip();
                           },
-                          child: const Text("Skip"),
+                          child: const Text(TTexts.skip),
                         ),
-
-                        const SizedBox(width: 10),
-
+                        const SizedBox(width: TSizes.v10),
                         TextButton(
                           onPressed: () {
                             controller.skip();
                           },
-                          child: const Text("Finish"),
+                          child: const Text(TTexts.uiTextFinish),
                         )
                       ],
                     )
-
                   ],
                 ),
               );
@@ -1611,22 +1462,21 @@ class _CreateDoctorScreenState extends State<CreateDoctorScreen> {
     );
   }
 
-
   Widget _tutorialCard({
     required String title,
     required String description,
     required TutorialCoachMarkController controller,
   }) {
     return Container(
-      width: 360,
+      width: TSizes.v360,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: TColors.white,
         borderRadius: BorderRadius.circular(18),
         boxShadow: const [
           BoxShadow(
-            color: Colors.black26,
-            blurRadius: 12,
+            color: TColors.black26,
+            blurRadius: TSizes.v12,
             offset: Offset(0, 4),
           )
         ],
@@ -1635,102 +1485,83 @@ class _CreateDoctorScreenState extends State<CreateDoctorScreen> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
           Row(
             children: [
-
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: Colors.blue.shade50,
+                  color: TColors.materialBlue50,
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
                   Icons.school,
-                  color: Colors.blue,
+                  color: TColors.materialBlue,
                 ),
               ),
-
-              const SizedBox(width: 15),
-
+              const SizedBox(width: TSizes.v15),
               Expanded(
                 child: Text(
                   title,
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: 22,
+                    fontSize: TSizes.v22,
                   ),
                 ),
               ),
             ],
           ),
-
-          const SizedBox(height: 18),
-
+          const SizedBox(height: TSizes.v18),
           Text(
             description,
             style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey.shade700,
-              height: 1.5,
+              fontSize: TSizes.v16,
+              color: TColors.materialGrey700,
+              height: TSizes.v1_5,
             ),
           ),
-
-          const SizedBox(height: 25),
-
+          const SizedBox(height: TSizes.v25),
           LinearProgressIndicator(
             value: 0.3,
             borderRadius: BorderRadius.circular(10),
           ),
-
-          const SizedBox(height: 10),
-
+          const SizedBox(height: TSizes.v10),
           const Align(
             alignment: Alignment.centerRight,
             child: Text(
-              "Training Guide",
+              TTexts.uiTextTrainingGuide,
               style: TextStyle(
-                color: Colors.grey,
+                color: TColors.materialGrey,
               ),
             ),
           ),
-
-          const SizedBox(height: 20),
-
+          const SizedBox(height: TSizes.v20),
           Row(
             children: [
-
               TextButton.icon(
                 onPressed: () {
                   controller.skip();
                 },
                 icon: const Icon(Icons.close),
-                label: const Text("Skip"),
+                label: const Text(TTexts.skip),
               ),
-
               const Spacer(),
-
               ElevatedButton.icon(
                 onPressed: () {
                   controller.previous();
                 },
                 icon: const Icon(Icons.arrow_back),
-                label: const Text("Back"),
+                label: const Text(TTexts.uiTextBack),
               ),
-
-              const SizedBox(width: 10),
-
+              const SizedBox(width: TSizes.v10),
               ElevatedButton.icon(
                 onPressed: () {
                   controller.next();
                 },
                 icon: const Icon(Icons.arrow_forward),
-                label: const Text("Next"),
+                label: const Text(TTexts.uiTextNext),
               ),
-
             ],
           ),
-
         ],
       ),
     );

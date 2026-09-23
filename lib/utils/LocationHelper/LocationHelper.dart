@@ -8,10 +8,12 @@ class LocationHelper {
     if (permission == LocationPermission.denied) {
       // Request permission if denied
       permission = await Geolocator.requestPermission();
-      return permission == LocationPermission.whileInUse || permission == LocationPermission.always;
+      return permission == LocationPermission.whileInUse ||
+          permission == LocationPermission.always;
     }
 
-    return permission == LocationPermission.whileInUse || permission == LocationPermission.always;
+    return permission == LocationPermission.whileInUse ||
+        permission == LocationPermission.always;
   }
 
   // Method to fetch the current location (latitude, longitude)
@@ -25,7 +27,8 @@ class LocationHelper {
 
     try {
       // Get the current position of the user
-      Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+      Position position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high);
 
       // Return the location as a string: "latitude,longitude"
       return '${position.latitude},${position.longitude}';

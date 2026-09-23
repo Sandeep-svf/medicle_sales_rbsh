@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
-
-import '../../../utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import '../model/investment_request_model.dart';
 import 'investment_status_chip.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class InvestmentRequestDetailsDialog extends StatelessWidget {
   const InvestmentRequestDetailsDialog({
@@ -34,7 +35,7 @@ class InvestmentRequestDetailsDialog extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: ConstrainedBox(
         constraints: BoxConstraints(
-          maxWidth: 720,
+          maxWidth: TSizes.v720,
           maxHeight: screenHeight * .88,
         ),
         child: Column(
@@ -76,23 +77,23 @@ class InvestmentRequestDetailsDialog extends StatelessWidget {
                       ],
                     ),
                     if (request.items.isNotEmpty) ...[
-                      const SizedBox(height: 18),
+                      const SizedBox(height: TSizes.v18),
                       _itemsSection(),
                     ],
                     if ((request.rejectionReason ?? "").isNotEmpty) ...[
-                      const SizedBox(height: 18),
+                      const SizedBox(height: TSizes.v18),
                       _section(
                         "Rejection Details",
                         [
                           _detailRow(
                             "Reason",
                             request.rejectionReason!,
-                            valueColor: Colors.red.shade700,
+                            valueColor: TColors.materialRed700,
                           ),
                         ],
                       ),
                     ],
-                    const SizedBox(height: 18),
+                    const SizedBox(height: TSizes.v18),
                     _section(
                       "Timeline",
                       [
@@ -101,7 +102,7 @@ class InvestmentRequestDetailsDialog extends StatelessWidget {
                       ],
                     ),
                     if (request.hasProof) ...[
-                      const SizedBox(height: 18),
+                      const SizedBox(height: TSizes.v18),
                       _proofSection(),
                     ],
                   ],
@@ -120,24 +121,24 @@ class InvestmentRequestDetailsDialog extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
       child: Row(
         children: [
-          const Icon(Icons.receipt_long_outlined, color: Colors.white),
-          const SizedBox(width: 12),
+          const Icon(Icons.receipt_long_outlined, color: TColors.white),
+          const SizedBox(width: TSizes.v12),
           const Expanded(
             child: Text(
-              "Investment Request",
+              TTexts.uiTextInvestmentRequest,
               style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
+                color: TColors.white,
+                fontSize: TSizes.v18,
                 fontWeight: FontWeight.bold,
               ),
             ),
           ),
           InvestmentStatusChip(status: request.displayStatus),
-          const SizedBox(width: 4),
+          const SizedBox(width: TSizes.v4),
           IconButton(
-            tooltip: "Close",
+            tooltip: TTexts.uiTextClose,
             onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(Icons.close, color: Colors.white),
+            icon: const Icon(Icons.close, color: TColors.white),
           ),
         ],
       ),
@@ -149,9 +150,9 @@ class InvestmentRequestDetailsDialog extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.grey.shade50,
+        color: TColors.materialGrey50,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: TColors.materialGrey200),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -159,11 +160,11 @@ class InvestmentRequestDetailsDialog extends StatelessWidget {
           Text(
             title,
             style: const TextStyle(
-              fontSize: 16,
+              fontSize: TSizes.v16,
               fontWeight: FontWeight.bold,
             ),
           ),
-          const Divider(height: 24),
+          const Divider(height: TSizes.v24),
           ...children,
         ],
       ),
@@ -181,23 +182,23 @@ class InvestmentRequestDetailsDialog extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 125,
+            width: TSizes.v125,
             child: Text(
               label,
               style: TextStyle(
-                color: Colors.grey.shade600,
+                color: TColors.materialGrey600,
                 fontWeight: FontWeight.w600,
               ),
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: TSizes.v12),
           Expanded(
             child: Text(
               value.trim().isEmpty ? "-" : value,
               style: TextStyle(
-                color: valueColor ?? Colors.black87,
+                color: valueColor ?? TColors.black87,
                 fontWeight: FontWeight.w600,
-                height: 1.35,
+                height: TSizes.v1_35,
               ),
             ),
           ),
@@ -214,14 +215,14 @@ class InvestmentRequestDetailsDialog extends StatelessWidget {
           margin: const EdgeInsets.only(bottom: 10),
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: TColors.white,
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: Colors.grey.shade200),
+            border: Border.all(color: TColors.materialGrey200),
           ),
           child: Row(
             children: [
-              const Icon(Icons.card_giftcard, color: Colors.orange),
-              const SizedBox(width: 10),
+              const Icon(Icons.card_giftcard, color: TColors.materialOrange),
+              const SizedBox(width: TSizes.v10),
               Expanded(
                 child: Text(
                   item.itemName ?? "-",
@@ -229,11 +230,11 @@ class InvestmentRequestDetailsDialog extends StatelessWidget {
                 ),
               ),
               Text("Qty: ${item.quantity ?? 0}"),
-              const SizedBox(width: 14),
+              const SizedBox(width: TSizes.v14),
               Text(
                 _money(item.value),
                 style: const TextStyle(
-                  color: Colors.green,
+                  color: TColors.materialGreen,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -253,7 +254,7 @@ class InvestmentRequestDetailsDialog extends StatelessWidget {
           child: OutlinedButton.icon(
             onPressed: _openPaymentProof,
             icon: const Icon(Icons.open_in_new),
-            label: const Text("Open Payment Proof"),
+            label: const Text(TTexts.uiTextOpenPaymentProof),
           ),
         ),
       ],

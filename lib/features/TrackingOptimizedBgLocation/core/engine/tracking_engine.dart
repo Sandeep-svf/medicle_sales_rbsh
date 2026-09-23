@@ -20,9 +20,9 @@ class TrackingEngine {
         _tripDetector = tripDetector ?? TripDetector();
 
   TrackingEvent processRawPoint(
-      LocationPoint point,
-      DateTime localNow,
-      ) {
+    LocationPoint point,
+    DateTime localNow,
+  ) {
     //  ACCEPTANCE RULES
     final decision = _acceptor.evaluate(point);
 
@@ -34,8 +34,7 @@ class TrackingEngine {
     }
 
     //  STOP DETECTION
-    final newlyOpenedStop =
-    _stopDetector.processLocation(point, localNow);
+    final newlyOpenedStop = _stopDetector.processLocation(point, localNow);
 
     final activeStop = _stopDetector.activeStop; //  FIXED
 
@@ -54,7 +53,7 @@ class TrackingEngine {
       newlyOpenedStop: newlyOpenedStop,
       activeTrip: _tripDetector.activeTrip, //  FIXED
       completedTrip:
-      tripResult?.status == TripStatus.completed ? tripResult : null,
+          tripResult?.status == TripStatus.completed ? tripResult : null,
     );
   }
 }

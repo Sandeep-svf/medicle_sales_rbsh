@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-
-import '../../../../utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import '../DayType.dart';
 import '../model/TourDay.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class DayDetailsPanel extends StatelessWidget {
   final TourDay day;
@@ -28,8 +29,8 @@ class DayDetailsPanel extends StatelessWidget {
           Row(
             children: [
               Container(
-                width: 48,
-                height: 48,
+                width: TSizes.v48,
+                height: TSizes.v48,
                 decoration: BoxDecoration(
                   color: TColors.primary.withOpacity(.10),
                   shape: BoxShape.circle,
@@ -39,9 +40,7 @@ class DayDetailsPanel extends StatelessWidget {
                   color: TColors.primary,
                 ),
               ),
-
-              const SizedBox(width: 14),
-
+              const SizedBox(width: TSizes.v14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -49,23 +48,22 @@ class DayDetailsPanel extends StatelessWidget {
                     Text(
                       _formatDate(day.date),
                       style: const TextStyle(
-                        fontSize: 20,
+                        fontSize: TSizes.v20,
                         fontWeight: FontWeight.bold,
                         color: TColors.textPrimary,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: TSizes.v4),
                     Text(
-                      "Day Details",
+                      TTexts.uiTextDayDetails,
                       style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey.shade600,
+                        fontSize: TSizes.v12,
+                        color: TColors.materialGrey600,
                       ),
                     ),
                   ],
                 ),
               ),
-
               IconButton(
                 onPressed: onClose,
                 icon: const Icon(Icons.close),
@@ -73,11 +71,11 @@ class DayDetailsPanel extends StatelessWidget {
             ],
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: TSizes.v20),
 
           const Divider(),
 
-          const SizedBox(height: 12),
+          const SizedBox(height: TSizes.v12),
 
           /// Details
           Expanded(
@@ -121,7 +119,7 @@ class DayDetailsPanel extends StatelessWidget {
                       Icons.celebration_outlined,
                     ),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: TSizes.v20),
 
                   /// Beat
                   if (day.beatId != null ||
@@ -132,22 +130,17 @@ class DayDetailsPanel extends StatelessWidget {
                       "Beat Details",
                       Icons.location_on_outlined,
                     ),
-
-                    if (day.beatId != null ||
-                        day.beatName != null)
+                    if (day.beatId != null || day.beatName != null)
                       _beatCard(
-                        title: "Beat 1",
+                        title: TTexts.uiTextBeat1,
                         name: day.beatName,
                       ),
-
-                    if (day.beatId2 != null ||
-                        day.beatName2 != null)
+                    if (day.beatId2 != null || day.beatName2 != null)
                       _beatCard(
-                        title: "Beat 2",
+                        title: TTexts.uiTextBeat2,
                         name: day.beatName2,
                       ),
-
-                    const SizedBox(height: 20),
+                    const SizedBox(height: TSizes.v20),
                   ],
 
                   /// Joint Work
@@ -157,10 +150,8 @@ class DayDetailsPanel extends StatelessWidget {
                       "Joint Work",
                       Icons.people_alt_outlined,
                     ),
-
                     _jointWorkCard(),
-
-                    const SizedBox(height: 20),
+                    const SizedBox(height: TSizes.v20),
                   ],
 
                   /// Notes
@@ -171,14 +162,13 @@ class DayDetailsPanel extends StatelessWidget {
 
                   _notesCard(),
 
-                  const SizedBox(height: 20),
-
+                  const SizedBox(height: TSizes.v20),
                 ],
               ),
             ),
           ),
 
-          const SizedBox(height: 12),
+          const SizedBox(height: TSizes.v12),
 
           /// Close
           SizedBox(
@@ -186,10 +176,10 @@ class DayDetailsPanel extends StatelessWidget {
             child: ElevatedButton.icon(
               onPressed: onClose,
               icon: const Icon(Icons.close),
-              label: const Text("Close"),
+              label: const Text(TTexts.uiTextClose),
               style: ElevatedButton.styleFrom(
                 backgroundColor: TColors.primary,
-                foregroundColor: Colors.white,
+                foregroundColor: TColors.white,
                 minimumSize: const Size.fromHeight(48),
               ),
             ),
@@ -200,9 +190,9 @@ class DayDetailsPanel extends StatelessWidget {
   }
 
   Widget _sectionTitle(
-      String title,
-      IconData icon,
-      ) {
+    String title,
+    IconData icon,
+  ) {
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(bottom: 10),
@@ -210,14 +200,14 @@ class DayDetailsPanel extends StatelessWidget {
         children: [
           Icon(
             icon,
-            size: 18,
+            size: TSizes.v18,
             color: TColors.primary,
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: TSizes.v8),
           Text(
             title,
             style: const TextStyle(
-              fontSize: 15,
+              fontSize: TSizes.v15,
               fontWeight: FontWeight.bold,
               color: TColors.textPrimary,
             ),
@@ -228,10 +218,10 @@ class DayDetailsPanel extends StatelessWidget {
   }
 
   Widget _detailRow(
-      String label,
-      String value,
-      IconData icon,
-      ) {
+    String label,
+    String value,
+    IconData icon,
+  ) {
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(bottom: 8),
@@ -240,7 +230,7 @@ class DayDetailsPanel extends StatelessWidget {
         vertical: 12,
       ),
       decoration: BoxDecoration(
-        color: Colors.grey.shade50,
+        color: TColors.materialGrey50,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
           color: TColors.borderSecondary,
@@ -251,30 +241,26 @@ class DayDetailsPanel extends StatelessWidget {
         children: [
           Icon(
             icon,
-            size: 18,
+            size: TSizes.v18,
             color: TColors.textSecondary,
           ),
-
-          const SizedBox(width: 10),
-
+          const SizedBox(width: TSizes.v10),
           SizedBox(
-            width: 145,
+            width: TSizes.v145,
             child: Text(
               label,
               style: const TextStyle(
-                fontSize: 12,
+                fontSize: TSizes.v12,
                 color: TColors.textSecondary,
               ),
             ),
           ),
-
-          const SizedBox(width: 8),
-
+          const SizedBox(width: TSizes.v8),
           Expanded(
             child: Text(
               value,
               style: const TextStyle(
-                fontSize: 13,
+                fontSize: TSizes.v13,
                 fontWeight: FontWeight.w600,
                 color: TColors.textPrimary,
               ),
@@ -290,9 +276,7 @@ class DayDetailsPanel extends StatelessWidget {
     String? name,
   }) {
     final displayName =
-    name?.trim().isNotEmpty == true
-        ? name!
-        : "Not available";
+        name?.trim().isNotEmpty == true ? name! : "Not available";
 
     return Container(
       width: double.infinity,
@@ -311,21 +295,18 @@ class DayDetailsPanel extends StatelessWidget {
           Text(
             title,
             style: const TextStyle(
-              fontSize: 12,
+              fontSize: TSizes.v12,
               color: TColors.textSecondary,
             ),
           ),
-
-          const SizedBox(height: 5),
-
+          const SizedBox(height: TSizes.v5),
           Text(
             displayName,
             style: const TextStyle(
-              fontSize: 15,
+              fontSize: TSizes.v15,
               fontWeight: FontWeight.bold,
             ),
           ),
-
         ],
       ),
     );
@@ -341,10 +322,10 @@ class DayDetailsPanel extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.deepPurple.withOpacity(.05),
+        color: TColors.materialDeepPurple.withOpacity(.05),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: Colors.deepPurple.withOpacity(.15),
+          color: TColors.materialDeepPurple.withOpacity(.15),
         ),
       ),
       child: Column(
@@ -352,21 +333,21 @@ class DayDetailsPanel extends StatelessWidget {
         children: [
           if (names.isNotEmpty)
             ...names.map(
-                  (name) => Padding(
+              (name) => Padding(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: Row(
                   children: [
                     const Icon(
                       Icons.person_outline,
-                      size: 18,
-                      color: Colors.deepPurple,
+                      size: TSizes.v18,
+                      color: TColors.materialDeepPurple,
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: TSizes.v8),
                     Expanded(
                       child: Text(
                         name,
                         style: const TextStyle(
-                          fontSize: 14,
+                          fontSize: TSizes.v14,
                           fontWeight: FontWeight.w600,
                           color: TColors.textPrimary,
                         ),
@@ -378,9 +359,9 @@ class DayDetailsPanel extends StatelessWidget {
             )
           else
             const Text(
-              "No joint work user assigned",
+              TTexts.uiTextNoJointWorkUserAssigned,
               style: TextStyle(
-                fontSize: 13,
+                fontSize: TSizes.v13,
                 color: TColors.textSecondary,
               ),
             ),
@@ -396,7 +377,7 @@ class DayDetailsPanel extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.grey.shade50,
+        color: TColors.materialGrey50,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: TColors.borderSecondary,
@@ -405,11 +386,9 @@ class DayDetailsPanel extends StatelessWidget {
       child: Text(
         notes.isEmpty ? "No remarks added." : notes,
         style: TextStyle(
-          fontSize: 13,
-          color: notes.isEmpty
-              ? TColors.textSecondary
-              : TColors.textPrimary,
-          height: 1.5,
+          fontSize: TSizes.v13,
+          color: notes.isEmpty ? TColors.textSecondary : TColors.textPrimary,
+          height: TSizes.v1_5,
         ),
       ),
     );

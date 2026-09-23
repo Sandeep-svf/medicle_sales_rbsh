@@ -6,6 +6,7 @@ import '../model/beat_change_request_model.dart';
 import '../model/collaboration_request_model.dart';
 import '../model/pending_approval_model.dart';
 import '../service/approval_management_service.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class ApprovalManagementController extends GetxController {
   static const String _tag = "[ApprovalManagementController]";
@@ -110,7 +111,6 @@ class ApprovalManagementController extends GetxController {
     await loadData();
   }
 
-
   /// ------------------------------
   /// Pending Beat Change Requests
   /// ------------------------------
@@ -143,8 +143,8 @@ class ApprovalManagementController extends GetxController {
     try {
       debugPrint(
         "$_tag Respond Beat Change -> "
-            "id=${request.id}, "
-            "approve=$approve",
+        "id=${request.id}, "
+        "approve=$approve",
       );
 
       isBeatResponding.value = true;
@@ -156,14 +156,12 @@ class ApprovalManagementController extends GetxController {
       );
 
       beatChangeRequests.removeWhere(
-            (e) => e.id == request.id,
+        (e) => e.id == request.id,
       );
 
       Get.snackbar(
         "Success",
-        approve
-            ? "Beat Change Approved"
-            : "Beat Change Rejected",
+        approve ? "Beat Change Approved" : "Beat Change Rejected",
         snackPosition: SnackPosition.BOTTOM,
       );
     } catch (e, s) {
@@ -195,9 +193,9 @@ class ApprovalManagementController extends GetxController {
     for (final item in data) {
       debugPrint(
         "$_tag Pending -> "
-            "id=${item.id}, "
-            "status=${item.status}, "
-            "employee=${item.approvedByName}",
+        "id=${item.id}, "
+        "status=${item.status}, "
+        "employee=${item.approvedByName}",
       );
     }
 
@@ -222,15 +220,16 @@ class ApprovalManagementController extends GetxController {
 
     final data = await _service.fetchIncomingCollaborations();
 
-    debugPrint("$_tag Service returned ${data.length} collaboration request(s)");
+    debugPrint(
+        "$_tag Service returned ${data.length} collaboration request(s)");
 
     for (int i = 0; i < data.length; i++) {
       final item = data[i];
 
       debugPrint(
         "$_tag Item[$i] -> "
-            "id=${item.id}, "
-            "status=${item.collaborationStatus}",
+        "id=${item.id}, "
+        "status=${item.collaborationStatus}",
       );
     }
 
@@ -249,8 +248,8 @@ class ApprovalManagementController extends GetxController {
 
       debugPrint(
         "$_tag Observable[$i] -> "
-            "id=${item.id}, "
-            "status=${item.collaborationStatus}",
+        "id=${item.id}, "
+        "status=${item.collaborationStatus}",
       );
     }
 
@@ -276,7 +275,7 @@ class ApprovalManagementController extends GetxController {
       );
 
       pendingApprovals.removeWhere(
-            (e) => e.id == plan.id,
+        (e) => e.id == plan.id,
       );
 
       debugPrint(
@@ -285,7 +284,7 @@ class ApprovalManagementController extends GetxController {
 
       Get.snackbar(
         "Success",
-        "Tour Plan Approved Successfully",
+        TTexts.uiTextTourPlanApprovedSuccessfully,
         snackPosition: SnackPosition.BOTTOM,
       );
     } catch (e, s) {
@@ -322,7 +321,7 @@ class ApprovalManagementController extends GetxController {
       );
 
       pendingApprovals.removeWhere(
-            (e) => e.id == plan.id,
+        (e) => e.id == plan.id,
       );
 
       debugPrint(
@@ -331,7 +330,7 @@ class ApprovalManagementController extends GetxController {
 
       Get.snackbar(
         "Success",
-        "Tour Plan Returned Successfully",
+        TTexts.uiTextTourPlanReturnedSuccessfully,
         snackPosition: SnackPosition.BOTTOM,
       );
     } catch (e, s) {
@@ -370,7 +369,7 @@ class ApprovalManagementController extends GetxController {
       );
 
       collaborations.removeWhere(
-            (e) => e.id == request.id,
+        (e) => e.id == request.id,
       );
 
       debugPrint(
@@ -379,9 +378,7 @@ class ApprovalManagementController extends GetxController {
 
       Get.snackbar(
         "Success",
-        accept
-            ? "Collaboration Accepted"
-            : "Collaboration Rejected",
+        accept ? "Collaboration Accepted" : "Collaboration Rejected",
         snackPosition: SnackPosition.BOTTOM,
       );
     } catch (e, s) {

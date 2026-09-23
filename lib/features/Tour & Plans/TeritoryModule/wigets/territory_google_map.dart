@@ -8,10 +8,10 @@ import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 
 import 'doctor_marker_widget.dart';
 
-
 import '../../../../utils/constants/colors.dart';
 import '../controller/territory_controller.dart';
 import 'area_circle_widget.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class TerritoryGoogleMap extends GetView<TerritoryController> {
   const TerritoryGoogleMap({super.key});
@@ -20,38 +20,22 @@ class TerritoryGoogleMap extends GetView<TerritoryController> {
   Widget build(BuildContext context) {
     return Obx(() {
       return FlutterMap(
-
         mapController: controller.mapController,
-
         options: MapOptions(
-
-
-
           initialCenter: controller.currentCenter.value,
-
           initialZoom: controller.currentZoom.value,
-
           onMapReady: () {
             controller.onMapReady();
           },
-
           minZoom: 5,
-
           maxZoom: 18,
-
           interactionOptions: const InteractionOptions(
             flags: InteractiveFlag.all,
           ),
-
           onPositionChanged: (position, hasGesture) {
-
-            controller.currentZoom.value =
-                position.zoom ?? 13;
-
+            controller.currentZoom.value = position.zoom ?? 13;
           },
-
           onTap: (_, point) {
-
             print("TerritoryController ===== MAP TAP =====");
 
             final area = controller.areaFromPoint(point);
@@ -65,50 +49,35 @@ class TerritoryGoogleMap extends GetView<TerritoryController> {
               print("TerritoryController No Area Found");
             }
           },
-
           onSecondaryTap: (_, __) {},
-
           onLongPress: (_, __) {},
-
         ),
-
         children: [
-
           /////////////////////////////////////////////////////
           /// MAP
           /////////////////////////////////////////////////////
 
           Obx(() {
-
             if (!controller.isOfflineMode.value) {
-
               return TileLayer(
-
-                urlTemplate:
-                "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-
-                userAgentPackageName:
-                "com.medicle.sales",
-
+                urlTemplate: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                userAgentPackageName: "com.medicle.sales",
               );
-
             }
 
             return const SizedBox();
-
           }),
 
           /////////////////////////////////////////////////////
           /// AREA CIRCLE
           /////////////////////////////////////////////////////
 
-          if(controller.showAreas.value)
-
+          if (controller.showAreas.value)
             if (controller.showBeats.value)
 
               /// old one for beat edge
 
-             /* PolygonLayer(
+              /* PolygonLayer(
 
 
 
@@ -145,7 +114,7 @@ class TerritoryGoogleMap extends GetView<TerritoryController> {
                   );
 
                   // this is old one.
-                 *//* return Polygon(
+                 */ /* return Polygon(
 
                     points: areas.map((e) {
 
@@ -165,7 +134,7 @@ class TerritoryGoogleMap extends GetView<TerritoryController> {
 
                     borderStrokeWidth: 3,
 
-                  );*//*
+                  );*/ /*
 
                 }).toList(),
 
@@ -173,7 +142,7 @@ class TerritoryGoogleMap extends GetView<TerritoryController> {
 
               /// new one for beat circle
               if (controller.showBeats.value)
-               /* CircleLayer(
+                /* CircleLayer(
                   circles: controller.visibleBeats.map((beat) {
 
                     final areas = controller.beatAreasOf(beat);
@@ -206,8 +175,7 @@ class TerritoryGoogleMap extends GetView<TerritoryController> {
                   }).toList(),
                 ),*/
 
-
-         /* MarkerLayer(
+                /* MarkerLayer(
             markers: controller.visibleBeats.map((beat) {
 
               final areas = controller.beatAreasOf(beat);
@@ -236,7 +204,7 @@ class TerritoryGoogleMap extends GetView<TerritoryController> {
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: const [
                         BoxShadow(
-                          color: Colors.black26,
+                          color: TColors.black26,
                           blurRadius: 6,
                         ),
                       ],
@@ -244,7 +212,7 @@ class TerritoryGoogleMap extends GetView<TerritoryController> {
                     child: Text(
                       beat.beatName,
                       style: const TextStyle(
-                        color: Colors.white,
+                        color: TColors.white,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -254,41 +222,42 @@ class TerritoryGoogleMap extends GetView<TerritoryController> {
             }).toList(),
           ),*/
 
-          /// HEADQUARTER MARKERS
-          MarkerLayer(
-            markers: controller.headquarters.map((hq) {
-              return Marker(
-                point: LatLng(
-                  hq.latitude,
-                  hq.longitude,
-                ),
-                width: 46,
-                height: 46,
-                child: GestureDetector(
-                  onTap: () => controller.changeHeadquarter(hq),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: controller.selectedHeadquarter.value?.id == hq.id
-                          ? Colors.red
-                          : Colors.orange,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Colors.white,
-                        width: 3,
+                /// HEADQUARTER MARKERS
+                MarkerLayer(
+                  markers: controller.headquarters.map((hq) {
+                    return Marker(
+                      point: LatLng(
+                        hq.latitude,
+                        hq.longitude,
                       ),
-                    ),
-                    child: const Icon(
-                      Icons.location_city,
-                      color: Colors.white,
-                      size: 22,
-                    ),
-                  ),
+                      width: TSizes.v46,
+                      height: TSizes.v46,
+                      child: GestureDetector(
+                        onTap: () => controller.changeHeadquarter(hq),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: controller.selectedHeadquarter.value?.id ==
+                                    hq.id
+                                ? TColors.materialRed
+                                : TColors.materialOrange,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: TColors.white,
+                              width: TSizes.v3,
+                            ),
+                          ),
+                          child: const Icon(
+                            Icons.location_city,
+                            color: TColors.white,
+                            size: TSizes.v22,
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
                 ),
-              );
-            }).toList(),
-          ),
 
-         /*   CircleLayer(
+          /*   CircleLayer(
 
               circles: controller.visibleAreas.map((area){
                 final selected = controller.selectedAreas.any(
@@ -329,31 +298,27 @@ class TerritoryGoogleMap extends GetView<TerritoryController> {
           ),
 
           if (controller.showAreaLabels)
-          MarkerLayer(
-            markers: controller.visibleAreas.map((area) {
-              return Marker(
-                point: LatLng(
-                  area.latitude,
-                  area.longitude,
-                ),
-                width: 110,
-                height: 55,
-                child: AreaCircleWidget(
-                  area: area,
-                ),
-              );
-            }).toList(),
-          ),
-
+            MarkerLayer(
+              markers: controller.visibleAreas.map((area) {
+                return Marker(
+                  point: LatLng(
+                    area.latitude,
+                    area.longitude,
+                  ),
+                  width: TSizes.v110,
+                  height: TSizes.v55,
+                  child: AreaCircleWidget(
+                    area: area,
+                  ),
+                );
+              }).toList(),
+            ),
 
           /////////////////////////////////////////////////////
           /// DOCTOR MARKERS
           /////////////////////////////////////////////////////
 
-
-
-
-         /* if (controller.showDoctors.value &&
+          /* if (controller.showDoctors.value &&
               controller.showDoctorMarkers)
 
 
@@ -416,7 +381,7 @@ class TerritoryGoogleMap extends GetView<TerritoryController> {
                       shape: BoxShape.circle,
 
                       border: Border.all(
-                        color: Colors.white,
+                        color: TColors.white,
                         width: 3,
                       ),
 
@@ -430,7 +395,7 @@ class TerritoryGoogleMap extends GetView<TerritoryController> {
 
                         style: const TextStyle(
 
-                          color: Colors.white,
+                          color: TColors.white,
 
                           fontWeight: FontWeight.bold,
 
@@ -447,9 +412,7 @@ class TerritoryGoogleMap extends GetView<TerritoryController> {
               ),
 
             ),*/
-
         ],
-
       );
     });
   }

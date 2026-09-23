@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-
-import '../../../../utils/constants/colors.dart';
-import '../../../../utils/constants/sizes.dart';
-
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 import '../DayType.dart';
 import '../controller/tour_plan_controller.dart';
 import '../wigets/DayDetailsPanel.dart';
 import '../wigets/custom_calander_grid.dart';
 import '../wigets/day_editor_pannel.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class TourPlanDetailsScreen extends StatefulWidget {
   const TourPlanDetailsScreen({
@@ -79,7 +78,7 @@ class _TourPlanDetailsScreenState extends State<TourPlanDetailsScreen> {
               child: SafeArea(
                 bottom: false,
                 child: Obx(
-                      () => _buildHeader(controller),
+                  () => _buildHeader(controller),
                 ),
               ),
             ),
@@ -132,27 +131,26 @@ class _TourPlanDetailsScreenState extends State<TourPlanDetailsScreen> {
             onPressed: () => Get.back(),
             icon: const Icon(
               Icons.arrow_back_ios_new,
-              color: Colors.white,
+              color: TColors.white,
             ),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: TSizes.v10),
           const Icon(
             Icons.event_note,
             color: TColors.white,
-            size: 28,
+            size: TSizes.v28,
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: TSizes.v12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  "Tour Plan",
+                  TTexts.uiTextTourPlan,
                   style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white
-                  ),
+                      fontSize: TSizes.v22,
+                      fontWeight: FontWeight.bold,
+                      color: TColors.white),
                 ),
                 Text(
                   controller.monthTitle,
@@ -169,13 +167,11 @@ class _TourPlanDetailsScreenState extends State<TourPlanDetailsScreen> {
                 : () => controller.changePlanningMonth(context),
             icon: const Icon(
               Icons.calendar_month,
-              color: Colors.white,
+              color: TColors.white,
             ),
             label: Text(
               controller.monthTitle,
-              style: TextStyle(
-                color: Colors.white
-              ),
+              style: TextStyle(color: TColors.white),
             ),
           ),
         ],
@@ -192,7 +188,7 @@ class _TourPlanDetailsScreenState extends State<TourPlanDetailsScreen> {
         TSizes.lg,
       ),
       child: Card(
-        elevation: 0,
+        elevation: TSizes.v0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(
             TSizes.cardRadiusLg,
@@ -243,22 +239,21 @@ class _TourPlanDetailsScreenState extends State<TourPlanDetailsScreen> {
   }
 
   Widget _summaryTile(
-      String title,
-      String value,
-      IconData icon,
-      ) {
+    String title,
+    String value,
+    IconData icon,
+  ) {
     return Row(
       children: [
         CircleAvatar(
-          radius: 24,
+          radius: TSizes.v24,
           backgroundColor: TColors.primary_shade50,
           child: Icon(
             icon,
             color: TColors.primary,
           ),
         ),
-        const SizedBox(width: 12),
-
+        const SizedBox(width: TSizes.v12),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -272,14 +267,14 @@ class _TourPlanDetailsScreenState extends State<TourPlanDetailsScreen> {
                   color: TColors.textSecondary,
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: TSizes.v4),
               Text(
                 value,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: 17,
+                  fontSize: TSizes.v17,
                 ),
               ),
             ],
@@ -291,8 +286,8 @@ class _TourPlanDetailsScreenState extends State<TourPlanDetailsScreen> {
 
   //------------------------------------------------------------
   Widget _buildLandscape(
-      TourPlanController controller,
-      ) {
+    TourPlanController controller,
+  ) {
     return Row(
       children: [
         // --------------------------------------------------------
@@ -340,14 +335,14 @@ class _TourPlanDetailsScreenState extends State<TourPlanDetailsScreen> {
         // --------------------------------------------------------
 
         SizedBox(
-          width: 420,
+          width: TSizes.v420,
           child: Container(
             margin: const EdgeInsets.only(
               right: TSizes.lg,
               bottom: TSizes.lg,
             ),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: TColors.white,
               borderRadius: BorderRadius.circular(
                 TSizes.cardRadiusLg,
               ),
@@ -357,43 +352,30 @@ class _TourPlanDetailsScreenState extends State<TourPlanDetailsScreen> {
             ),
             child: controller.selectedDay.value == null
                 ? const Center(
-              child: Text(
-                "Select any working day",
-              ),
-            )
+                    child: Text(
+                      TTexts.uiTextSelectAnyWorkingDay,
+                    ),
+                  )
                 : controller.isViewMode
-                ? DayDetailsPanel(
-              key: ValueKey(
-                controller
-                    .selectedDay
-                    .value!
-                    .date,
-              ),
-              day: controller
-                  .selectedDay
-                  .value!,
-              onClose: () {
-                controller.selectedDay.value =
-                null;
-              },
-            )
-                : DayEditorPanel(
-              key: ValueKey(
-                controller
-                    .selectedDay
-                    .value!
-                    .date,
-              ),
-              day: controller
-                  .selectedDay
-                  .value!,
-              onClose: () {
-                controller.selectedDay.value =
-                null;
-              },
-              onDayUpdated:
-              controller.updateDay,
-            ),
+                    ? DayDetailsPanel(
+                        key: ValueKey(
+                          controller.selectedDay.value!.date,
+                        ),
+                        day: controller.selectedDay.value!,
+                        onClose: () {
+                          controller.selectedDay.value = null;
+                        },
+                      )
+                    : DayEditorPanel(
+                        key: ValueKey(
+                          controller.selectedDay.value!.date,
+                        ),
+                        day: controller.selectedDay.value!,
+                        onClose: () {
+                          controller.selectedDay.value = null;
+                        },
+                        onDayUpdated: controller.updateDay,
+                      ),
           ),
         ),
       ],
@@ -402,14 +384,13 @@ class _TourPlanDetailsScreenState extends State<TourPlanDetailsScreen> {
 
   //------------------------------------------------------------
   Widget _buildPortrait(
-      BuildContext context,
-      TourPlanController controller,
-      ) {
+    BuildContext context,
+    TourPlanController controller,
+  ) {
     return Obx(
-          () => CustomCalendarGrid(
+      () => CustomCalendarGrid(
         days: controller.monthDays,
         selectedDay: controller.selectedDay.value,
-
         onDaySelected: (day) {
           // ------------------------------------------------------
           // READ ONLY
@@ -419,17 +400,13 @@ class _TourPlanDetailsScreenState extends State<TourPlanDetailsScreen> {
             showModalBottomSheet(
               context: context,
               isScrollControlled: true,
-              backgroundColor: Colors.transparent,
+              backgroundColor: TColors.transparent,
               builder: (_) {
                 return Container(
-                  height:
-                  MediaQuery.of(context).size.height *
-                      .78,
-                  decoration:
-                  const BoxDecoration(
-                    color: Colors.white,
-                    borderRadius:
-                    BorderRadius.vertical(
+                  height: MediaQuery.of(context).size.height * .78,
+                  decoration: const BoxDecoration(
+                    color: TColors.white,
+                    borderRadius: BorderRadius.vertical(
                       top: Radius.circular(24),
                     ),
                   ),
@@ -455,17 +432,13 @@ class _TourPlanDetailsScreenState extends State<TourPlanDetailsScreen> {
           showModalBottomSheet(
             context: context,
             isScrollControlled: true,
-            backgroundColor: Colors.transparent,
+            backgroundColor: TColors.transparent,
             builder: (_) {
               return Container(
-                height:
-                MediaQuery.of(context).size.height *
-                    .72,
-                decoration:
-                const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius:
-                  BorderRadius.vertical(
+                height: MediaQuery.of(context).size.height * .72,
+                decoration: const BoxDecoration(
+                  color: TColors.white,
+                  borderRadius: BorderRadius.vertical(
                     top: Radius.circular(24),
                   ),
                 ),
@@ -474,8 +447,7 @@ class _TourPlanDetailsScreenState extends State<TourPlanDetailsScreen> {
                   onClose: () {
                     Get.back();
                   },
-                  onDayUpdated:
-                  controller.updateDay,
+                  onDayUpdated: controller.updateDay,
                 ),
               );
             },
@@ -490,13 +462,13 @@ class _TourPlanDetailsScreenState extends State<TourPlanDetailsScreen> {
     TourPlanController controller,
   ) {
     return Container(
-      height: 88,
+      height: TSizes.v88,
       padding: const EdgeInsets.symmetric(
         horizontal: TSizes.lg,
         vertical: TSizes.md,
       ),
       decoration: const BoxDecoration(
-        color: Colors.white,
+        color: TColors.white,
         border: Border(
           top: BorderSide(
             color: TColors.borderSecondary,
@@ -521,7 +493,7 @@ class _TourPlanDetailsScreenState extends State<TourPlanDetailsScreen> {
                       Icons.lock,
                       color: TColors.success,
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: TSizes.v10),
                     Expanded(
                       child: Text(
                         controller.isApprovedTourPlan
@@ -538,22 +510,21 @@ class _TourPlanDetailsScreenState extends State<TourPlanDetailsScreen> {
             ),
           if (controller.canEditCurrentPlan) ...[
             OutlinedButton.icon(
-              onPressed: controller.isSavingDraft.value
-            ? null
-                : controller.saveDraft,
+              onPressed:
+                  controller.isSavingDraft.value ? null : controller.saveDraft,
               icon: controller.isSavingDraft.value
                   ? const SizedBox(
-                      width: 18,
-                      height: 18,
+                      width: TSizes.v18,
+                      height: TSizes.v18,
                       child: CircularProgressIndicator(
-                        strokeWidth: 2,
+                        strokeWidth: TSizes.v2,
                       ),
                     )
                   : const Icon(
                       Icons.save_outlined,
                     ),
               label: const Text(
-                "Save Draft",
+                TTexts.uiTextSaveDraft,
               ),
             ),
             const SizedBox(width: TSizes.md),
@@ -566,7 +537,7 @@ class _TourPlanDetailsScreenState extends State<TourPlanDetailsScreen> {
                 );
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange,
+                backgroundColor: TColors.materialOrange,
               ),
               icon: const Icon(
                 Icons.fact_check,
@@ -587,7 +558,7 @@ class _TourPlanDetailsScreenState extends State<TourPlanDetailsScreen> {
                       width: 18,
                       height: 18,
                       child: CircularProgressIndicator(
-                        color: Colors.white,
+                        color: TColors.white,
                         strokeWidth: 2,
                       ),
                     )

@@ -27,14 +27,14 @@ class StockistResponse {
         data: json["data"] == null
             ? []
             : List<Stockist>.from(
-            json["data"].map((x) => Stockist.fromJson(x))),
+                json["data"].map((x) => Stockist.fromJson(x))),
       );
 
   Map<String, dynamic> toJson() => {
-    "success": success,
-    "count": count,
-    "data": List<dynamic>.from(data.map((x) => x.toJson())),
-  };
+        "success": success,
+        "count": count,
+        "data": List<dynamic>.from(data.map((x) => x.toJson())),
+      };
 }
 
 class Stockist {
@@ -77,7 +77,6 @@ class Stockist {
   final String? areaId;
   final bool isAssignedToArea;
   final Area? area;
-
 
   Stockist({
     required this.id,
@@ -122,111 +121,106 @@ class Stockist {
   });
 
   factory Stockist.fromJson(Map<String, dynamic> json) => Stockist(
-    id: json["id"] ?? "",
-    firmName: json["firm_name"] ?? "",
-    registeredBusinessName: json["registered_business_name"] ?? "",
-    natureOfBusiness: json["nature_of_business"] ?? "",
-    gstNumber: json["gst_number"],
-    drugLicenseNumber: json["drug_license_number"],
-    panNumber: json["pan_number"],
-    registeredOfficeAddress: json["registered_office_address"] ?? "",
-    latitude: json["latitude"],
-    longitude: json["longitude"],
-    contactPerson: json["contact_person"] ?? "",
-    designation: json["designation"],
-    mobileNumber: json["mobile_number"],
-    emailAddress: json["email_address"],
-    website: json["website"],
-    yearsInBusiness: json["years_in_business"] ?? 0,
-    areasOfOperation: json["areas_of_operation"] == null
-        ? []
-        : List<String>.from(json["areas_of_operation"].map((x) => x)),
-    currentPharmaDistributorships:
-    json["current_pharma_distributorships"] == null
-        ? []
-        : List<String>.from(
-        json["current_pharma_distributorships"].map((x) => x)),
-    warehouseFacility: json["warehouse_facility"] ?? false,
-    storageFacilitySize: json["storage_facility_size"],
-    coldStorageAvailable: json["cold_storage_available"] ?? false,
-    numberOfSalesRepresentatives: json["number_of_sales_representatives"],
-    bankDetails: json["bank_details"] == null ||
-        (json["bank_details"] is Map && json["bank_details"].isEmpty)
-        ? null
-        : BankDetails.fromJson(json["bank_details"]),
-    geoImageUrl: json["geo_image_url"],
-    headOfficeId: json["head_office_id"] ?? "",
-    gstCertificateUrl: json["gst_certificate_url"],
-    drugLicenseUrl: json["drug_license_url"],
-    panCardUrl: json["pan_card_url"],
-    cancelledChequeUrl: json["cancelled_cheque_url"],
-    businessProfileUrl: json["business_profile_url"],
-    createdAt: json["created_at"] == null
-        ? DateTime.now()
-        : DateTime.parse(json["created_at"]),
-    updatedAt: json["updated_at"] == null
-        ? DateTime.now()
-        : DateTime.parse(json["updated_at"]),
-    annualTurnover: json["annual_turnover"] == null
-        ? []
-        : List<AnnualTurnover>.from(
-        json["annual_turnover"].map((x) => AnnualTurnover.fromJson(x))),
-    headOffice: json["headOffice"] == null
-        ? null
-        : HeadOffice.fromJson(json["headOffice"]),
-    internalId: json["_id"] ?? "",
-    geoImageStatus: json["geo_image_status"] ?? false,
-    areaId: json["area_id"]?.toString(),
-
-    isAssignedToArea:
-    json["is_assigned_to_area"] ?? false,
-
-    area: json["area"] != null
-        ? Area.fromJson(json["area"])
-        : null,
-  );
+        id: json["id"] ?? "",
+        firmName: json["firm_name"] ?? "",
+        registeredBusinessName: json["registered_business_name"] ?? "",
+        natureOfBusiness: json["nature_of_business"] ?? "",
+        gstNumber: json["gst_number"],
+        drugLicenseNumber: json["drug_license_number"],
+        panNumber: json["pan_number"],
+        registeredOfficeAddress: json["registered_office_address"] ?? "",
+        latitude: json["latitude"],
+        longitude: json["longitude"],
+        contactPerson: json["contact_person"] ?? "",
+        designation: json["designation"],
+        mobileNumber: json["mobile_number"],
+        emailAddress: json["email_address"],
+        website: json["website"],
+        yearsInBusiness: json["years_in_business"] ?? 0,
+        areasOfOperation: json["areas_of_operation"] == null
+            ? []
+            : List<String>.from(json["areas_of_operation"].map((x) => x)),
+        currentPharmaDistributorships:
+            json["current_pharma_distributorships"] == null
+                ? []
+                : List<String>.from(
+                    json["current_pharma_distributorships"].map((x) => x)),
+        warehouseFacility: json["warehouse_facility"] ?? false,
+        storageFacilitySize: json["storage_facility_size"],
+        coldStorageAvailable: json["cold_storage_available"] ?? false,
+        numberOfSalesRepresentatives: json["number_of_sales_representatives"],
+        bankDetails: json["bank_details"] == null ||
+                (json["bank_details"] is Map && json["bank_details"].isEmpty)
+            ? null
+            : BankDetails.fromJson(json["bank_details"]),
+        geoImageUrl: json["geo_image_url"],
+        headOfficeId: json["head_office_id"] ?? "",
+        gstCertificateUrl: json["gst_certificate_url"],
+        drugLicenseUrl: json["drug_license_url"],
+        panCardUrl: json["pan_card_url"],
+        cancelledChequeUrl: json["cancelled_cheque_url"],
+        businessProfileUrl: json["business_profile_url"],
+        createdAt: json["created_at"] == null
+            ? DateTime.now()
+            : DateTime.parse(json["created_at"]),
+        updatedAt: json["updated_at"] == null
+            ? DateTime.now()
+            : DateTime.parse(json["updated_at"]),
+        annualTurnover: json["annual_turnover"] == null
+            ? []
+            : List<AnnualTurnover>.from(
+                json["annual_turnover"].map((x) => AnnualTurnover.fromJson(x))),
+        headOffice: json["headOffice"] == null
+            ? null
+            : HeadOffice.fromJson(json["headOffice"]),
+        internalId: json["_id"] ?? "",
+        geoImageStatus: json["geo_image_status"] ?? false,
+        areaId: json["area_id"]?.toString(),
+        isAssignedToArea: json["is_assigned_to_area"] ?? false,
+        area: json["area"] != null ? Area.fromJson(json["area"]) : null,
+      );
 
   Map<String, dynamic> toJson() => {
-    "id": id,
-    "firm_name": firmName,
-    "registered_business_name": registeredBusinessName,
-    "nature_of_business": natureOfBusiness,
-    "gst_number": gstNumber,
-    "drug_license_number": drugLicenseNumber,
-    "pan_number": panNumber,
-    "registered_office_address": registeredOfficeAddress,
-    "latitude": latitude,
-    "longitude": longitude,
-    "contact_person": contactPerson,
-    "designation": designation,
-    "mobile_number": mobileNumber,
-    "email_address": emailAddress,
-    "website": website,
-    "years_in_business": yearsInBusiness,
-    "areas_of_operation":
-    List<dynamic>.from(areasOfOperation.map((x) => x)),
-    "current_pharma_distributorships":
-    List<dynamic>.from(currentPharmaDistributorships.map((x) => x)),
-    "warehouse_facility": warehouseFacility,
-    "storage_facility_size": storageFacilitySize,
-    "cold_storage_available": coldStorageAvailable,
-    "number_of_sales_representatives": numberOfSalesRepresentatives,
-    "bank_details": bankDetails?.toJson(),
-    "geo_image_url": geoImageUrl,
-    "head_office_id": headOfficeId,
-    "gst_certificate_url": gstCertificateUrl,
-    "drug_license_url": drugLicenseUrl,
-    "pan_card_url": panCardUrl,
-    "cancelled_cheque_url": cancelledChequeUrl,
-    "business_profile_url": businessProfileUrl,
-    "created_at": createdAt.toIso8601String(),
-    "updated_at": updatedAt.toIso8601String(),
-    "annual_turnover":
-    List<dynamic>.from(annualTurnover.map((x) => x.toJson())),
-    "headOffice": headOffice?.toJson(),
-    "_id": internalId,
-    "geo_image_status": geoImageStatus,
-  };
+        "id": id,
+        "firm_name": firmName,
+        "registered_business_name": registeredBusinessName,
+        "nature_of_business": natureOfBusiness,
+        "gst_number": gstNumber,
+        "drug_license_number": drugLicenseNumber,
+        "pan_number": panNumber,
+        "registered_office_address": registeredOfficeAddress,
+        "latitude": latitude,
+        "longitude": longitude,
+        "contact_person": contactPerson,
+        "designation": designation,
+        "mobile_number": mobileNumber,
+        "email_address": emailAddress,
+        "website": website,
+        "years_in_business": yearsInBusiness,
+        "areas_of_operation":
+            List<dynamic>.from(areasOfOperation.map((x) => x)),
+        "current_pharma_distributorships":
+            List<dynamic>.from(currentPharmaDistributorships.map((x) => x)),
+        "warehouse_facility": warehouseFacility,
+        "storage_facility_size": storageFacilitySize,
+        "cold_storage_available": coldStorageAvailable,
+        "number_of_sales_representatives": numberOfSalesRepresentatives,
+        "bank_details": bankDetails?.toJson(),
+        "geo_image_url": geoImageUrl,
+        "head_office_id": headOfficeId,
+        "gst_certificate_url": gstCertificateUrl,
+        "drug_license_url": drugLicenseUrl,
+        "pan_card_url": panCardUrl,
+        "cancelled_cheque_url": cancelledChequeUrl,
+        "business_profile_url": businessProfileUrl,
+        "created_at": createdAt.toIso8601String(),
+        "updated_at": updatedAt.toIso8601String(),
+        "annual_turnover":
+            List<dynamic>.from(annualTurnover.map((x) => x.toJson())),
+        "headOffice": headOffice?.toJson(),
+        "_id": internalId,
+        "geo_image_status": geoImageStatus,
+      };
 }
 
 class AnnualTurnover {
@@ -239,14 +233,14 @@ class AnnualTurnover {
   });
 
   factory AnnualTurnover.fromJson(Map<String, dynamic> json) => AnnualTurnover(
-    year: json["year"] ?? 0,
-    amount: json["amount"] ?? 0,
-  );
+        year: json["year"] ?? 0,
+        amount: json["amount"] ?? 0,
+      );
 
   Map<String, dynamic> toJson() => {
-    "year": year,
-    "amount": amount,
-  };
+        "year": year,
+        "amount": amount,
+      };
 }
 
 class BankDetails {
@@ -265,21 +259,21 @@ class BankDetails {
   });
 
   factory BankDetails.fromJson(Map<String, dynamic> json) => BankDetails(
-    branch: json["branch"],
-    // The JSON has mixed casing for bank keys, so we check multiple possibilities
-    bankName: json["bankName"] ?? json["bank_name"],
-    ifscCode: json["ifscCode"] ?? json["ifsc"] ?? json["ifsc_code"],
-    accountNumber: json["accountNumber"] ?? json["account_number"],
-    accountHolderName: json["account_holder_name"],
-  );
+        branch: json["branch"],
+        // The JSON has mixed casing for bank keys, so we check multiple possibilities
+        bankName: json["bankName"] ?? json["bank_name"],
+        ifscCode: json["ifscCode"] ?? json["ifsc"] ?? json["ifsc_code"],
+        accountNumber: json["accountNumber"] ?? json["account_number"],
+        accountHolderName: json["account_holder_name"],
+      );
 
   Map<String, dynamic> toJson() => {
-    "branch": branch,
-    "bankName": bankName,
-    "ifscCode": ifscCode,
-    "accountNumber": accountNumber,
-    "account_holder_name": accountHolderName,
-  };
+        "branch": branch,
+        "bankName": bankName,
+        "ifscCode": ifscCode,
+        "accountNumber": accountNumber,
+        "account_holder_name": accountHolderName,
+      };
 }
 
 class HeadOffice {
@@ -292,14 +286,14 @@ class HeadOffice {
   });
 
   factory HeadOffice.fromJson(Map<String, dynamic> json) => HeadOffice(
-    id: json["id"] ?? "",
-    name: json["name"] ?? "",
-  );
+        id: json["id"] ?? "",
+        name: json["name"] ?? "",
+      );
 
   Map<String, dynamic> toJson() => {
-    "id": id,
-    "name": name,
-  };
+        "id": id,
+        "name": name,
+      };
 }
 
 class Area {

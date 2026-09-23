@@ -1,17 +1,17 @@
-import 'dart:math' as math;
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:get/get.dart'; // Using GetX
+import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
+import '../controller/HolidayController.dart';
+import '../models/Holiday.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 // =============================================================================
 // SECTION 1: IMPORTS
 // =============================================================================
-import '../../../utils/constants/colors.dart'; // Keep your imports
-
-import '../controller/HolidayController.dart';
-import '../models/Holiday.dart';
 
 // =============================================================================
 // SECTION 2: THEME & CONSTANTS (PREMIUM DESIGN SYSTEM)
@@ -19,12 +19,12 @@ import '../models/Holiday.dart';
 
 class AppTheme {
   // --- Colors ---
-  static const Color background = Color(0xFFF8FAFC); // Slate 50
-  static const Color surface = Colors.white;
-  static const Color textPrimary = Color(0xFF0F172A); // Slate 900
-  static const Color textSecondary = Color(0xFF475569); // Slate 600
-  static const Color textTertiary = Color(0xFF94A3B8); // Slate 400
-  static const Color divider = Color(0xFFE2E8F0); // Slate 200
+  static const Color background = TColors.hex_FFF8FAFC; // Slate 50
+  static const Color surface = TColors.white;
+  static const Color textPrimary = TColors.hex_FF0F172A; // Slate 900
+  static const Color textSecondary = TColors.hex_FF475569; // Slate 600
+  static const Color textTertiary = TColors.hex_FF94A3B8; // Slate 400
+  static const Color divider = TColors.hex_FFE2E8F0; // Slate 200
 
   // --- Dimensions ---
   static const double paddingS = 8.0;
@@ -36,78 +36,78 @@ class AppTheme {
 
   // --- Shadows (Glows & Depth) ---
   static List<BoxShadow> get shadowLow => [
-    BoxShadow(
-      color: const Color(0xFF64748B).withOpacity(0.06),
-      blurRadius: 8,
-      offset: const Offset(0, 2),
-    ),
-  ];
+        BoxShadow(
+          color: TColors.hex_FF64748B.withOpacity(0.06),
+          blurRadius: TSizes.v8,
+          offset: const Offset(0, 2),
+        ),
+      ];
 
   static List<BoxShadow> get shadowMedium => [
-    BoxShadow(
-      color: const Color(0xFF64748B).withOpacity(0.08),
-      blurRadius: 16,
-      offset: const Offset(0, 4),
-    ),
-  ];
+        BoxShadow(
+          color: TColors.hex_FF64748B.withOpacity(0.08),
+          blurRadius: TSizes.v16,
+          offset: const Offset(0, 4),
+        ),
+      ];
 
   static List<BoxShadow> get shadowHigh => [
-    BoxShadow(
-      color: const Color(0xFF64748B).withOpacity(0.12),
-      blurRadius: 24,
-      offset: const Offset(0, 8),
-    ),
-  ];
+        BoxShadow(
+          color: TColors.hex_FF64748B.withOpacity(0.12),
+          blurRadius: TSizes.v24,
+          offset: const Offset(0, 8),
+        ),
+      ];
 
   static List<BoxShadow> glow(Color color) => [
-    BoxShadow(
-      color: color.withOpacity(0.35),
-      blurRadius: 20,
-      spreadRadius: -2,
-      offset: const Offset(0, 8),
-    ),
-  ];
+        BoxShadow(
+          color: color.withOpacity(0.35),
+          blurRadius: TSizes.v20,
+          spreadRadius: -2,
+          offset: const Offset(0, 8),
+        ),
+      ];
 
   // --- Text Styles ---
   static TextStyle get h1 => const TextStyle(
-    fontSize: 28,
-    fontWeight: FontWeight.w900,
-    color: textPrimary,
-    letterSpacing: -1.0,
-    height: 1.1,
-  );
+        fontSize: TSizes.v28,
+        fontWeight: FontWeight.w900,
+        color: textPrimary,
+        letterSpacing: -1.0,
+        height: TSizes.v1_1,
+      );
 
   static TextStyle get h2 => const TextStyle(
-    fontSize: 22,
-    fontWeight: FontWeight.w800,
-    color: textPrimary,
-    letterSpacing: -0.5,
-  );
+        fontSize: TSizes.v22,
+        fontWeight: FontWeight.w800,
+        color: textPrimary,
+        letterSpacing: -0.5,
+      );
 
   static TextStyle get h3 => const TextStyle(
-    fontSize: 18,
-    fontWeight: FontWeight.w700,
-    color: textPrimary,
-  );
+        fontSize: TSizes.v18,
+        fontWeight: FontWeight.w700,
+        color: textPrimary,
+      );
 
   static TextStyle get bodyLarge => const TextStyle(
-    fontSize: 16,
-    fontWeight: FontWeight.w500,
-    color: textSecondary,
-    height: 1.5,
-  );
+        fontSize: TSizes.v16,
+        fontWeight: FontWeight.w500,
+        color: textSecondary,
+        height: TSizes.v1_5,
+      );
 
   static TextStyle get bodySmall => const TextStyle(
-    fontSize: 13,
-    fontWeight: FontWeight.w500,
-    color: textTertiary,
-  );
+        fontSize: TSizes.v13,
+        fontWeight: FontWeight.w500,
+        color: textTertiary,
+      );
 
   static TextStyle get label => const TextStyle(
-    fontSize: 11,
-    fontWeight: FontWeight.w800,
-    letterSpacing: 0.5,
-  );
+        fontSize: TSizes.v11,
+        fontWeight: FontWeight.w800,
+        letterSpacing: 0.5,
+      );
 }
 
 // =============================================================================
@@ -157,9 +157,8 @@ class _HolidayTimelineScreenState extends State<HolidayTimelineScreen> {
   Holiday? get nextHoliday {
     final now = DateTime.now();
     try {
-      return filteredHolidays.firstWhere((h) =>
-          h.date.isAfter(now.subtract(const Duration(days: 1)))
-      );
+      return filteredHolidays.firstWhere(
+          (h) => h.date.isAfter(now.subtract(const Duration(days: 1))));
     } catch (e) {
       return null;
     }
@@ -181,13 +180,13 @@ class _HolidayTimelineScreenState extends State<HolidayTimelineScreen> {
       backgroundColor: AppTheme.background,
       body: AnnotatedRegion<SystemUiOverlayStyle>(
         value: SystemUiOverlayStyle.dark.copyWith(
-          statusBarColor: Colors.transparent,
+          statusBarColor: TColors.transparent,
         ),
         child: GestureDetector(
           onTap: () => FocusScope.of(context).unfocus(),
           child: RefreshIndicator(
             color: TColors.primary,
-            backgroundColor: Colors.white,
+            backgroundColor: TColors.white,
             edgeOffset: 120,
             onRefresh: () async {
               HapticFeedback.mediumImpact();
@@ -196,7 +195,8 @@ class _HolidayTimelineScreenState extends State<HolidayTimelineScreen> {
             },
             child: CustomScrollView(
               controller: _scrollController,
-              physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+              physics: const BouncingScrollPhysics(
+                  parent: AlwaysScrollableScrollPhysics()),
               slivers: [
                 // 1. Premium App Bar with Search
                 _SliverHolidayAppBar(
@@ -241,7 +241,8 @@ class _HolidayTimelineScreenState extends State<HolidayTimelineScreen> {
 
                   // Empty State
                   if (filteredHolidays.isEmpty) {
-                    return const SliverFillRemaining(child: _EmptyStateWidget());
+                    return const SliverFillRemaining(
+                        child: _EmptyStateWidget());
                   }
 
                   // Data State
@@ -250,9 +251,9 @@ class _HolidayTimelineScreenState extends State<HolidayTimelineScreen> {
                     sliver: viewMode.value == ViewMode.timeline
                         ? _TimelineView(holidays: filteredHolidays)
                         : _CalendarView(
-                      holidays: filteredHolidays,
-                      focusDate: calendarFocusDate,
-                    ),
+                            holidays: filteredHolidays,
+                            focusDate: calendarFocusDate,
+                          ),
                   );
                 }),
               ],
@@ -266,23 +267,24 @@ class _HolidayTimelineScreenState extends State<HolidayTimelineScreen> {
           HapticFeedback.lightImpact();
           Get.snackbar(
             "Upcoming",
-            "Add Custom Holiday feature coming soon!",
+            TTexts.uiTextAddCustomHolidayFeatureComingSoon,
             snackPosition: SnackPosition.BOTTOM,
             margin: const EdgeInsets.all(16),
             backgroundColor: TColors.primary,
-            colorText: Colors.white,
+            colorText: TColors.white,
             duration: const Duration(seconds: 2),
           );
         },
         backgroundColor: TColors.primary,
-        child: const Icon(Icons.add, color: Colors.white),
+        child: const Icon(Icons.add, color: TColors.white),
       ),
     );
   }
 
   Widget _buildShimmerLoading() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppTheme.paddingL, vertical: 20),
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppTheme.paddingL, vertical: 20),
       child: Column(
         children: List.generate(4, (index) => const _ShimmerTicket()),
       ),
@@ -305,7 +307,7 @@ class _SliverHolidayAppBar extends StatelessWidget {
       floating: false,
       pinned: true,
       backgroundColor: AppTheme.background,
-      elevation: 0,
+      elevation: TSizes.v0,
       // Custom Back Button
       leading: Center(
         child: _GlassIconButton(
@@ -335,7 +337,7 @@ class _SliverHolidayAppBar extends StatelessWidget {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Colors.white,
+                TColors.white,
                 AppTheme.background,
               ],
             ),
@@ -343,22 +345,19 @@ class _SliverHolidayAppBar extends StatelessWidget {
         ),
         titlePadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         centerTitle: false,
-        title: LayoutBuilder(
-            builder: (context, constraints) {
-              return AnimatedOpacity(
-                duration: const Duration(milliseconds: 200),
-                opacity: 1.0,
-                child: const Text(
-                  "Holidays 2026",
-                  style: TextStyle(
-                      color: AppTheme.textPrimary,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 20
-                  ),
-                ),
-              );
-            }
-        ),
+        title: LayoutBuilder(builder: (context, constraints) {
+          return AnimatedOpacity(
+            duration: const Duration(milliseconds: 200),
+            opacity: 1.0,
+            child: const Text(
+              TTexts.uiTextHolidays2026,
+              style: TextStyle(
+                  color: AppTheme.textPrimary,
+                  fontWeight: FontWeight.w900,
+                  fontSize: TSizes.v20),
+            ),
+          );
+        }),
       ),
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(60),
@@ -378,9 +377,9 @@ class _SearchBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 48,
+      height: TSizes.v48,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: TColors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: AppTheme.shadowLow,
         border: Border.all(color: AppTheme.divider),
@@ -389,11 +388,12 @@ class _SearchBar extends StatelessWidget {
         onChanged: onChanged,
         style: AppTheme.bodyLarge.copyWith(color: AppTheme.textPrimary),
         decoration: InputDecoration(
-          hintText: "Search holidays...",
+          hintText: TTexts.uiTextSearchHolidays,
           hintStyle: AppTheme.bodyLarge.copyWith(color: AppTheme.textTertiary),
           prefixIcon: const Icon(Icons.search_rounded, color: TColors.primary),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         ),
       ),
     );
@@ -411,15 +411,15 @@ class _GlassIconButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 40,
-        height: 40,
+        width: TSizes.v40,
+        height: TSizes.v40,
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.8),
+          color: TColors.white.withOpacity(0.8),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.white),
+          border: Border.all(color: TColors.white),
           boxShadow: AppTheme.shadowLow,
         ),
-        child: Icon(icon, size: 20, color: AppTheme.textPrimary),
+        child: Icon(icon, size: TSizes.v20, color: AppTheme.textPrimary),
       ),
     );
   }
@@ -442,23 +442,23 @@ class _StatisticsSection extends StatelessWidget {
       child: Row(
         children: [
           _StatCard(
-            label: "Total Events",
+            label: TTexts.uiTextTotalEvents,
             count: stats['Total'] ?? 0,
             color: TColors.primary,
             icon: Icons.event_available_rounded,
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: TSizes.v12),
           _StatCard(
-            label: "National",
+            label: TTexts.uiTextNational,
             count: stats['National'] ?? 0,
-            color: Colors.blueAccent,
+            color: TColors.materialBlueAccent,
             icon: Icons.flag_rounded,
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: TSizes.v12),
           _StatCard(
-            label: "Religious",
+            label: TTexts.uiTextReligious,
             count: stats['Religious'] ?? 0,
-            color: Colors.purpleAccent,
+            color: TColors.materialPurpleAccent,
             icon: Icons.temple_buddhist_rounded,
           ),
         ],
@@ -485,7 +485,7 @@ class _StatCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: TColors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: AppTheme.shadowLow,
         border: Border.all(color: AppTheme.divider),
@@ -498,19 +498,21 @@ class _StatCard extends StatelessWidget {
               color: color.withOpacity(0.1),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon, size: 18, color: color),
+            child: Icon(icon, size: TSizes.v18, color: color),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: TSizes.v12),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 count.toString().padLeft(2, '0'),
-                style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
+                style: const TextStyle(
+                    fontWeight: FontWeight.w900, fontSize: TSizes.v16),
               ),
               Text(
                 label,
-                style: AppTheme.label.copyWith(color: AppTheme.textTertiary, fontSize: 10),
+                style: AppTheme.label.copyWith(
+                    color: AppTheme.textTertiary, fontSize: TSizes.v10),
               ),
             ],
           ),
@@ -529,7 +531,9 @@ class _NextHolidayHero extends StatelessWidget {
     if (holiday == null) return const SizedBox.shrink();
 
     final daysLeft = holiday!.date.difference(DateTime.now()).inDays;
-    final String timeText = daysLeft == 0 ? "Today" : (daysLeft == 1 ? "Tomorrow" : "In $daysLeft Days");
+    final String timeText = daysLeft == 0
+        ? "Today"
+        : (daysLeft == 1 ? "Tomorrow" : "In $daysLeft Days");
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 0),
@@ -552,39 +556,45 @@ class _NextHolidayHero extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: TColors.white.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.timer_outlined, color: Colors.white, size: 14),
-                      const SizedBox(width: 4),
-                      Text("UP NEXT", style: AppTheme.label.copyWith(color: Colors.white)),
+                      const Icon(Icons.timer_outlined,
+                          color: TColors.white, size: TSizes.v14),
+                      const SizedBox(width: TSizes.v4),
+                      Text(TTexts.uiTextUPNEXT,
+                          style: AppTheme.label.copyWith(color: TColors.white)),
                     ],
                   ),
                 ),
-                const Icon(Icons.notifications_active_outlined, color: Colors.white70),
+                const Icon(Icons.notifications_active_outlined,
+                    color: TColors.white70),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: TSizes.v16),
             Text(
               holiday!.title,
-              style: AppTheme.h1.copyWith(color: Colors.white, fontSize: 24),
+              style: AppTheme.h1
+                  .copyWith(color: TColors.white, fontSize: TSizes.v24),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: TSizes.v8),
             Text(
               DateFormat('EEEE, MMMM d').format(holiday!.date),
-              style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 16),
+              style: TextStyle(
+                  color: TColors.white.withOpacity(0.8), fontSize: TSizes.v16),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: TSizes.v16),
             Container(
               padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: TColors.white,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
@@ -592,7 +602,7 @@ class _NextHolidayHero extends StatelessWidget {
                 style: TextStyle(
                   color: TColors.primary,
                   fontWeight: FontWeight.w900,
-                  fontSize: 16,
+                  fontSize: TSizes.v16,
                 ),
               ),
             )
@@ -614,7 +624,8 @@ class _StickyControlBarDelegate extends SliverPersistentHeaderDelegate {
   _StickyControlBarDelegate({required this.controller, required this.viewMode});
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
     return ClipRRect(
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
@@ -632,13 +643,13 @@ class _StickyControlBarDelegate extends SliverPersistentHeaderDelegate {
                   children: [
                     // View Toggle
                     Obx(() => _ViewModeToggle(
-                      current: viewMode.value,
-                      onChanged: (m) => viewMode.value = m,
-                    )),
+                          current: viewMode.value,
+                          onChanged: (m) => viewMode.value = m,
+                        )),
 
                     Container(
-                      height: 24,
-                      width: 1,
+                      height: TSizes.v24,
+                      width: TSizes.v1,
                       color: AppTheme.divider,
                       margin: const EdgeInsets.symmetric(horizontal: 16),
                     ),
@@ -649,20 +660,21 @@ class _StickyControlBarDelegate extends SliverPersistentHeaderDelegate {
                       return Row(
                         children: [
                           _FilterChip(
-                            label: "All",
+                            label: TTexts.uiTextAll,
                             isSelected: selected == null,
                             onTap: () => controller.setType(null),
                           ),
                           ...HolidayType.values
                               .where((e) => e != HolidayType.Unknown)
                               .map((type) => _FilterChip(
-                            label: type.name,
-                            isSelected: selected == type,
-                            onTap: () {
-                              HapticFeedback.selectionClick();
-                              controller.setType(selected == type ? null : type);
-                            },
-                          )),
+                                    label: type.name,
+                                    isSelected: selected == type,
+                                    onTap: () {
+                                      HapticFeedback.selectionClick();
+                                      controller.setType(
+                                          selected == type ? null : type);
+                                    },
+                                  )),
                         ],
                       );
                     }),
@@ -695,7 +707,7 @@ class _ViewModeToggle extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: TColors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: AppTheme.divider),
       ),
@@ -722,7 +734,8 @@ class _IconToggle extends StatelessWidget {
   final bool isSelected;
   final VoidCallback onTap;
 
-  const _IconToggle({required this.icon, required this.isSelected, required this.onTap});
+  const _IconToggle(
+      {required this.icon, required this.isSelected, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -735,13 +748,13 @@ class _IconToggle extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: isSelected ? TColors.primary : Colors.transparent,
+          color: isSelected ? TColors.primary : TColors.transparent,
           shape: BoxShape.circle,
         ),
         child: Icon(
           icon,
-          size: 18,
-          color: isSelected ? Colors.white : AppTheme.textTertiary,
+          size: TSizes.v18,
+          color: isSelected ? TColors.white : AppTheme.textTertiary,
         ),
       ),
     );
@@ -753,7 +766,8 @@ class _FilterChip extends StatelessWidget {
   final bool isSelected;
   final VoidCallback onTap;
 
-  const _FilterChip({required this.label, required this.isSelected, required this.onTap});
+  const _FilterChip(
+      {required this.label, required this.isSelected, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -765,19 +779,19 @@ class _FilterChip extends StatelessWidget {
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
-            color: isSelected ? TColors.textPrimary : Colors.white,
+            color: isSelected ? TColors.textPrimary : TColors.white,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: isSelected ? Colors.transparent : AppTheme.divider,
+              color: isSelected ? TColors.transparent : AppTheme.divider,
             ),
             boxShadow: isSelected ? AppTheme.shadowMedium : [],
           ),
           child: Text(
             label,
             style: TextStyle(
-              color: isSelected ? Colors.white : AppTheme.textSecondary,
+              color: isSelected ? TColors.white : AppTheme.textSecondary,
               fontWeight: FontWeight.w600,
-              fontSize: 12,
+              fontSize: TSizes.v12,
             ),
           ),
         ),
@@ -798,7 +812,7 @@ class _TimelineView extends StatelessWidget {
   Widget build(BuildContext context) {
     return SliverList(
       delegate: SliverChildBuilderDelegate(
-            (context, index) {
+        (context, index) {
           final holiday = holidays[index];
           final isLast = index == holidays.length - 1;
           final isFirst = index == 0;
@@ -809,7 +823,8 @@ class _TimelineView extends StatelessWidget {
             showMonthHeader = true;
           } else {
             final prevDate = holidays[index - 1].date;
-            if (prevDate.month != holiday.date.month || prevDate.year != holiday.date.year) {
+            if (prevDate.month != holiday.date.month ||
+                prevDate.year != holiday.date.year) {
               showMonthHeader = true;
             }
           }
@@ -854,8 +869,9 @@ class _TimelineMonthHeader extends StatelessWidget {
               style: AppTheme.label.copyWith(color: TColors.primary),
             ),
           ),
-          const SizedBox(width: 16),
-          Expanded(child: Container(height: 1, color: AppTheme.divider)),
+          const SizedBox(width: TSizes.v16),
+          Expanded(
+              child: Container(height: TSizes.v1, color: AppTheme.divider)),
         ],
       ),
     );
@@ -878,7 +894,8 @@ class _TimelineItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Determine status color/state
-    final bool isPassed = holiday.date.isBefore(DateTime.now().subtract(const Duration(days: 1)));
+    final bool isPassed =
+        holiday.date.isBefore(DateTime.now().subtract(const Duration(days: 1)));
 
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0.0, end: 1.0),
@@ -896,7 +913,7 @@ class _TimelineItem extends StatelessWidget {
           children: [
             // Left Date Column
             SizedBox(
-              width: 80,
+              width: TSizes.v80,
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 child: Column(
@@ -904,15 +921,14 @@ class _TimelineItem extends StatelessWidget {
                     Text(
                       DateFormat('dd').format(holiday.date),
                       style: AppTheme.h1.copyWith(
-                          fontSize: 24,
-                          color: isPassed ? AppTheme.textTertiary : holiday.color
-                      ),
+                          fontSize: TSizes.v24,
+                          color:
+                              isPassed ? AppTheme.textTertiary : holiday.color),
                     ),
                     Text(
                       DateFormat('EEE').format(holiday.date).toUpperCase(),
-                      style: AppTheme.label.copyWith(
-                          color: AppTheme.textSecondary
-                      ),
+                      style: AppTheme.label
+                          .copyWith(color: AppTheme.textSecondary),
                     ),
                   ],
                 ),
@@ -921,7 +937,7 @@ class _TimelineItem extends StatelessWidget {
 
             // Timeline Line
             SizedBox(
-              width: 24,
+              width: TSizes.v24,
               child: CustomPaint(
                 painter: _TimelinePainter(
                   color: AppTheme.divider,
@@ -965,13 +981,13 @@ class _TicketHolidayCard extends StatelessWidget {
         // Show Bottom Sheet Details using Get
         Get.bottomSheet(
           _HolidayDetailModal(holiday: holiday),
-          backgroundColor: Colors.transparent,
+          backgroundColor: TColors.transparent,
           isScrollControlled: true,
         );
       },
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: TColors.white,
           borderRadius: BorderRadius.circular(AppTheme.cardRadius),
           boxShadow: isPassed ? AppTheme.shadowLow : AppTheme.shadowMedium,
           border: Border.all(color: AppTheme.divider),
@@ -983,7 +999,7 @@ class _TicketHolidayCard extends StatelessWidget {
             children: [
               // 1. Color Strip Header
               Container(
-                height: 6,
+                height: TSizes.v6,
                 color: isPassed ? AppTheme.textTertiary : holiday.color,
               ),
 
@@ -998,28 +1014,34 @@ class _TicketHolidayCard extends StatelessWidget {
                       children: [
                         _CategoryBadge(
                             type: holiday.type,
-                            color: isPassed ? AppTheme.textTertiary : holiday.color
-                        ),
+                            color: isPassed
+                                ? AppTheme.textTertiary
+                                : holiday.color),
                         if (holiday.isOptional)
                           const Tooltip(
-                            message: "Optional",
-                            child: Icon(Icons.info_outline, size: 18, color: Colors.orange),
+                            message: TTexts.uiTextOptional,
+                            child: Icon(Icons.info_outline,
+                                size: TSizes.v18,
+                                color: TColors.materialOrange),
                           ),
                       ],
                     ),
 
-                    const SizedBox(height: 12),
+                    const SizedBox(height: TSizes.v12),
 
                     // Title
                     Text(
                       holiday.title,
                       style: AppTheme.h3.copyWith(
-                        color: isPassed ? AppTheme.textTertiary : AppTheme.textPrimary,
-                        decoration: isPassed ? TextDecoration.lineThrough : null,
+                        color: isPassed
+                            ? AppTheme.textTertiary
+                            : AppTheme.textPrimary,
+                        decoration:
+                            isPassed ? TextDecoration.lineThrough : null,
                       ),
                     ),
 
-                    const SizedBox(height: 8),
+                    const SizedBox(height: TSizes.v8),
 
                     // Description Truncated
                     if (holiday.description.isNotEmpty)
@@ -1027,20 +1049,21 @@ class _TicketHolidayCard extends StatelessWidget {
                         holiday.description,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: AppTheme.bodySmall.copyWith(color: AppTheme.textSecondary),
+                        style: AppTheme.bodySmall
+                            .copyWith(color: AppTheme.textSecondary),
                       ),
 
-                    const SizedBox(height: 16),
+                    const SizedBox(height: TSizes.v16),
 
                     // Footer: Tap to view text
                     Row(
                       children: [
-                        Text(
-                            "Tap to view details",
-                            style: AppTheme.label.copyWith(color: AppTheme.textTertiary)
-                        ),
+                        Text(TTexts.uiTextTapToViewDetails,
+                            style: AppTheme.label
+                                .copyWith(color: AppTheme.textTertiary)),
                         const Spacer(),
-                        Icon(Icons.arrow_forward_rounded, size: 16, color: AppTheme.textTertiary),
+                        Icon(Icons.arrow_forward_rounded,
+                            size: TSizes.v16, color: AppTheme.textTertiary),
                       ],
                     )
                   ],
@@ -1070,8 +1093,10 @@ class _CalendarView extends StatelessWidget {
       child: Obx(() {
         final focusedDate = focusDate.value;
         // Logic
-        final daysInMonth = DateUtils.getDaysInMonth(focusedDate.year, focusedDate.month);
-        final firstDayOfMonth = DateTime(focusedDate.year, focusedDate.month, 1);
+        final daysInMonth =
+            DateUtils.getDaysInMonth(focusedDate.year, focusedDate.month);
+        final firstDayOfMonth =
+            DateTime(focusedDate.year, focusedDate.month, 1);
         final int emptySlots = firstDayOfMonth.weekday - 1;
         final int totalSlots = emptySlots + daysInMonth;
 
@@ -1090,8 +1115,11 @@ class _CalendarView extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
                     .map((e) => Expanded(
-                  child: Center(child: Text(e, style: AppTheme.label.copyWith(color: AppTheme.textSecondary))),
-                ))
+                          child: Center(
+                              child: Text(e,
+                                  style: AppTheme.label.copyWith(
+                                      color: AppTheme.textSecondary))),
+                        ))
                     .toList(),
               ),
             ),
@@ -1104,30 +1132,37 @@ class _CalendarView extends StatelessWidget {
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 7,
                 childAspectRatio: 0.85,
-                crossAxisSpacing: 8,
-                mainAxisSpacing: 8,
+                crossAxisSpacing: TSizes.v8,
+                mainAxisSpacing: TSizes.v8,
               ),
               itemCount: totalSlots,
               itemBuilder: (context, index) {
                 if (index < emptySlots) return const SizedBox();
 
                 final int dayNum = index - emptySlots + 1;
-                final date = DateTime(focusedDate.year, focusedDate.month, dayNum);
+                final date =
+                    DateTime(focusedDate.year, focusedDate.month, dayNum);
 
-                final dayHolidays = holidays.where((h) =>
-                h.date.year == date.year && h.date.month == date.month && h.date.day == date.day
-                ).toList();
+                final dayHolidays = holidays
+                    .where((h) =>
+                        h.date.year == date.year &&
+                        h.date.month == date.month &&
+                        h.date.day == date.day)
+                    .toList();
 
                 return _CalendarCell(date: date, holidays: dayHolidays);
               },
             ),
 
-            const SizedBox(height: 32),
+            const SizedBox(height: TSizes.v32),
 
             // List below
             _MonthlyList(
-                holidays: holidays.where((h) => h.date.year == focusedDate.year && h.date.month == focusedDate.month).toList()
-            ),
+                holidays: holidays
+                    .where((h) =>
+                        h.date.year == focusedDate.year &&
+                        h.date.month == focusedDate.month)
+                    .toList()),
           ],
         );
       }),
@@ -1139,7 +1174,8 @@ class _CalendarMonthNavigator extends StatelessWidget {
   final DateTime focusedDate;
   final Function(DateTime) onChanged;
 
-  const _CalendarMonthNavigator({required this.focusedDate, required this.onChanged});
+  const _CalendarMonthNavigator(
+      {required this.focusedDate, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -1148,9 +1184,15 @@ class _CalendarMonthNavigator extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _GlassIconButton(icon: Icons.chevron_left, onTap: () => onChanged(DateTime(focusedDate.year, focusedDate.month - 1))),
+          _GlassIconButton(
+              icon: Icons.chevron_left,
+              onTap: () =>
+                  onChanged(DateTime(focusedDate.year, focusedDate.month - 1))),
           Text(DateFormat('MMMM yyyy').format(focusedDate), style: AppTheme.h2),
-          _GlassIconButton(icon: Icons.chevron_right, onTap: () => onChanged(DateTime(focusedDate.year, focusedDate.month + 1))),
+          _GlassIconButton(
+              icon: Icons.chevron_right,
+              onTap: () =>
+                  onChanged(DateTime(focusedDate.year, focusedDate.month + 1))),
         ],
       ),
     );
@@ -1167,19 +1209,23 @@ class _CalendarCell extends StatelessWidget {
   Widget build(BuildContext context) {
     final bool isToday = DateUtils.isSameDay(date, DateTime.now());
     final bool hasEvents = holidays.isNotEmpty;
-    final bool isPassed = date.isBefore(DateTime.now().subtract(const Duration(days: 1)));
+    final bool isPassed =
+        date.isBefore(DateTime.now().subtract(const Duration(days: 1)));
 
     // The "Red Blur" Logic requested
-    final Color baseColor = hasEvents ? holidays.first.color : Colors.transparent;
+    final Color baseColor =
+        hasEvents ? holidays.first.color : TColors.transparent;
 
     return GestureDetector(
-      onTap: hasEvents ? () {
-        Get.bottomSheet(
-          _HolidayDetailModal(holiday: holidays.first),
-          backgroundColor: Colors.transparent,
-          isScrollControlled: true,
-        );
-      } : null,
+      onTap: hasEvents
+          ? () {
+              Get.bottomSheet(
+                _HolidayDetailModal(holiday: holidays.first),
+                backgroundColor: TColors.transparent,
+                isScrollControlled: true,
+              );
+            }
+          : null,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         decoration: BoxDecoration(
@@ -1187,48 +1233,49 @@ class _CalendarCell extends StatelessWidget {
           // BACKGROUND COLOR LOGIC
           color: hasEvents
               ? baseColor.withOpacity(isPassed ? 0.1 : 0.15) // Light tint
-              : (isToday ? TColors.primary.withOpacity(0.05) : Colors.white),
+              : (isToday ? TColors.primary.withOpacity(0.05) : TColors.white),
 
           // BORDER LOGIC
           border: isToday
-              ? Border.all(color: TColors.primary, width: 2)
-              : (hasEvents ? Border.all(color: baseColor.withOpacity(0.3)) : null),
+              ? Border.all(color: TColors.primary, width: TSizes.v2)
+              : (hasEvents
+                  ? Border.all(color: baseColor.withOpacity(0.3))
+                  : null),
 
           // SHADOW LOGIC (THE BLUR)
           boxShadow: (hasEvents && !isPassed)
               ? [
-            BoxShadow(
-              color: baseColor.withOpacity(0.4), // The Glow color
-              blurRadius: 12,
-              spreadRadius: 1,
-              offset: const Offset(0, 4),
-            )
-          ]
+                  BoxShadow(
+                    color: baseColor.withOpacity(0.4), // The Glow color
+                    blurRadius: TSizes.v12,
+                    spreadRadius: TSizes.v1,
+                    offset: const Offset(0, 4),
+                  )
+                ]
               : [],
         ),
-        child:Column(
+        child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
               "${date.day}",
               style: TextStyle(
-                fontSize: 14,
+                fontSize: TSizes.v14,
                 fontWeight: FontWeight.bold,
                 color: hasEvents
                     ? baseColor.withOpacity(isPassed ? 0.6 : 1.0)
                     : (isToday ? TColors.primary : AppTheme.textSecondary),
               ),
             ),
-
             if (hasEvents) ...[
-              const SizedBox(height: 4),
+              const SizedBox(height: TSizes.v4),
               Text(
                 holidays.first.title,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 9,
+                  fontSize: TSizes.v9,
                   fontWeight: FontWeight.w600,
                   color: baseColor.withOpacity(isPassed ? 0.6 : 1.0),
                 ),
@@ -1236,7 +1283,6 @@ class _CalendarCell extends StatelessWidget {
             ],
           ],
         ),
-
       ),
     );
   }
@@ -1253,23 +1299,26 @@ class _MonthlyList extends StatelessWidget {
         padding: const EdgeInsets.all(40),
         child: Column(
           children: [
-            Icon(Icons.event_busy, size: 40, color: AppTheme.divider),
-            const SizedBox(height: 10),
-            Text("No events", style: AppTheme.bodySmall),
+            Icon(Icons.event_busy, size: TSizes.v40, color: AppTheme.divider),
+            const SizedBox(height: TSizes.v10),
+            Text(TTexts.uiTextNoEvents, style: AppTheme.bodySmall),
           ],
         ),
       );
     }
 
     return Column(
-      children: holidays.map((h) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-        child: _TicketHolidayCard(holiday: h, isPassed: h.date.isBefore(DateTime.now())),
-      )).toList(),
+      children: holidays
+          .map((h) => Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                child: _TicketHolidayCard(
+                    holiday: h, isPassed: h.date.isBefore(DateTime.now())),
+              ))
+          .toList(),
     );
   }
 }
-
 
 // =============================================================================
 // SECTION 11: DETAIL MODAL (BOTTOM SHEET)
@@ -1283,7 +1332,7 @@ class _HolidayDetailModal extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
-        color: Colors.white,
+        color: TColors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
       ),
       padding: const EdgeInsets.all(32),
@@ -1294,11 +1343,14 @@ class _HolidayDetailModal extends StatelessWidget {
           // Drag Handle
           Center(
             child: Container(
-              width: 40, height: 4,
-              decoration: BoxDecoration(color: AppTheme.divider, borderRadius: BorderRadius.circular(2)),
+              width: TSizes.v40,
+              height: TSizes.v4,
+              decoration: BoxDecoration(
+                  color: AppTheme.divider,
+                  borderRadius: BorderRadius.circular(2)),
             ),
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: TSizes.v32),
 
           // Header
           Row(
@@ -1311,17 +1363,19 @@ class _HolidayDetailModal extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: TSizes.v20),
 
           Text(holiday.title, style: AppTheme.h1),
-          const SizedBox(height: 16),
+          const SizedBox(height: TSizes.v16),
 
           Text(
-            holiday.description.isEmpty ? "No detailed description provided for this holiday." : holiday.description,
+            holiday.description.isEmpty
+                ? "No detailed description provided for this holiday."
+                : holiday.description,
             style: AppTheme.bodyLarge,
           ),
 
-          const SizedBox(height: 40),
+          const SizedBox(height: TSizes.v40),
 
           // Action Buttons
           Row(
@@ -1330,35 +1384,37 @@ class _HolidayDetailModal extends StatelessWidget {
                 child: ElevatedButton.icon(
                   onPressed: () {},
                   icon: const Icon(Icons.share_rounded),
-                  label: const Text("Share"),
+                  label: const Text(TTexts.uiTextShare),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.background,
                     foregroundColor: AppTheme.textPrimary,
-                    elevation: 0,
+                    elevation: TSizes.v0,
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16)),
                   ),
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: TSizes.v16),
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: () {},
                   icon: const Icon(Icons.calendar_month_rounded),
-                  label: const Text("Add to Calendar"),
+                  label: const Text(TTexts.uiTextAddToCalendar),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: TColors.primary,
-                    foregroundColor: Colors.white,
-                    elevation: 5,
+                    foregroundColor: TColors.white,
+                    elevation: TSizes.v5,
                     shadowColor: TColors.primary.withOpacity(0.4),
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16)),
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: TSizes.v20),
         ],
       ),
     );
@@ -1398,20 +1454,37 @@ class _TimelinePainter extends CustomPainter {
   final bool isLast;
   final bool isGlow;
 
-  _TimelinePainter({required this.color, required this.dotColor, required this.isFirst, required this.isLast, this.isGlow = false});
+  _TimelinePainter(
+      {required this.color,
+      required this.dotColor,
+      required this.isFirst,
+      required this.isLast,
+      this.isGlow = false});
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paintLine = Paint()..color = color..strokeWidth = 2..style = PaintingStyle.stroke;
-    final paintDot = Paint()..color = dotColor..style = PaintingStyle.fill;
-    final paintGlow = Paint()..color = dotColor.withOpacity(0.3)..style = PaintingStyle.fill;
-    final paintWhite = Paint()..color = Colors.white..style = PaintingStyle.fill;
+    final paintLine = Paint()
+      ..color = color
+      ..strokeWidth = 2
+      ..style = PaintingStyle.stroke;
+    final paintDot = Paint()
+      ..color = dotColor
+      ..style = PaintingStyle.fill;
+    final paintGlow = Paint()
+      ..color = dotColor.withOpacity(0.3)
+      ..style = PaintingStyle.fill;
+    final paintWhite = Paint()
+      ..color = TColors.white
+      ..style = PaintingStyle.fill;
 
     double centerX = size.width / 2;
     double dotY = 32.0;
 
-    if (!isFirst) canvas.drawLine(Offset(centerX, 0), Offset(centerX, dotY), paintLine);
-    if (!isLast) canvas.drawLine(Offset(centerX, dotY), Offset(centerX, size.height), paintLine);
+    if (!isFirst)
+      canvas.drawLine(Offset(centerX, 0), Offset(centerX, dotY), paintLine);
+    if (!isLast)
+      canvas.drawLine(
+          Offset(centerX, dotY), Offset(centerX, size.height), paintLine);
 
     // Glow
     if (isGlow) canvas.drawCircle(Offset(centerX, dotY), 12, paintGlow);
@@ -1433,11 +1506,14 @@ class _EmptyStateWidget extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.event_busy_rounded, size: 80, color: AppTheme.divider),
-          const SizedBox(height: 16),
-          Text("No Holidays Found", style: AppTheme.h2.copyWith(color: AppTheme.textTertiary)),
-          const SizedBox(height: 8),
-          Text("Try changing your search or filter.", style: AppTheme.bodyLarge),
+          Icon(Icons.event_busy_rounded,
+              size: TSizes.v80, color: AppTheme.divider),
+          const SizedBox(height: TSizes.v16),
+          Text(TTexts.uiTextNoHolidaysFound,
+              style: AppTheme.h2.copyWith(color: AppTheme.textTertiary)),
+          const SizedBox(height: TSizes.v8),
+          Text(TTexts.uiTextTryChangingYourSearchOrFilter,
+              style: AppTheme.bodyLarge),
         ],
       ),
     );
@@ -1450,16 +1526,18 @@ class _ErrorStateWidget extends StatelessWidget {
   const _ErrorStateWidget({required this.error, required this.onRetry});
   @override
   Widget build(BuildContext context) {
-    return Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-      Icon(Icons.cloud_off_rounded, size: 60, color: Colors.red.shade300),
-      const SizedBox(height: 16),
-      Text("Something went wrong", style: AppTheme.h3),
-      const SizedBox(height: 24),
+    return Center(
+        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+      Icon(Icons.cloud_off_rounded,
+          size: TSizes.v60, color: TColors.materialRed300),
+      const SizedBox(height: TSizes.v16),
+      Text(TTexts.uiTextSomethingWentWrong, style: AppTheme.h3),
+      const SizedBox(height: TSizes.v24),
       ElevatedButton(
           onPressed: onRetry,
-          style: ElevatedButton.styleFrom(backgroundColor: TColors.primary, foregroundColor: Colors.white),
-          child: const Text("Retry Connection")
-      )
+          style: ElevatedButton.styleFrom(
+              backgroundColor: TColors.primary, foregroundColor: TColors.white),
+          child: const Text(TTexts.uiTextRetryConnection))
     ]));
   }
 }
@@ -1470,13 +1548,17 @@ class _ShimmerTicket extends StatefulWidget {
   State<_ShimmerTicket> createState() => _ShimmerTicketState();
 }
 
-class _ShimmerTicketState extends State<_ShimmerTicket> with SingleTickerProviderStateMixin {
+class _ShimmerTicketState extends State<_ShimmerTicket>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 1000))..repeat(reverse: true);
+    _controller = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 1000))
+      ..repeat(reverse: true);
   }
+
   @override
   void dispose() {
     _controller.dispose();
@@ -1488,10 +1570,10 @@ class _ShimmerTicketState extends State<_ShimmerTicket> with SingleTickerProvide
     return FadeTransition(
       opacity: Tween(begin: 0.4, end: 1.0).animate(_controller),
       child: Container(
-        height: 120,
+        height: TSizes.v120,
         margin: const EdgeInsets.only(bottom: 16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: TColors.white,
           borderRadius: BorderRadius.circular(AppTheme.cardRadius),
         ),
       ),

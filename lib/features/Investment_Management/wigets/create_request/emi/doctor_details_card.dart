@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
-
-import '../../../../../utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import '../../../controller/add_investment_controller.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class InvestmentDetailsCard extends StatelessWidget {
   const InvestmentDetailsCard({super.key});
@@ -13,8 +13,8 @@ class InvestmentDetailsCard extends StatelessWidget {
     final controller = Get.find<AddInvestmentController>();
 
     return Card(
-      elevation: 1,
-      color: Colors.white,
+      elevation: TSizes.v1,
+      color: TColors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
       ),
@@ -27,19 +27,15 @@ class InvestmentDetailsCard extends StatelessWidget {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-
                 Text(
-                  "Investment Details",
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium
-                      ?.copyWith(
-                    color: TColors.primary,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  TTexts.uiTextInvestmentDetails,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: TColors.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: TSizes.v20),
 
                 ///-------------------------------
                 /// Investment Type + Amount
@@ -47,52 +43,43 @@ class InvestmentDetailsCard extends StatelessWidget {
                 if (isWide)
                   Row(
                     children: [
-
                       Expanded(
                         child: TextFormField(
                           initialValue: "EMI",
                           readOnly: true,
                           decoration: InputDecoration(
-                            labelText: "Investment Type",
+                            labelText: TTexts.uiTextInvestmentType,
                             filled: true,
-                            fillColor: Colors.grey.shade100,
+                            fillColor: TColors.materialGrey100,
                             border: OutlineInputBorder(
-                              borderRadius:
-                              BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(10),
                             ),
                           ),
                         ),
                       ),
-
-                      const SizedBox(width: 20),
-
+                      const SizedBox(width: TSizes.v20),
                       Expanded(
                         child: TextFormField(
-                          controller:
-                          controller.emiAmountController,
-                          keyboardType:
-                          TextInputType.number,
+                          controller: controller.emiAmountController,
+                          keyboardType: TextInputType.number,
                           validator: (value) {
-                            if (value == null ||
-                                value.trim().isEmpty) {
+                            if (value == null || value.trim().isEmpty) {
                               return "Amount required";
                             }
                             return null;
                           },
                           decoration: InputDecoration(
-                            labelText: "Amount (₹)",
-                            hintText: "50000",
+                            labelText: TTexts.uiTextAmount,
+                            hintText: TTexts.uiText50000,
                             prefixIcon: const Icon(
                               Icons.currency_rupee,
                             ),
                             border: OutlineInputBorder(
-                              borderRadius:
-                              BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(10),
                             ),
                           ),
                         ),
                       ),
-
                     ],
                   )
                 else ...[
@@ -100,42 +87,35 @@ class InvestmentDetailsCard extends StatelessWidget {
                     initialValue: "EMI",
                     readOnly: true,
                     decoration: InputDecoration(
-                      labelText: "Investment Type",
+                      labelText: TTexts.uiTextInvestmentType,
                       filled: true,
-                      fillColor: Colors.grey.shade100,
+                      fillColor: TColors.materialGrey100,
                       border: OutlineInputBorder(
-                        borderRadius:
-                        BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(10),
                       ),
                     ),
                   ),
-
-                  const SizedBox(height: 16),
-
+                  const SizedBox(height: TSizes.v16),
                   TextFormField(
-                    controller:
-                    controller.emiAmountController,
+                    controller: controller.emiAmountController,
                     keyboardType: TextInputType.number,
                     validator: (value) {
-                      if (value == null ||
-                          value.trim().isEmpty) {
+                      if (value == null || value.trim().isEmpty) {
                         return "Amount required";
                       }
                       return null;
                     },
                     decoration: InputDecoration(
-                      labelText: "Amount (₹)",
-                      prefixIcon:
-                      const Icon(Icons.currency_rupee),
+                      labelText: TTexts.uiTextAmount,
+                      prefixIcon: const Icon(Icons.currency_rupee),
                       border: OutlineInputBorder(
-                        borderRadius:
-                        BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(10),
                       ),
                     ),
                   ),
                 ],
 
-                const SizedBox(height: 16),
+                const SizedBox(height: TSizes.v16),
 
                 ///-------------------------------
                 /// Date + Months
@@ -143,102 +123,81 @@ class InvestmentDetailsCard extends StatelessWidget {
                 if (isWide)
                   Row(
                     children: [
-
                       Expanded(
                         child: TextFormField(
-                          controller:
-                          controller.emiDateController,
+                          controller: controller.emiDateController,
                           readOnly: true,
                           validator: (value) {
-                            if (value == null ||
-                                value.isEmpty) {
+                            if (value == null || value.isEmpty) {
                               return "Select date";
                             }
                             return null;
                           },
                           decoration: InputDecoration(
-                            labelText: "Date",
+                            labelText: TTexts.date,
                             suffixIcon: const Icon(
                               Icons.calendar_today,
                             ),
                             border: OutlineInputBorder(
-                              borderRadius:
-                              BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(10),
                             ),
                           ),
                           onTap: () async {
-                            final date =
-                            await showDatePicker(
+                            final date = await showDatePicker(
                               context: context,
                               initialDate: DateTime.now(),
-                              firstDate:
-                              DateTime(2024),
-                              lastDate:
-                              DateTime(2100),
+                              firstDate: DateTime(2024),
+                              lastDate: DateTime(2100),
                             );
 
                             if (date != null) {
-                              controller
-                                  .emiDateController
-                                  .text =
-                              "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
+                              controller.emiDateController.text =
+                                  "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
                             }
                           },
                         ),
                       ),
-
-                      const SizedBox(width: 20),
-
+                      const SizedBox(width: TSizes.v20),
                       Expanded(
                         child: TextFormField(
-                          controller:
-                          controller.emiMonthsController,
-                          keyboardType:
-                          TextInputType.number,
+                          controller: controller.emiMonthsController,
+                          keyboardType: TextInputType.number,
                           validator: (value) {
-                            if (value == null ||
-                                value.trim().isEmpty) {
+                            if (value == null || value.trim().isEmpty) {
                               return "Required";
                             }
                             return null;
                           },
                           decoration: InputDecoration(
-                            labelText: "EMI Months",
-                            hintText: "12",
+                            labelText: TTexts.uiTextEMIMonths,
+                            hintText: TTexts.uiText12,
                             border: OutlineInputBorder(
-                              borderRadius:
-                              BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(10),
                             ),
                           ),
                         ),
                       ),
-
                     ],
                   )
                 else ...[
                   TextFormField(
-                    controller:
-                    controller.emiDateController,
+                    controller: controller.emiDateController,
                     readOnly: true,
                     validator: (value) {
-                      if (value == null ||
-                          value.isEmpty) {
+                      if (value == null || value.isEmpty) {
                         return "Select date";
                       }
                       return null;
                     },
                     decoration: InputDecoration(
-                      labelText: "Date",
-                      suffixIcon:
-                      const Icon(Icons.calendar_today),
+                      labelText: TTexts.date,
+                      suffixIcon: const Icon(Icons.calendar_today),
                       border: OutlineInputBorder(
-                        borderRadius:
-                        BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(10),
                       ),
                     ),
                     onTap: () async {
-                      final date =
-                      await showDatePicker(
+                      final date = await showDatePicker(
                         context: context,
                         initialDate: DateTime.now(),
                         firstDate: DateTime(2024),
@@ -247,36 +206,30 @@ class InvestmentDetailsCard extends StatelessWidget {
 
                       if (date != null) {
                         controller.emiDateController.text =
-                        "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
+                            "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
                       }
                     },
                   ),
-
-                  const SizedBox(height: 16),
-
+                  const SizedBox(height: TSizes.v16),
                   TextFormField(
-                    controller:
-                    controller.emiMonthsController,
-                    keyboardType:
-                    TextInputType.number,
+                    controller: controller.emiMonthsController,
+                    keyboardType: TextInputType.number,
                     validator: (value) {
-                      if (value == null ||
-                          value.trim().isEmpty) {
+                      if (value == null || value.trim().isEmpty) {
                         return "Required";
                       }
                       return null;
                     },
                     decoration: InputDecoration(
-                      labelText: "EMI Months",
+                      labelText: TTexts.uiTextEMIMonths,
                       border: OutlineInputBorder(
-                        borderRadius:
-                        BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(10),
                       ),
                     ),
                   ),
                 ],
 
-                const SizedBox(height: 16),
+                const SizedBox(height: TSizes.v16),
 
                 ///-------------------------------
                 /// Remarks
@@ -285,13 +238,11 @@ class InvestmentDetailsCard extends StatelessWidget {
                   controller: controller.emiRemarksController,
                   maxLines: 4,
                   decoration: InputDecoration(
-                    labelText: "Remarks",
-                    hintText:
-                    "Enter investment remarks",
+                    labelText: TTexts.uiTextRemarks,
+                    hintText: TTexts.uiTextEnterInvestmentRemarks,
                     alignLabelWithHint: true,
                     border: OutlineInputBorder(
-                      borderRadius:
-                      BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(10),
                     ),
                   ),
                 ),

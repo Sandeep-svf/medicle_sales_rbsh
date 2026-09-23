@@ -1,7 +1,5 @@
 // models/invoice_model.dart
 
-
-
 class InvoiceResponse {
   final bool success;
   final List<Invoice> data;
@@ -16,9 +14,7 @@ class InvoiceResponse {
   factory InvoiceResponse.fromJson(Map<String, dynamic> json) {
     return InvoiceResponse(
       success: json['success'] ?? false,
-      data: (json['data'] as List?)
-          ?.map((e) => Invoice.fromJson(e))
-          .toList() ??
+      data: (json['data'] as List?)?.map((e) => Invoice.fromJson(e)).toList() ??
           [],
       pagination: json['pagination'] != null
           ? Pagination.fromJson(json['pagination'])
@@ -110,19 +106,16 @@ class Invoice {
       updatedAt: json['updated_at'] != null
           ? DateTime.tryParse(json['updated_at'])
           : null,
-      stockist: json['Stockist'] != null
-          ? Stockist.fromJson(json['Stockist'])
-          : null,
+      stockist:
+          json['Stockist'] != null ? Stockist.fromJson(json['Stockist']) : null,
       forwardingNotes: (json['forwardingNotes'] as List?)
-          ?.map((e) => ForwardingNote.fromJson(e))
-          .toList() ??
+              ?.map((e) => ForwardingNote.fromJson(e))
+              .toList() ??
           [],
-      creator: json['creator'] != null
-          ? Creator.fromJson(json['creator'])
-          : null,
-      updater: json['updater'] != null
-          ? Updater.fromJson(json['updater'])
-          : null,
+      creator:
+          json['creator'] != null ? Creator.fromJson(json['creator']) : null,
+      updater:
+          json['updater'] != null ? Updater.fromJson(json['updater']) : null,
     );
   }
 }
@@ -154,12 +147,10 @@ class Stockist {
       firmName: json['firm_name'],
       emailAddress: json['email_address'],
       mobileNumber: json['mobile_number'],
-      registeredOfficeAddress:
-      json['registered_office_address'],
+      registeredOfficeAddress: json['registered_office_address'],
       contactPerson: json['contact_person'],
       gstNumber: json['gst_number'],
-      drugLicenseNumber:
-      json['drug_license_number'],
+      drugLicenseNumber: json['drug_license_number'],
     );
   }
 }
@@ -187,12 +178,10 @@ class ForwardingNote {
     this.amount,
   });
 
-  factory ForwardingNote.fromJson(
-      Map<String, dynamic> json) {
+  factory ForwardingNote.fromJson(Map<String, dynamic> json) {
     return ForwardingNote(
       id: json['id'] ?? '',
-      transportCourierName:
-      json['transport_courier_name'],
+      transportCourierName: json['transport_courier_name'],
       origin: json['origin'],
       originAddress: json['origin_address'],
       destination: json['destination'],
@@ -215,8 +204,7 @@ class Creator {
     this.email,
   });
 
-  factory Creator.fromJson(
-      Map<String, dynamic> json) {
+  factory Creator.fromJson(Map<String, dynamic> json) {
     return Creator(
       id: json['id'] ?? '',
       name: json['name'],
@@ -236,8 +224,7 @@ class Updater {
     this.email,
   });
 
-  factory Updater.fromJson(
-      Map<String, dynamic> json) {
+  factory Updater.fromJson(Map<String, dynamic> json) {
     return Updater(
       id: json['id'] ?? '',
       name: json['name'],
@@ -259,8 +246,7 @@ class Pagination {
     this.limit,
   });
 
-  factory Pagination.fromJson(
-      Map<String, dynamic> json) {
+  factory Pagination.fromJson(Map<String, dynamic> json) {
     return Pagination(
       currentPage: json['currentPage'],
       totalPages: json['totalPages'],

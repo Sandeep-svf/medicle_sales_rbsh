@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 
 class AnnualTurnoverSection extends StatefulWidget {
   final List<Map<String, dynamic>> turnovers;
@@ -37,8 +39,8 @@ class _AnnualTurnoverSectionState extends State<AnnualTurnoverSection> {
       builder: (context, child) {
         return Theme(
           data: ThemeData.light().copyWith(
-            primaryColor: Colors.blue,
-            colorScheme: const ColorScheme.light(primary: Colors.blue),
+            primaryColor: TColors.materialBlue,
+            colorScheme: const ColorScheme.light(primary: TColors.materialBlue),
           ),
           child: child!,
         );
@@ -80,8 +82,9 @@ class _AnnualTurnoverSectionState extends State<AnnualTurnoverSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text("Annual Turnover", style: TextStyle(fontWeight: FontWeight.bold)),
-        const SizedBox(height: 10),
+        const Text(TTexts.uiTextAnnualTurnover,
+            style: TextStyle(fontWeight: FontWeight.bold)),
+        const SizedBox(height: TSizes.v10),
         Row(
           children: [
             Expanded(
@@ -89,39 +92,45 @@ class _AnnualTurnoverSectionState extends State<AnnualTurnoverSection> {
               child: GestureDetector(
                 onTap: _pickYear,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
                   decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey),
+                    border: Border.all(color: TColors.materialGrey),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    _selectedYear != null ? _selectedYear.toString() : 'Pick Year',
-                    style: TextStyle(color: _selectedYear != null ? Colors.black : Colors.grey),
+                    _selectedYear != null
+                        ? _selectedYear.toString()
+                        : 'Pick Year',
+                    style: TextStyle(
+                        color: _selectedYear != null
+                            ? TColors.pureBlack
+                            : TColors.materialGrey),
                   ),
                 ),
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: TSizes.v8),
             Expanded(
               flex: 3,
               child: TextField(
                 controller: _amountController,
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(
-                  labelText: 'Amount',
+                  labelText: TTexts.amount,
                   border: OutlineInputBorder(),
                 ),
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: TSizes.v8),
             IconButton(
               onPressed: _addTurnoverEntry,
-              icon: const Icon(Icons.add_circle, color: Colors.blue),
-              tooltip: 'Add Entry',
+              icon: const Icon(Icons.add_circle, color: TColors.materialBlue),
+              tooltip: TTexts.uiTextAddEntry,
             ),
           ],
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: TSizes.v10),
         ListView.builder(
           shrinkWrap: true,
           itemCount: _localTurnovers.length,
@@ -133,7 +142,7 @@ class _AnnualTurnoverSectionState extends State<AnnualTurnoverSection> {
               title: Text("Year: ${entry['year']}"),
               subtitle: Text("₹ ${entry['amount']}"),
               trailing: IconButton(
-                icon: const Icon(Icons.delete, color: Colors.red),
+                icon: const Icon(Icons.delete, color: TColors.materialRed),
                 onPressed: () => _removeEntry(index),
               ),
             );

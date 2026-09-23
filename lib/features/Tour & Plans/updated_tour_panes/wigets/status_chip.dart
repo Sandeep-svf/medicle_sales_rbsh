@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-
-import '../../../../utils/constants/colors.dart';
-import '../../../../utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class StatusChip extends StatelessWidget {
   const StatusChip({
@@ -32,15 +31,12 @@ class StatusChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-
           Icon(
             config.icon,
-            size: 16,
+            size: TSizes.v16,
             color: config.color,
           ),
-
-          const SizedBox(width: 6),
-
+          const SizedBox(width: TSizes.v6),
           Text(
             status,
             style: TextStyle(
@@ -58,36 +54,36 @@ class StatusChip extends StatelessWidget {
     switch (status) {
       case "Draft":
         return _StatusConfig(
-          color: Colors.orange.shade700,
-          background: Colors.orange.shade50,
+          color: TColors.materialOrange700,
+          background: TColors.materialOrange50,
           icon: Icons.edit_document,
         );
 
       case "Submitted":
         return _StatusConfig(
-          color: Colors.blue.shade700,
-          background: Colors.blue.shade50,
+          color: TColors.materialBlue700,
+          background: TColors.materialBlue50,
           icon: Icons.upload_file,
         );
 
       case "Approved":
         return _StatusConfig(
-          color: Colors.green.shade700,
-          background: Colors.green.shade50,
+          color: TColors.materialGreen700,
+          background: TColors.materialGreen50,
           icon: Icons.verified,
         );
 
       case "Returned":
         return _StatusConfig(
-          color: Colors.red.shade700,
-          background: Colors.red.shade50,
+          color: TColors.materialRed700,
+          background: TColors.materialRed50,
           icon: Icons.assignment_return,
         );
 
       default:
         return _StatusConfig(
           color: TColors.textSecondary,
-          background: Colors.grey.shade100,
+          background: TColors.materialGrey100,
           icon: Icons.help_outline,
         );
     }

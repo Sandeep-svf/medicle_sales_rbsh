@@ -12,6 +12,7 @@ import '../service/tracking_health_monitor.dart';
 import '../storage/app_state_dao.dart';
 import '../storage/upload_queue_dao.dart';
 import '../storage/upload_queue_drainer.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 @pragma('vm:entry-point')
 void locationServiceEntry(ServiceInstance service) async {
@@ -22,7 +23,7 @@ void locationServiceEntry(ServiceInstance service) async {
   if (service is AndroidServiceInstance) {
     service.setAsForegroundService();
     service.setForegroundNotificationInfo(
-      title: 'Tracking active',
+      title: TTexts.uiTextTrackingActive,
       content: 'Sales tracking is running',
     );
     trackingConsoleLog(

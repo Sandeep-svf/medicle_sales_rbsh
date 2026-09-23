@@ -8,7 +8,6 @@ import 'doctor_area_assignment_screen.dart';
 import 'package:get/get.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
-
 import '../controllers/doctor_offline_controller.dart';
 import '../models/doctor.dart';
 import '../models/doctor_sync_models.dart';
@@ -16,6 +15,7 @@ import 'doctor_detail_screen.dart';
 import 'widgets/doctor_filter_bar.dart';
 import 'widgets/doctor_list_card.dart';
 import 'widgets/doctor_sync_banner.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class DoctorOfflineScreen extends StatefulWidget {
   const DoctorOfflineScreen({
@@ -54,10 +54,10 @@ class _DoctorOfflineScreenState extends State<DoctorOfflineScreen> {
       autoRemove: false,
       builder: (controller) {
         return Scaffold(
-          backgroundColor: const Color(0xFFF5F5F5),
+          backgroundColor: TColors.hex_FFF5F5F5,
           appBar: AppBar(
             title: const Text(
-              'Offline Doctors',
+              TTexts.uiTextOfflineDoctors,
               style: TextStyle(color: TColors.white),
             ),
             backgroundColor: TColors.primary,
@@ -65,14 +65,14 @@ class _DoctorOfflineScreenState extends State<DoctorOfflineScreen> {
             iconTheme: const IconThemeData(color: TColors.white),
             actions: [
               IconButton(
-                tooltip: 'Refresh doctors',
+                tooltip: TTexts.uiTextRefreshDoctors,
                 onPressed: controller.syncStatus.isBusy
                     ? null
                     : controller.refreshDoctors,
                 icon: const Icon(Icons.refresh_rounded),
               ),
               PopupMenuButton<String>(
-                tooltip: 'Doctor options',
+                tooltip: TTexts.uiTextDoctorOptions,
                 onSelected: (value) {
                   if (value == 'rebuild') _confirmRebuild(context, controller);
                 },
@@ -82,7 +82,7 @@ class _DoctorOfflineScreenState extends State<DoctorOfflineScreen> {
                     child: ListTile(
                       contentPadding: EdgeInsets.zero,
                       leading: Icon(Icons.cloud_download_outlined),
-                      title: Text('Re-download offline list'),
+                      title: Text(TTexts.uiTextReDownloadOfflineList),
                     ),
                   ),
                 ],
@@ -96,8 +96,8 @@ class _DoctorOfflineScreenState extends State<DoctorOfflineScreen> {
                   backgroundColor: TColors.primary,
                   foregroundColor: TColors.white,
                   icon: const Icon(Icons.person_add_alt_1),
-                  label: const Text('Add Doctor'),
-                  tooltip: 'Add doctor offline',
+                  label: const Text(TTexts.addDoctorTitle),
+                  tooltip: TTexts.uiTextAddDoctorOffline,
                 ),
           floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
           body: SafeArea(
@@ -227,7 +227,8 @@ class _DoctorOfflineScreenState extends State<DoctorOfflineScreen> {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-              content: Text('Could not load areas. Please try again online.')),
+              content:
+                  Text(TTexts.uiTextCouldNotLoadAreasPleaseTryAgainOnline)),
         );
       }
     } finally {
@@ -243,18 +244,18 @@ class _DoctorOfflineScreenState extends State<DoctorOfflineScreen> {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text('Re-download doctor list?'),
+          title: const Text(TTexts.uiTextReDownloadDoctorList),
           content: const Text(
-            'The current offline list remains visible while a fresh secure copy downloads.',
+            TTexts.uiTextTheCurrentOfflineListRemainsVisibleWhileA,
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text('Cancel'),
+              child: const Text(TTexts.cancel),
             ),
             FilledButton(
               onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: const Text('Re-download'),
+              child: const Text(TTexts.uiTextReDownload),
             ),
           ],
         );
@@ -288,7 +289,7 @@ class _ResultSummary extends StatelessWidget {
         ),
         if (controller.query.search.isNotEmpty)
           Text(
-            'Local search',
+            TTexts.uiTextLocalSearch,
             style: Theme.of(context).textTheme.labelMedium?.copyWith(
                   color: TColors.success,
                 ),
@@ -311,7 +312,7 @@ class _SelectionNotice extends StatelessWidget {
       actions: [
         TextButton(
           onPressed: controller.clearSelectionNotice,
-          child: const Text('Dismiss'),
+          child: const Text(TTexts.uiTextDismiss),
         ),
       ],
     );
@@ -452,7 +453,7 @@ class _EmptyDoctorState extends StatelessWidget {
             : 'The completed offline dataset is empty.';
     return Center(
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 420),
+        constraints: const BoxConstraints(maxWidth: TSizes.v420),
         child: Padding(
           padding: const EdgeInsets.all(TSizes.lg),
           child: Column(
@@ -460,7 +461,7 @@ class _EmptyDoctorState extends StatelessWidget {
             children: [
               Icon(
                 icon,
-                size: 56,
+                size: TSizes.v56,
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
               const SizedBox(height: TSizes.md),
@@ -481,7 +482,7 @@ class _EmptyDoctorState extends StatelessWidget {
                     ? null
                     : controller.refreshDoctors,
                 icon: const Icon(Icons.refresh_rounded),
-                label: const Text('Retry'),
+                label: const Text(TTexts.uiTextRetry),
               ),
             ],
           ),

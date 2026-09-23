@@ -8,7 +8,6 @@ import '../model/chemist_location_model.dart';
 import '../model/doctor_location_model.dart';
 import '../model/stockist_location_model.dart';
 
-
 class AreaDetailController extends GetxController {
   final AreaModel area;
 
@@ -24,8 +23,7 @@ class AreaDetailController extends GetxController {
     required this.stockists,
   });
 
-  final RxList<DoctorLocationModel> areaDoctors =
-      <DoctorLocationModel>[].obs;
+  final RxList<DoctorLocationModel> areaDoctors = <DoctorLocationModel>[].obs;
 
   final RxList<ChemistLocationModel> areaChemists =
       <ChemistLocationModel>[].obs;

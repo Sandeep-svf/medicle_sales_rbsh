@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:medicle_sales_rbsh/features/Tour%20&%20Plans/updated_tour_panes/wigets/status_chip.dart';
-
-import '../../../../utils/constants/colors.dart';
-import '../../../../utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 import '../model/tour_plan_model.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class TourPlanRow extends StatefulWidget {
   const TourPlanRow({
@@ -24,13 +24,10 @@ class TourPlanRow extends StatefulWidget {
   final bool submitEnabled;
 
   @override
-  State<TourPlanRow> createState() =>
-      TourPlanRowState();
+  State<TourPlanRow> createState() => TourPlanRowState();
 }
 
-class TourPlanRowState
-    extends State<TourPlanRow> {
-
+class TourPlanRowState extends State<TourPlanRow> {
   bool _hover = false;
 
   @override
@@ -40,8 +37,8 @@ class TourPlanRowState
     final rowColor = _hover
         ? TColors.primary.withValues(alpha: .04)
         : widget.index.isEven
-        ? Colors.white
-        : TColors.primary_shade50.withValues(alpha: .35);
+            ? TColors.white
+            : TColors.primary_shade50.withValues(alpha: .35);
 
     return MouseRegion(
       cursor: SystemMouseCursors.click,
@@ -67,32 +64,25 @@ class TourPlanRowState
           ),
           child: Row(
             children: [
-
               /// MONTH
               Expanded(
                 flex: 3,
                 child: Column(
-                  crossAxisAlignment:
-                  CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-
                     Text(
                       plan.monthName,
                       style: const TextStyle(
-                        fontWeight:
-                        FontWeight.w700,
-                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        fontSize: TSizes.v16,
                       ),
                     ),
-
-                    const SizedBox(height: 4),
-
+                    const SizedBox(height: TSizes.v4),
                     Text(
                       "Created ${_date(plan.createdAt)}",
                       style: const TextStyle(
-                        color:
-                        TColors.textSecondary,
-                        fontSize: 12,
+                        color: TColors.textSecondary,
+                        fontSize: TSizes.v12,
                       ),
                     ),
                   ],
@@ -114,21 +104,18 @@ class TourPlanRowState
                 flex: 1,
                 child: Center(
                   child: Container(
-                    padding:
-                    const EdgeInsets.symmetric(
+                    padding: const EdgeInsets.symmetric(
                       horizontal: 12,
                       vertical: 8,
                     ),
                     decoration: BoxDecoration(
                       color: TColors.primary_shade50,
-                      borderRadius:
-                      BorderRadius.circular(25),
+                      borderRadius: BorderRadius.circular(25),
                     ),
                     child: Text(
                       "${plan.days.length}",
                       style: const TextStyle(
-                        fontWeight:
-                        FontWeight.bold,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
@@ -145,8 +132,7 @@ class TourPlanRowState
               Expanded(
                 flex: 5,
                 child: Align(
-                  alignment:
-                  Alignment.centerRight,
+                  alignment: Alignment.centerRight,
                   child: _actionButton(plan),
                 ),
               ),
@@ -160,13 +146,11 @@ class TourPlanRowState
   //--------------------------------------------
 
   Widget _remarks(
-      TourPlanModel plan,
-      ) {
-
+    TourPlanModel plan,
+  ) {
     if ((plan.comments ?? "").isEmpty) {
-
       return const Text(
-        "No remarks",
+        TTexts.uiTextNoRemarks,
         style: TextStyle(
           color: TColors.textSecondary,
         ),
@@ -176,16 +160,15 @@ class TourPlanRowState
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: Colors.red.withValues(alpha: .08),
-        borderRadius:
-        BorderRadius.circular(10),
+        color: TColors.materialRed.withValues(alpha: .08),
+        borderRadius: BorderRadius.circular(10),
       ),
       child: Text(
         plan.comments!,
         maxLines: 2,
         overflow: TextOverflow.ellipsis,
         style: const TextStyle(
-          color: Colors.red,
+          color: TColors.materialRed,
           fontWeight: FontWeight.w500,
         ),
       ),
@@ -195,12 +178,11 @@ class TourPlanRowState
   //--------------------------------------------
 
   Widget _actionButton(
-      TourPlanModel plan,
-      ) {
-
+    TourPlanModel plan,
+  ) {
     return Wrap(
-      spacing: 8,
-      runSpacing: 6,
+      spacing: TSizes.v8,
+      runSpacing: TSizes.v6,
       alignment: WrapAlignment.end,
       children: [
         OutlinedButton.icon(
@@ -209,54 +191,51 @@ class TourPlanRowState
             visualDensity: VisualDensity.compact,
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
           ),
-          icon: const Icon(Icons.visibility_outlined, size: 17),
-          label: const Text("View"),
+          icon: const Icon(Icons.visibility_outlined, size: TSizes.v17),
+          label: const Text(TTexts.uiTextView),
         ),
         if (plan.isDraft)
           OutlinedButton.icon(
             onPressed: widget.onDetails,
             style: OutlinedButton.styleFrom(
               visualDensity: VisualDensity.compact,
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
             ),
-            icon: const Icon(Icons.edit_outlined, size: 17),
-            label: const Text("Edit"),
+            icon: const Icon(Icons.edit_outlined, size: TSizes.v17),
+            label: const Text(TTexts.uiTextEdit),
           ),
         if (plan.isDraft)
           ElevatedButton.icon(
             onPressed: widget.submitEnabled ? widget.onSubmit : null,
             style: ElevatedButton.styleFrom(
               backgroundColor: TColors.primary,
-              foregroundColor: Colors.white,
+              foregroundColor: TColors.white,
               visualDensity: VisualDensity.compact,
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
             ),
             icon: widget.isSubmitting
                 ? const SizedBox(
-                    width: 16,
-                    height: 16,
+                    width: TSizes.v16,
+                    height: TSizes.v16,
                     child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
+                      strokeWidth: TSizes.v2,
+                      color: TColors.white,
                     ),
                   )
-                : const Icon(Icons.send_rounded, size: 17),
+                : const Icon(Icons.send_rounded, size: TSizes.v17),
             label: Text(widget.isSubmitting ? "Submitting" : "Submit"),
           ),
         if (plan.isReturned)
           ElevatedButton.icon(
             onPressed: widget.onDetails,
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
+              backgroundColor: TColors.materialRed,
+              foregroundColor: TColors.white,
               visualDensity: VisualDensity.compact,
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
             ),
-            icon: const Icon(Icons.refresh_rounded, size: 17),
-            label: const Text("Revise"),
+            icon: const Icon(Icons.refresh_rounded, size: TSizes.v17),
+            label: const Text(TTexts.uiTextRevise),
           ),
       ],
     );
@@ -265,13 +244,8 @@ class TourPlanRowState
   //--------------------------------------------
 
   String _date(DateTime date) {
-
-    return
-
-      "${date.day.toString().padLeft(2, '0')}/"
-
-          "${date.month.toString().padLeft(2, '0')}/"
-
-          "${date.year}";
+    return "${date.day.toString().padLeft(2, '0')}/"
+        "${date.month.toString().padLeft(2, '0')}/"
+        "${date.year}";
   }
 }

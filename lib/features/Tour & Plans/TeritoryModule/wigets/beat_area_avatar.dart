@@ -1,6 +1,8 @@
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class BeatAreaAvatar extends StatelessWidget {
   final List<Color> colors;
@@ -25,9 +27,9 @@ class BeatAreaAvatar extends StatelessWidget {
           child: Text(
             doctorCount.toString(),
             style: const TextStyle(
-              color: Colors.white,
+              color: TColors.white,
               fontWeight: FontWeight.bold,
-              fontSize: 11,
+              fontSize: TSizes.v11,
             ),
           ),
         ),
@@ -53,7 +55,7 @@ class _BeatPainter extends CustomPainter {
       canvas.drawCircle(
         center,
         radius,
-        Paint()..color = Colors.grey,
+        Paint()..color = TColors.materialGrey,
       );
     } else if (colors.length == 1) {
       canvas.drawCircle(
@@ -85,7 +87,7 @@ class _BeatPainter extends CustomPainter {
       Paint()
         ..style = PaintingStyle.stroke
         ..strokeWidth = 2
-        ..color = Colors.white,
+        ..color = TColors.white,
     );
   }
 

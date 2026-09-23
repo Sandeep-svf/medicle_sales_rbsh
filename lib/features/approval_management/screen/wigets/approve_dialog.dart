@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../../../../utils/constants/colors.dart';
 import '../../../../utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class ApproveDialog extends StatefulWidget {
   const ApproveDialog({
@@ -35,47 +36,36 @@ class _ApproveDialogState extends State<ApproveDialog> {
       ),
       child: ConstrainedBox(
         constraints: const BoxConstraints(
-          maxWidth: 520,
+          maxWidth: TSizes.v520,
         ),
         child: Padding(
           padding: const EdgeInsets.all(TSizes.lg),
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment:
-            CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-
               Text(
-                "Approve Tour Plan",
-                style: Theme.of(context)
-                    .textTheme
-                    .titleLarge,
+                TTexts.uiTextApproveTourPlan,
+                style: Theme.of(context).textTheme.titleLarge,
               ),
-
               const SizedBox(
                 height: TSizes.sm,
               ),
-
               Text(
-                "Add comments (optional).",
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(
-                  color: TColors.textSecondary,
-                ),
+                TTexts.uiTextAddCommentsOptional,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: TColors.textSecondary,
+                    ),
               ),
-
               const SizedBox(
                 height: TSizes.lg,
               ),
-
               TextField(
                 controller: controller,
                 minLines: 4,
                 maxLines: 6,
                 decoration: InputDecoration(
-                  hintText: "Approval comments...",
+                  hintText: TTexts.uiTextApprovalComments,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(
                       TSizes.inputFieldRadius,
@@ -83,29 +73,22 @@ class _ApproveDialogState extends State<ApproveDialog> {
                   ),
                 ),
               ),
-
               const SizedBox(
                 height: TSizes.lg,
               ),
-
               Row(
-                mainAxisAlignment:
-                MainAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-
                   OutlinedButton(
                     onPressed: Get.back,
-                    child: const Text("Cancel"),
+                    child: const Text(TTexts.cancel),
                   ),
-
                   const SizedBox(
                     width: TSizes.md,
                   ),
-
                   FilledButton(
                     style: FilledButton.styleFrom(
-                      backgroundColor:
-                      TColors.primary,
+                      backgroundColor: TColors.primary,
                     ),
                     onPressed: () {
                       widget.onApprove(
@@ -113,7 +96,7 @@ class _ApproveDialogState extends State<ApproveDialog> {
                       );
                       Get.back();
                     },
-                    child: const Text("Approve"),
+                    child: const Text(TTexts.uiTextApprove),
                   ),
                 ],
               ),

@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:medicle_sales_rbsh/features/expenses/models/ExpenseDefaultValueModel.dart';
 import 'package:medicle_sales_rbsh/utils/http/http_client.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class ScraperSettingsController extends GetxController {
   static const String _tag = 'ScraperSettingsController';
@@ -44,7 +45,7 @@ class ScraperSettingsController extends GetxController {
         );
       } else {
         errorMessage.value =
-        'Failed to fetch settings (${response.statusCode})';
+            'Failed to fetch settings (${response.statusCode})';
 
         print('[$_tag] Error: ${errorMessage.value}');
       }
@@ -80,11 +81,11 @@ class ScraperSettingsController extends GetxController {
 
         print('[$_tag] Settings Updated Successfully');
 
-        Get.snackbar("Success", "Settings updated");
+        Get.snackbar("Success", TTexts.uiTextSettingsUpdated);
       } else {
         print('[$_tag] Update Failed');
 
-        Get.snackbar("Error", "Failed to update settings");
+        Get.snackbar("Error", TTexts.uiTextFailedToUpdateSettings);
       }
     } catch (e, stackTrace) {
       print('[$_tag] Exception: $e');

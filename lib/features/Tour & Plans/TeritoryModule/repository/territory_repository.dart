@@ -9,7 +9,6 @@ class TerritoryRepository {
   static final TerritoryRepository instance = TerritoryRepository._();
 
   Future<TerritoryMasterModel> loadTerritory() async {
-
     print("TerritoryRepository ===============================");
     print("TerritoryRepository Calling GET /territory/master");
 

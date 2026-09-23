@@ -1,12 +1,9 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:medicle_sales_rbsh/utils/local_storage/auth_manager.dart';
-
-// Adjust these imports to match your project structure
 import '../../../addDoctor/controllers/DoctroController.dart';
 import '../../../addDoctor/models/DoctorModelList.dart' as online_doctor;
 import '../../../doctor_offline/doctor_offline_module.dart';
@@ -15,6 +12,10 @@ import '../models/pending_area_assignment_model.dart';
 import '../repository/pending_area_assignment_repository.dart';
 import '../services/doctor_area_assignment_queue_service.dart';
 import '../services/doctor_schedule_service.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+
+// Adjust these imports to match your project structure
 
 class ScheduleVisitScreen extends StatefulWidget {
   const ScheduleVisitScreen({super.key});
@@ -245,10 +246,10 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
         data: Theme.of(context).copyWith(
           colorScheme: const ColorScheme.light(
             primary: TColors.primary,
-            onPrimary: Colors.white,
-            onSurface: Colors.black,
+            onPrimary: TColors.white,
+            onSurface: TColors.pureBlack,
           ),
-          dialogBackgroundColor: Colors.white,
+          dialogBackgroundColor: TColors.white,
         ),
         child: child!,
       ),
@@ -281,7 +282,7 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor: TColors.transparent,
       builder: (context) => StatefulBuilder(
         builder: (context, sheetState) => DraggableScrollableSheet(
           initialChildSize: 0.9,
@@ -290,7 +291,7 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
           builder: (_, scrollController) {
             return Container(
               decoration: const BoxDecoration(
-                color: Colors.white,
+                color: TColors.white,
                 borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
               ),
               child: Column(
@@ -298,15 +299,15 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
                   Center(
                     child: Container(
                       margin: const EdgeInsets.only(top: 12, bottom: 12),
-                      width: 40,
-                      height: 4,
+                      width: TSizes.v40,
+                      height: TSizes.v4,
                       decoration: BoxDecoration(
-                          color: Colors.grey[300],
+                          color: TColors.materialGrey300,
                           borderRadius: BorderRadius.circular(2)),
                     ),
                   ),
                   _buildSheetHeader(
-                    title: 'Select doctors',
+                    title: TTexts.uiTextSelectDoctors_6a8b4df3,
                     count: selectedKeys.length,
                     onDone: () {
                       final selected = _doctorListController.doctorList
@@ -329,11 +330,11 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
                     child: TextField(
                       autofocus: true,
                       decoration: InputDecoration(
-                        hintText: "Search by name...",
+                        hintText: TTexts.uiTextSearchByName,
                         prefixIcon:
                             const Icon(Icons.search, color: TColors.primary),
                         filled: true,
-                        fillColor: Colors.grey[100],
+                        fillColor: TColors.materialGrey100,
                         border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide.none),
@@ -346,18 +347,20 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
                       },
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: TSizes.v10),
                   Expanded(
                     child: Obx(() {
                       final list = _doctorListController.filteredDoctors;
                       if (list.isEmpty) {
-                        return const Center(child: Text("No doctors found"));
+                        return const Center(
+                            child: Text(TTexts.uiTextNoDoctorsFound));
                       }
 
                       return ListView.separated(
                         controller: scrollController,
                         itemCount: list.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 2),
+                        separatorBuilder: (_, __) =>
+                            const SizedBox(height: TSizes.v2),
                         itemBuilder: (context, index) {
                           final doctor =
                               _ScheduleDoctor.fromOnline(list[index]);
@@ -400,7 +403,7 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor: TColors.transparent,
       builder: (context) => StatefulBuilder(
         builder: (context, sheetState) {
           return DraggableScrollableSheet(
@@ -409,14 +412,14 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
             maxChildSize: 0.95,
             builder: (_, scrollController) => Container(
               decoration: const BoxDecoration(
-                color: Colors.white,
+                color: TColors.white,
                 borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
               ),
               child: Column(
                 children: [
-                  const SizedBox(height: 14),
+                  const SizedBox(height: TSizes.v14),
                   _buildSheetHeader(
-                    title: 'Select doctors',
+                    title: TTexts.uiTextSelectDoctors_6a8b4df3,
                     count: selectedKeys.length,
                     onDone: () {
                       final selected = _offlineDoctors
@@ -439,11 +442,11 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
                     child: TextField(
                       autofocus: true,
                       decoration: InputDecoration(
-                        hintText: 'Search by name...',
+                        hintText: TTexts.uiTextSearchByName,
                         prefixIcon:
                             const Icon(Icons.search, color: TColors.primary),
                         filled: true,
-                        fillColor: Colors.grey[100],
+                        fillColor: TColors.materialGrey100,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide.none,
@@ -460,12 +463,12 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
                   ),
                   Expanded(
                     child: visible.isEmpty
-                        ? const Center(child: Text('No doctors found'))
+                        ? const Center(child: Text(TTexts.uiTextNoDoctorsFound))
                         : ListView.separated(
                             controller: scrollController,
                             itemCount: visible.length,
                             separatorBuilder: (_, __) =>
-                                const SizedBox(height: 2),
+                                const SizedBox(height: TSizes.v2),
                             itemBuilder: (_, index) {
                               final doctor =
                                   _ScheduleDoctor.fromOffline(visible[index]);
@@ -513,15 +516,15 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
             child: Text(
               count == 0 ? title : '$title ($count selected)',
               style: TextStyle(
-                fontSize: 18,
+                fontSize: TSizes.v18,
                 fontWeight: FontWeight.bold,
-                color: Colors.grey[800],
+                color: TColors.materialGrey800,
               ),
             ),
           ),
           TextButton(
             onPressed: onDone,
-            child: const Text('Done'),
+            child: const Text(TTexts.uiTextDone),
           ),
         ],
       ),
@@ -548,17 +551,17 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Selected doctors',
+            TTexts.uiTextSelectedDoctors,
             style: TextStyle(
               color: TColors.primary,
-              fontSize: 12,
+              fontSize: TSizes.v12,
               fontWeight: FontWeight.w700,
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: TSizes.v6),
           Wrap(
-            spacing: 6,
-            runSpacing: 0,
+            spacing: TSizes.v6,
+            runSpacing: TSizes.v0,
             children: selectedDoctors
                 .map(
                   (doctor) => Chip(
@@ -572,13 +575,13 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
                         doctor.initial,
                         style: const TextStyle(
                           color: TColors.primary,
-                          fontSize: 11,
+                          fontSize: TSizes.v11,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
                     visualDensity: VisualDensity.compact,
-                    backgroundColor: Colors.white,
+                    backgroundColor: TColors.white,
                     side: BorderSide.none,
                   ),
                 )
@@ -596,14 +599,14 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
   }) {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-      elevation: 0,
-      color: selected ? TColors.primary.withOpacity(0.06) : Colors.white,
+      elevation: TSizes.v0,
+      color: selected ? TColors.primary.withOpacity(0.06) : TColors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
         side: BorderSide(
           color: selected
               ? TColors.primary.withOpacity(0.35)
-              : Colors.grey.withOpacity(0.15),
+              : TColors.materialGrey.withOpacity(0.15),
         ),
       ),
       child: ListTile(
@@ -629,7 +632,8 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
             doctor.summary,
             maxLines: 3,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(color: Colors.grey[700], height: 1.3),
+            style:
+                TextStyle(color: TColors.materialGrey700, height: TSizes.v1_3),
           ),
         ),
         isThreeLine: true,
@@ -637,7 +641,7 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
           mainAxisSize: MainAxisSize.min,
           children: [
             IconButton(
-              tooltip: 'Doctor details',
+              tooltip: TTexts.uiTextDoctorDetails_92c212eb,
               icon: const Icon(Icons.info_outline_rounded),
               color: TColors.primary,
               onPressed: () => _showDoctorDetails(doctor),
@@ -696,9 +700,9 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
               onPressed: () => Navigator.pop(context),
               style: FilledButton.styleFrom(
                 backgroundColor: TColors.primary,
-                foregroundColor: Colors.white,
+                foregroundColor: TColors.white,
               ),
-              child: const Text('Close'),
+              child: const Text(TTexts.uiTextClose),
             ),
           ),
         ],
@@ -714,12 +718,13 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 18, color: TColors.primary),
-          const SizedBox(width: 10),
+          Icon(icon, size: TSizes.v18, color: TColors.primary),
+          const SizedBox(width: TSizes.v10),
           Expanded(
             child: RichText(
               text: TextSpan(
-                style: TextStyle(color: Colors.grey[800], height: 1.3),
+                style: TextStyle(
+                    color: TColors.materialGrey800, height: TSizes.v1_3),
                 children: [
                   TextSpan(
                     text: '$label\n',
@@ -765,9 +770,9 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
     if (_offlineAreas.isEmpty) {
       Get.snackbar(
         'Area unavailable',
-        'No cached areas are available. Connect once to download the area list.',
-        backgroundColor: Colors.orange.withOpacity(0.1),
-        colorText: Colors.deepOrange,
+        TTexts.uiTextNoCachedAreasAreAvailableConnectOnceTo,
+        backgroundColor: TColors.materialOrange.withOpacity(0.1),
+        colorText: TColors.materialDeepOrange,
       );
       return;
     }
@@ -775,7 +780,7 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
     final selected = await showModalBottomSheet<_ScheduleArea>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor: TColors.transparent,
       builder: (context) {
         var query = '';
         return StatefulBuilder(
@@ -791,7 +796,7 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
               maxChildSize: 0.92,
               builder: (_, scrollController) => Container(
                 decoration: const BoxDecoration(
-                  color: Colors.white,
+                  color: TColors.white,
                   borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
                 ),
                 child: Column(
@@ -804,13 +809,13 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
                             child: Text(
                               'Select area for ${doctor.name}',
                               style: const TextStyle(
-                                fontSize: 18,
+                                fontSize: TSizes.v18,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
                           ),
                           IconButton(
-                            tooltip: 'Close',
+                            tooltip: TTexts.uiTextClose,
                             onPressed: () => Navigator.pop(context),
                             icon: const Icon(Icons.close),
                           ),
@@ -824,9 +829,9 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
                             setSheetState(() => query = value),
                         decoration: InputDecoration(
                           prefixIcon: const Icon(Icons.search),
-                          hintText: 'Search cached areas',
+                          hintText: TTexts.uiTextSearchCachedAreas,
                           filled: true,
-                          fillColor: const Color(0xFFF5F7FA),
+                          fillColor: TColors.hex_FFF5F7FA,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide.none,
@@ -836,19 +841,20 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
                     ),
                     Expanded(
                       child: visible.isEmpty
-                          ? const Center(child: Text('No matching areas'))
+                          ? const Center(
+                              child: Text(TTexts.uiTextNoMatchingAreas))
                           : ListView.separated(
                               controller: scrollController,
                               padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
                               itemCount: visible.length,
                               separatorBuilder: (_, __) =>
-                                  const Divider(height: 1),
+                                  const Divider(height: TSizes.v1),
                               itemBuilder: (_, index) {
                                 final area = visible[index];
                                 return ListTile(
                                   contentPadding: EdgeInsets.zero,
                                   leading: const CircleAvatar(
-                                    backgroundColor: Color(0xFFEAF2FF),
+                                    backgroundColor: TColors.hex_FFEAF2FF,
                                     child: Icon(Icons.map_outlined,
                                         color: TColors.primary),
                                   ),
@@ -882,9 +888,9 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
           data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.light(
                 primary: TColors.primary,
-                onPrimary: Colors.white,
-                onSurface: Colors.black),
-            dialogBackgroundColor: Colors.white,
+                onPrimary: TColors.white,
+                onSurface: TColors.pureBlack),
+            dialogBackgroundColor: TColors.white,
           ),
           child: child!,
         );
@@ -900,9 +906,9 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
 
   Future<void> _submitForm() async {
     if (_selectedDoctors.isEmpty) {
-      Get.snackbar("Required", "Please select at least one doctor",
-          backgroundColor: Colors.orange.withOpacity(0.1),
-          colorText: Colors.redAccent);
+      Get.snackbar("Required", TTexts.uiTextPleaseSelectAtLeastOneDoctor,
+          backgroundColor: TColors.materialOrange.withOpacity(0.1),
+          colorText: TColors.materialRedAccent);
       return;
     }
 
@@ -910,15 +916,16 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
 
     if (_useSameDetails) {
       if (!_isValidScheduleDate(_dateController.text)) {
-        Get.snackbar("Required", "Please select a valid schedule date",
-            backgroundColor: Colors.orange.withOpacity(0.1),
-            colorText: Colors.redAccent);
+        Get.snackbar("Required", TTexts.uiTextPleaseSelectAValidScheduleDate,
+            backgroundColor: TColors.materialOrange.withOpacity(0.1),
+            colorText: TColors.materialRedAccent);
         return;
       }
       if (_notesController.text.trim().isEmpty) {
-        Get.snackbar("Required", "Please add notes for the scheduled visit",
-            backgroundColor: Colors.orange.withOpacity(0.1),
-            colorText: Colors.redAccent);
+        Get.snackbar(
+            "Required", TTexts.uiTextPleaseAddNotesForTheScheduledVisit,
+            backgroundColor: TColors.materialOrange.withOpacity(0.1),
+            colorText: TColors.materialRedAccent);
         return;
       }
     } else {
@@ -926,14 +933,14 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
         final draft = _doctorDrafts[doctor.key];
         if (draft == null || !_isValidScheduleDate(draft.date)) {
           Get.snackbar("Missing date", "Select a valid date for ${doctor.name}",
-              backgroundColor: Colors.orange.withOpacity(0.1),
-              colorText: Colors.redAccent);
+              backgroundColor: TColors.materialOrange.withOpacity(0.1),
+              colorText: TColors.materialRedAccent);
           return;
         }
         if (draft.notesController.text.trim().isEmpty) {
           Get.snackbar("Missing notes", "Add notes for ${doctor.name}",
-              backgroundColor: Colors.orange.withOpacity(0.1),
-              colorText: Colors.redAccent);
+              backgroundColor: TColors.materialOrange.withOpacity(0.1),
+              colorText: TColors.materialRedAccent);
           return;
         }
       }
@@ -946,8 +953,8 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
       Get.snackbar(
         'Area required',
         'Select an area before scheduling: $names',
-        backgroundColor: Colors.orange.withOpacity(0.1),
-        colorText: Colors.deepOrange,
+        backgroundColor: TColors.materialOrange.withOpacity(0.1),
+        colorText: TColors.materialDeepOrange,
       );
       return;
     }
@@ -1016,7 +1023,8 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
       }
     } catch (e) {
       Get.snackbar("Error", "Failed to schedule visit: $e",
-          backgroundColor: Colors.red.withOpacity(0.1), colorText: Colors.red);
+          backgroundColor: TColors.materialRed.withOpacity(0.1),
+          colorText: TColors.materialRed);
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
@@ -1025,27 +1033,27 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: TColors.hex_FFF5F7FA,
       // Keep the hero below the app bar so its title can never be clipped by
       // the transparent toolbar overlay.
       extendBodyBehindAppBar: false,
       appBar: AppBar(
         backgroundColor: TColors.primary,
-        elevation: 0,
+        elevation: TSizes.v0,
         leading: IconButton(
-          icon:
-              const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded,
+              color: TColors.white),
           onPressed: () => Navigator.pop(context),
         ),
         title: LayoutBuilder(builder: (context, constraints) {
           return MediaQuery.of(context).size.width < 600
-              ? const Text("New Appointment",
+              ? const Text(TTexts.uiTextNewAppointment,
                   style: TextStyle(
-                      color: Colors.white, fontWeight: FontWeight.w600))
+                      color: TColors.white, fontWeight: FontWeight.w600))
               : const SizedBox.shrink();
         }),
         centerTitle: true,
-        iconTheme: const IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(color: TColors.white),
       ),
       body: LayoutBuilder(
         builder: (context, constraints) {
@@ -1095,10 +1103,10 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
                 child: Column(
                   children: [
                     // Invisible Spacer for top overlap visual
-                    const SizedBox(height: 10),
+                    const SizedBox(height: TSizes.v10),
                     _buildFormContent(),
                     // Extra bottom padding for the button + safe area
-                    const SizedBox(height: 120),
+                    const SizedBox(height: TSizes.v120),
                   ],
                 ),
               ),
@@ -1130,15 +1138,16 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
         Expanded(
           flex: 6, // 60% width
           child: Container(
-            color: const Color(0xFFF5F7FA),
+            color: TColors.hex_FFF5F7FA,
             child: SafeArea(
               child: Column(
                 children: [
-                  const SizedBox(height: 40),
+                  const SizedBox(height: TSizes.v40),
                   Expanded(
                     child: Center(
                       child: Container(
-                        constraints: const BoxConstraints(maxWidth: 500),
+                        constraints:
+                            const BoxConstraints(maxWidth: TSizes.v500),
                         child: SingleChildScrollView(
                           padding: const EdgeInsets.all(32),
                           physics: const BouncingScrollPhysics(),
@@ -1148,21 +1157,23 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
                                 Text(
-                                  "Appointment Details",
+                                  TTexts.uiTextAppointmentDetails,
                                   style: TextStyle(
-                                      fontSize: 28,
+                                      fontSize: TSizes.v28,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.grey[800]),
+                                      color: TColors.materialGrey800),
                                 ),
-                                const SizedBox(height: 8),
+                                const SizedBox(height: TSizes.v8),
                                 Text(
-                                  "Fill in the details below to schedule your visit.",
+                                  TTexts
+                                      .uiTextFillInTheDetailsBelowToScheduleYour,
                                   style: TextStyle(
-                                      fontSize: 16, color: Colors.grey[600]),
+                                      fontSize: TSizes.v16,
+                                      color: TColors.materialGrey600),
                                 ),
-                                const SizedBox(height: 32),
+                                const SizedBox(height: TSizes.v32),
                                 _buildFormContent(),
-                                const SizedBox(height: 40),
+                                const SizedBox(height: TSizes.v40),
                                 _buildSubmitButton(),
                               ],
                             ),
@@ -1192,7 +1203,7 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [TColors.primary, Color(0xFF4B68FF)],
+          colors: [TColors.primary, TColors.hex_FF4B68FF],
         ),
         borderRadius: isMobile
             ? const BorderRadius.only(
@@ -1220,44 +1231,46 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
                 children: [
                   if (!isMobile) ...[
                     const Icon(Icons.medical_services_outlined,
-                        size: 60, color: Colors.white24),
-                    const SizedBox(height: 32),
+                        size: TSizes.v60, color: TColors.white24),
+                    const SizedBox(height: TSizes.v32),
                   ],
                   Container(
                     padding:
                         const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: TColors.white.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.star_rounded, color: Colors.amber, size: 16),
-                        SizedBox(width: 4),
-                        Text("High Priority",
+                        Icon(Icons.star_rounded,
+                            color: TColors.materialAmber, size: TSizes.v16),
+                        SizedBox(width: TSizes.v4),
+                        Text(TTexts.uiTextHighPriority,
                             style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 12,
+                                color: TColors.white,
+                                fontSize: TSizes.v12,
                                 fontWeight: FontWeight.bold)),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: TSizes.v16),
                   Text(
-                    "Schedule Visit",
+                    TTexts.scheduleVisit,
                     style: TextStyle(
-                        color: Colors.white,
+                        color: TColors.white,
                         fontSize: isMobile ? 28 : 32,
                         fontWeight: FontWeight.bold),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: TSizes.v8),
                   Text(
-                    "Plan your next successful interaction.",
+                    TTexts.uiTextPlanYourNextSuccessfulInteraction,
                     style: TextStyle(
-                        color: Colors.white.withOpacity(0.9), fontSize: 14),
+                        color: TColors.white.withOpacity(0.9),
+                        fontSize: TSizes.v14),
                   ),
-                  if (isMobile) const SizedBox(height: 12),
+                  if (isMobile) const SizedBox(height: TSizes.v12),
                   if (!isMobile) const Spacer(),
                 ],
               ),
@@ -1277,17 +1290,17 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
           child: GestureDetector(
             onTap: _openDoctorSearchSheet,
             child: _buildInputCard(
-              title: "Select Doctors",
+              title: TTexts.uiTextSelectDoctors,
               icon: Icons.person_search_rounded,
               child: _selectedDoctors.isEmpty
                   ? Row(
                       children: [
                         Expanded(
                           child: Text(
-                            "Tap to search and select one or more doctors...",
+                            TTexts.uiTextTapToSearchAndSelectOneOrMore,
                             style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.grey[500],
+                              fontSize: TSizes.v16,
+                              color: TColors.materialGrey500,
                             ),
                           ),
                         ),
@@ -1305,26 +1318,28 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
                             color: TColors.primary,
                           ),
                         ),
-                        const SizedBox(height: 10),
+                        const SizedBox(height: TSizes.v10),
                         ..._selectedDoctorOptions.map(_buildSelectedDoctorTile),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: TSizes.v4),
                         const Text(
-                          'Tap here to add or remove doctors',
-                          style: TextStyle(color: Colors.grey, fontSize: 12),
+                          TTexts.uiTextTapHereToAddOrRemoveDoctors,
+                          style: TextStyle(
+                              color: TColors.materialGrey,
+                              fontSize: TSizes.v12),
                         ),
                       ],
                     ),
             ),
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: TSizes.v16),
         if (_selectedDoctors.isNotEmpty) ...[
           _AnimatedEntry(
             controller: _animController,
             index: 2,
             child: _buildAreaAssignmentSection(),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: TSizes.v16),
         ],
         _AnimatedEntry(
           controller: _animController,
@@ -1340,27 +1355,28 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
     if (pending.isEmpty) return const SizedBox.shrink();
 
     return _buildInputCard(
-      title: 'Area required before scheduling',
+      title: TTexts.uiTextAreaRequiredBeforeScheduling,
       icon: Icons.map_outlined,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Select an area for each doctor without an area. The choice is saved offline and uploaded before the schedule.',
-            style: TextStyle(color: Colors.grey[700], height: 1.35),
+            TTexts.uiTextSelectAnAreaForEachDoctorWithoutAn,
+            style:
+                TextStyle(color: TColors.materialGrey700, height: TSizes.v1_35),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: TSizes.v12),
           if (_offlineAreas.isEmpty)
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.orange.withOpacity(0.08),
+                color: TColors.materialOrange.withOpacity(0.08),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Text(
-                'No cached areas are available. Connect once to download the area list.',
-                style: TextStyle(color: Colors.deepOrange),
+                TTexts.uiTextNoCachedAreasAreAvailableConnectOnceTo,
+                style: TextStyle(color: TColors.materialDeepOrange),
               ),
             ),
           ...pending.map(
@@ -1379,8 +1395,8 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
                     onPressed: _offlineAreas.isEmpty
                         ? null
                         : () => _openAreaPicker(doctor),
-                    icon: const Icon(Icons.pin_drop_outlined, size: 18),
-                    label: const Text('Select area'),
+                    icon: const Icon(Icons.pin_drop_outlined, size: TSizes.v18),
+                    label: const Text(TTexts.uiTextSelectArea_81d6a3dd),
                   ),
                 ],
               ),
@@ -1396,31 +1412,32 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _buildInputCard(
-          title: 'Schedule details',
+          title: TTexts.uiTextScheduleDetails,
           icon: Icons.tune_rounded,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'Choose how to set the visit details',
+                TTexts.uiTextChooseHowToSetTheVisitDetails,
                 style: TextStyle(fontWeight: FontWeight.w700),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: TSizes.v12),
               _buildDetailsModeToggle(),
-              const SizedBox(height: 10),
+              const SizedBox(height: TSizes.v10),
               Text(
                 _useSameDetails
                     ? 'One date and note will be applied to every selected doctor.'
                     : 'Set a different date, note, or remark for each doctor.',
-                style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                style: TextStyle(
+                    color: TColors.materialGrey600, fontSize: TSizes.v12),
               ),
             ],
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: TSizes.v12),
         if (_useSameDetails) ...[
           _buildSharedDateCard(),
-          const SizedBox(height: 12),
+          const SizedBox(height: TSizes.v12),
           _buildSharedNotesCard(),
         ] else
           _buildCustomDoctorScheduleCards(),
@@ -1432,19 +1449,19 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: const Color(0xFFF1F4F9),
+        color: TColors.hex_FFF1F4F9,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
         children: [
           _buildModeOption(
-            label: 'Same for all',
+            label: TTexts.uiTextSameForAll,
             icon: Icons.copy_all_rounded,
             selected: _useSameDetails,
             onTap: () => _setDetailsMode(true),
           ),
           _buildModeOption(
-            label: 'Customize each',
+            label: TTexts.uiTextCustomizeEach,
             icon: Icons.edit_note_rounded,
             selected: !_useSameDetails,
             onTap: () => _setDetailsMode(false),
@@ -1468,13 +1485,13 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
           duration: const Duration(milliseconds: 180),
           padding: const EdgeInsets.symmetric(vertical: 11, horizontal: 8),
           decoration: BoxDecoration(
-            color: selected ? Colors.white : Colors.transparent,
+            color: selected ? TColors.white : TColors.transparent,
             borderRadius: BorderRadius.circular(10),
             boxShadow: selected
                 ? [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.06),
-                      blurRadius: 6,
+                      color: TColors.pureBlack.withOpacity(0.06),
+                      blurRadius: TSizes.v6,
                       offset: const Offset(0, 2),
                     ),
                   ]
@@ -1484,17 +1501,17 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(icon,
-                  size: 17,
-                  color: selected ? TColors.primary : Colors.grey[600]),
-              const SizedBox(width: 6),
+                  size: TSizes.v17,
+                  color: selected ? TColors.primary : TColors.materialGrey600),
+              const SizedBox(width: TSizes.v6),
               Flexible(
                 child: Text(
                   label,
                   textAlign: TextAlign.center,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color: selected ? TColors.primary : Colors.grey[700],
-                    fontSize: 12,
+                    color: selected ? TColors.primary : TColors.materialGrey700,
+                    fontSize: TSizes.v12,
                     fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
                   ),
                 ),
@@ -1510,7 +1527,7 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
     return GestureDetector(
       onTap: _pickDate,
       child: _buildInputCard(
-        title: 'Date for all selected doctors',
+        title: TTexts.uiTextDateForAllSelectedDoctors,
         icon: Icons.calendar_month_rounded,
         child: Row(
           children: [
@@ -1519,9 +1536,9 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
                   ? 'Select date'
                   : _dateController.text,
               style: TextStyle(
-                fontSize: 16,
+                fontSize: TSizes.v16,
                 fontWeight: FontWeight.bold,
-                color: Colors.grey[800],
+                color: TColors.materialGrey800,
               ),
             ),
             const Spacer(),
@@ -1532,7 +1549,7 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Icon(Icons.edit_calendar_rounded,
-                  color: TColors.primary, size: 20),
+                  color: TColors.primary, size: TSizes.v20),
             ),
           ],
         ),
@@ -1542,31 +1559,33 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
 
   Widget _buildSharedNotesCard() {
     return _buildInputCard(
-      title: 'Notes and remark for all doctors',
+      title: TTexts.uiTextNotesAndRemarkForAllDoctors,
       icon: Icons.notes_rounded,
       child: Column(
         children: [
           TextFormField(
             controller: _notesController,
             maxLines: 3,
-            style: const TextStyle(fontSize: 15),
+            style: const TextStyle(fontSize: TSizes.v15),
             decoration: InputDecoration(
-              hintText: 'Purpose of the visits (required)',
-              hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
+              hintText: TTexts.uiTextPurposeOfTheVisitsRequired,
+              hintStyle: TextStyle(
+                  color: TColors.materialGrey400, fontSize: TSizes.v14),
               border: InputBorder.none,
               contentPadding: EdgeInsets.zero,
             ),
             validator: (value) =>
                 value!.trim().isEmpty ? 'Notes are required' : null,
           ),
-          const Divider(height: 20),
+          const Divider(height: TSizes.v20),
           TextFormField(
             controller: _remarkController,
             maxLines: 2,
-            style: const TextStyle(fontSize: 15),
+            style: const TextStyle(fontSize: TSizes.v15),
             decoration: InputDecoration(
-              hintText: 'Remark (optional)',
-              hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
+              hintText: TTexts.uiTextRemarkOptional,
+              hintStyle: TextStyle(
+                  color: TColors.materialGrey400, fontSize: TSizes.v14),
               border: InputBorder.none,
               contentPadding: EdgeInsets.zero,
             ),
@@ -1599,24 +1618,26 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
               doctor.summary,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(color: Colors.grey[600], fontSize: 12),
+              style: TextStyle(
+                  color: TColors.materialGrey600, fontSize: TSizes.v12),
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: TSizes.v14),
             GestureDetector(
               onTap: () => _pickDateForDoctor(doctor),
               child: Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF7F9FC),
+                  color: TColors.hex_FFF7F9FC,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey.withOpacity(0.18)),
+                  border:
+                      Border.all(color: TColors.materialGrey.withOpacity(0.18)),
                 ),
                 child: Row(
                   children: [
                     const Icon(Icons.event_outlined,
-                        color: TColors.primary, size: 20),
-                    const SizedBox(width: 10),
+                        color: TColors.primary, size: TSizes.v20),
+                    const SizedBox(width: TSizes.v10),
                     Expanded(
                       child: Text(
                         draft.date,
@@ -1624,19 +1645,19 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
                       ),
                     ),
                     const Icon(Icons.edit_calendar_outlined,
-                        color: TColors.primary, size: 19),
+                        color: TColors.primary, size: TSizes.v19),
                   ],
                 ),
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: TSizes.v12),
             TextFormField(
               controller: draft.notesController,
               maxLines: 3,
-              style: const TextStyle(fontSize: 14),
+              style: const TextStyle(fontSize: TSizes.v14),
               decoration: const InputDecoration(
-                labelText: 'Notes',
-                hintText: 'Purpose of this visit',
+                labelText: TTexts.notes,
+                hintText: TTexts.uiTextPurposeOfThisVisit,
                 border: OutlineInputBorder(),
                 alignLabelWithHint: true,
               ),
@@ -1644,13 +1665,13 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
                   ? 'Notes are required for this doctor'
                   : null,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: TSizes.v12),
             TextFormField(
               controller: draft.remarkController,
               maxLines: 2,
-              style: const TextStyle(fontSize: 14),
+              style: const TextStyle(fontSize: TSizes.v14),
               decoration: const InputDecoration(
-                labelText: 'Remark (optional)',
+                labelText: TTexts.uiTextRemarkOptional,
                 border: OutlineInputBorder(),
                 alignLabelWithHint: true,
               ),
@@ -1668,7 +1689,7 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           CircleAvatar(
-            radius: 18,
+            radius: TSizes.v18,
             backgroundColor: TColors.primary.withOpacity(0.1),
             child: Text(
               doctor.initial,
@@ -1678,28 +1699,29 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
               ),
             ),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: TSizes.v10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(doctor.name,
                     style: const TextStyle(fontWeight: FontWeight.w700)),
-                const SizedBox(height: 2),
+                const SizedBox(height: TSizes.v2),
                 Text(
                   doctor.summary,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(color: Colors.grey[700], fontSize: 12),
+                  style: TextStyle(
+                      color: TColors.materialGrey700, fontSize: TSizes.v12),
                 ),
-                const SizedBox(height: 3),
+                const SizedBox(height: TSizes.v3),
                 Text(
                   'Area: ${_effectiveAreaName(doctor) ?? 'Required'}',
                   style: TextStyle(
                     color: _effectiveAreaId(doctor) == null
-                        ? Colors.deepOrange
-                        : Colors.grey[700],
-                    fontSize: 12,
+                        ? TColors.materialDeepOrange
+                        : TColors.materialGrey700,
+                    fontSize: TSizes.v12,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -1707,10 +1729,10 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
             ),
           ),
           IconButton(
-            tooltip: 'Remove doctor',
+            tooltip: TTexts.uiTextRemoveDoctor,
             visualDensity: VisualDensity.compact,
             icon: const Icon(Icons.close_rounded),
-            color: Colors.grey[600],
+            color: TColors.materialGrey600,
             onPressed: () => _removeSelectedDoctor(doctor),
           ),
         ],
@@ -1728,7 +1750,7 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
           boxShadow: [
             BoxShadow(
                 color: TColors.primary.withOpacity(0.4),
-                blurRadius: 20,
+                blurRadius: TSizes.v20,
                 offset: const Offset(0, 10)),
           ],
         ),
@@ -1736,26 +1758,26 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
           onPressed: _isSubmitting ? null : _submitForm,
           style: ElevatedButton.styleFrom(
             backgroundColor: TColors.primary,
-            foregroundColor: Colors.white,
+            foregroundColor: TColors.white,
             padding: const EdgeInsets.symmetric(vertical: 18),
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            elevation: 0,
+            elevation: TSizes.v0,
           ),
           child: _isSubmitting
               ? const SizedBox(
-                  height: 24,
-                  width: 24,
+                  height: TSizes.v24,
+                  width: TSizes.v24,
                   child: CircularProgressIndicator(
-                      color: Colors.white, strokeWidth: 2))
+                      color: TColors.white, strokeWidth: TSizes.v2))
               : const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text("Confirm Schedule",
+                    Text(TTexts.uiTextConfirmSchedule,
                         style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold)),
-                    SizedBox(width: 8),
-                    Icon(Icons.check_circle_outline_rounded, size: 20)
+                            fontSize: TSizes.v16, fontWeight: FontWeight.bold)),
+                    SizedBox(width: TSizes.v8),
+                    Icon(Icons.check_circle_outline_rounded, size: TSizes.v20)
                   ],
                 ),
         ),
@@ -1768,7 +1790,7 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
       width: size,
       height: size,
       decoration: BoxDecoration(
-          shape: BoxShape.circle, color: Colors.white.withOpacity(0.08)),
+          shape: BoxShape.circle, color: TColors.white.withOpacity(0.08)),
     );
   }
 
@@ -1777,12 +1799,12 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: TColors.white,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-              color: Colors.grey.withOpacity(0.06),
-              blurRadius: 15,
+              color: TColors.materialGrey.withOpacity(0.06),
+              blurRadius: TSizes.v15,
               offset: const Offset(0, 5)),
         ],
       ),
@@ -1791,19 +1813,19 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen>
         children: [
           Row(
             children: [
-              Icon(icon, size: 18, color: TColors.primary),
-              const SizedBox(width: 8),
+              Icon(icon, size: TSizes.v18, color: TColors.primary),
+              const SizedBox(width: TSizes.v8),
               Text(
                 title.toUpperCase(),
                 style: const TextStyle(
-                    fontSize: 12,
+                    fontSize: TSizes.v12,
                     fontWeight: FontWeight.bold,
-                    color: Colors.grey,
+                    color: TColors.materialGrey,
                     letterSpacing: 0.5),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: TSizes.v12),
           child,
         ],
       ),

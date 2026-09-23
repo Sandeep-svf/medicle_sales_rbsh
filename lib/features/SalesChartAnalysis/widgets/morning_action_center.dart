@@ -3,6 +3,7 @@ import 'package:medicle_sales_rbsh/features/SalesChartAnalysis/widgets/today_bea
 
 import '../model/SalesChartDashboardModel.dart';
 import 'handshake_request_card.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class MorningActionCenter extends StatelessWidget {
   final TodayBeatAssigned? beat;
@@ -21,7 +22,7 @@ class MorningActionCenter extends StatelessWidget {
         TodayBeatCard(
           beat: beat,
         ),
-        const SizedBox(height: 18),
+        const SizedBox(height: TSizes.v18),
         HandshakeRequestCard(
           beat: beat,
           onSubmitted: onHandshakeSubmitted,

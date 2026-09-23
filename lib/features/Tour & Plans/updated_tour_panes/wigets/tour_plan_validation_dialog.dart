@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
-import '../../../../utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import '../model/TourDay.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class TourPlanValidationDialog extends StatelessWidget {
   const TourPlanValidationDialog({
@@ -15,23 +16,23 @@ class TourPlanValidationDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      backgroundColor: Colors.transparent,
+      backgroundColor: TColors.transparent,
       insetPadding: const EdgeInsets.symmetric(
         horizontal: 24,
         vertical: 24,
       ),
       child: Container(
         constraints: const BoxConstraints(
-          maxWidth: 560,
-          maxHeight: 680,
+          maxWidth: TSizes.v560,
+          maxHeight: TSizes.v680,
         ),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: TColors.white,
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(.15),
-              blurRadius: 30,
+              color: TColors.pureBlack.withOpacity(.15),
+              blurRadius: TSizes.v30,
               offset: const Offset(0, 12),
             ),
           ],
@@ -40,7 +41,6 @@ class TourPlanValidationDialog extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             _buildHeader(),
-
             Flexible(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(
@@ -50,27 +50,19 @@ class TourPlanValidationDialog extends StatelessWidget {
                   8,
                 ),
                 child: Column(
-                  crossAxisAlignment:
-                  CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildSummaryCard(),
-
-                    const SizedBox(height: 22),
-
+                    const SizedBox(height: TSizes.v22),
                     _buildSectionTitle(),
-
-                    const SizedBox(height: 12),
-
+                    const SizedBox(height: TSizes.v12),
                     _buildMissingDays(),
-
-                    const SizedBox(height: 18),
-
+                    const SizedBox(height: TSizes.v18),
                     _buildInformationCard(),
                   ],
                 ),
               ),
             ),
-
             _buildActions(),
           ],
         ),
@@ -105,8 +97,8 @@ class TourPlanValidationDialog extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 48,
-            height: 48,
+            width: TSizes.v48,
+            height: TSizes.v48,
             decoration: BoxDecoration(
               color: TColors.warning.withOpacity(.15),
               shape: BoxShape.circle,
@@ -114,41 +106,37 @@ class TourPlanValidationDialog extends StatelessWidget {
             child: Icon(
               Icons.warning_amber_rounded,
               color: TColors.warning,
-              size: 28,
+              size: TSizes.v28,
             ),
           ),
-
-          const SizedBox(width: 14),
-
+          const SizedBox(width: TSizes.v14),
           const Expanded(
             child: Column(
-              crossAxisAlignment:
-              CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Tour Plan Incomplete",
+                  TTexts.uiTextTourPlanIncomplete,
                   style: TextStyle(
-                    fontSize: 19,
+                    fontSize: TSizes.v19,
                     fontWeight: FontWeight.w700,
                     color: TColors.textPrimary,
                   ),
                 ),
-                SizedBox(height: 4),
+                SizedBox(height: TSizes.v4),
                 Text(
-                  "Complete all required working days "
+                  TTexts.uiTextCompleteAllRequiredWorkingDays +
                       "before saving the draft.",
                   style: TextStyle(
-                    fontSize: 13,
-                    height: 1.35,
+                    fontSize: TSizes.v13,
+                    height: TSizes.v1_35,
                     color: TColors.textSecondary,
                   ),
                 ),
               ],
             ),
           ),
-
           IconButton(
-            tooltip: "Close",
+            tooltip: TTexts.uiTextClose,
             onPressed: () {
               Get.back();
             },
@@ -180,45 +168,41 @@ class TourPlanValidationDialog extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 62,
-            height: 62,
+            width: TSizes.v62,
+            height: TSizes.v62,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: TColors.white,
               borderRadius: BorderRadius.circular(14),
             ),
             alignment: Alignment.center,
             child: Text(
               "${unassignedDays.length}",
               style: const TextStyle(
-                fontSize: 25,
+                fontSize: TSizes.v25,
                 fontWeight: FontWeight.w800,
                 color: TColors.primary,
               ),
             ),
           ),
-
-          const SizedBox(width: 16),
-
+          const SizedBox(width: TSizes.v16),
           const Expanded(
             child: Column(
-              crossAxisAlignment:
-              CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Days need attention",
+                  TTexts.uiTextDaysNeedAttention,
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: TSizes.v16,
                     fontWeight: FontWeight.w700,
                     color: TColors.textPrimary,
                   ),
                 ),
-                SizedBox(height: 5),
+                SizedBox(height: TSizes.v5),
                 Text(
-                  "A working day cannot be left "
-                      "without a plan.",
+                  TTexts.uiTextAWorkingDayCannotBeLeft + "without a plan.",
                   style: TextStyle(
-                    fontSize: 13,
-                    height: 1.35,
+                    fontSize: TSizes.v13,
+                    height: TSizes.v1_35,
                     color: TColors.textSecondary,
                   ),
                 ),
@@ -239,15 +223,14 @@ class TourPlanValidationDialog extends StatelessWidget {
       children: [
         const Expanded(
           child: Text(
-            "Missing Plans",
+            TTexts.uiTextMissingPlans,
             style: TextStyle(
-              fontSize: 15,
+              fontSize: TSizes.v15,
               fontWeight: FontWeight.w700,
               color: TColors.textPrimary,
             ),
           ),
         ),
-
         Container(
           padding: const EdgeInsets.symmetric(
             horizontal: 10,
@@ -261,7 +244,7 @@ class TourPlanValidationDialog extends StatelessWidget {
             "${unassignedDays.length} missing",
             style: const TextStyle(
               color: TColors.error,
-              fontSize: 11,
+              fontSize: TSizes.v11,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -277,7 +260,7 @@ class TourPlanValidationDialog extends StatelessWidget {
   Widget _buildMissingDays() {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: TColors.white,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: TColors.borderSecondary,
@@ -285,12 +268,11 @@ class TourPlanValidationDialog extends StatelessWidget {
       ),
       child: ListView.separated(
         shrinkWrap: true,
-        physics:
-        const NeverScrollableScrollPhysics(),
+        physics: const NeverScrollableScrollPhysics(),
         itemCount: unassignedDays.length,
         separatorBuilder: (_, __) {
           return const Divider(
-            height: 1,
+            height: TSizes.v1,
             indent: 64,
           );
         },
@@ -311,9 +293,9 @@ class TourPlanValidationDialog extends StatelessWidget {
   // ============================================================
 
   Widget _buildDayTile(
-      TourDay day,
-      int index,
-      ) {
+    TourDay day,
+    int index,
+  ) {
     final date = day.date;
 
     return Padding(
@@ -324,8 +306,8 @@ class TourPlanValidationDialog extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 38,
-            height: 38,
+            width: TSizes.v38,
+            height: TSizes.v38,
             decoration: BoxDecoration(
               color: TColors.error.withOpacity(.08),
               borderRadius: BorderRadius.circular(10),
@@ -335,45 +317,39 @@ class TourPlanValidationDialog extends StatelessWidget {
               date.day.toString(),
               style: const TextStyle(
                 color: TColors.error,
-                fontSize: 15,
+                fontSize: TSizes.v15,
                 fontWeight: FontWeight.w800,
               ),
             ),
           ),
-
-          const SizedBox(width: 12),
-
+          const SizedBox(width: TSizes.v12),
           Expanded(
             child: Column(
-              crossAxisAlignment:
-              CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   _weekday(date),
                   style: const TextStyle(
-                    fontSize: 13,
+                    fontSize: TSizes.v13,
                     fontWeight: FontWeight.w700,
                     color: TColors.textPrimary,
                   ),
                 ),
-
-                const SizedBox(height: 3),
-
+                const SizedBox(height: TSizes.v3),
                 Text(
                   _fullDate(date),
                   style: const TextStyle(
-                    fontSize: 12,
+                    fontSize: TSizes.v12,
                     color: TColors.textSecondary,
                   ),
                 ),
               ],
             ),
           ),
-
           const Icon(
             Icons.error_outline_rounded,
             color: TColors.error,
-            size: 21,
+            size: TSizes.v21,
           ),
         ],
       ),
@@ -393,25 +369,22 @@ class TourPlanValidationDialog extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
-        crossAxisAlignment:
-        CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Icon(
             Icons.info_outline,
-            size: 19,
+            size: TSizes.v19,
             color: TColors.textSecondary,
           ),
-
-          const SizedBox(width: 10),
-
+          const SizedBox(width: TSizes.v10),
           const Expanded(
             child: Text(
-              "Holiday and Weekly Off days are "
+              TTexts.uiTextHolidayAndWeeklyOffDaysAre +
                   "automatically excluded from this validation. "
-                  "All other days must have a plan.",
+                      "All other days must have a plan.",
               style: TextStyle(
-                fontSize: 12,
-                height: 1.45,
+                fontSize: TSizes.v12,
+                height: TSizes.v1_45,
                 color: TColors.textSecondary,
               ),
             ),
@@ -434,7 +407,7 @@ class TourPlanValidationDialog extends StatelessWidget {
         20,
       ),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: TColors.white,
         borderRadius: const BorderRadius.vertical(
           bottom: Radius.circular(24),
         ),
@@ -452,45 +425,37 @@ class TourPlanValidationDialog extends StatelessWidget {
                 Get.back();
               },
               style: OutlinedButton.styleFrom(
-                minimumSize:
-                const Size.fromHeight(46),
+                minimumSize: const Size.fromHeight(46),
                 shape: RoundedRectangleBorder(
-                  borderRadius:
-                  BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(10),
                 ),
               ),
               child: const Text(
-                "Close",
+                TTexts.uiTextClose,
               ),
             ),
           ),
-
-          const SizedBox(width: 12),
-
+          const SizedBox(width: TSizes.v12),
           Expanded(
             child: ElevatedButton.icon(
               onPressed: () {
                 Get.back();
               },
               style: ElevatedButton.styleFrom(
-                minimumSize:
-                const Size.fromHeight(46),
-                backgroundColor:
-                TColors.primary,
-                foregroundColor:
-                Colors.white,
-                elevation: 0,
+                minimumSize: const Size.fromHeight(46),
+                backgroundColor: TColors.primary,
+                foregroundColor: TColors.white,
+                elevation: TSizes.v0,
                 shape: RoundedRectangleBorder(
-                  borderRadius:
-                  BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(10),
                 ),
               ),
               icon: const Icon(
                 Icons.edit_calendar_outlined,
-                size: 18,
+                size: TSizes.v18,
               ),
               label: const Text(
-                "Review Days",
+                TTexts.uiTextReviewDays,
               ),
             ),
           ),

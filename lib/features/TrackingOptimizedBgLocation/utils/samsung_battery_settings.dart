@@ -7,7 +7,7 @@ class SamsungBatterySettings {
   SamsungBatterySettings._();
 
   static const MethodChannel _channel =
-  MethodChannel('samsung_battery_settings');
+      MethodChannel('samsung_battery_settings');
 
   // ============================================================
   // CHECK SAMSUNG DEVICE
@@ -19,8 +19,7 @@ class SamsungBatterySettings {
     }
 
     try {
-      final result =
-      await _channel.invokeMethod<bool>(
+      final result = await _channel.invokeMethod<bool>(
         'isSamsung',
       );
 
@@ -96,8 +95,7 @@ class SamsungBatterySettings {
         '[SAMSUNG_BATTERY] Opening $name...',
       );
 
-      final result =
-      await _channel.invokeMethod<bool>(
+      final result = await _channel.invokeMethod<bool>(
         'openSamsungBatteryList',
         {
           'activity_type': activityType,
@@ -106,14 +104,14 @@ class SamsungBatterySettings {
 
       debugPrint(
         '[SAMSUNG_BATTERY] '
-            '$name open result = $result',
+        '$name open result = $result',
       );
 
       return result ?? false;
     } catch (e, s) {
       debugPrint(
         '[SAMSUNG_BATTERY] '
-            'Failed to open $name: $e',
+        'Failed to open $name: $e',
       );
 
       debugPrint('$s');

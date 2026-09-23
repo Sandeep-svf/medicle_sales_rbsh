@@ -10,30 +10,35 @@ class LocationControllerList {
   LocationControllerList({required this.baseUrl});
 
   // API URL: {{base_url}}locations/state-head/user-24h-data/68aa1486771e77bad145c17a?date=08/25/2025
-  Future<List<UserLocationListModel>> fetchUserLocationData(String userId, String date) async {
+  Future<List<UserLocationListModel>> fetchUserLocationData(
+      String userId, String date) async {
     // Constructing the API URL
-    final String apiUrl = '$baseUrl/locations/state-head/user-24h-data/$userId?date=$date';
+    final String apiUrl =
+        '$baseUrl/locations/state-head/user-24h-data/$userId?date=$date';
     AuthManager authManager = AuthManager();
     final token = authManager.getAuthToken();
     try {
       // Making the GET request to the API
-      final response = await http.get(Uri.parse(apiUrl),
+      final response = await http.get(
+        Uri.parse(apiUrl),
         headers: {
           "Content-Type": "application/json",
           'Authorization': 'Bearer $token',
-        },);
+        },
+      );
 
       if (response.statusCode == 200) {
         // Parsing the JSON response
         final Map<String, dynamic> responseData = json.decode(response.body);
 
         // Extracting location data from the response
-        List<UserLocationListModel> locations = List<UserLocationListModel>.from(
-            responseData['location'].map((x) => UserLocationListModel.fromJson(x))
-        );
+        List<UserLocationListModel> locations =
+            List<UserLocationListModel>.from(responseData['location']
+                .map((x) => UserLocationListModel.fromJson(x)));
 
         // Filtering the list based on latitude and longitude
-        List<UserLocationListModel> filteredLocations = _filterLocationsByLatLong(locations);
+        List<UserLocationListModel> filteredLocations =
+            _filterLocationsByLatLong(locations);
 
         return filteredLocations;
       } else {
@@ -45,7 +50,8 @@ class LocationControllerList {
   }
 
   // Filtering the locations to create a new list of latitudes and longitudes
-  List<UserLocationListModel> _filterLocationsByLatLong(List<UserLocationListModel> locations) {
+  List<UserLocationListModel> _filterLocationsByLatLong(
+      List<UserLocationListModel> locations) {
     List<UserLocationListModel> filteredLocations = [];
 
     for (var location in locations) {
@@ -58,5 +64,3 @@ class LocationControllerList {
     return filteredLocations;
   }
 }
-
-

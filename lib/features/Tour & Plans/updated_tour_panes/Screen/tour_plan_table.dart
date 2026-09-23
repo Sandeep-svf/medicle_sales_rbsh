@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-
-import '../../../../utils/constants/colors.dart';
-import '../../../../utils/constants/sizes.dart';
-
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 import '../model/tour_plan_model.dart';
 import '../wigets/_TourPlanRow.dart';
-
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class TourPlanTable extends StatelessWidget {
   const TourPlanTable({
@@ -25,18 +23,16 @@ class TourPlanTable extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.all(TSizes.lg),
-      elevation: 0,
+      elevation: TSizes.v0,
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
-        borderRadius:
-        BorderRadius.circular(TSizes.cardRadiusLg),
+        borderRadius: BorderRadius.circular(TSizes.cardRadiusLg),
         side: const BorderSide(
           color: TColors.borderSecondary,
         ),
       ),
       child: Column(
         children: [
-
           /// Title
           Container(
             width: double.infinity,
@@ -44,13 +40,12 @@ class TourPlanTable extends StatelessWidget {
               horizontal: TSizes.lg,
               vertical: TSizes.md,
             ),
-            color: Colors.white,
+            color: TColors.white,
             child: Row(
               children: [
-
                 Container(
-                  width: 40,
-                  height: 40,
+                  width: TSizes.v40,
+                  height: TSizes.v40,
                   decoration: BoxDecoration(
                     color: TColors.primary_shade50,
                     borderRadius: BorderRadius.circular(12),
@@ -60,21 +55,16 @@ class TourPlanTable extends StatelessWidget {
                     color: TColors.primary,
                   ),
                 ),
-
-                const SizedBox(width: 10),
-
+                const SizedBox(width: TSizes.v10),
                 Expanded(
                   child: Text(
                     "Tour Plans (${plans.length})",
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleMedium
-                        ?.copyWith(
-                      color: TColors.textPrimary,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: TColors.textPrimary,
+                          fontWeight: FontWeight.w600,
+                        ),
                   ),
                 ),
               ],
@@ -84,9 +74,8 @@ class TourPlanTable extends StatelessWidget {
           Expanded(
             child: LayoutBuilder(
               builder: (context, constraints) {
-                final tableWidth = constraints.maxWidth < 1200
-                    ? 1200.0
-                    : constraints.maxWidth;
+                final tableWidth =
+                    constraints.maxWidth < 1200 ? 1200.0 : constraints.maxWidth;
 
                 return SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
@@ -97,15 +86,14 @@ class TourPlanTable extends StatelessWidget {
                       children: [
                         _buildHeader(),
                         const Divider(
-                          height: 1,
-                          thickness: 1,
+                          height: TSizes.v1,
+                          thickness: TSizes.v1,
                         ),
                         Expanded(
                           child: Scrollbar(
                             thumbVisibility: true,
                             child: ListView.builder(
-                              physics:
-                                  const AlwaysScrollableScrollPhysics(),
+                              physics: const AlwaysScrollableScrollPhysics(),
                               itemCount: plans.length,
                               itemBuilder: (context, index) {
                                 final plan = plans[index];
@@ -144,57 +132,52 @@ class TourPlanTable extends StatelessWidget {
       ),
       child: const Row(
         children: [
-
           Expanded(
             flex: 3,
             child: Text(
-              "Month",
+              TTexts.uiTextMonth,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
               ),
             ),
           ),
-
           Expanded(
             flex: 2,
             child: Center(
               child: Text(
-                "Status",
+                TTexts.uiTextStatus,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                 ),
               ),
             ),
           ),
-
           Expanded(
             flex: 1,
             child: Center(
               child: Text(
-                "Days",
+                TTexts.uiTextDays,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                 ),
               ),
             ),
           ),
-
           Expanded(
             flex: 4,
             child: Text(
-              "Remarks",
+              TTexts.uiTextRemarks,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
               ),
             ),
           ),
-
           Expanded(
             flex: 5,
             child: Align(
               alignment: Alignment.centerRight,
               child: Text(
-                "Action",
+                TTexts.uiTextAction,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                 ),

@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-
-import '../../../../utils/constants/colors.dart';
-
-
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class InvestmentModeCard extends StatelessWidget {
   final bool selected;
@@ -33,19 +31,15 @@ class InvestmentModeCard extends StatelessWidget {
           horizontal: 8,
         ),
         decoration: BoxDecoration(
-          color: selected
-              ? TColors.primary.withOpacity(.08)
-              : Colors.white,
+          color: selected ? TColors.primary.withOpacity(.08) : TColors.white,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
-            color: selected
-                ? TColors.primary
-                : Colors.grey.shade300,
+            color: selected ? TColors.primary : TColors.materialGrey300,
             width: selected ? 2 : 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(.05),
+              color: TColors.pureBlack.withOpacity(.05),
               blurRadius: selected ? 14 : 8,
               offset: const Offset(0, 5),
             )
@@ -54,64 +48,48 @@ class InvestmentModeCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-
             AnimatedContainer(
               duration: const Duration(milliseconds: 250),
-              height: 40,
-              width: 40,
+              height: TSizes.v40,
+              width: TSizes.v40,
               decoration: BoxDecoration(
-                color: selected
-                    ? TColors.primary
-                    : Colors.grey.shade100,
+                color: selected ? TColors.primary : TColors.materialGrey100,
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 icon,
-                color: selected
-                    ? Colors.white
-                    : TColors.primary,
-                size: 20,
+                color: selected ? TColors.white : TColors.primary,
+                size: TSizes.v20,
               ),
             ),
-
-            const SizedBox(height: 14),
-
+            const SizedBox(height: TSizes.v14),
             Text(
               title,
               style: TextStyle(
-                fontSize: 14,
+                fontSize: TSizes.v14,
                 fontWeight: FontWeight.bold,
-                color: selected
-                    ? TColors.primary
-                    : Colors.black87,
+                color: selected ? TColors.primary : TColors.black87,
               ),
             ),
-
-            const SizedBox(height: 4),
-
+            const SizedBox(height: TSizes.v4),
             Text(
               subtitle,
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: Colors.grey.shade600,
-                fontSize: 12,
+                color: TColors.materialGrey600,
+                fontSize: TSizes.v12,
               ),
             ),
-
-            const SizedBox(height: 14),
-
+            const SizedBox(height: TSizes.v14),
             AnimatedContainer(
               duration: const Duration(milliseconds: 250),
-              height: 4,
+              height: TSizes.v4,
               width: selected ? 70 : 30,
               decoration: BoxDecoration(
-                color: selected
-                    ? TColors.primary
-                    : Colors.grey.shade300,
+                color: selected ? TColors.primary : TColors.materialGrey300,
                 borderRadius: BorderRadius.circular(20),
               ),
             )
-
           ],
         ),
       ),

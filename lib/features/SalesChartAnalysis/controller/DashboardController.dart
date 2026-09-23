@@ -1,3 +1,4 @@
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -10,27 +11,28 @@ import '../../Tour & Plans/TeritoryModule/model/beat_model.dart';
 import '../model/SalesChartDashboardModel.dart';
 import '../model/dashboard_beat_model.dart';
 import '../widgets/dashboard_beat_bottom_sheet.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class DashboardController extends GetxController {
-  Rx<DashboardResponse?> dashboardData = Rx<DashboardResponse?>(null); // Reactive data
+  Rx<DashboardResponse?> dashboardData =
+      Rx<DashboardResponse?>(null); // Reactive data
   RxBool isLoading = true.obs; // Reactive loading state
 
   //------------------------------------------------------------
 // Dashboard Beat Change
 //------------------------------------------------------------
 
-  final RxList<DashboardBeatModel> dashboardBeats =
-      <DashboardBeatModel>[].obs;
+  final RxList<DashboardBeatModel> dashboardBeats = <DashboardBeatModel>[].obs;
 
   final Rxn<DashboardBeatModel> dashboardSelectedBeat =
-  Rxn<DashboardBeatModel>();
+      Rxn<DashboardBeatModel>();
 
   final RxBool dashboardBeatLoading = false.obs;
 
   final RxBool dashboardBeatChanging = false.obs;
 
   final TextEditingController dashboardBeatSearchController =
-  TextEditingController();
+      TextEditingController();
 
   final RxString dashboardBeatSearch = ''.obs;
 
@@ -38,16 +40,15 @@ class DashboardController extends GetxController {
       <DashboardBeatModel>[].obs;
 
   final TextEditingController dashboardBeatReasonController =
-  TextEditingController();
-
-
+      TextEditingController();
 
   final String _debugPrefix = '[DashboardController]';
 
   @override
   void onInit() {
     super.onInit();
-    fetchDashboardData('yourBarrierTokenHere'); // Call the function here to fetch data
+    fetchDashboardData(
+        'yourBarrierTokenHere'); // Call the function here to fetch data
   }
 
   Future<void> changeDashboardBeat({
@@ -66,7 +67,7 @@ class DashboardController extends GetxController {
       if (dayId == null || selectedBeat == null) {
         Get.snackbar(
           "Error",
-          "Please select a beat.",
+          TTexts.uiTextPleaseSelectABeat_81df8d55,
         );
         return;
       }
@@ -90,16 +91,12 @@ class DashboardController extends GetxController {
       print("$_debugPrefix Change Beat Status : ${response.statusCode}");
       print("$_debugPrefix Change Beat Response : ${response.body}");
 
-      if (response.statusCode == 200 ||
-          response.statusCode == 201) {
-
+      if (response.statusCode == 200 || response.statusCode == 201) {
         final json = jsonDecode(response.body);
 
-        final bool autoApproved =
-            json["autoApproved"] ?? false;
+        final bool autoApproved = json["autoApproved"] ?? false;
 
-        final String message =
-            json["message"] ?? "Success";
+        final String message = json["message"] ?? "Success";
 
         Get.back();
 
@@ -107,22 +104,21 @@ class DashboardController extends GetxController {
           Get.snackbar(
             "Beat Updated",
             message,
-            backgroundColor: Colors.green.shade100,
+            backgroundColor: TColors.materialGreen100,
           );
         } else {
           Get.snackbar(
             "Approval Requested",
             message,
-            backgroundColor: Colors.orange.shade100,
+            backgroundColor: TColors.materialOrange100,
           );
         }
 
         await fetchDashboardData("");
-
       } else {
         Get.snackbar(
           "Error",
-          "Unable to change today's beat.",
+          TTexts.uiTextUnableToChangeTodaySBeat,
         );
       }
     } catch (e) {
@@ -130,13 +126,12 @@ class DashboardController extends GetxController {
 
       Get.snackbar(
         "Error",
-        "Something went wrong.",
+        TTexts.uiTextSomethingWentWrong_bee54c9c,
       );
     } finally {
       dashboardBeatChanging.value = false;
     }
   }
-
 
   void filterDashboardBeats(String value) {
     dashboardBeatSearch.value = value;
@@ -148,9 +143,9 @@ class DashboardController extends GetxController {
 
     dashboardFilteredBeats.assignAll(
       dashboardBeats.where(
-            (beat) => beat.name.toLowerCase().contains(
-          value.toLowerCase(),
-        ),
+        (beat) => beat.name.toLowerCase().contains(
+              value.toLowerCase(),
+            ),
       ),
     );
   }
@@ -159,7 +154,7 @@ class DashboardController extends GetxController {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor: TColors.transparent,
       builder: (_) => const DashboardBeatBottomSheet(),
     );
   }
@@ -183,7 +178,7 @@ class DashboardController extends GetxController {
         final Map<String, dynamic> jsonData = jsonDecode(response.body);
 
         final DashboardBeatResponse beatResponse =
-        DashboardBeatResponse.fromJson(jsonData);
+            DashboardBeatResponse.fromJson(jsonData);
 
         dashboardBeats.assignAll(beatResponse.data);
 
@@ -197,7 +192,7 @@ class DashboardController extends GetxController {
 
         Get.snackbar(
           "Error",
-          "Unable to load beats",
+          TTexts.uiTextUnableToLoadBeats,
         );
       }
     } catch (e) {
@@ -205,7 +200,7 @@ class DashboardController extends GetxController {
 
       Get.snackbar(
         "Error",
-        "Something went wrong while loading beats.",
+        TTexts.uiTextSomethingWentWrongWhileLoadingBeats,
       );
     } finally {
       dashboardBeatLoading.value = false;
@@ -222,7 +217,8 @@ class DashboardController extends GetxController {
       print('$_debugPrefix Fetching data with token: $token');
 
       final response = await http.get(
-        Uri.parse('${THttpHelper.baseUrl}/dashboard/user'), // Replace with actual base URL
+        Uri.parse(
+            '${THttpHelper.baseUrl}/dashboard/user'), // Replace with actual base URL
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -235,12 +231,16 @@ class DashboardController extends GetxController {
 
         // If server returns a success response, parse the data
         final Map<String, dynamic> data = json.decode(response.body);
-        dashboardData.value = DashboardResponse.fromJson(data); // Update the reactive variable
+        dashboardData.value =
+            DashboardResponse.fromJson(data); // Update the reactive variable
 
         print("$_debugPrefix ========== DASHBOARD ==========");
-        print("$_debugPrefix Beat : ${dashboardData.value?.data?.todayBeatAssigned?.beatName}");
-        print("$_debugPrefix Type : ${dashboardData.value?.data?.todayBeatAssigned?.dayType}");
-        print("$_debugPrefix Doctors : ${dashboardData.value?.data?.todayBeatAssigned?.doctorsCount}");
+        print(
+            "$_debugPrefix Beat : ${dashboardData.value?.data?.todayBeatAssigned?.beatName}");
+        print(
+            "$_debugPrefix Type : ${dashboardData.value?.data?.todayBeatAssigned?.dayType}");
+        print(
+            "$_debugPrefix Doctors : ${dashboardData.value?.data?.todayBeatAssigned?.doctorsCount}");
         print("===============================");
 
         isLoading.value = false;
@@ -250,10 +250,10 @@ class DashboardController extends GetxController {
         await _handleUnauthorized(
           errorData['msg'] ?? 'Your session has expired. Please Login again.',
         );
-
       } else {
         // Handle failure, maybe throw an exception
-        print('$_debugPrefix Failed to load dashboard data, Status Code: ${response.statusCode}');
+        print(
+            '$_debugPrefix Failed to load dashboard data, Status Code: ${response.statusCode}');
         throw Exception('$_debugPrefix Failed to load dashboard data');
       }
     } catch (e) {
@@ -272,8 +272,8 @@ class DashboardController extends GetxController {
 
     Get.snackbar(
       "Session Expired",
-      "Your session has expired. Please Login again.",
-      backgroundColor: Colors.red.shade100,
+      TTexts.uiTextYourSessionHasExpiredPleaseLoginAgain,
+      backgroundColor: TColors.materialRed100,
     );
   }
 }

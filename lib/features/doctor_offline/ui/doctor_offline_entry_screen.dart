@@ -5,6 +5,7 @@ import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 import '../doctor_offline_module.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class DoctorOfflineEntryScreen extends StatefulWidget {
   const DoctorOfflineEntryScreen({
@@ -77,10 +78,10 @@ class _DoctorOfflineEntryScreenState extends State<DoctorOfflineEntryScreen> {
     final module = _module;
     if (module != null) return module.screen();
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: TColors.hex_FFF5F5F5,
       appBar: AppBar(
         title: const Text(
-          'Offline Doctors',
+          TTexts.uiTextOfflineDoctors,
           style: TextStyle(color: TColors.white),
         ),
         backgroundColor: TColors.primary,
@@ -90,7 +91,7 @@ class _DoctorOfflineEntryScreenState extends State<DoctorOfflineEntryScreen> {
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 460),
+            constraints: const BoxConstraints(maxWidth: TSizes.v460),
             child: Padding(
               padding: const EdgeInsets.all(TSizes.lg),
               child: _loading
@@ -99,7 +100,7 @@ class _DoctorOfflineEntryScreenState extends State<DoctorOfflineEntryScreen> {
                       children: [
                         CircularProgressIndicator(color: TColors.primary),
                         SizedBox(height: TSizes.md),
-                        Text('Opening secure offline doctor storage…'),
+                        Text(TTexts.uiTextOpeningSecureOfflineDoctorStorage),
                       ],
                     )
                   : Column(
@@ -108,11 +109,11 @@ class _DoctorOfflineEntryScreenState extends State<DoctorOfflineEntryScreen> {
                         const Icon(
                           Icons.storage_rounded,
                           color: TColors.error,
-                          size: 52,
+                          size: TSizes.v52,
                         ),
                         const SizedBox(height: TSizes.md),
                         Text(
-                          'Secure doctor storage is unavailable',
+                          TTexts.uiTextSecureDoctorStorageIsUnavailable,
                           textAlign: TextAlign.center,
                           style: Theme.of(context).textTheme.titleLarge,
                         ),
@@ -126,7 +127,7 @@ class _DoctorOfflineEntryScreenState extends State<DoctorOfflineEntryScreen> {
                         FilledButton.icon(
                           onPressed: _initialize,
                           icon: const Icon(Icons.refresh_rounded),
-                          label: const Text('Retry'),
+                          label: const Text(TTexts.uiTextRetry),
                         ),
                       ],
                     ),

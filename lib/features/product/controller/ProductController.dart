@@ -4,11 +4,12 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:medicle_sales_rbsh/utils/http/http_client.dart';
 import '../model/ProductModel.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class ProductController extends GetxController {
   var isLoading = false.obs;
   var productList = <Product>[].obs;
-   String baseUrl = THttpHelper.baseUrl;
+  String baseUrl = THttpHelper.baseUrl;
 
   final String apiUrl = "${THttpHelper.baseUrl}/products";
   final String logPrefix = "[ProductController]";
@@ -28,7 +29,7 @@ class ProductController extends GetxController {
         productList.value = data.map((e) => Product.fromJson(e)).toList();
       } else {
         debugPrint('$logPrefix Failed to load products: ${response.body}');
-        Get.snackbar('Error', 'Failed to load products');
+        Get.snackbar('Error', TTexts.uiTextFailedToLoadProducts);
       }
     } catch (e) {
       debugPrint('$logPrefix Exception: $e');

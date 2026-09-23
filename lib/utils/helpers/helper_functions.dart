@@ -1,39 +1,41 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class THelperFunctions {
   static Color? getColor(String value) {
     /// Define your product specific colors here and it will match the attribute colors and show specific 🟠🟡🟢🔵🟣🟤
 
     if (value == 'Green') {
-      return Colors.green;
+      return TColors.materialGreen;
     } else if (value == 'Green') {
-      return Colors.green;
+      return TColors.materialGreen;
     } else if (value == 'Red') {
-      return Colors.red;
+      return TColors.materialRed;
     } else if (value == 'Blue') {
-      return Colors.blue;
+      return TColors.materialBlue;
     } else if (value == 'Pink') {
-      return Colors.pink;
+      return TColors.materialPink;
     } else if (value == 'Grey') {
-      return Colors.grey;
+      return TColors.materialGrey;
     } else if (value == 'Purple') {
-      return Colors.purple;
+      return TColors.materialPurple;
     } else if (value == 'Black') {
-      return Colors.black;
+      return TColors.pureBlack;
     } else if (value == 'White') {
-      return Colors.white;
+      return TColors.white;
     } else if (value == 'Yellow') {
-      return Colors.yellow;
+      return TColors.materialYellow;
     } else if (value == 'Orange') {
-      return Colors.deepOrange;
+      return TColors.materialDeepOrange;
     } else if (value == 'Brown') {
-      return Colors.brown;
+      return TColors.materialBrown;
     } else if (value == 'Teal') {
-      return Colors.teal;
+      return TColors.materialTeal;
     } else if (value == 'Indigo') {
-      return Colors.indigo;
+      return TColors.materialIndigo;
     } else {
       return null;
     }
@@ -55,7 +57,7 @@ class THelperFunctions {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('OK'),
+              child: const Text(TTexts.uiTextOK),
             ),
           ],
         );
@@ -94,7 +96,8 @@ class THelperFunctions {
     return MediaQuery.of(Get.context!).size.width;
   }
 
-  static String getFormattedDate(DateTime date, {String format = 'dd MMM yyyy'}) {
+  static String getFormattedDate(DateTime date,
+      {String format = 'dd MMM yyyy'}) {
     return DateFormat(format).format(date);
   }
 
@@ -105,7 +108,8 @@ class THelperFunctions {
   static List<Widget> wrapWidgets(List<Widget> widgets, int rowSize) {
     final wrappedList = <Widget>[];
     for (var i = 0; i < widgets.length; i += rowSize) {
-      final rowChildren = widgets.sublist(i, i + rowSize > widgets.length ? widgets.length : i + rowSize);
+      final rowChildren = widgets.sublist(
+          i, i + rowSize > widgets.length ? widgets.length : i + rowSize);
       wrappedList.add(Row(children: rowChildren));
     }
     return wrappedList;

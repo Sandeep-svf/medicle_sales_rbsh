@@ -74,7 +74,6 @@ extension DayTypeExtension on DayType {
   }
 
   bool get showBeat {
-    return this == DayType.field ||
-        this == DayType.jointWork;
+    return this == DayType.field || this == DayType.jointWork;
   }
 }

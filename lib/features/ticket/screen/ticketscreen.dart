@@ -1,15 +1,14 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-
-import '../../../utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import '../controller/TicketController.dart';
-
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class TicketScreen extends StatefulWidget {
   const TicketScreen({super.key});
@@ -20,7 +19,6 @@ class TicketScreen extends StatefulWidget {
 
 class _TicketScreenState extends State<TicketScreen>
     with TickerProviderStateMixin {
-
   // Inject the TicketController
   final TicketController _controller = Get.put(TicketController());
 
@@ -82,7 +80,7 @@ class _TicketScreenState extends State<TicketScreen>
     try {
       final XFile? pickedFile = await _picker.pickImage(
         source: source,
-        maxWidth: 800,
+        maxWidth: TSizes.v800,
         imageQuality: 80,
       );
 
@@ -136,8 +134,8 @@ class _TicketScreenState extends State<TicketScreen>
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text("Failed to create ticket. Please try again."),
-          backgroundColor: Colors.red,
+          content: Text(TTexts.uiTextFailedToCreateTicketPleaseTryAgain),
+          backgroundColor: TColors.materialRed,
         ),
       );
     }
@@ -154,23 +152,26 @@ class _TicketScreenState extends State<TicketScreen>
         return ScaleTransition(
           scale: CurvedAnimation(parent: anim1, curve: Curves.elasticOut),
           child: AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.check_circle, color: Colors.green, size: 80),
-                const SizedBox(height: 20),
+                const Icon(Icons.check_circle,
+                    color: TColors.materialGreen, size: TSizes.v80),
+                const SizedBox(height: TSizes.v20),
                 const Text(
-                  "Ticket Raised!",
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                  TTexts.uiTextTicketRaised,
+                  style: TextStyle(
+                      fontSize: TSizes.v22, fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: TSizes.v10),
                 Text(
-                  "We've received your request.\nYou can track it in the History tab.",
+                  TTexts.uiTextWeVeReceivedYourRequestYouCanTrack,
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.grey[600]),
+                  style: TextStyle(color: TColors.materialGrey600),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: TSizes.v20),
                 ElevatedButton(
                   onPressed: () {
                     Navigator.of(context).pop();
@@ -187,10 +188,10 @@ class _TicketScreenState extends State<TicketScreen>
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: TColors.primary,
-                    foregroundColor: Colors.white,
+                    foregroundColor: TColors.white,
                     shape: const StadiumBorder(),
                   ),
-                  child: const Text("View Ticket"),
+                  child: const Text(TTexts.uiTextViewTicket),
                 )
               ],
             ),
@@ -205,7 +206,7 @@ class _TicketScreenState extends State<TicketScreen>
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: TColors.hex_FFF8FAFC,
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
         child: Column(
@@ -226,7 +227,7 @@ class _TicketScreenState extends State<TicketScreen>
                         children: [
                           // Custom Toggle
                           _buildToggleSwitch(),
-                          const SizedBox(height: 25),
+                          const SizedBox(height: TSizes.v25),
 
                           // Content Switching
                           AnimatedCrossFade(
@@ -243,7 +244,7 @@ class _TicketScreenState extends State<TicketScreen>
                         ],
                       ),
                     ),
-                    const SizedBox(height: 40),
+                    const SizedBox(height: TSizes.v40),
                   ],
                 ),
               ),
@@ -260,7 +261,7 @@ class _TicketScreenState extends State<TicketScreen>
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: const Color(0xFFF1F5F9),
+        color: TColors.hex_FFF1F5F9,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -285,16 +286,16 @@ class _TicketScreenState extends State<TicketScreen>
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
-            color: isActive ? Colors.white : Colors.transparent,
+            color: isActive ? TColors.white : TColors.transparent,
             borderRadius: BorderRadius.circular(12),
             boxShadow: isActive
                 ? [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-              )
-            ]
+                    BoxShadow(
+                      color: TColors.pureBlack.withOpacity(0.05),
+                      blurRadius: TSizes.v4,
+                      offset: const Offset(0, 2),
+                    )
+                  ]
                 : [],
           ),
           alignment: Alignment.center,
@@ -302,7 +303,7 @@ class _TicketScreenState extends State<TicketScreen>
             text,
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              color: isActive ? TColors.primary : Colors.grey,
+              color: isActive ? TColors.primary : TColors.materialGrey,
             ),
           ),
         ),
@@ -317,26 +318,26 @@ class _TicketScreenState extends State<TicketScreen>
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _buildSectionTitle("What's happening?"),
-          const SizedBox(height: 15),
+          const SizedBox(height: TSizes.v15),
           _buildTextField(
             controller: _titleController,
-            label: "Subject",
+            label: TTexts.uiTextSubject,
             icon: Icons.title_rounded,
             validator: (v) => v!.isEmpty ? "Please enter a subject" : null,
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: TSizes.v20),
           _buildTextField(
             controller: _descController,
-            label: "Description",
+            label: TTexts.description,
             icon: Icons.description_outlined,
             maxLines: 5,
             validator: (v) => v!.isEmpty ? "Please describe the issue" : null,
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: TSizes.v20),
           _buildSectionTitle("Attachments (Optional)"),
-          const SizedBox(height: 10),
+          const SizedBox(height: TSizes.v10),
           _buildImagePickerArea(),
-          const SizedBox(height: 30),
+          const SizedBox(height: TSizes.v30),
           _buildSubmitButton(),
         ],
       ),
@@ -360,13 +361,15 @@ class _TicketScreenState extends State<TicketScreen>
           padding: const EdgeInsets.all(40.0),
           child: Column(
             children: [
-              Icon(Icons.history, size: 60, color: Colors.grey[300]),
-              const SizedBox(height: 10),
-              const Text("No tickets found", style: TextStyle(color: Colors.grey)),
+              Icon(Icons.history,
+                  size: TSizes.v60, color: TColors.materialGrey300),
+              const SizedBox(height: TSizes.v10),
+              const Text(TTexts.uiTextNoTicketsFound,
+                  style: TextStyle(color: TColors.materialGrey)),
               TextButton(
                   onPressed: _controller.fetchTickets,
-                  child: const Text("Refresh", style: TextStyle(color: TColors.primary))
-              )
+                  child: const Text(TTexts.uiTextRefresh,
+                      style: TextStyle(color: TColors.primary)))
             ],
           ),
         );
@@ -377,7 +380,7 @@ class _TicketScreenState extends State<TicketScreen>
         physics: const NeverScrollableScrollPhysics(),
         padding: EdgeInsets.zero,
         itemCount: _controller.tickets.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 15),
+        separatorBuilder: (_, __) => const SizedBox(height: TSizes.v15),
         itemBuilder: (context, index) {
           final ticket = _controller.tickets[index];
 
@@ -399,13 +402,13 @@ class _TicketScreenState extends State<TicketScreen>
           return Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: TColors.white,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.grey.withOpacity(0.1)),
+              border: Border.all(color: TColors.materialGrey.withOpacity(0.1)),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.03),
-                  blurRadius: 10,
+                  color: TColors.pureBlack.withOpacity(0.03),
+                  blurRadius: TSizes.v10,
                   offset: const Offset(0, 4),
                 )
               ],
@@ -416,17 +419,17 @@ class _TicketScreenState extends State<TicketScreen>
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
                     color: isResolved
-                        ? Colors.green.withOpacity(0.1)
+                        ? TColors.materialGreen.withOpacity(0.1)
                         : TColors.primary.withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     isResolved ? Icons.check : Icons.hourglass_bottom,
-                    color: isResolved ? Colors.green : TColors.primary,
-                    size: 20,
+                    color: isResolved ? TColors.materialGreen : TColors.primary,
+                    size: TSizes.v20,
                   ),
                 ),
-                const SizedBox(width: 15),
+                const SizedBox(width: TSizes.v15),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -435,38 +438,40 @@ class _TicketScreenState extends State<TicketScreen>
                         ticket.title ?? "No Title",
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
-                          fontSize: 15,
-                          color: Color(0xFF1E293B),
+                          fontSize: TSizes.v15,
+                          color: TColors.hex_FF1E293B,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: TSizes.v4),
                       Text(
                         "ID: ${ticket.id?.substring(0, math.min(ticket.id?.length ?? 0, 8)) ?? '...'} • $dateStr",
                         style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[500],
+                          fontSize: TSizes.v12,
+                          color: TColors.materialGrey500,
                         ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: TSizes.v8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                   decoration: BoxDecoration(
                     color: isResolved
-                        ? Colors.green.withOpacity(0.1)
+                        ? TColors.materialGreen.withOpacity(0.1)
                         : TColors.primary.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
                     statusStr,
                     style: TextStyle(
-                      fontSize: 10,
+                      fontSize: TSizes.v10,
                       fontWeight: FontWeight.bold,
-                      color: isResolved ? Colors.green : TColors.primary,
+                      color:
+                          isResolved ? TColors.materialGreen : TColors.primary,
                     ),
                   ),
                 ),
@@ -508,12 +513,12 @@ class _TicketScreenState extends State<TicketScreen>
           Positioned(
             top: -50,
             right: -50,
-            child: _buildCircleDecoration(150, Colors.white.withOpacity(0.1)),
+            child: _buildCircleDecoration(150, TColors.white.withOpacity(0.1)),
           ),
           Positioned(
             top: 50,
             left: -30,
-            child: _buildCircleDecoration(80, Colors.white.withOpacity(0.1)),
+            child: _buildCircleDecoration(80, TColors.white.withOpacity(0.1)),
           ),
 
           // Content
@@ -529,21 +534,29 @@ class _TicketScreenState extends State<TicketScreen>
                       children: [
                         IconButton(
                           onPressed: () {
-                            if (Navigator.canPop(context)) Navigator.pop(context);
+                            if (Navigator.canPop(context))
+                              Navigator.pop(context);
                           },
-                          icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
+                          icon: const Icon(Icons.arrow_back_ios,
+                              color: TColors.white, size: TSizes.v20),
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
+                            color: TColors.white.withOpacity(0.2),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: const Row(
                             children: [
-                              Icon(Icons.headset_mic, color: Colors.white, size: 14),
-                              SizedBox(width: 5),
-                              Text("24/7 Support", style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                              Icon(Icons.headset_mic,
+                                  color: TColors.white, size: TSizes.v14),
+                              SizedBox(width: TSizes.v5),
+                              Text(TTexts.uiText247Support,
+                                  style: TextStyle(
+                                      color: TColors.white,
+                                      fontSize: TSizes.v12,
+                                      fontWeight: FontWeight.bold)),
                             ],
                           ),
                         )
@@ -551,29 +564,34 @@ class _TicketScreenState extends State<TicketScreen>
                     ),
                     const Spacer(),
                     SlideTransition(
-                      position: Tween<Offset>(begin: const Offset(0, 0.2), end: Offset.zero)
-                          .animate(CurvedAnimation(parent: _entranceController, curve: Curves.easeOut)),
+                      position: Tween<Offset>(
+                              begin: const Offset(0, 0.2), end: Offset.zero)
+                          .animate(CurvedAnimation(
+                              parent: _entranceController,
+                              curve: Curves.easeOut)),
                       child: FadeTransition(
                         opacity: _entranceController,
                         child: const Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              "We're here\nto help you.",
+                              TTexts.uiTextWeReHereToHelpYou,
                               style: TextStyle(
-                                fontSize: 32,
+                                fontSize: TSizes.v32,
                                 fontWeight: FontWeight.w800,
-                                color: Colors.white,
-                                height: 1.1,
+                                color: TColors.white,
+                                height: TSizes.v1_1,
                                 letterSpacing: -1,
                               ),
                             ),
-                            SizedBox(height: 8),
+                            SizedBox(height: TSizes.v8),
                             Text(
-                              "Raise a ticket or track previous issues.",
-                              style: TextStyle(color: Colors.white70, fontSize: 14),
+                              TTexts.uiTextRaiseATicketOrTrackPreviousIssues,
+                              style: TextStyle(
+                                  color: TColors.white70, fontSize: TSizes.v14),
                             ),
-                            SizedBox(height: 40), // Space for the overlap
+                            SizedBox(
+                                height: TSizes.v40), // Space for the overlap
                           ],
                         ),
                       ),
@@ -591,12 +609,12 @@ class _TicketScreenState extends State<TicketScreen>
   Widget _buildGlassCard({required Widget child}) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: TColors.white,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
             color: TColors.primary.withOpacity(0.1),
-            blurRadius: 24,
+            blurRadius: TSizes.v24,
             offset: const Offset(0, 12),
           ),
         ],
@@ -610,9 +628,9 @@ class _TicketScreenState extends State<TicketScreen>
     return Text(
       title,
       style: const TextStyle(
-        fontSize: 16,
+        fontSize: TSizes.v16,
         fontWeight: FontWeight.bold,
-        color: Color(0xFF1E293B),
+        color: TColors.hex_FF1E293B,
       ),
     );
   }
@@ -627,29 +645,33 @@ class _TicketScreenState extends State<TicketScreen>
     return TextFormField(
       controller: controller,
       maxLines: maxLines,
-      style: const TextStyle(color: Color(0xFF334155), fontWeight: FontWeight.w500),
+      style: const TextStyle(
+          color: TColors.hex_FF334155, fontWeight: FontWeight.w500),
       decoration: InputDecoration(
         labelText: label,
         alignLabelWithHint: true,
         prefixIcon: Padding(
           padding: EdgeInsets.only(bottom: maxLines > 1 ? 60 : 0),
-          child: Icon(icon, color: const Color(0xFF94A3B8)),
+          child: Icon(icon, color: TColors.hex_FF94A3B8),
         ),
         filled: true,
-        fillColor: const Color(0xFFF1F5F9),
+        fillColor: TColors.hex_FFF1F5F9,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: TColors.primary, width: 1.5),
+          borderSide:
+              const BorderSide(color: TColors.primary, width: TSizes.v1_5),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
+          borderSide: const BorderSide(
+              color: TColors.materialRedAccent, width: TSizes.v1_5),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
       ),
       validator: validator,
     );
@@ -660,7 +682,7 @@ class _TicketScreenState extends State<TicketScreen>
       return Stack(
         children: [
           Container(
-            height: 200,
+            height: TSizes.v200,
             width: double.infinity,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
@@ -670,8 +692,8 @@ class _TicketScreenState extends State<TicketScreen>
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 10,
+                  color: TColors.pureBlack.withOpacity(0.1),
+                  blurRadius: TSizes.v10,
                   offset: const Offset(0, 5),
                 ),
               ],
@@ -685,10 +707,11 @@ class _TicketScreenState extends State<TicketScreen>
               child: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.6),
+                  color: TColors.pureBlack.withOpacity(0.6),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.close, color: Colors.white, size: 20),
+                child: const Icon(Icons.close,
+                    color: TColors.white, size: TSizes.v20),
               ),
             ),
           ),
@@ -701,16 +724,16 @@ class _TicketScreenState extends State<TicketScreen>
         Expanded(
           child: _buildPickButton(
             icon: Icons.photo_library_rounded,
-            label: "Gallery",
+            label: TTexts.uiTextGallery,
             color: TColors.primary,
             onTap: () => _pickImage(ImageSource.gallery),
           ),
         ),
-        const SizedBox(width: 15),
+        const SizedBox(width: TSizes.v15),
         Expanded(
           child: _buildPickButton(
             icon: Icons.camera_alt_rounded,
-            label: "Camera",
+            label: TTexts.uiTextCamera,
             color: TColors.primary,
             onTap: () => _pickImage(ImageSource.camera),
           ),
@@ -729,11 +752,11 @@ class _TicketScreenState extends State<TicketScreen>
       onTap: onTap,
       borderRadius: BorderRadius.circular(20),
       child: Container(
-        height: 100,
+        height: TSizes.v100,
         decoration: BoxDecoration(
           color: color.withOpacity(0.05),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: color.withOpacity(0.3), width: 2),
+          border: Border.all(color: color.withOpacity(0.3), width: TSizes.v2),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -744,15 +767,15 @@ class _TicketScreenState extends State<TicketScreen>
                 color: color.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, color: color, size: 26),
+              child: Icon(icon, color: color, size: TSizes.v26),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: TSizes.v8),
             Text(
               label,
               style: TextStyle(
                 color: color,
                 fontWeight: FontWeight.w700,
-                fontSize: 13,
+                fontSize: TSizes.v13,
               ),
             ),
           ],
@@ -765,7 +788,7 @@ class _TicketScreenState extends State<TicketScreen>
     return ScaleTransition(
       scale: _submitScaleAnimation,
       child: Container(
-        height: 60,
+        height: TSizes.v60,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
           gradient: const LinearGradient(
@@ -777,7 +800,7 @@ class _TicketScreenState extends State<TicketScreen>
           boxShadow: [
             BoxShadow(
               color: TColors.primary.withOpacity(0.4),
-              blurRadius: 20,
+              blurRadius: TSizes.v20,
               offset: const Offset(0, 10),
             ),
           ],
@@ -785,32 +808,34 @@ class _TicketScreenState extends State<TicketScreen>
         child: ElevatedButton(
           onPressed: _isSubmitting ? null : _submitTicket,
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.transparent,
-            shadowColor: Colors.transparent,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            backgroundColor: TColors.transparent,
+            shadowColor: TColors.transparent,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           ),
           child: _isSubmitting
               ? const SizedBox(
-            height: 24,
-            width: 24,
-            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3),
-          )
+                  height: TSizes.v24,
+                  width: TSizes.v24,
+                  child: CircularProgressIndicator(
+                      color: TColors.white, strokeWidth: TSizes.v3),
+                )
               : const Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                "Submit Ticket",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  letterSpacing: 0.5,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      TTexts.uiTextSubmitTicket,
+                      style: TextStyle(
+                        fontSize: TSizes.v18,
+                        fontWeight: FontWeight.bold,
+                        color: TColors.white,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    SizedBox(width: TSizes.v8),
+                    Icon(Icons.arrow_forward_rounded, color: TColors.white),
+                  ],
                 ),
-              ),
-              SizedBox(width: 8),
-              Icon(Icons.arrow_forward_rounded, color: Colors.white),
-            ],
-          ),
         ),
       ),
     );
@@ -834,18 +859,14 @@ class HeaderCurveClipper extends CustomClipper<Path> {
     // First control point and end point
     var firstControlPoint = Offset(size.width / 4, size.height);
     var firstEndPoint = Offset(size.width / 2, size.height);
-    path.quadraticBezierTo(
-        firstControlPoint.dx, firstControlPoint.dy,
-        firstEndPoint.dx, firstEndPoint.dy
-    );
+    path.quadraticBezierTo(firstControlPoint.dx, firstControlPoint.dy,
+        firstEndPoint.dx, firstEndPoint.dy);
 
     // Second control point and end point
     var secondControlPoint = Offset(size.width - (size.width / 4), size.height);
     var secondEndPoint = Offset(size.width, size.height - 60);
-    path.quadraticBezierTo(
-        secondControlPoint.dx, secondControlPoint.dy,
-        secondEndPoint.dx, secondEndPoint.dy
-    );
+    path.quadraticBezierTo(secondControlPoint.dx, secondControlPoint.dy,
+        secondEndPoint.dx, secondEndPoint.dy);
 
     path.lineTo(size.width, 0);
     path.close();

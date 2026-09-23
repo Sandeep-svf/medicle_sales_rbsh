@@ -2,7 +2,6 @@ import '../core/model/location_point.dart';
 import '../secqurity/Crypto_box.dart';
 import 'app_database.dart';
 
-
 class LocationPointDao {
   final _db = AppDatabase();
 
@@ -34,13 +33,6 @@ class LocationPointDao {
     }));
   }
 
-
-
-
-
-
-
-
   Future<void> insert(LocationPoint p) async {
     final db = await _db.database;
 
@@ -52,5 +44,4 @@ class LocationPointDao {
       'timestamp_utc': p.timestampUtc.toIso8601String(), // keep readable
     });
   }
-
 }

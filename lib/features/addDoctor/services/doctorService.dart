@@ -36,7 +36,8 @@ class DoctorService {
       return;
     }
 
-    final offlineDoctors = await _dbHelper.getAll('doctors', DoctorOfflineModel.fromJson);
+    final offlineDoctors =
+        await _dbHelper.getAll('doctors', DoctorOfflineModel.fromJson);
     _debug('Found ${offlineDoctors.length} offline doctors to sync.');
 
     if (offlineDoctors.isEmpty) {
@@ -49,14 +50,16 @@ class DoctorService {
 
       final token = await AuthManager().getAuthToken();
 
-
       final payload = jsonEncode({
         "doctors": offlineDoctors.map((e) => e.toJson()).toList(),
       });
 
       final response = await http.post(
         Uri.parse(bulkAddUrl),
-        headers: {'Content-Type': 'application/json', "Authorization": "Bearer $token",},
+        headers: {
+          'Content-Type': 'application/json',
+          "Authorization": "Bearer $token",
+        },
         body: payload,
       );
 

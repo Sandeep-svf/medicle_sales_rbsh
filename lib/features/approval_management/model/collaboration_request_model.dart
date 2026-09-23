@@ -55,33 +55,21 @@ class CollaborationRequestModel {
     return CollaborationRequestModel(
       id: json['id'] ?? '',
       tourPlanId: json['tour_plan_id'] ?? '',
-
       date: DateTime.parse(json['date']),
-
       dayType: json['day_type'] ?? '',
-
       jointWorkWithUserId: json['joint_work_with_user_id'],
-
       collaborationStatus: json['collaboration_status'] ?? '',
-
       beatId1: json['beat_id_1'],
       beatId2: json['beat_id_2'],
-
       changeRequestStatus: json['change_request_status'] ?? '',
-
       changeRequestReason: json['change_request_reason'],
-
       changeRequestBeatId1: json['change_request_beat_id_1'],
       changeRequestBeatId2: json['change_request_beat_id_2'],
-
       changeRequestDayType: json['change_request_day_type'],
       changeRequestComments: json['change_request_comments'],
-
       notes: json['notes'],
-
       createdAt: DateTime.parse(json['created_at']),
       updatedAt: DateTime.parse(json['updated_at']),
-
       tourPlan: CollaborationTourPlan.fromJson(json['tourPlan'] ?? {}),
     );
   }

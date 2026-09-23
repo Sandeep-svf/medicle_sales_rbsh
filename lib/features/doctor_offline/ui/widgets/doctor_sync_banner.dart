@@ -5,6 +5,7 @@ import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 import '../../controllers/doctor_offline_controller.dart';
 import '../../models/doctor_sync_models.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class DoctorSyncBanner extends StatelessWidget {
   const DoctorSyncBanner({
@@ -76,7 +77,7 @@ class DoctorSyncBanner extends StatelessWidget {
                   ),
                 ),
                 IconButton(
-                  tooltip: 'Refresh doctors',
+                  tooltip: TTexts.uiTextRefreshDoctors,
                   onPressed: status.isBusy ? null : controller.refreshDoctors,
                   icon: const Icon(Icons.refresh_rounded),
                   color: presentation.color,
@@ -88,7 +89,7 @@ class DoctorSyncBanner extends StatelessWidget {
               ClipRRect(
                 borderRadius: BorderRadius.circular(TSizes.borderRadiusSm),
                 child: LinearProgressIndicator(
-                  minHeight: 4,
+                  minHeight: TSizes.v4,
                   color: TColors.primary,
                   backgroundColor: presentation.color.withValues(alpha: 0.12),
                 ),
@@ -127,35 +128,35 @@ class DoctorSyncBanner extends StatelessWidget {
         );
       case DoctorSyncPhase.current:
         return const _SyncPresentation(
-          title: 'Available offline',
-          message: 'The local doctor list is current.',
+          title: TTexts.uiTextAvailableOffline,
+          message: TTexts.uiTextTheLocalDoctorListIsCurrent,
           icon: Icons.offline_pin_rounded,
           color: TColors.success,
         );
       case DoctorSyncPhase.authenticationRequired:
         return _SyncPresentation(
-          title: 'Sign-in required',
+          title: TTexts.uiTextSignInRequired,
           message: status.message,
           icon: Icons.lock_outline_rounded,
           color: TColors.error,
         );
       case DoctorSyncPhase.storageUnavailable:
         return _SyncPresentation(
-          title: 'Secure storage unavailable',
+          title: TTexts.uiTextSecureStorageUnavailable,
           message: status.message,
           icon: Icons.storage_rounded,
           color: TColors.error,
         );
       case DoctorSyncPhase.protocolBlocked:
         return _SyncPresentation(
-          title: 'Backend confirmation needed',
+          title: TTexts.uiTextBackendConfirmationNeeded,
           message: status.message,
           icon: Icons.rule_rounded,
           color: TColors.warning,
         );
       case DoctorSyncPhase.failed:
         return _SyncPresentation(
-          title: 'Sync not completed',
+          title: TTexts.uiTextSyncNotCompleted,
           message: status.message,
           icon: Icons.sync_problem_rounded,
           color: TColors.error,
@@ -171,8 +172,8 @@ class DoctorSyncBanner extends StatelessWidget {
         );
       case DoctorSyncPhase.idle:
         return const _SyncPresentation(
-          title: 'Offline doctors',
-          message: 'Secure local storage is ready.',
+          title: TTexts.uiTextOfflineDoctors_3da36f40,
+          message: TTexts.uiTextSecureLocalStorageIsReady,
           icon: Icons.medical_services_outlined,
           color: TColors.info,
         );

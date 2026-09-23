@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../widgets/section_card.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 
 class TourPlan extends StatefulWidget {
   const TourPlan({super.key});
@@ -14,7 +17,15 @@ class _TourPlanState extends State<TourPlan> {
   final TextEditingController searchController = TextEditingController();
 
   /// Weekdays
-  final List<String> weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  final List<String> weekDays = [
+    'Mon',
+    'Tue',
+    'Wed',
+    'Thu',
+    'Fri',
+    'Sat',
+    'Sun'
+  ];
   final Set<String> selectedDays = {};
 
   /// HQ & Area
@@ -70,10 +81,10 @@ class _TourPlanState extends State<TourPlan> {
 
   bool get isValid =>
       selectedRange != null &&
-          selectedDays.isNotEmpty &&
-          selectedHeadquarter != null &&
-          selectedArea != null &&
-          selectedDoctors.isNotEmpty;
+      selectedDays.isNotEmpty &&
+      selectedHeadquarter != null &&
+      selectedArea != null &&
+      selectedDoctors.isNotEmpty;
 
   void _scheduleTour() {
     final payload = {
@@ -93,7 +104,6 @@ class _TourPlanState extends State<TourPlan> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
       ///  Sticky CTA
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(16),
@@ -102,11 +112,11 @@ class _TourPlanState extends State<TourPlan> {
           style: ElevatedButton.styleFrom(
             padding: const EdgeInsets.symmetric(vertical: 16),
             shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           ),
           child: const Text(
-            'Schedule Plans',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            TTexts.uiTextSchedulePlans,
+            style: TextStyle(fontSize: TSizes.v16, fontWeight: FontWeight.bold),
           ),
         ),
       ),
@@ -118,25 +128,25 @@ class _TourPlanState extends State<TourPlan> {
           children: [
             ///  DATE RANGE
             SectionCard(
-              title: 'Date Range',
+              title: TTexts.dateRange,
               subtitle: selectedRange == null
                   ? 'Choose your plan duration'
                   : '${DateFormat('dd MMM').format(selectedRange!.start)}'
-                  ' → ${DateFormat('dd MMM yyyy').format(selectedRange!.end)}',
+                      ' → ${DateFormat('dd MMM yyyy').format(selectedRange!.end)}',
               icon: Icons.date_range,
               onTap: _pickDateRange,
             ),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: TSizes.v16),
 
             ///  WEEK DAYS
             CardContainer(
-              title: 'Working Days',
+              title: TTexts.uiTextWorkingDays,
               trailing: Text('${selectedDays.length} selected',
-                  style: const TextStyle(fontSize: 12)),
+                  style: const TextStyle(fontSize: TSizes.v12)),
               child: Wrap(
-                spacing: 8,
-                runSpacing: 8,
+                spacing: TSizes.v8,
+                runSpacing: TSizes.v8,
                 children: weekDays.map((day) {
                   final selected = selectedDays.contains(day);
                   return FilterChip(
@@ -154,21 +164,21 @@ class _TourPlanState extends State<TourPlan> {
               ),
             ),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: TSizes.v16),
 
             ///  HEADQUARTER
             CardContainer(
-              title: 'Headquarter',
+              title: TTexts.uiTextHeadquarter,
               child: DropdownButtonFormField<String>(
                 value: selectedHeadquarter,
-                hint: const Text('Select Headquarter'),
+                hint: const Text(TTexts.uiTextSelectHeadquarter),
                 items: headquarterAreas.keys
                     .map(
                       (hq) => DropdownMenuItem(
-                    value: hq,
-                    child: Text(hq),
-                  ),
-                )
+                        value: hq,
+                        child: Text(hq),
+                      ),
+                    )
                     .toList(),
                 onChanged: (value) {
                   setState(() {
@@ -177,27 +187,26 @@ class _TourPlanState extends State<TourPlan> {
                     selectedDoctors.clear();
                   });
                 },
-                decoration:
-                const InputDecoration(border: OutlineInputBorder()),
+                decoration: const InputDecoration(border: OutlineInputBorder()),
               ),
             ),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: TSizes.v16),
 
             ///  AREA
             if (selectedHeadquarter != null)
               CardContainer(
-                title: 'Area',
+                title: TTexts.uiTextArea,
                 child: DropdownButtonFormField<String>(
                   value: selectedArea,
-                  hint: const Text('Select Area'),
+                  hint: const Text(TTexts.uiTextSelectArea),
                   items: headquarterAreas[selectedHeadquarter]!
                       .map(
                         (area) => DropdownMenuItem(
-                      value: area,
-                      child: Text(area),
-                    ),
-                  )
+                          value: area,
+                          child: Text(area),
+                        ),
+                      )
                       .toList(),
                   onChanged: (value) {
                     setState(() {
@@ -206,11 +215,11 @@ class _TourPlanState extends State<TourPlan> {
                     });
                   },
                   decoration:
-                  const InputDecoration(border: OutlineInputBorder()),
+                      const InputDecoration(border: OutlineInputBorder()),
                 ),
               ),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: TSizes.v16),
 
             ///  SEARCH DOCTOR
             if (selectedHeadquarter != null && selectedArea != null) ...[
@@ -218,34 +227,32 @@ class _TourPlanState extends State<TourPlan> {
               TextField(
                 controller: searchController,
                 decoration: InputDecoration(
-                  hintText: 'Search doctor',
+                  hintText: TTexts.uiTextSearchDoctor,
                   prefixIcon: const Icon(Icons.search),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
                 ),
               ),
-
             ],
 
-            const SizedBox(height: 16),
+            const SizedBox(height: TSizes.v16),
 
             /// ️ DOCTOR LIST (VISIBLE ONLY AFTER HQ + AREA)
             if (selectedHeadquarter != null && selectedArea != null)
               CardContainer(
-                title: 'Doctors',
+                title: TTexts.uiTextDoctors,
                 trailing: Text('${selectedDoctors.length} selected',
-                    style: const TextStyle(fontSize: 12)),
+                    style: const TextStyle(fontSize: TSizes.v12)),
                 child: Column(
                   children: filteredDoctors.map((doctor) {
                     final selected = selectedDoctors.contains(doctor);
                     return ListTile(
                       leading: CircleAvatar(
                         backgroundColor: selected
-                            ? Colors.green
-                            : Colors.grey.shade300,
-                        child:
-                        const Icon(Icons.person_2, color: Colors.white),
+                            ? TColors.materialGreen
+                            : TColors.materialGrey300,
+                        child: const Icon(Icons.person_2, color: TColors.white),
                       ),
                       title: Text(doctor),
                       trailing: Checkbox(

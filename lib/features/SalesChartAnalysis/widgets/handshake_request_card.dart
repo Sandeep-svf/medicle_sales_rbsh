@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-
-import '../../../utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import '../Screen/handshake_user_list_screen.dart';
 import '../model/SalesChartDashboardModel.dart';
 import '../model/handshake_available_user.dart';
 import '../services/handshake_service.dart';
 import 'handshake_confirmation_dialog.dart';
 import 'handshake_user_tile.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class HandshakeRequestCard extends StatefulWidget {
   const HandshakeRequestCard({
@@ -214,7 +215,7 @@ class _HandshakeRequestCardState extends State<HandshakeRequestCard> {
         boxShadow: [
           BoxShadow(
             color: TColors.primary.withValues(alpha: .07),
-            blurRadius: 20,
+            blurRadius: TSizes.v20,
             offset: const Offset(0, 10),
           ),
         ],
@@ -223,7 +224,7 @@ class _HandshakeRequestCardState extends State<HandshakeRequestCard> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildHeader(),
-          const SizedBox(height: 16),
+          const SizedBox(height: TSizes.v16),
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 250),
             child: _buildContent(),
@@ -237,8 +238,8 @@ class _HandshakeRequestCardState extends State<HandshakeRequestCard> {
     return Row(
       children: [
         Container(
-          width: 46,
-          height: 46,
+          width: TSizes.v46,
+          height: TSizes.v46,
           decoration: BoxDecoration(
             color: TColors.primary_shade50,
             borderRadius: BorderRadius.circular(14),
@@ -246,38 +247,38 @@ class _HandshakeRequestCardState extends State<HandshakeRequestCard> {
           child: const Icon(
             Icons.handshake_rounded,
             color: TColors.primary,
-            size: 25,
+            size: TSizes.v25,
           ),
         ),
-        const SizedBox(width: 14),
+        const SizedBox(width: TSizes.v14),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'REQUEST A HANDSHAKE',
+                TTexts.uiTextREQUESTAHANDSHAKE,
                 style: TextStyle(
                   color: TColors.primary,
-                  fontSize: 11,
+                  fontSize: TSizes.v11,
                   fontWeight: FontWeight.w800,
                   letterSpacing: 1.2,
                 ),
               ),
-              const SizedBox(height: 3),
+              const SizedBox(height: TSizes.v3),
               Text(
                 '${HandshakeService.formatApiDate(_availabilityDate)} • ${widget.beat?.beatName ?? 'Current Beat'}',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   color: TColors.textSecondary,
-                  fontSize: 11,
+                  fontSize: TSizes.v11,
                 ),
               ),
             ],
           ),
         ),
         IconButton(
-          tooltip: 'Refresh available users',
+          tooltip: TTexts.uiTextRefreshAvailableUsers,
           onPressed: _loading || _sending ? null : _loadUsers,
           icon: const Icon(Icons.refresh_rounded, color: TColors.primary),
         ),
@@ -289,7 +290,7 @@ class _HandshakeRequestCardState extends State<HandshakeRequestCard> {
     if (_loading) {
       return const SizedBox(
         key: ValueKey('loading'),
-        height: 110,
+        height: TSizes.v110,
         child: Center(
           child: CircularProgressIndicator(color: TColors.primary),
         ),
@@ -308,18 +309,19 @@ class _HandshakeRequestCardState extends State<HandshakeRequestCard> {
         child: Row(
           children: [
             const Icon(Icons.error_outline, color: TColors.error),
-            const SizedBox(width: 10),
+            const SizedBox(width: TSizes.v10),
             Expanded(
               child: Text(
                 _errorMessage!,
                 style: const TextStyle(
                   color: TColors.error,
-                  fontSize: 12,
+                  fontSize: TSizes.v12,
                   fontWeight: FontWeight.w600,
                 ),
               ),
             ),
-            TextButton(onPressed: _loadUsers, child: const Text('Retry')),
+            TextButton(
+                onPressed: _loadUsers, child: const Text(TTexts.uiTextRetry)),
           ],
         ),
       );
@@ -328,10 +330,10 @@ class _HandshakeRequestCardState extends State<HandshakeRequestCard> {
     if (_users.isEmpty) {
       return const SizedBox(
         key: ValueKey('empty'),
-        height: 100,
+        height: TSizes.v100,
         child: Center(
           child: Text(
-            'No users are available for today.',
+            TTexts.uiTextNoUsersAreAvailableForToday,
             style: TextStyle(
               color: TColors.textSecondary,
               fontWeight: FontWeight.w600,
@@ -348,13 +350,13 @@ class _HandshakeRequestCardState extends State<HandshakeRequestCard> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'Select one or more available users for joint field work.',
+          TTexts.uiTextSelectOneOrMoreAvailableUsersForJoint,
           style: TextStyle(
             color: TColors.textSecondary,
-            fontSize: 12,
+            fontSize: TSizes.v12,
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: TSizes.v12),
         ...previewUsers.map(
           (user) => Padding(
             padding: const EdgeInsets.only(bottom: 10),
@@ -370,11 +372,11 @@ class _HandshakeRequestCardState extends State<HandshakeRequestCard> {
             alignment: Alignment.centerRight,
             child: TextButton.icon(
               onPressed: _openFullList,
-              icon: const Icon(Icons.people_alt_outlined, size: 18),
+              icon: const Icon(Icons.people_alt_outlined, size: TSizes.v18),
               label: Text('View More (${_users.length})'),
             ),
           ),
-        const Divider(height: 24, color: TColors.borderSecondary),
+        const Divider(height: TSizes.v24, color: TColors.borderSecondary),
         Row(
           children: [
             Expanded(
@@ -385,26 +387,26 @@ class _HandshakeRequestCardState extends State<HandshakeRequestCard> {
                     '${_selectedIds.length} user(s) selected',
                     style: const TextStyle(
                       color: TColors.textPrimary,
-                      fontSize: 12,
+                      fontSize: TSizes.v12,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: TSizes.v2),
                   const Text(
-                    'Verify details before sending.',
+                    TTexts.uiTextVerifyDetailsBeforeSending,
                     style: TextStyle(
                       color: TColors.textSecondary,
-                      fontSize: 10,
+                      fontSize: TSizes.v10,
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: TSizes.v12),
             ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
                 backgroundColor: _sent ? TColors.success : TColors.primary,
-                foregroundColor: Colors.white,
+                foregroundColor: TColors.white,
                 minimumSize: const Size(136, 46),
               ),
               onPressed: _selectedIds.isEmpty || _sending || _sent
@@ -412,16 +414,16 @@ class _HandshakeRequestCardState extends State<HandshakeRequestCard> {
                   : _sendSelectedUsers,
               icon: _sending
                   ? const SizedBox(
-                      width: 17,
-                      height: 17,
+                      width: TSizes.v17,
+                      height: TSizes.v17,
                       child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
+                        strokeWidth: TSizes.v2,
+                        color: TColors.white,
                       ),
                     )
                   : Icon(
                       _sent ? Icons.check_circle : Icons.send_rounded,
-                      size: 18,
+                      size: TSizes.v18,
                     ),
               label: Text(
                 _sending

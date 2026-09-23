@@ -4,9 +4,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:photo_view/photo_view.dart'; // For zoomable images
-import 'package:shared_preferences/shared_preferences.dart'; // <-- added
+import 'package:photo_view/photo_view.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../utils/http/http_client.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 
 class MarketingScreenOld extends StatefulWidget {
   const MarketingScreenOld({super.key});
@@ -54,9 +57,9 @@ class _MarketingScreenState extends State<MarketingScreenOld> {
         setState(() {
           pdfFiles = (response.data as List)
               .map((item) => {
-            "title": item["title"]?.toString() ?? "Untitled",
-            "fileKey": item["fileKey"]?.toString() ?? "",
-          })
+                    "title": item["title"]?.toString() ?? "Untitled",
+                    "fileKey": item["fileKey"]?.toString() ?? "",
+                  })
               .toList();
           isLoading = false;
         });
@@ -119,7 +122,7 @@ class _MarketingScreenState extends State<MarketingScreenOld> {
       String? signedUrl = await fetchSignedUrl(fileKey);
       if (signedUrl == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Failed to retrieve signed URL")),
+          const SnackBar(content: Text(TTexts.uiTextFailedToRetrieveSignedURL)),
         );
         return;
       }
@@ -135,7 +138,7 @@ class _MarketingScreenState extends State<MarketingScreenOld> {
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Failed to load PDF")),
+          const SnackBar(content: Text(TTexts.faildToLoaddPdf)),
         );
       }
     } else {
@@ -160,7 +163,8 @@ class _MarketingScreenState extends State<MarketingScreenOld> {
         actions: [
           IconButton(
             icon: Icon(_isGridView ? Icons.view_list : Icons.grid_view),
-            tooltip: _isGridView ? "Switch to List View" : "Switch to Grid View",
+            tooltip:
+                _isGridView ? "Switch to List View" : "Switch to Grid View",
             onPressed: () {
               setState(() {
                 _isGridView = !_isGridView;
@@ -173,71 +177,77 @@ class _MarketingScreenState extends State<MarketingScreenOld> {
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : pdfFiles.isEmpty
-          ? const Center(child: Text("No files available"))
-          : _isGridView
-          ? GridView.builder(
-        padding: const EdgeInsets.all(12),
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: crossAxisCount,
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
-          childAspectRatio: 0.75,
-        ),
-        itemCount: pdfFiles.length,
-        itemBuilder: (context, index) {
-          var file = pdfFiles[index];
-          bool isPdf = isPdfFile(file['fileKey']!);
-          return GestureDetector(
-            onTap: () => openFileViewer(file['fileKey']!),
-            child: Card(
-              elevation: 4,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    isPdf ? Icons.picture_as_pdf : Icons.image,
-                    size: 60,
-                    color: isPdf ? Colors.red : Colors.blue,
-                  ),
-                  const SizedBox(height: 12),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: Text(
-                      file['title']!,
-                      textAlign: TextAlign.center,
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
+              ? const Center(child: Text(TTexts.uiTextNoFilesAvailable))
+              : _isGridView
+                  ? GridView.builder(
+                      padding: const EdgeInsets.all(12),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: crossAxisCount,
+                        crossAxisSpacing: TSizes.v12,
+                        mainAxisSpacing: TSizes.v12,
+                        childAspectRatio: 0.75,
+                      ),
+                      itemCount: pdfFiles.length,
+                      itemBuilder: (context, index) {
+                        var file = pdfFiles[index];
+                        bool isPdf = isPdfFile(file['fileKey']!);
+                        return GestureDetector(
+                          onTap: () => openFileViewer(file['fileKey']!),
+                          child: Card(
+                            elevation: TSizes.v4,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  isPdf ? Icons.picture_as_pdf : Icons.image,
+                                  size: TSizes.v60,
+                                  color: isPdf
+                                      ? TColors.materialRed
+                                      : TColors.materialBlue,
+                                ),
+                                const SizedBox(height: TSizes.v12),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8.0),
+                                  child: Text(
+                                    file['title']!,
+                                    textAlign: TextAlign.center,
+                                    maxLines: 3,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.all(12),
+                      itemCount: pdfFiles.length,
+                      itemBuilder: (context, index) {
+                        var file = pdfFiles[index];
+                        bool isPdf = isPdfFile(file['fileKey']!);
+                        return Card(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          elevation: TSizes.v4,
+                          child: ListTile(
+                            leading: Icon(
+                              isPdf ? Icons.picture_as_pdf : Icons.image,
+                              size: TSizes.v40,
+                              color: isPdf
+                                  ? TColors.materialRed
+                                  : TColors.materialBlue,
+                            ),
+                            title: Text(file['title']!),
+                            trailing: const Icon(Icons.download),
+                            onTap: () => openFileViewer(file['fileKey']!),
+                          ),
+                        );
+                      },
                     ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      )
-          : ListView.builder(
-        padding: const EdgeInsets.all(12),
-        itemCount: pdfFiles.length,
-        itemBuilder: (context, index) {
-          var file = pdfFiles[index];
-          bool isPdf = isPdfFile(file['fileKey']!);
-          return Card(
-            margin: const EdgeInsets.only(bottom: 12),
-            elevation: 4,
-            child: ListTile(
-              leading: Icon(
-                isPdf ? Icons.picture_as_pdf : Icons.image,
-                size: 40,
-                color: isPdf ? Colors.red : Colors.blue,
-              ),
-              title: Text(file['title']!),
-              trailing: const Icon(Icons.download),
-              onTap: () => openFileViewer(file['fileKey']!),
-            ),
-          );
-        },
-      ),
     );
   }
 }
@@ -250,7 +260,7 @@ class PDFViewerScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("PDF Viewer")),
+      appBar: AppBar(title: const Text(TTexts.pdfViewer)),
       body: PDFView(
         filePath: pdfPath,
         enableSwipe: true,
@@ -278,7 +288,7 @@ class ImageViewerScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Image Viewer")),
+      appBar: AppBar(title: const Text(TTexts.uiTextImageViewer)),
       body: Center(
         child: InteractiveViewer(
           panEnabled: true,

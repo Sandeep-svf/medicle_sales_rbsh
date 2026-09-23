@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-
-import '../../../../utils/constants/colors.dart';
-import '../../../../utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 import '../../model/beat_change_request_model.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class BeatChangeRequestCard extends StatelessWidget {
   const BeatChangeRequestCard({
@@ -22,8 +22,8 @@ class BeatChangeRequestCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 0,
-      color: Colors.white,
+      elevation: TSizes.v0,
+      color: TColors.white,
       margin: const EdgeInsets.only(bottom: TSizes.lg),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(18),
@@ -43,7 +43,7 @@ class BeatChangeRequestCard extends StatelessWidget {
             Row(
               children: [
                 CircleAvatar(
-                  radius: 24,
+                  radius: TSizes.v24,
                   backgroundColor: TColors.primary_shade50,
                   child: Text(
                     request.employeeName.isNotEmpty
@@ -55,7 +55,7 @@ class BeatChangeRequestCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(width: 14),
+                const SizedBox(width: TSizes.v14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -64,15 +64,15 @@ class BeatChangeRequestCard extends StatelessWidget {
                         request.employeeName,
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
-                          fontSize: 17,
+                          fontSize: TSizes.v17,
                         ),
                       ),
-                      const SizedBox(height: 3),
+                      const SizedBox(height: TSizes.v3),
                       Text(
                         "Employee Code : ${request.employeeCode}",
                         style: const TextStyle(
                           color: TColors.textSecondary,
-                          fontSize: 13,
+                          fontSize: TSizes.v13,
                         ),
                       ),
                     ],
@@ -84,13 +84,13 @@ class BeatChangeRequestCard extends StatelessWidget {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.orange.shade100,
+                    color: TColors.materialOrange100,
                     borderRadius: BorderRadius.circular(30),
                   ),
                   child: Text(
                     request.status,
                     style: const TextStyle(
-                      color: Colors.orange,
+                      color: TColors.materialOrange,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -98,18 +98,18 @@ class BeatChangeRequestCard extends StatelessWidget {
               ],
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: TSizes.v20),
             //-------------------------------------------------------
             // Date
             //-------------------------------------------------------
 
             _InfoRow(
               icon: Icons.calendar_month_outlined,
-              title: "Date",
+              title: TTexts.date,
               value: request.date,
             ),
 
-            const SizedBox(height: 18),
+            const SizedBox(height: TSizes.v18),
 
             //-------------------------------------------------------
             // Beat Change
@@ -129,11 +129,11 @@ class BeatChangeRequestCard extends StatelessWidget {
                       const Icon(
                         Icons.location_on_outlined,
                         color: TColors.primary,
-                        size: 18,
+                        size: TSizes.v18,
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: TSizes.v8),
                       const Text(
-                        "Current Beat",
+                        TTexts.uiTextCurrentBeat,
                         style: TextStyle(
                           color: TColors.textSecondary,
                           fontWeight: FontWeight.w600,
@@ -141,33 +141,33 @@ class BeatChangeRequestCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: TSizes.v8),
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
                       request.currentBeatName,
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                        fontSize: TSizes.v16,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: TSizes.v12),
                   const Icon(
                     Icons.arrow_downward_rounded,
                     color: TColors.primary,
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: TSizes.v12),
                   Row(
                     children: [
                       const Icon(
                         Icons.flag_circle_outlined,
-                        color: Colors.green,
-                        size: 18,
+                        color: TColors.materialGreen,
+                        size: TSizes.v18,
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: TSizes.v8),
                       const Text(
-                        "Requested Beat",
+                        TTexts.uiTextRequestedBeat,
                         style: TextStyle(
                           color: TColors.textSecondary,
                           fontWeight: FontWeight.w600,
@@ -175,14 +175,14 @@ class BeatChangeRequestCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: TSizes.v8),
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
                       request.requestedBeatName,
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                        fontSize: TSizes.v16,
                         color: TColors.primary,
                       ),
                     ),
@@ -191,7 +191,7 @@ class BeatChangeRequestCard extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(height: 18),
+            const SizedBox(height: TSizes.v18),
 
             //-------------------------------------------------------
             // Day Type
@@ -199,11 +199,11 @@ class BeatChangeRequestCard extends StatelessWidget {
 
             _InfoRow(
               icon: Icons.work_outline,
-              title: "Day Type",
+              title: TTexts.uiTextDayType,
               value: request.dayType,
             ),
 
-            const SizedBox(height: 18),
+            const SizedBox(height: TSizes.v18),
 
             //-------------------------------------------------------
             // Reason
@@ -220,24 +220,24 @@ class BeatChangeRequestCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    "Reason",
+                    TTexts.uiTextReason,
                     style: TextStyle(
                       color: TColors.textSecondary,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: TSizes.v8),
                   Text(
                     request.reason,
                     style: const TextStyle(
-                      fontSize: 15,
+                      fontSize: TSizes.v15,
                     ),
                   ),
                 ],
               ),
             ),
 
-            const SizedBox(height: 22),
+            const SizedBox(height: TSizes.v22),
             //-------------------------------------------------------
             // Action Buttons
             //-------------------------------------------------------
@@ -252,7 +252,7 @@ class BeatChangeRequestCard extends StatelessWidget {
                       color: TColors.error,
                     ),
                     label: const Text(
-                      "Reject",
+                      TTexts.uiTextReject,
                       style: TextStyle(
                         color: TColors.error,
                         fontWeight: FontWeight.w600,
@@ -269,17 +269,17 @@ class BeatChangeRequestCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: TSizes.v12),
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: loading ? null : onApprove,
                     icon: loading
                         ? const SizedBox(
-                            height: 18,
-                            width: 18,
+                            height: TSizes.v18,
+                            width: TSizes.v18,
                             child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
+                              strokeWidth: TSizes.v2,
+                              color: TColors.white,
                             ),
                           )
                         : const Icon(Icons.check),
@@ -288,9 +288,9 @@ class BeatChangeRequestCard extends StatelessWidget {
                     ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: TColors.success,
-                      foregroundColor: Colors.white,
+                      foregroundColor: TColors.white,
                       minimumSize: const Size.fromHeight(48),
-                      elevation: 0,
+                      elevation: TSizes.v0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -327,10 +327,10 @@ class _InfoRow extends StatelessWidget {
       children: [
         Icon(
           icon,
-          size: 18,
+          size: TSizes.v18,
           color: TColors.primary,
         ),
-        const SizedBox(width: 10),
+        const SizedBox(width: TSizes.v10),
         Text(
           "$title :",
           style: const TextStyle(

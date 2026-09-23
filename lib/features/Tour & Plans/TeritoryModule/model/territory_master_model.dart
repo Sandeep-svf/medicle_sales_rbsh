@@ -6,9 +6,6 @@ import 'beat_model.dart';
 import 'chemist_location_model.dart';
 import 'doctor_location_model.dart';
 
-
-
-
 class TerritoryMasterModel {
   final List<AreaModel> areas;
   final List<DoctorLocationModel> doctors;
@@ -31,23 +28,18 @@ class TerritoryMasterModel {
       areas: (json["areas"] as List? ?? [])
           .map((e) => AreaModel.fromJson(e))
           .toList(),
-
       doctors: (json["doctors"] as List? ?? [])
           .map((e) => DoctorLocationModel.fromJson(e))
           .toList(),
-
       chemists: (json["chemists"] as List? ?? [])
           .map((e) => ChemistLocationModel.fromJson(e))
           .toList(),
-
       stockists: (json["stockists"] as List? ?? [])
           .map((e) => StockistLocationModel.fromJson(e))
           .toList(),
-
       beats: (json["beats"] as List? ?? [])
           .map((e) => BeatModel.fromJson(e))
           .toList(),
-
       beatAreas: (json["beatAreas"] as List? ?? [])
           .map((e) => BeatAreaModel.fromJson(e))
           .toList(),

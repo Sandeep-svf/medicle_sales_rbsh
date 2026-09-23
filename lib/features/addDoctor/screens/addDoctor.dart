@@ -1,19 +1,18 @@
 import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:medicle_sales_rbsh/features/addDoctor/models/HeadofficeModel.dart';
 import 'package:medicle_sales_rbsh/features/addDoctor/screens/add_doctro_new_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../utils/camera/CameraLocationResult.dart';
-import '../../../utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 import '../../../utils/helpers/zoom_in_out_anim.dart';
-import '../../../utils/constants/colors.dart';
-import 'package:http/http.dart' as http;
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'dart:convert';
 import '../../../utils/http/http_client.dart';
 import '../../../utils/local_storage/auth_manager.dart';
@@ -29,6 +28,7 @@ import '../wigets/gps_image_preview_widget.dart';
 import '../wigets/image_with_location_widget.dart';
 import 'doctorDetails.dart';
 import 'map.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class AddDoctorScreen extends StatefulWidget {
   const AddDoctorScreen({super.key});
@@ -98,7 +98,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
     }else{
       CircularLoaderController.hideLoader();
       Get.snackbar("Error", "Failed to load Head Office.",
-          backgroundColor: Colors.red, duration: const Duration(seconds: 3));
+          backgroundColor: TColors.materialRed, duration: const Duration(seconds: 3));
     }
   }*/
 
@@ -152,7 +152,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
           // If 'success' is false, show an error message
           print("[ERROR] Response success is false.");
           Get.snackbar("Error", "Failed to load Head Office. Response success was false.",
-              backgroundColor: Colors.red, duration: const Duration(seconds: 3));
+              backgroundColor: TColors.materialRed, duration: const Duration(seconds: 3));
         }
       } else {
         CircularLoaderController.hideLoader();  // Hide loader on failure
@@ -160,7 +160,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
         // Log and show an error message if the response status code is not 200
         print("[ERROR] Failed to load Head Office. Status code: ${response.statusCode}");
         Get.snackbar("Error", "Failed to load Head Office. Status Code: ${response.statusCode}",
-            backgroundColor: Colors.red, duration: const Duration(seconds: 3));
+            backgroundColor: TColors.materialRed, duration: const Duration(seconds: 3));
       }
     } catch (e) {
       // Hide loader if an exception occurs
@@ -168,7 +168,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
 
       // Log the error and show the error message
       print("[ERROR] Exception occurred: $e");
-      Get.snackbar("Error", "Failed to load Head Office: $e", backgroundColor: Colors.red);
+      Get.snackbar("Error", "Failed to load Head Office: $e", backgroundColor: TColors.materialRed);
     }
   }*/
 
@@ -230,8 +230,8 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
 
           print("[DEBUG] Loaded ${cities.length} cities from local DB.");
         } else {
-          Get.snackbar("Error", "Failed to load cities (success=false)",
-              backgroundColor: Colors.red,
+          Get.snackbar("Error", TTexts.uiTextFailedToLoadCitiesSuccessFalse,
+              backgroundColor: TColors.materialRed,
               duration: const Duration(seconds: 3));
         }
       } else {
@@ -239,7 +239,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
             "[ERROR] Failed to load Head Office. Status: ${response.statusCode}");
         Get.snackbar("Error",
             "Failed to load cities. Status Code: ${response.statusCode}",
-            backgroundColor: Colors.red);
+            backgroundColor: TColors.materialRed);
       }
     } catch (e) {
       CircularLoaderController.hideLoader();
@@ -259,9 +259,9 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
         });
         print("[DEBUG] Loaded cached cities (offline mode).");
       } else {
-        Get.snackbar("Error",
-            "No cached data available. Please connect to the internet.",
-            backgroundColor: Colors.red);
+        Get.snackbar(
+            "Error", TTexts.uiTextNoCachedDataAvailablePleaseConnectToThe,
+            backgroundColor: TColors.materialRed);
       }
     }
   }
@@ -334,7 +334,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                             ? 'This field is required'
                             : null,
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: TSizes.v12),
                       TextFormField(
                         controller: specializationController,
                         decoration: const InputDecoration(
@@ -342,11 +342,11 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                           border: OutlineInputBorder(),
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: TSizes.v12),
                       DropdownButtonFormField<String>(
                         value: selectedCityId,
                         decoration: const InputDecoration(
-                          labelText: "Select Head Office",
+                          labelText: TTexts.uiTextSelectHeadOffice,
                           border: OutlineInputBorder(),
                         ),
                         items: cities.map((city) {
@@ -366,16 +366,16 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                             ? 'Please select a head office'
                             : null,
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: TSizes.v12),
                       TextFormField(
                         controller: emailController,
                         keyboardType: TextInputType.emailAddress,
                         decoration: const InputDecoration(
-                          labelText: 'Email',
+                          labelText: TTexts.email,
                           border: OutlineInputBorder(),
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: TSizes.v12),
                       TextFormField(
                         controller: phoneController,
                         keyboardType: TextInputType.number,
@@ -383,19 +383,19 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                           FilteringTextInputFormatter.digitsOnly
                         ],
                         decoration: const InputDecoration(
-                          labelText: 'Phone Number',
+                          labelText: TTexts.uiTextPhoneNumber,
                           border: OutlineInputBorder(),
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: TSizes.v12),
                       TextFormField(
                         controller: registrationController,
                         decoration: const InputDecoration(
-                          labelText: 'Registration Number',
+                          labelText: TTexts.registrationNumber,
                           border: OutlineInputBorder(),
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: TSizes.v12),
                       TextFormField(
                         controller: experienceController,
                         keyboardType: const TextInputType.numberWithOptions(
@@ -405,41 +405,41 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                               RegExp(r'^\d*\.?\d{0,2}')),
                         ],
                         decoration: const InputDecoration(
-                          labelText: 'Years of Experience',
+                          labelText: TTexts.uiTextYearsOfExperience,
                           border: OutlineInputBorder(),
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: TSizes.v12),
                       GestureDetector(
                         onTap: () => _selectDate(context, false),
                         child: AbsorbPointer(
                           child: TextFormField(
                             controller: dobController,
                             decoration: const InputDecoration(
-                              labelText: 'Date of Birth',
+                              labelText: TTexts.dob,
                               border: OutlineInputBorder(),
                             ),
                           ),
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: TSizes.v12),
                       GestureDetector(
                         onTap: () => _selectDate(context, true),
                         child: AbsorbPointer(
                           child: TextFormField(
                             controller: anniversaryController,
                             decoration: const InputDecoration(
-                              labelText: 'Anniversary',
+                              labelText: TTexts.anniversary,
                               border: OutlineInputBorder(),
                             ),
                           ),
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: TSizes.v12),
                       DropdownButtonFormField<String>(
                         value: selectedGender,
                         decoration: const InputDecoration(
-                          labelText: "Gender",
+                          labelText: TTexts.gender,
                           border: OutlineInputBorder(),
                         ),
                         items: ['Male', 'Female', 'Other'].map((gender) {
@@ -460,7 +460,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                           return null;
                         },
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: TSizes.v12),
                       TextButton(
                         onPressed: () async {
                           final result = await Navigator.push(
@@ -480,14 +480,14 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                             Get.snackbar(
                               "📍 Location Selected",
                               "$selectedAddress\nLat: $selectedLatitude, Lng: $selectedLongitude",
-                              backgroundColor: Colors.green,
+                              backgroundColor: TColors.materialGreen,
                               duration: const Duration(seconds: 4),
                             );
                           } else {
                             Get.snackbar(
                               "Location Not Selected",
-                              "Please try again or cancel",
-                              backgroundColor: Colors.orange,
+                              TTexts.uiTextPleaseTryAgainOrCancel,
+                              backgroundColor: TColors.materialOrange,
                             );
                           }
                         },
@@ -498,29 +498,29 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          elevation: 5,
+                          elevation: TSizes.v5,
                         ),
                         child: const Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
                               Icons.location_on,
-                              color: Colors.white,
-                              size: 22,
+                              color: TColors.white,
+                              size: TSizes.v22,
                             ),
-                            SizedBox(width: 8),
+                            SizedBox(width: TSizes.v8),
                             Text(
-                              'Select Location',
+                              TTexts.uiTextSelectLocation,
                               style: TextStyle(
-                                fontSize: 16,
+                                fontSize: TSizes.v16,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                                color: TColors.white,
                               ),
                             ),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: TSizes.v12),
                     ],
                   ),
                 ),
@@ -537,8 +537,9 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                           selectedLongitude == null ||
                           selectedAddress == null) {
                         // Show error message if location is not selected
-                        Get.snackbar("Error", "Please select a location",
-                            backgroundColor: Colors.red,
+                        Get.snackbar(
+                            "Error", TTexts.uiTextPleaseSelectALocation,
+                            backgroundColor: TColors.materialRed,
                             duration: const Duration(seconds: 3));
                       } else {
                         // Call the addDoctor API
@@ -875,7 +876,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                         borderRadius: BorderRadius.circular(12)),
                     child: ListTile(
                       leading: CircleAvatar(
-                        backgroundColor: Colors.blue.shade100,
+                        backgroundColor: TColors.materialBlue100,
                         child: const Icon(Icons.person, color: TColors.primary),
                       ),
                       title: Text(
@@ -910,7 +911,6 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
     return Scaffold(
       body: Column(
         children: [
-
           // ---------------- FILTER CARD ----------------
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
@@ -981,24 +981,24 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
 
                     if (priorityValue.isEmpty ||
                         priorityValue.toLowerCase() == 'null') {
-                      priorityColor = Colors.grey;
+                      priorityColor = TColors.materialGrey;
                       priorityLabel = "Not Added";
                     } else {
                       switch (priorityValue) {
                         case 'A':
-                          priorityColor = Colors.red;
+                          priorityColor = TColors.materialRed;
                           priorityLabel = "Priority A";
                           break;
                         case 'B':
-                          priorityColor = Colors.orange;
+                          priorityColor = TColors.materialOrange;
                           priorityLabel = "Priority B";
                           break;
                         case 'C':
-                          priorityColor = Colors.blueGrey;
+                          priorityColor = TColors.materialBlueGrey;
                           priorityLabel = "Priority C";
                           break;
                         default:
-                          priorityColor = Colors.grey;
+                          priorityColor = TColors.materialGrey;
                           priorityLabel = "Not Added";
                           break;
                       }
@@ -1013,7 +1013,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                     Widget cardContent = Row(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Container(width: 5, color: themeColor),
+                        Container(width: TSizes.v5, color: themeColor),
                         Expanded(
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
@@ -1025,7 +1025,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                                   color: themeColor.withOpacity(0.04),
                                   border: Border(
                                       bottom: BorderSide(
-                                          color: Colors.grey.shade100)),
+                                          color: TColors.materialGrey100)),
                                 ),
                                 child: Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -1037,17 +1037,17 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                                           border: Border.all(
                                               color:
                                                   themeColor.withOpacity(0.3),
-                                              width: 2)),
+                                              width: TSizes.v2)),
                                       child: CircleAvatar(
-                                          radius: 24,
-                                          backgroundColor: Colors.white,
+                                          radius: TSizes.v24,
+                                          backgroundColor: TColors.white,
                                           child: Text(initials,
                                               style: const TextStyle(
-                                                  fontSize: 20,
+                                                  fontSize: TSizes.v20,
                                                   fontWeight: FontWeight.bold,
                                                   color: themeColor))),
                                     ),
-                                    const SizedBox(width: 12),
+                                    const SizedBox(width: TSizes.v12),
                                     Expanded(
                                       child: Column(
                                         crossAxisAlignment:
@@ -1061,7 +1061,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                                                       overflow:
                                                           TextOverflow.ellipsis,
                                                       style: const TextStyle(
-                                                          fontSize: 16,
+                                                          fontSize: TSizes.v16,
                                                           fontWeight: FontWeight
                                                               .bold))),
                                               Container(
@@ -1081,7 +1081,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                                                                 0.35))),
                                                 child: Text(priorityLabel,
                                                     style: TextStyle(
-                                                        fontSize: 10,
+                                                        fontSize: TSizes.v10,
                                                         fontWeight:
                                                             FontWeight.bold,
                                                         color: priorityColor)),
@@ -1090,7 +1090,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                                           ),
 
                                           // --- GEO IMAGE TAG ---
-                                         /* if (showImageWarning) ...[
+                                          /* if (showImageWarning) ...[
                                             const SizedBox(height: 6),
                                             Container(
                                               padding:
@@ -1098,12 +1098,12 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                                                       horizontal: 8,
                                                       vertical: 4),
                                               decoration: BoxDecoration(
-                                                  color: Colors.red
+                                                  color: TColors.materialRed
                                                       .withOpacity(0.1),
                                                   borderRadius:
                                                       BorderRadius.circular(4),
                                                   border: Border.all(
-                                                      color: Colors.red
+                                                      color: TColors.materialRed
                                                           .withOpacity(0.3))),
                                               child: Row(
                                                 mainAxisSize: MainAxisSize.min,
@@ -1112,23 +1112,25 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                                                       Icons
                                                           .add_a_photo_outlined,
                                                       size: 12,
-                                                      color: Colors.red),
+                                                      color: TColors.materialRed),
                                                   SizedBox(width: 4),
                                                   Text("Add Image from Details",
                                                       style: TextStyle(
                                                           fontSize: 10,
                                                           fontWeight:
                                                               FontWeight.bold,
-                                                          color: Colors.red)),
+                                                          color: TColors.materialRed)),
                                                 ],
                                               ),
                                             ),
                                           ],*/
 
                                           // --- DYNAMIC AREA STATUS CONDITION CHECK ---
-                                          const SizedBox(height: 6),
+                                          const SizedBox(height: TSizes.v6),
 
-                                          if ((doctor.area?.id ?? '').trim().isEmpty)
+                                          if ((doctor.area?.id ?? '')
+                                              .trim()
+                                              .isEmpty)
                                             GestureDetector(
                                               onTap: () => _showAssignAreaSheet(
                                                 doctor,
@@ -1140,12 +1142,13 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                                                   vertical: 4,
                                                 ),
                                                 decoration: BoxDecoration(
-                                                  color: Colors.amber
+                                                  color: TColors.materialAmber
                                                       .withOpacity(0.15),
                                                   borderRadius:
                                                       BorderRadius.circular(4),
                                                   border: Border.all(
-                                                    color: Colors.amber.shade700
+                                                    color: TColors
+                                                        .materialAmber700
                                                         .withOpacity(0.4),
                                                   ),
                                                 ),
@@ -1156,19 +1159,21 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                                                     Icon(
                                                       Icons
                                                           .add_location_alt_outlined,
-                                                      size: 12,
-                                                      color:
-                                                          Colors.amber.shade900,
+                                                      size: TSizes.v12,
+                                                      color: TColors
+                                                          .materialAmber900,
                                                     ),
-                                                    const SizedBox(width: 4),
+                                                    const SizedBox(
+                                                        width: TSizes.v4),
                                                     Text(
-                                                      "Add Area Missing",
+                                                      TTexts
+                                                          .uiTextAddAreaMissing,
                                                       style: TextStyle(
-                                                        fontSize: 10,
+                                                        fontSize: TSizes.v10,
                                                         fontWeight:
                                                             FontWeight.bold,
-                                                        color: Colors
-                                                            .amber.shade900,
+                                                        color: TColors
+                                                            .materialAmber900,
                                                       ),
                                                     ),
                                                   ],
@@ -1176,67 +1181,78 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                                               ),
                                             ),
 
-                                          const SizedBox(height: 4),
-                                          const SizedBox(height: 4),
+                                          const SizedBox(height: TSizes.v4),
+                                          const SizedBox(height: TSizes.v4),
 
                                           Text(
-                                            doctor.specialization?.isNotEmpty == true
+                                            doctor.specialization?.isNotEmpty ==
+                                                    true
                                                 ? doctor.specialization!
                                                 : "N/A",
                                             style: TextStyle(
-                                              fontSize: 13,
+                                              fontSize: TSizes.v13,
                                               fontWeight: FontWeight.w600,
-                                              color: Colors.grey[800],
+                                              color: TColors.materialGrey800,
                                             ),
                                           ),
 
-                                          const SizedBox(height: 6),
+                                          const SizedBox(height: TSizes.v6),
 
                                           Row(
                                             children: [
                                               Icon(
                                                 Icons.history,
-                                                size: 14,
+                                                size: TSizes.v14,
                                                 color: TColors.primary,
                                               ),
-                                              const SizedBox(width: 5),
+                                              const SizedBox(width: TSizes.v5),
                                               Expanded(
                                                 child: Text(
-                                                  doctor.lastVisitedDate?.isNotEmpty == true
+                                                  doctor.lastVisitedDate
+                                                              ?.isNotEmpty ==
+                                                          true
                                                       ? "Last Visit: ${doctor.lastVisitedDate}"
                                                       : "Last Visit: Never",
                                                   style: TextStyle(
-                                                    fontSize: 12,
+                                                    fontSize: TSizes.v12,
                                                     fontWeight: FontWeight.w600,
-                                                    color: doctor.lastVisitedDate?.isNotEmpty == true
-                                                        ? Colors.green.shade700
-                                                        : Colors.red.shade700,
+                                                    color: doctor
+                                                                .lastVisitedDate
+                                                                ?.isNotEmpty ==
+                                                            true
+                                                        ? TColors
+                                                            .materialGreen700
+                                                        : TColors
+                                                            .materialRed700,
                                                   ),
                                                 ),
                                               ),
                                             ],
                                           ),
 
-                                          const SizedBox(height: 6),
+                                          const SizedBox(height: TSizes.v6),
 
                                           Row(
                                             children: [
                                               Icon(
                                                 Icons.location_on_rounded,
-                                                size: 12,
-                                                color: Colors.grey[600],
+                                                size: TSizes.v12,
+                                                color: TColors.materialGrey600,
                                               ),
-                                              const SizedBox(width: 4),
+                                              const SizedBox(width: TSizes.v4),
                                               Expanded(
                                                 child: Text(
-                                                  doctor.location?.isNotEmpty == true
+                                                  doctor.location?.isNotEmpty ==
+                                                          true
                                                       ? doctor.location!
                                                       : "N/A",
                                                   maxLines: 1,
-                                                  overflow: TextOverflow.ellipsis,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
                                                   style: TextStyle(
-                                                    fontSize: 12,
-                                                    color: Colors.grey[600],
+                                                    fontSize: TSizes.v12,
+                                                    color:
+                                                        TColors.materialGrey600,
                                                   ),
                                                 ),
                                               ),
@@ -1259,14 +1275,14 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
 
                     return Container(
                       decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: TColors.white,
                           borderRadius: BorderRadius.circular(16),
                           border:
                               Border.all(color: themeColor.withOpacity(0.35)),
                           boxShadow: [
                             BoxShadow(
-                                color: Colors.black.withOpacity(0.05),
-                                blurRadius: 12,
+                                color: TColors.pureBlack.withOpacity(0.05),
+                                blurRadius: TSizes.v12,
                                 offset: const Offset(0, 6))
                           ]),
                       clipBehavior: Clip.antiAlias,
@@ -1299,8 +1315,8 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                       padding: const EdgeInsets.all(16),
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: crossAxisCount,
-                        crossAxisSpacing: 16,
-                        mainAxisSpacing: 16,
+                        crossAxisSpacing: TSizes.v16,
+                        mainAxisSpacing: TSizes.v16,
                         childAspectRatio: ratio,
                       ),
                       itemCount: filteredDoctors.length,
@@ -1319,7 +1335,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
           Get.to(() => AddDoctorNewScreen());
         },
         backgroundColor: TColors.primary,
-        child: const Icon(Icons.add, color: Colors.white),
+        child: const Icon(Icons.add, color: TColors.white),
       ),
     );
   }
@@ -1337,12 +1353,13 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
       children: [
         Row(
           children: [
-            Icon(Icons.work_history_rounded, size: 16, color: Colors.grey[700]),
-            const SizedBox(width: 6),
+            Icon(Icons.work_history_rounded,
+                size: TSizes.v16, color: TColors.materialGrey700),
+            const SizedBox(width: TSizes.v6),
             Text(
               "${doctor.yearsOfExperience} Years Exp.",
               style: const TextStyle(
-                fontSize: 13,
+                fontSize: TSizes.v13,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -1352,15 +1369,15 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.grey[100],
+                  color: TColors.materialGrey100,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
                   doctor.gender!,
                   style: TextStyle(
-                    fontSize: 11,
+                    fontSize: TSizes.v11,
                     fontWeight: FontWeight.w600,
-                    color: Colors.grey[700],
+                    color: TColors.materialGrey700,
                   ),
                 ),
               ),
@@ -1370,7 +1387,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
         //  ONLY tablet needs spacing push
         if (isTablet) const Spacer(),
 
-        const SizedBox(height: 16),
+        const SizedBox(height: TSizes.v16),
 
         SizedBox(
           width: double.infinity,
@@ -1391,14 +1408,14 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
               ),
             ),
             child: const Text(
-              "View Profile",
+              TTexts.uiTextViewProfile,
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
           ),
         ),
 
         if (isValidMap) ...[
-          const SizedBox(height: 8),
+          const SizedBox(height: TSizes.v8),
           SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
@@ -1410,8 +1427,8 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                   ),
                 );
               },
-              icon: const Icon(Icons.map_outlined, size: 18),
-              label: const Text("Locate on Map"),
+              icon: const Icon(Icons.map_outlined, size: TSizes.v18),
+              label: const Text(TTexts.uiTextLocateOnMap),
               style: OutlinedButton.styleFrom(
                 side: BorderSide(color: themeColor.withOpacity(0.5)),
                 shape: RoundedRectangleBorder(
@@ -1435,7 +1452,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
       Container(
         padding: const EdgeInsets.all(24),
         decoration: const BoxDecoration(
-          color: Colors.white,
+          color: TColors.white,
           borderRadius: BorderRadius.vertical(
             top: Radius.circular(28),
           ),
@@ -1445,71 +1462,71 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                height: 90,
-                width: 90,
+                height: TSizes.v90,
+                width: TSizes.v90,
                 decoration: BoxDecoration(
-                  color: Colors.blue.shade50,
+                  color: TColors.materialBlue50,
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
                   Icons.location_searching,
-                  size: 50,
+                  size: TSizes.v50,
                   color: TColors.primary,
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: TSizes.v20),
               const Text(
-                "Create New Area",
+                TTexts.uiTextCreateNewArea,
                 style: TextStyle(
-                  fontSize: 24,
+                  fontSize: TSizes.v24,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: TSizes.v8),
               Text(
-                "Enter pincode and we'll automatically fetch all available areas and post offices.",
+                TTexts.uiTextEnterPincodeAndWeLlAutomaticallyFetchAll,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: Colors.grey.shade600,
-                  height: 1.4,
+                  color: TColors.materialGrey600,
+                  height: TSizes.v1_4,
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: TSizes.v20),
               Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: Colors.blue.shade50,
+                  color: TColors.materialBlue50,
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: const Row(
                   children: [
                     Icon(
                       Icons.info_outline,
-                      color: Colors.blue,
+                      color: TColors.materialBlue,
                     ),
-                    SizedBox(width: 10),
+                    SizedBox(width: TSizes.v10),
                     Expanded(
                       child: Text(
-                        "No need to enter Post Office manually. We will fetch it automatically.",
+                        TTexts.uiTextNoNeedToEnterPostOfficeManuallyWe,
                       ),
                     )
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: TSizes.v20),
               TextField(
                 controller: pinController,
                 keyboardType: TextInputType.number,
                 maxLength: 6,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
-                  fontSize: 24,
+                  fontSize: TSizes.v24,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 5,
                 ),
                 decoration: InputDecoration(
                   counterText: "",
-                  hintText: "201306",
+                  hintText: TTexts.uiText201306,
                   prefixIcon: const Icon(
                     Icons.pin_drop,
                   ),
@@ -1518,16 +1535,16 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: TSizes.v20),
               SizedBox(
                 width: double.infinity,
-                height: 55,
+                height: TSizes.v55,
                 child: ElevatedButton.icon(
                   icon: const Icon(Icons.search),
                   label: const Text(
-                    "Verify & Fetch Areas",
+                    TTexts.uiTextVerifyFetchAreas,
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: TSizes.v16,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -1537,7 +1554,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                     if (pin.length != 6) {
                       Get.snackbar(
                         "Invalid Pincode",
-                        "Please enter a valid 6 digit pincode",
+                        TTexts.uiTextPleaseEnterAValid6DigitPincode,
                       );
                       return;
                     }
@@ -1555,7 +1572,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                         data[0]['PostOffice'] == null) {
                       Get.snackbar(
                         "Error",
-                        "Invalid Pincode",
+                        TTexts.uiTextInvalidPincode,
                       );
                       return;
                     }
@@ -1591,12 +1608,12 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
           Row(
             children: [
               Icon(Icons.work_history_rounded,
-                  size: 16, color: Colors.grey[700]),
-              const SizedBox(width: 6),
+                  size: TSizes.v16, color: TColors.materialGrey700),
+              const SizedBox(width: TSizes.v6),
               Text(
                 "${doctor.yearsOfExperience} Years Exp.",
                 style: const TextStyle(
-                  fontSize: 13,
+                  fontSize: TSizes.v13,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -1606,15 +1623,15 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Colors.grey[100],
+                    color: TColors.materialGrey100,
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
                     doctor.gender!,
                     style: TextStyle(
-                      fontSize: 11,
+                      fontSize: TSizes.v11,
                       fontWeight: FontWeight.w600,
-                      color: Colors.grey[700],
+                      color: TColors.materialGrey700,
                     ),
                   ),
                 ),
@@ -1622,11 +1639,11 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
           ),
 
           // Fixed spacing
-          const SizedBox(height: 16),
+          const SizedBox(height: TSizes.v16),
 
           SizedBox(
             width: double.infinity,
-            height: 40,
+            height: TSizes.v40,
             child: ElevatedButton(
               onPressed: () {
                 Navigator.push(
@@ -1644,14 +1661,14 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                 ),
               ),
               child: const Text(
-                "View Profile",
+                TTexts.uiTextViewProfile,
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
           ),
 
           if (isValidMap) ...[
-            const SizedBox(height: 8),
+            const SizedBox(height: TSizes.v8),
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
@@ -1663,9 +1680,9 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                     ),
                   );
                 },
-                icon: const Icon(Icons.map_outlined, size: 18),
+                icon: const Icon(Icons.map_outlined, size: TSizes.v18),
                 label: const Text(
-                  "Locate on Map",
+                  TTexts.uiTextLocateOnMap,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -1697,7 +1714,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
           return Container(
             padding: const EdgeInsets.all(20),
             decoration: const BoxDecoration(
-              color: Colors.white,
+              color: TColors.white,
               borderRadius: BorderRadius.vertical(
                 top: Radius.circular(24),
               ),
@@ -1706,15 +1723,15 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 const Text(
-                  "Select Area",
+                  TTexts.uiTextSelectArea,
                   style: TextStyle(
-                    fontSize: 20,
+                    fontSize: TSizes.v20,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: TSizes.v20),
                 SizedBox(
-                  height: 300,
+                  height: TSizes.v300,
                   child: ListView.builder(
                     itemCount: offices.length,
                     itemBuilder: (_, index) {
@@ -1742,7 +1759,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                   width: double.infinity,
                   child: ElevatedButton(
                     child: const Text(
-                      "Continue",
+                      TTexts.uiTextContinue,
                     ),
                     onPressed: () {
                       Get.back();
@@ -1782,62 +1799,62 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
         child: Container(
           padding: const EdgeInsets.all(24),
           constraints: const BoxConstraints(
-            maxWidth: 500,
+            maxWidth: TSizes.v500,
           ),
           child: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  height: 90,
-                  width: 90,
+                  height: TSizes.v90,
+                  width: TSizes.v90,
                   decoration: BoxDecoration(
-                    color: Colors.green.shade50,
+                    color: TColors.materialGreen50,
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
                     Icons.location_city,
-                    color: Colors.green,
-                    size: 50,
+                    color: TColors.materialGreen,
+                    size: TSizes.v50,
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: TSizes.v20),
                 const Text(
-                  "Confirm New Area",
+                  TTexts.uiTextConfirmNewArea,
                   style: TextStyle(
-                    fontSize: 24,
+                    fontSize: TSizes.v24,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: TSizes.v8),
                 Text(
-                  "Review the detected area information before creating it.",
+                  TTexts.uiTextReviewTheDetectedAreaInformationBeforeCreatingIt,
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: Colors.grey.shade600,
+                    color: TColors.materialGrey600,
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: TSizes.v24),
                 TextField(
                   controller: areaController,
                   enabled: false,
                   decoration: InputDecoration(
-                    labelText: "Area Name",
+                    labelText: TTexts.uiTextAreaName,
                     prefixIcon: const Icon(Icons.edit_location_alt),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: TSizes.v20),
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade50,
+                    color: TColors.materialGrey50,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: Colors.grey.shade300,
+                      color: TColors.materialGrey300,
                     ),
                   ),
                   child: Column(
@@ -1874,18 +1891,18 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: TSizes.v24),
                 Row(
                   children: [
                     Expanded(
                       child: OutlinedButton(
                         onPressed: () => Get.back(),
                         child: const Text(
-                          "Cancel",
+                          TTexts.cancel,
                         ),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: TSizes.v12),
                     Expanded(
                       flex: 2,
                       child: ElevatedButton.icon(
@@ -1893,7 +1910,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                           Icons.check_circle,
                         ),
                         label: const Text(
-                          "Create Area",
+                          TTexts.uiTextCreateArea,
                         ),
                         onPressed: () async {
                           final createdAreaId =
@@ -1901,8 +1918,9 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                             name: areaController.text.trim(),
                             pincode: pincode,
                             postOffice: office['Name'],
-                                headOfficeId: doctor.headOffice
-                                    !.id! ?? doctor.headOffice?.id ?? '',
+                            headOfficeId: doctor.headOffice!.id! ??
+                                doctor.headOffice?.id ??
+                                '',
                           );
 
                           if (createdAreaId != null) {
@@ -1927,12 +1945,12 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
   }
 
   Widget _buildDoctorFilterCard(
-      DoctorListController controller,
-      BuildContext context,
-      ) {
+    DoctorListController controller,
+    BuildContext context,
+  ) {
     return Obx(
-          () => Card(
-        elevation: 1,
+      () => Card(
+        elevation: TSizes.v1,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(18),
         ),
@@ -1940,7 +1958,6 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-
               // HEADER
               InkWell(
                 borderRadius: BorderRadius.circular(12),
@@ -1953,20 +1970,20 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                       Icons.filter_alt_rounded,
                       color: TColors.primary,
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: TSizes.v10),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(
-                            "Doctors",
+                            TTexts.uiTextDoctors,
                             style: TextStyle(
-                              fontSize: 20,
+                              fontSize: TSizes.v20,
                               fontWeight: FontWeight.w700,
                               letterSpacing: .3,
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: TSizes.v8),
                           Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 12,
@@ -1985,24 +2002,24 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                                 const Icon(
                                   Icons.people_alt_rounded,
                                   color: TColors.primary,
-                                  size: 16,
+                                  size: TSizes.v16,
                                 ),
-                                const SizedBox(width: 6),
+                                const SizedBox(width: TSizes.v6),
                                 Text(
                                   "${controller.totalDoctors.value}",
                                   style: const TextStyle(
                                     color: TColors.primary,
                                     fontWeight: FontWeight.bold,
-                                    fontSize: 15,
+                                    fontSize: TSizes.v15,
                                   ),
                                 ),
-                                const SizedBox(width: 4),
+                                const SizedBox(width: TSizes.v4),
                                 const Text(
-                                  "Doctors",
+                                  TTexts.uiTextDoctors,
                                   style: TextStyle(
                                     color: TColors.primary,
                                     fontWeight: FontWeight.w600,
-                                    fontSize: 13,
+                                    fontSize: TSizes.v13,
                                   ),
                                 ),
                               ],
@@ -2021,17 +2038,15 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
               ),
 
               if (_showFilters.value) ...[
-                const SizedBox(height: 18),
-
+                const SizedBox(height: TSizes.v18),
                 Row(
                   children: [
-
                     // STATUS
                     Expanded(
                       child: DropdownButtonFormField<String>(
                         value: controller.selectedFilter.value,
                         decoration: InputDecoration(
-                          labelText: "Status",
+                          labelText: TTexts.uiTextStatus,
                           isDense: true,
                           prefixIcon: const Icon(Icons.people_outline),
                           border: OutlineInputBorder(
@@ -2041,15 +2056,15 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                         items: const [
                           DropdownMenuItem(
                             value: "all",
-                            child: Text("All"),
+                            child: Text(TTexts.uiTextAll),
                           ),
                           DropdownMenuItem(
                             value: "visited",
-                            child: Text("Visited"),
+                            child: Text(TTexts.uiTextVisited),
                           ),
                           DropdownMenuItem(
                             value: "unvisited",
-                            child: Text("Unvisited"),
+                            child: Text(TTexts.uiTextUnvisited),
                           ),
                         ],
                         onChanged: (v) {
@@ -2058,14 +2073,14 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                       ),
                     ),
 
-                    const SizedBox(width: 12),
+                    const SizedBox(width: TSizes.v12),
 
                     // PRIORITY
                     Expanded(
                       child: DropdownButtonFormField<String>(
                         value: controller.selectedPriorityFilter.value,
                         decoration: InputDecoration(
-                          labelText: "Priority",
+                          labelText: TTexts.uiTextPriority,
                           isDense: true,
                           prefixIcon: const Icon(Icons.flag_outlined),
                           border: OutlineInputBorder(
@@ -2075,19 +2090,19 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                         items: const [
                           DropdownMenuItem(
                             value: "all",
-                            child: Text("All"),
+                            child: Text(TTexts.uiTextAll),
                           ),
                           DropdownMenuItem(
                             value: "A",
-                            child: Text("A"),
+                            child: Text(TTexts.uiTextA),
                           ),
                           DropdownMenuItem(
                             value: "B",
-                            child: Text("B"),
+                            child: Text(TTexts.uiTextB),
                           ),
                           DropdownMenuItem(
                             value: "C",
-                            child: Text("C"),
+                            child: Text(TTexts.uiTextC),
                           ),
                         ],
                         onChanged: (v) {
@@ -2097,12 +2112,9 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                     ),
                   ],
                 ),
-
-                const SizedBox(height: 14),
-
+                const SizedBox(height: TSizes.v14),
                 Row(
                   children: [
-
                     Expanded(
                       child: OutlinedButton.icon(
                         icon: const Icon(Icons.calendar_month),
@@ -2125,9 +2137,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                         },
                       ),
                     ),
-
-                    const SizedBox(width: 10),
-
+                    const SizedBox(width: TSizes.v10),
                     Expanded(
                       child: OutlinedButton.icon(
                         icon: const Icon(Icons.calendar_month),
@@ -2152,29 +2162,24 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                     ),
                   ],
                 ),
-
-                const SizedBox(height: 18),
-
+                const SizedBox(height: TSizes.v18),
                 Row(
                   children: [
-
                     Expanded(
                       child: OutlinedButton.icon(
                         icon: const Icon(Icons.refresh),
-                        label: const Text("Reset"),
+                        label: const Text(TTexts.uiTextReset),
                         onPressed: () {
                           controller.resetFilters();
                           _showFilters.value = false;
                         },
                       ),
                     ),
-
-                    const SizedBox(width: 12),
-
+                    const SizedBox(width: TSizes.v12),
                     Expanded(
                       child: ElevatedButton.icon(
                         icon: const Icon(Icons.search),
-                        label: const Text("Apply"),
+                        label: const Text(TTexts.uiTextApply),
                         onPressed: () async {
                           await controller.applyFilter();
                           _showFilters.value = false;
@@ -2200,10 +2205,10 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
       children: [
         Icon(
           icon,
-          size: 18,
+          size: TSizes.v18,
           color: TColors.primary,
         ),
-        const SizedBox(width: 10),
+        const SizedBox(width: TSizes.v10),
         Expanded(
           child: Text(
             title,
@@ -2238,7 +2243,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
             height: Get.height * .80,
             padding: const EdgeInsets.all(16),
             decoration: const BoxDecoration(
-              color: Colors.white,
+              color: TColors.white,
               borderRadius: BorderRadius.vertical(
                 top: Radius.circular(24),
               ),
@@ -2246,17 +2251,17 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
             child: Column(
               children: [
                 const Text(
-                  "Assign Area",
+                  TTexts.uiTextAssignArea,
                   style: TextStyle(
-                    fontSize: 22,
+                    fontSize: TSizes.v22,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: TSizes.v16),
                 TextField(
                   controller: searchController,
                   decoration: InputDecoration(
-                    hintText: "Search Area",
+                    hintText: TTexts.uiTextSearchArea,
                     prefixIcon: const Icon(
                       Icons.search,
                     ),
@@ -2281,7 +2286,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                     });
                   },
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: TSizes.v16),
                 Expanded(
                   child: ListView.builder(
                     itemCount: filteredAreas.length,
@@ -2317,7 +2322,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                       Icons.add,
                     ),
                     label: const Text(
-                      "Create New Area",
+                      TTexts.uiTextCreateNewArea,
                     ),
                     onPressed: () {
                       Get.back();
@@ -2338,11 +2343,11 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
   }
 
   Widget _filterChip(
-      DoctorListController controller,
-      String value,
-      String title,
-      IconData icon,
-      ) {
+    DoctorListController controller,
+    String value,
+    String title,
+    IconData icon,
+  ) {
     final selected = controller.selectedFilter.value == value;
 
     return InkWell(
@@ -2355,14 +2360,10 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
           vertical: 12,
         ),
         decoration: BoxDecoration(
-          color: selected
-              ? TColors.primary
-              : Colors.grey.shade100,
+          color: selected ? TColors.primary : TColors.materialGrey100,
           borderRadius: BorderRadius.circular(30),
           border: Border.all(
-            color: selected
-                ? TColors.primary
-                : Colors.grey.shade300,
+            color: selected ? TColors.primary : TColors.materialGrey300,
           ),
         ),
         child: Row(
@@ -2370,19 +2371,15 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
           children: [
             Icon(
               icon,
-              size: 18,
-              color: selected
-                  ? Colors.white
-                  : Colors.grey.shade700,
+              size: TSizes.v18,
+              color: selected ? TColors.white : TColors.materialGrey700,
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: TSizes.v8),
             Text(
               title,
               style: TextStyle(
                 fontWeight: FontWeight.w600,
-                color: selected
-                    ? Colors.white
-                    : Colors.black87,
+                color: selected ? TColors.white : TColors.black87,
               ),
             ),
           ],
@@ -2392,20 +2389,20 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
   }
 
   Widget _priorityChip(
-      DoctorListController controller,
-      String value,
-      String title,
-      ) {
+    DoctorListController controller,
+    String value,
+    String title,
+  ) {
     final selected = controller.selectedPriority.value == value;
 
     Color chipColor = TColors.primary;
 
     if (value == "A") {
-      chipColor = Colors.red;
+      chipColor = TColors.materialRed;
     } else if (value == "B") {
-      chipColor = Colors.orange;
+      chipColor = TColors.materialOrange;
     } else if (value == "C") {
-      chipColor = Colors.blueGrey;
+      chipColor = TColors.materialBlueGrey;
     }
 
     return InkWell(
@@ -2418,17 +2415,17 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
           vertical: 12,
         ),
         decoration: BoxDecoration(
-          color: selected ? chipColor : Colors.grey.shade100,
+          color: selected ? chipColor : TColors.materialGrey100,
           borderRadius: BorderRadius.circular(30),
           border: Border.all(
-            color: selected ? chipColor : Colors.grey.shade300,
+            color: selected ? chipColor : TColors.materialGrey300,
           ),
         ),
         child: Text(
           title,
           style: TextStyle(
             fontWeight: FontWeight.w600,
-            color: selected ? Colors.white : Colors.black87,
+            color: selected ? TColors.white : TColors.black87,
           ),
         ),
       ),

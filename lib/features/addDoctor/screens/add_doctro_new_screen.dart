@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../utils/helpers/upper_text_formator.dart';
 import '../controllers/add_doctor_new_controller.dart';
-import '../../../utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class AddDoctorNewScreen extends StatelessWidget {
   const AddDoctorNewScreen({Key? key}) : super(key: key);
@@ -17,7 +19,7 @@ class AddDoctorNewScreen extends StatelessWidget {
     final BuildContext pageContext = context;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6F9),
+      backgroundColor: TColors.hex_FFF4F6F9,
       body: CustomScrollView(
         slivers: [
           // 1. APP BAR
@@ -26,33 +28,33 @@ class AddDoctorNewScreen extends StatelessWidget {
             floating: false,
             pinned: true,
             backgroundColor: TColors.primary,
-            elevation: 0,
+            elevation: TSizes.v0,
             leading: IconButton(
               icon: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.3),
+                  color: TColors.pureBlack.withOpacity(0.3),
                   shape: BoxShape.circle,
                 ),
-                child:
-                    const Icon(Icons.arrow_back, color: Colors.white, size: 20),
+                child: const Icon(Icons.arrow_back,
+                    color: TColors.white, size: TSizes.v20),
               ),
               onPressed: () => Get.back(),
             ),
             flexibleSpace: FlexibleSpaceBar(
               centerTitle: true,
               title: const Text(
-                "Add New Doctor",
+                TTexts.uiTextAddNewDoctor,
                 style: TextStyle(
-                  color: Colors.white,
+                  color: TColors.white,
                   fontWeight: FontWeight.bold,
-                  fontSize: 16,
+                  fontSize: TSizes.v16,
                   letterSpacing: 0.5,
                   shadows: [
                     Shadow(
                         offset: Offset(0, 1),
-                        blurRadius: 3.0,
-                        color: Colors.black45)
+                        blurRadius: TSizes.v3,
+                        color: TColors.black45)
                   ],
                 ),
               ),
@@ -72,8 +74,8 @@ class AddDoctorNewScreen extends StatelessWidget {
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [
-                          Colors.black.withOpacity(0.3),
-                          Colors.transparent,
+                          TColors.pureBlack.withOpacity(0.3),
+                          TColors.transparent,
                           TColors.primary.withOpacity(0.9),
                         ],
                         stops: const [0.0, 0.4, 1.0],
@@ -139,117 +141,123 @@ class AddDoctorNewScreen extends StatelessWidget {
                               // 01 Basic Info
                               _buildSectionHeader(
                                   number: "01",
-                                  title: "Basic Information",
-                                  subtitle: "Personal Details"),
-                              const SizedBox(height: 15),
+                                  title: TTexts.uiTextBasicInformation,
+                                  subtitle: TTexts.uiTextPersonalDetails),
+                              const SizedBox(height: TSizes.v15),
                               _buildBasicInfoCard(controller, context),
-                              const SizedBox(height: 30),
+                              const SizedBox(height: TSizes.v30),
 
                               // 02 Professional Info
                               _buildSectionHeader(
                                   number: "02",
-                                  title: "Professional",
-                                  subtitle: "Work Details"),
-                              const SizedBox(height: 15),
+                                  title: TTexts.uiTextProfessional,
+                                  subtitle: TTexts.uiTextWorkDetails),
+                              const SizedBox(height: TSizes.v15),
                               _buildProfessionalInfoCard(context, controller),
-                              const SizedBox(height: 30),
+                              const SizedBox(height: TSizes.v30),
 
                               // 03 Contact Info
                               _buildSectionHeader(
                                   number: "03",
-                                  title: "Contact Info",
-                                  subtitle: "Optional"),
-                              const SizedBox(height: 15),
+                                  title: TTexts.uiTextContactInfo,
+                                  subtitle: TTexts.uiTextOptional),
+                              const SizedBox(height: TSizes.v15),
                               _buildContactInfoCard(controller),
-                              const SizedBox(height: 30),
+                              const SizedBox(height: TSizes.v30),
 
                               // 04 Address Details
                               _buildSectionHeader(
                                   number: "04",
-                                  title: "Address Details",
-                                  subtitle: "Location (Auto)"),
-                              const SizedBox(height: 15),
+                                  title: TTexts.uiTextAddressDetails,
+                                  subtitle: TTexts.uiTextLocationAuto),
+                              const SizedBox(height: TSizes.v15),
                               _buildAddressFieldsCard(controller),
 
-                              const SizedBox(height: 30),
+                              const SizedBox(height: TSizes.v30),
 
 // 05 Area Assignment
                               // 05 Area Assignment
                               _buildSectionHeader(
                                 number: "05",
-                                title: "Area Assignment",
-                                subtitle: "Auto Assigned",
+                                title: TTexts.uiTextAreaAssignment,
+                                subtitle: TTexts.uiTextAutoAssigned,
                               ),
-                              const SizedBox(height: 15),
+                              const SizedBox(height: TSizes.v15),
 
                               Obx(() {
                                 final area = controller.areas.firstWhereOrNull(
-                                      (e) => e['id'] == controller.selectedAreaId.value,
+                                  (e) =>
+                                      e['id'] ==
+                                      controller.selectedAreaId.value,
                                 );
 
                                 return Container(
                                   width: double.infinity,
                                   padding: const EdgeInsets.all(16),
                                   decoration: BoxDecoration(
-                                    color: Colors.green.shade50,
+                                    color: TColors.materialGreen50,
                                     borderRadius: BorderRadius.circular(12),
                                     border: Border.all(
-                                      color: Colors.green.shade300,
+                                      color: TColors.materialGreen300,
                                     ),
                                   ),
                                   child: Row(
                                     children: [
                                       const Icon(
                                         Icons.location_city,
-                                        color: Colors.green,
+                                        color: TColors.materialGreen,
                                       ),
-                                      const SizedBox(width: 12),
+                                      const SizedBox(width: TSizes.v12),
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             const Text(
-                                              "Assigned Area",
+                                              TTexts.uiTextAssignedArea,
                                               style: TextStyle(
-                                                fontSize: 11,
-                                                color: Colors.grey,
+                                                fontSize: TSizes.v11,
+                                                color: TColors.materialGrey,
                                               ),
                                             ),
-                                            const SizedBox(height: 4),
+                                            const SizedBox(height: TSizes.v4),
                                             Text(
-                                              area?['name'] ?? "Detecting area...",
+                                              area?['name'] ??
+                                                  "Detecting area...",
                                               style: const TextStyle(
                                                 fontWeight: FontWeight.bold,
-                                                fontSize: 15,
+                                                fontSize: TSizes.v15,
                                               ),
                                             ),
                                           ],
                                         ),
                                       ),
-                                      if (controller.selectedAreaId.value != null)
+                                      if (controller.selectedAreaId.value !=
+                                          null)
                                         const Icon(
                                           Icons.check_circle,
-                                          color: Colors.green,
+                                          color: TColors.materialGreen,
                                         )
                                       else
                                         const SizedBox(
-                                          height: 18,
-                                          width: 18,
-                                          child: CircularProgressIndicator(strokeWidth: 2),
+                                          height: TSizes.v18,
+                                          width: TSizes.v18,
+                                          child: CircularProgressIndicator(
+                                              strokeWidth: TSizes.v2),
                                         ),
                                     ],
                                   ),
                                 );
                               }),
 
-                              const SizedBox(height: 40),
+                              const SizedBox(height: TSizes.v40),
 
-                             /* _buildAreaSelector(
+                              /* _buildAreaSelector(
                                 context,
                                 controller,
                               ),*/
 
-                           //   const SizedBox(height: 40),
+                              //   const SizedBox(height: 40),
 
                               // Submit Button
                               Center(
@@ -260,7 +268,7 @@ class AddDoctorNewScreen extends StatelessWidget {
                                       _buildSubmitButton(controller, context),
                                 ),
                               ),
-                              const SizedBox(height: 50),
+                              const SizedBox(height: TSizes.v50),
                             ],
                           ),
                         ),
@@ -284,10 +292,13 @@ class AddDoctorNewScreen extends StatelessWidget {
       BuildContext context, AddDoctorNewController controller) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: TColors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: const [
-          BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 4))
+          BoxShadow(
+              color: TColors.black12,
+              blurRadius: TSizes.v8,
+              offset: Offset(0, 4))
         ],
       ),
       child: ClipRRect(
@@ -299,9 +310,10 @@ class AddDoctorNewScreen extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const CircularProgressIndicator(color: TColors.primary),
-                  const SizedBox(height: 8),
-                  Text("Processing...",
-                      style: TextStyle(fontSize: 10, color: Colors.grey[600]))
+                  const SizedBox(height: TSizes.v8),
+                  Text(TTexts.uiTextProcessing_272bc02e,
+                      style: TextStyle(
+                          fontSize: TSizes.v10, color: TColors.materialGrey600))
                 ],
               ),
             );
@@ -311,14 +323,14 @@ class AddDoctorNewScreen extends StatelessWidget {
             return Stack(
               fit: StackFit.expand,
               children: [
-                Container(color: Colors.black),
+                Container(color: TColors.pureBlack),
                 Image.file(img, fit: BoxFit.contain),
                 Center(
                   child: Container(
                     padding:
                         const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.4),
+                      color: TColors.pureBlack.withOpacity(0.4),
                       borderRadius: BorderRadius.circular(30),
                     ),
                     child: Row(
@@ -329,13 +341,13 @@ class AddDoctorNewScreen extends StatelessWidget {
                           child: Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.9),
+                                color: TColors.white.withOpacity(0.9),
                                 shape: BoxShape.circle),
                             child: const Icon(Icons.visibility,
-                                color: TColors.primary, size: 20),
+                                color: TColors.primary, size: TSizes.v20),
                           ),
                         ),
-                        const SizedBox(width: 15),
+                        const SizedBox(width: TSizes.v15),
                         GestureDetector(
                           onTap: controller.captureImage,
                           child: Container(
@@ -344,7 +356,7 @@ class AddDoctorNewScreen extends StatelessWidget {
                                 color: TColors.primary.withOpacity(0.9),
                                 shape: BoxShape.circle),
                             child: const Icon(Icons.refresh,
-                                color: Colors.white, size: 20),
+                                color: TColors.white, size: TSizes.v20),
                           ),
                         ),
                       ],
@@ -361,13 +373,13 @@ class AddDoctorNewScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(Icons.add_a_photo,
-                      size: 36, color: TColors.primary),
-                  const SizedBox(height: 8),
-                  Text("Capture\nPhoto *",
+                      size: TSizes.v36, color: TColors.primary),
+                  const SizedBox(height: TSizes.v8),
+                  Text(TTexts.uiTextCapturePhoto,
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 13,
+                          color: TColors.pureBlack,
+                          fontSize: TSizes.v13,
                           fontWeight: FontWeight.bold)),
                 ],
               ),
@@ -382,7 +394,7 @@ class AddDoctorNewScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (_) => Dialog(
-        backgroundColor: Colors.transparent,
+        backgroundColor: TColors.transparent,
         insetPadding: const EdgeInsets.all(10),
         child: Stack(
           alignment: Alignment.topRight,
@@ -403,8 +415,9 @@ class AddDoctorNewScreen extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: const BoxDecoration(
-                      color: Colors.black54, shape: BoxShape.circle),
-                  child: const Icon(Icons.close, color: Colors.white, size: 20),
+                      color: TColors.black54, shape: BoxShape.circle),
+                  child: const Icon(Icons.close,
+                      color: TColors.white, size: TSizes.v20),
                 ),
               ),
             ),
@@ -419,11 +432,13 @@ class AddDoctorNewScreen extends StatelessWidget {
       onTap: controller.pickLocationOnMap,
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: TColors.white,
           borderRadius: BorderRadius.circular(16),
           boxShadow: const [
             BoxShadow(
-                color: Colors.black12, blurRadius: 8, offset: Offset(0, 4))
+                color: TColors.black12,
+                blurRadius: TSizes.v8,
+                offset: Offset(0, 4))
           ],
           border: Border.all(color: TColors.primary.withOpacity(0.1)),
         ),
@@ -432,30 +447,29 @@ class AddDoctorNewScreen extends StatelessWidget {
           children: [
             Container(
               padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                  color: TColors.primary,
-                  shape: BoxShape.circle),
+              decoration:
+                  BoxDecoration(color: TColors.primary, shape: BoxShape.circle),
               child: const Icon(Icons.location_on,
-                  color: TColors.white, size: 28),
+                  color: TColors.white, size: TSizes.v28),
             ),
-            const SizedBox(height: 10),
-            const Text("Set Doctor\nLocation *",
+            const SizedBox(height: TSizes.v10),
+            const Text(TTexts.uiTextSetDoctorLocation,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                    color: Colors.black87,
+                    color: TColors.black87,
                     fontWeight: FontWeight.bold,
-                    fontSize: 13)),
-            const SizedBox(height: 5),
+                    fontSize: TSizes.v13)),
+            const SizedBox(height: TSizes.v5),
             Obx(() => Text(
                   controller.isLocationSet.value
                       ? " Coordinates Set"
                       : "(Tap to Open Map)",
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 10,
+                    fontSize: TSizes.v10,
                     color: controller.isLocationSet.value
-                        ? Colors.green
-                        : Colors.grey[500],
+                        ? TColors.materialGreen
+                        : TColors.materialGrey500,
                     fontWeight: FontWeight.w500,
                   ),
                 )),
@@ -481,26 +495,29 @@ class AddDoctorNewScreen extends StatelessWidget {
               style: const TextStyle(
                   color: TColors.primary,
                   fontWeight: FontWeight.w800,
-                  fontSize: 14)),
+                  fontSize: TSizes.v14)),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: TSizes.v12),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(title,
                 style: const TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: 15,
-                    color: Colors.black87)),
+                    fontSize: TSizes.v15,
+                    color: TColors.black87)),
             Text(subtitle,
                 style: TextStyle(
                     fontWeight: FontWeight.w500,
-                    fontSize: 11,
-                    color: Colors.grey[500])),
+                    fontSize: TSizes.v11,
+                    color: TColors.materialGrey500)),
           ],
         ),
         const Spacer(),
-        Container(height: 1, width: 40, color: Colors.grey[300]),
+        Container(
+            height: TSizes.v1,
+            width: TSizes.v40,
+            color: TColors.materialGrey300),
       ],
     );
   }
@@ -513,93 +530,85 @@ class AddDoctorNewScreen extends StatelessWidget {
         children: [
           _ModernTextField(
             controller: controller.nameController,
-            label: "Full Name",
+            label: TTexts.uiTextFullName,
             hint: "John Doe",
             icon: Icons.person_outline_rounded,
             isRequired: true,
-            prefixText: "DR.",
+            prefixText: TTexts.uiTextDR,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: TSizes.v16),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey.shade200),
+              border: Border.all(color: TColors.materialGrey200),
               borderRadius: BorderRadius.circular(12),
-              color: const Color(0xFFFAFAFA),
+              color: TColors.hex_FFFAFAFA,
             ),
             child: Row(
               children: [
                 Icon(Icons.people_outline_rounded,
-                    color: Colors.grey[600], size: 20),
-                const SizedBox(width: 12),
+                    color: TColors.materialGrey600, size: TSizes.v20),
+                const SizedBox(width: TSizes.v12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-
                       const Row(
                         children: [
                           Text(
-                            "Gender",
+                            TTexts.gender,
                             style: TextStyle(
-                              fontSize: 13,
+                              fontSize: TSizes.v13,
                               fontWeight: FontWeight.w600,
-                              color: Color(0xFF636E72),
+                              color: TColors.hex_FF636E72,
                             ),
                           ),
                           Text(
-                            " *",
+                            TTexts.uiTextValue,
                             style: TextStyle(
-                              color: Colors.red,
+                              color: TColors.materialRed,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                         ],
                       ),
-
-                      const SizedBox(height: 10),
-
+                      const SizedBox(height: TSizes.v10),
                       Obx(
-                            () => Row(
+                        () => Row(
                           children: [
-
                             Expanded(
                               child: _genderButton(
-                                title: "Male",
+                                title: TTexts.uiTextMale,
                                 icon: Icons.male,
-                                color: Colors.blue,
+                                color: TColors.materialBlue,
                                 selected:
-                                controller.selectedGender.value == "Male",
+                                    controller.selectedGender.value == "Male",
                                 onTap: () =>
-                                controller.selectedGender.value = "Male",
+                                    controller.selectedGender.value = "Male",
                               ),
                             ),
-
-                            const SizedBox(width: 10),
-
+                            const SizedBox(width: TSizes.v10),
                             Expanded(
                               child: _genderButton(
-                                title: "Female",
+                                title: TTexts.uiTextFemale,
                                 icon: Icons.female,
-                                color: Colors.pink,
+                                color: TColors.materialPink,
                                 selected:
-                                controller.selectedGender.value == "Female",
+                                    controller.selectedGender.value == "Female",
                                 onTap: () =>
-                                controller.selectedGender.value = "Female",
+                                    controller.selectedGender.value = "Female",
                               ),
                             ),
-
-                            const SizedBox(width: 10),
-
+                            const SizedBox(width: TSizes.v10),
                             Expanded(
                               child: _genderButton(
-                                title: "Other",
+                                title: TTexts.uiTextOther,
                                 icon: Icons.transgender,
-                                color: Colors.deepPurple,
+                                color: TColors.materialDeepPurple,
                                 selected:
-                                controller.selectedGender.value == "Other",
+                                    controller.selectedGender.value == "Other",
                                 onTap: () =>
-                                controller.selectedGender.value = "Other",
+                                    controller.selectedGender.value = "Other",
                               ),
                             ),
                           ],
@@ -611,24 +620,24 @@ class AddDoctorNewScreen extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: TSizes.v16),
           Row(
             children: [
               Expanded(
                 child: _ModernTextField(
                   controller: controller.dobController,
-                  label: "Date of Birth",
+                  label: TTexts.dob,
                   icon: Icons.cake_outlined,
                   isReadOnly: true,
                   onTap: () => controller.selectDate(context, false),
                   isRequired: false, // OPTIONAL
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: TSizes.v12),
               Expanded(
                 child: _ModernTextField(
                   controller: controller.anniversaryController,
-                  label: "Anniversary",
+                  label: TTexts.anniversary,
                   icon: Icons.celebration_outlined,
                   isReadOnly: true,
                   onTap: () => controller.selectDate(context, true),
@@ -650,36 +659,36 @@ class AddDoctorNewScreen extends StatelessWidget {
         children: [
           _ModernTextField(
             controller: controller.specializationController,
-            label: "Specialization",
+            label: TTexts.specialization,
             hint: "e.g. Cardiologist",
             icon: Icons.medical_services_outlined,
             isRequired: true,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: TSizes.v16),
           Row(
             children: [
               Expanded(
                 flex: 2,
                 child: _ModernTextField(
                   controller: controller.registrationController,
-                  label: "Reg. Number",
+                  label: TTexts.uiTextRegNumber,
                   icon: Icons.verified_user_outlined,
                   isRequired: false,
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: TSizes.v12),
               Expanded(
                 flex: 1,
                 child: _ModernTextField(
                   controller: controller.experienceController,
-                  label: "Exp (Yrs)",
+                  label: TTexts.uiTextExpYrs,
                   isNumber: true,
                   isRequired: true, // OPTIONAL
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: TSizes.v16),
 
           // --- HEAD OFFICE DROPDOWN (REQUIRED) ---
           Obx(() {
@@ -688,10 +697,10 @@ class AddDoctorNewScreen extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
                   child: SizedBox(
-                    height: 20,
-                    width: 20,
+                    height: TSizes.v20,
+                    width: TSizes.v20,
                     child: CircularProgressIndicator(
-                        strokeWidth: 2, color: TColors.primary),
+                        strokeWidth: TSizes.v2, color: TColors.primary),
                   ),
                 ),
               );
@@ -700,13 +709,13 @@ class AddDoctorNewScreen extends StatelessWidget {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text("Select Head Office *",
+                const Text(TTexts.uiTextSelectHeadOffice_ceb9cd5f,
                     style: TextStyle(
-                        fontSize: 13,
+                        fontSize: TSizes.v13,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF636E72))),
-                const SizedBox(height: 8),
-                const SizedBox(height: 8),
+                        color: TColors.hex_FF636E72)),
+                const SizedBox(height: TSizes.v8),
+                const SizedBox(height: TSizes.v8),
 
                 if (controller.headOffices.length == 1) ...[
                   Builder(
@@ -739,24 +748,24 @@ class AddDoctorNewScreen extends StatelessWidget {
                               Icons.domain,
                               color: TColors.primary,
                             ),
-                            const SizedBox(width: 12),
+                            const SizedBox(width: TSizes.v12),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   const Text(
-                                    "Assigned Head Office",
+                                    TTexts.uiTextAssignedHeadOffice,
                                     style: TextStyle(
-                                      fontSize: 11,
-                                      color: Colors.grey,
+                                      fontSize: TSizes.v11,
+                                      color: TColors.materialGrey,
                                     ),
                                   ),
-                                  const SizedBox(height: 2),
+                                  const SizedBox(height: TSizes.v2),
                                   Text(
                                     office['name'] ?? '',
                                     style: const TextStyle(
                                       fontWeight: FontWeight.w700,
-                                      fontSize: 15,
+                                      fontSize: TSizes.v15,
                                     ),
                                   ),
                                 ],
@@ -764,7 +773,7 @@ class AddDoctorNewScreen extends StatelessWidget {
                             ),
                             const Icon(
                               Icons.check_circle,
-                              color: Colors.green,
+                              color: TColors.materialGreen,
                             ),
                           ],
                         ),
@@ -776,26 +785,26 @@ class AddDoctorNewScreen extends StatelessWidget {
                     value: controller.selectedHeadOfficeId.value,
                     isExpanded: true,
                     hint: Text(
-                      "Select Head Office",
+                      TTexts.uiTextSelectHeadOffice,
                       style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[400],
+                        fontSize: TSizes.v14,
+                        color: TColors.materialGrey400,
                       ),
                     ),
                     icon: const Icon(Icons.keyboard_arrow_down_rounded),
                     style: const TextStyle(
-                      fontSize: 14,
+                      fontSize: TSizes.v14,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF2D3436),
+                      color: TColors.hex_FF2D3436,
                     ),
                     decoration: InputDecoration(
                       prefixIcon: Icon(
                         Icons.domain,
                         color: TColors.primary.withOpacity(0.8),
-                        size: 18,
+                        size: TSizes.v18,
                       ),
                       filled: true,
-                      fillColor: const Color(0xFFFAFAFA),
+                      fillColor: TColors.hex_FFFAFAFA,
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 16,
                         vertical: 14,
@@ -803,20 +812,20 @@ class AddDoctorNewScreen extends StatelessWidget {
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide(
-                          color: Colors.grey.shade200,
+                          color: TColors.materialGrey200,
                         ),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide(
-                          color: Colors.grey.shade200,
+                          color: TColors.materialGrey200,
                         ),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: const BorderSide(
                           color: TColors.primary,
-                          width: 1.5,
+                          width: TSizes.v1_5,
                         ),
                       ),
                     ),
@@ -833,17 +842,16 @@ class AddDoctorNewScreen extends StatelessWidget {
                   ),
                 ],
 
-                const SizedBox(height: 16),
+                const SizedBox(height: TSizes.v16),
 
                 // --- PRIORITY DROPDOWN
 
                 // --- AREA DROPDOWN (REQUIRED) ---
-
               ],
             );
           }),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: TSizes.v16),
 
           // --- PRIORITY DROPDOWN (Optional) ---
           Column(
@@ -852,60 +860,53 @@ class AddDoctorNewScreen extends StatelessWidget {
               const Row(
                 children: [
                   Text(
-                    "Priority",
+                    TTexts.uiTextPriority,
                     style: TextStyle(
-                      fontSize: 13,
+                      fontSize: TSizes.v13,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF636E72),
+                      color: TColors.hex_FF636E72,
                     ),
                   ),
                   Text(
-                    " *",
+                    TTexts.uiTextValue,
                     style: TextStyle(
-                      color: Colors.red,
+                      color: TColors.materialRed,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
-
+              const SizedBox(height: TSizes.v10),
               Obx(
-                    () => Row(
+                () => Row(
                   children: [
                     Expanded(
                       child: _priorityButton(
-                        label: "A",
-                        title: "High",
-                        color:Color(0xFF2E7D32),
-                        selected:
-                        controller.selectedPriority.value == "A",
-                        onTap: () =>
-                        controller.selectedPriority.value = "A",
+                        label: TTexts.uiTextA,
+                        title: TTexts.uiTextHigh,
+                        color: TColors.hex_FF2E7D32,
+                        selected: controller.selectedPriority.value == "A",
+                        onTap: () => controller.selectedPriority.value = "A",
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: TSizes.v10),
                     Expanded(
                       child: _priorityButton(
-                        label: "B",
-                        title: "Medium",
-                        color: Colors.orange,
-                        selected:
-                        controller.selectedPriority.value == "B",
-                        onTap: () =>
-                        controller.selectedPriority.value = "B",
+                        label: TTexts.uiTextB,
+                        title: TTexts.uiTextMedium,
+                        color: TColors.materialOrange,
+                        selected: controller.selectedPriority.value == "B",
+                        onTap: () => controller.selectedPriority.value = "B",
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: TSizes.v10),
                     Expanded(
                       child: _priorityButton(
-                        label: "C",
-                        title: "Low",
-                        color: Colors.blue,
-                        selected:
-                        controller.selectedPriority.value == "C",
-                        onTap: () =>
-                        controller.selectedPriority.value = "C",
+                        label: TTexts.uiTextC,
+                        title: TTexts.uiTextLow,
+                        color: TColors.materialBlue,
+                        selected: controller.selectedPriority.value == "C",
+                        onTap: () => controller.selectedPriority.value = "C",
                       ),
                     ),
                   ],
@@ -938,10 +939,10 @@ class AddDoctorNewScreen extends StatelessWidget {
           return Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: const Color(0xFFFAFAFA),
+              color: TColors.hex_FFFAFAFA,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: Colors.grey.shade200,
+                color: TColors.materialGrey200,
               ),
             ),
             child: Column(
@@ -950,7 +951,7 @@ class AddDoctorNewScreen extends StatelessWidget {
                   children: [
                     const Expanded(
                       child: Text(
-                        "Area *",
+                        TTexts.uiTextArea_8862bb63,
                         style: TextStyle(
                           fontWeight: FontWeight.w600,
                         ),
@@ -967,11 +968,11 @@ class AddDoctorNewScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: TSizes.v8),
                 TextField(
                   controller: searchController,
                   decoration: const InputDecoration(
-                    hintText: "Search Area",
+                    hintText: TTexts.uiTextSearchArea,
                     prefixIcon: Icon(Icons.search),
                   ),
                   onChanged: (_) {
@@ -984,17 +985,17 @@ class AddDoctorNewScreen extends StatelessWidget {
                     margin: const EdgeInsets.only(bottom: 12),
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.green.shade50,
+                      color: TColors.materialGreen50,
                       borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: Colors.green.shade300),
+                      border: Border.all(color: TColors.materialGreen300),
                     ),
                     child: Row(
                       children: [
                         const Icon(
                           Icons.check_circle,
-                          color: Colors.green,
+                          color: TColors.materialGreen,
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: TSizes.v8),
                         Expanded(
                           child: Text(
                             filtered.firstWhereOrNull(
@@ -1011,71 +1012,71 @@ class AddDoctorNewScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-                const SizedBox(height: 12),
+                const SizedBox(height: TSizes.v12),
                 SizedBox(
-                  height: 220,
+                  height: TSizes.v220,
                   child: controller.isLoadingAreas.value
                       ? const Center(
-                    child: CircularProgressIndicator(),
-                  )
-                      : filtered.isEmpty
-                      ? ListView(
-                    children: [
-                      ListTile(
-                        leading: const Icon(
-                          Icons.add_circle,
-                          color: Colors.green,
-                        ),
-                        title: Text(
-                          'Create "${searchController.text.trim()}"',
-                        ),
-                        subtitle: const Text(
-                          'Area not found',
-                        ),
-                        onTap: () {
-                          _showAddAreaDialog(
-                            context,
-                            controller,
-                            prefilledAreaName: searchController.text.trim(),
-                          );
-                        },
-                      ),
-                    ],
-                  )
-                      : ListView.builder(
-                    itemCount: filtered.length,
-                    itemBuilder: (_, index) {
-                      final area = filtered[index];
-
-                      final selected =
-                          controller.selectedAreaId.value ==
-                              area['id'];
-
-                      return ListTile(
-                        selected: selected,
-                        tileColor: selected
-                            ? TColors.primary.withOpacity(0.10)
-                            : Colors.transparent,
-                        shape: RoundedRectangleBorder(
-                          borderRadius:
-                          BorderRadius.circular(10),
-                        ),
-                        title: Text(
-                          area['name'],
-                        ),
-                        trailing: selected
-                            ? const Icon(
-                          Icons.check_circle,
-                          color: Colors.green,
+                          child: CircularProgressIndicator(),
                         )
-                            : null,
-                        onTap: () {
-                          controller.selectedAreaId.value =
-                          area['id'];
-                        },
-                      );
-                    },
-                  ),
+                      : filtered.isEmpty
+                          ? ListView(
+                              children: [
+                                ListTile(
+                                  leading: const Icon(
+                                    Icons.add_circle,
+                                    color: TColors.materialGreen,
+                                  ),
+                                  title: Text(
+                                    'Create "${searchController.text.trim()}"',
+                                  ),
+                                  subtitle: const Text(
+                                    TTexts.uiTextAreaNotFound,
+                                  ),
+                                  onTap: () {
+                                    _showAddAreaDialog(
+                                      context,
+                                      controller,
+                                      prefilledAreaName:
+                                          searchController.text.trim(),
+                                    );
+                                  },
+                                ),
+                              ],
+                            )
+                          : ListView.builder(
+                              itemCount: filtered.length,
+                              itemBuilder: (_, index) {
+                                final area = filtered[index];
+
+                                final selected =
+                                    controller.selectedAreaId.value ==
+                                        area['id'];
+
+                                return ListTile(
+                                  selected: selected,
+                                  tileColor: selected
+                                      ? TColors.primary.withOpacity(0.10)
+                                      : TColors.transparent,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  title: Text(
+                                    area['name'],
+                                  ),
+                                  trailing: selected
+                                      ? const Icon(
+                                          Icons.check_circle,
+                                          color: TColors.materialGreen,
+                                        )
+                                      : null,
+                                  onTap: () {
+                                    controller.selectedAreaId.value =
+                                        area['id'];
+                                  },
+                                );
+                              },
+                            ),
                 ),
               ],
             ),
@@ -1091,16 +1092,16 @@ class AddDoctorNewScreen extends StatelessWidget {
         children: [
           _ModernTextField(
             controller: controller.emailController,
-            label: "Email Address",
+            label: TTexts.uiTextEmailAddress,
             hint: "doctor@hospital.com",
             icon: Icons.email_outlined,
             inputType: TextInputType.emailAddress,
             isRequired: false,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: TSizes.v16),
           _ModernTextField(
             controller: controller.phoneController,
-            label: "Phone Number",
+            label: TTexts.uiTextPhoneNumber,
             hint: "+91 XXXXX XXXXX",
             icon: Icons.phone_android_rounded,
             inputType: TextInputType.phone,
@@ -1118,85 +1119,73 @@ class AddDoctorNewScreen extends StatelessWidget {
         children: [
           _ModernTextField(
             controller: controller.address1Controller,
-            label: "Address Line 1 (Required full address)",
+            label: TTexts.uiTextAddressLine1RequiredFullAddress,
             hint: "Please fill address in details",
             icon: Icons.place_outlined,
             isRequired: true,
           ),
-          const SizedBox(height: 16),
-
+          const SizedBox(height: TSizes.v16),
           _ModernTextField(
             controller: controller.address2Controller,
-            label: "Address Line 2",
+            label: TTexts.uiTextAddressLine2,
             hint: "House No, Building",
             icon: Icons.edit_location_alt_outlined,
           ),
-          const SizedBox(height: 16),
-
+          const SizedBox(height: TSizes.v16),
           _ModernTextField(
             controller: controller.address2Controller,
-            label: "Landmark",
+            label: TTexts.uiTextLandmark,
             hint: "Near Indian Oil Petrol Pump.",
             icon: Icons.edit_location_alt_outlined,
           ),
-          const SizedBox(height: 16),
-
+          const SizedBox(height: TSizes.v16),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-
-              const SizedBox(height: 16),
-
+              const SizedBox(height: TSizes.v16),
               Row(
                 children: [
                   Expanded(
                     child: _ModernTextField(
                       controller: controller.blockController,
-                      label: "Block",
+                      label: TTexts.uiTextBlock,
                       isReadOnly: true,
                     ),
                   ),
-
-                  const SizedBox(width: 12),
-
+                  const SizedBox(width: TSizes.v12),
                   Expanded(
                     child: _ModernTextField(
                       controller: controller.districtController,
-                      label: "District",
+                      label: TTexts.uiTextDistrict,
                       isReadOnly: true,
                     ),
                   ),
                 ],
               ),
-
-              const SizedBox(height: 16),
-
+              const SizedBox(height: TSizes.v16),
               _ModernTextField(
                 controller: controller.divisionController,
-                label: "Division",
+                label: TTexts.uiTextDivision,
                 isReadOnly: true,
               ),
-
               Row(
                 children: [
                   Expanded(
                     child: _ModernTextField(
                       controller: controller.stateController,
-                      label: "State",
+                      label: TTexts.uiTextState,
                       hint: "State",
                       isReadOnly: true,
                     ),
                   ),
-
-                  const SizedBox(width: 12),
-
+                  const SizedBox(width: TSizes.v12),
                   Expanded(
                     child: GestureDetector(
                       onTap: controller.showPincodeDialog,
                       child: AbsorbPointer(
                         child: _ModernTextField(
                           controller: controller.pincodeController,
-                          label: "Pincode",
+                          label: TTexts.uiTextPincode,
                           hint: "XXXXXX",
                           isReadOnly: true,
                         ),
@@ -1205,24 +1194,22 @@ class AddDoctorNewScreen extends StatelessWidget {
                   ),
                 ],
               ),
-
-              const SizedBox(height: 6),
-
+              const SizedBox(height: TSizes.v6),
               InkWell(
                 onTap: controller.showPincodeDialog,
                 child: const Row(
                   children: [
                     Icon(
                       Icons.edit_location_alt,
-                      size: 14,
-                      color: Colors.blue,
+                      size: TSizes.v14,
+                      color: TColors.materialBlue,
                     ),
-                    SizedBox(width: 4),
+                    SizedBox(width: TSizes.v4),
                     Text(
-                      "Tap pincode to change location",
+                      TTexts.uiTextTapPincodeToChangeLocation,
                       style: TextStyle(
-                        color: Colors.blue,
-                        fontSize: 12,
+                        color: TColors.materialBlue,
+                        fontSize: TSizes.v12,
                       ),
                     ),
                   ],
@@ -1230,56 +1217,49 @@ class AddDoctorNewScreen extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 16),
-
+          const SizedBox(height: TSizes.v16),
           Row(
             children: [
               Expanded(
-                child: Obx(
-                      () => DropdownButtonFormField<String>(
-                    isExpanded: true,
-
-                    value: controller.postOfficeList.any(
-                          (e) => e['Name'] == controller.selectedPostOffice.value,
-                    )
-                        ? controller.selectedPostOffice.value
-                        : null,
-
-                    decoration: InputDecoration(
-                      labelText: "Post Office",
-                      filled: true,
-                      fillColor: const Color(0xFFFAFAFA),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                  child: Obx(
+                () => DropdownButtonFormField<String>(
+                  isExpanded: true,
+                  value: controller.postOfficeList.any(
+                    (e) => e['Name'] == controller.selectedPostOffice.value,
+                  )
+                      ? controller.selectedPostOffice.value
+                      : null,
+                  decoration: InputDecoration(
+                    labelText: TTexts.uiTextPostOffice,
+                    filled: true,
+                    fillColor: TColors.hex_FFFAFAFA,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
-
-                    items: controller.postOfficeList.map((office) {
-                      return DropdownMenuItem<String>(
-                        value: office['Name'],
-                        child: Text(office['Name']),
-                      );
-                    }).toList(),
-
-                    onChanged: (value) {
-
-                      final office = controller.postOfficeList.firstWhere(
-                            (e) => e['Name'] == value,
-                      );
-
-                      controller.fillAddress(
-                        office,
-                        controller.pincodeController.text,
-                      );
-                    },
                   ),
-                )
-              ),
-              const SizedBox(width: 12),
+                  items: controller.postOfficeList.map((office) {
+                    return DropdownMenuItem<String>(
+                      value: office['Name'],
+                      child: Text(office['Name']),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    final office = controller.postOfficeList.firstWhere(
+                      (e) => e['Name'] == value,
+                    );
+
+                    controller.fillAddress(
+                      office,
+                      controller.pincodeController.text,
+                    );
+                  },
+                ),
+              )),
+              const SizedBox(width: TSizes.v12),
               Expanded(
                 child: _ModernTextField(
                   controller: controller.countryController,
-                  label: "Country",
+                  label: TTexts.uiTextCountry,
                   hint: "Country",
                   isReadOnly: true,
                 ),
@@ -1295,13 +1275,13 @@ class AddDoctorNewScreen extends StatelessWidget {
       AddDoctorNewController controller, BuildContext context) {
     return Container(
       width: double.infinity,
-      height: 55,
+      height: TSizes.v55,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
               color: TColors.primary.withOpacity(0.3),
-              blurRadius: 15,
+              blurRadius: TSizes.v15,
               offset: const Offset(0, 8)),
         ],
       ),
@@ -1312,13 +1292,13 @@ class AddDoctorNewScreen extends StatelessWidget {
           backgroundColor: TColors.primary,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          elevation: 0,
+          elevation: TSizes.v0,
         ),
         child: const Text(
-          "COMPLETE REGISTRATION",
+          TTexts.uiTextCOMPLETEREGISTRATION,
           style: TextStyle(
-              color: Colors.white,
-              fontSize: 15,
+              color: TColors.white,
+              fontSize: TSizes.v15,
               fontWeight: FontWeight.bold,
               letterSpacing: 1.0),
         ),
@@ -1326,13 +1306,11 @@ class AddDoctorNewScreen extends StatelessWidget {
     );
   }
 
-
-
   void _showAddAreaDialog(
-      BuildContext context,
-      AddDoctorNewController controller, {
-        String? prefilledAreaName,
-      }) {
+    BuildContext context,
+    AddDoctorNewController controller, {
+    String? prefilledAreaName,
+  }) {
     final areaController = TextEditingController(
       text: prefilledAreaName ?? '',
     );
@@ -1348,7 +1326,7 @@ class AddDoctorNewScreen extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor: TColors.transparent,
       builder: (_) {
         return AnimatedPadding(
           duration: const Duration(milliseconds: 250),
@@ -1358,11 +1336,11 @@ class AddDoctorNewScreen extends StatelessWidget {
           ),
           child: Container(
             constraints: const BoxConstraints(
-              maxWidth: 700,
+              maxWidth: TSizes.v700,
             ),
             padding: const EdgeInsets.all(24),
             decoration: const BoxDecoration(
-              color: Colors.white,
+              color: TColors.white,
               borderRadius: BorderRadius.vertical(
                 top: Radius.circular(28),
               ),
@@ -1387,12 +1365,12 @@ class AddDoctorNewScreen extends StatelessWidget {
                             color: TColors.primary,
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: TSizes.v12),
                         const Expanded(
                           child: Text(
-                            "Create New Area",
+                            TTexts.uiTextCreateNewArea,
                             style: TextStyle(
-                              fontSize: 18,
+                              fontSize: TSizes.v18,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
@@ -1403,78 +1381,71 @@ class AddDoctorNewScreen extends StatelessWidget {
                         ),
                       ],
                     ),
-
-                    const SizedBox(height: 24),
-
+                    const SizedBox(height: TSizes.v24),
                     _ModernTextField(
                       controller: areaController,
-                      label: "Area Name",
+                      label: TTexts.uiTextAreaName,
                       hint: "Enter Area Name",
                       icon: Icons.location_city_outlined,
                       isRequired: true,
                     ),
-
-                    const SizedBox(height: 16),
-
+                    const SizedBox(height: TSizes.v16),
                     Row(
                       children: [
                         Expanded(
                           child: _ModernTextField(
                             controller: pincodeController,
-                            label: "Pincode",
+                            label: TTexts.uiTextPincode,
                             hint: "110001",
                             icon: Icons.pin_drop_outlined,
                             isRequired: true,
                             isReadOnly:
-                            controller.pincodeController.text.isNotEmpty,
+                                controller.pincodeController.text.isNotEmpty,
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: TSizes.v12),
                         Expanded(
                           child: _ModernTextField(
                             controller: postOfficeController,
-                            label: "Post Office",
+                            label: TTexts.uiTextPostOffice,
                             hint: "Connaught Place",
                             icon: Icons.local_post_office_outlined,
                             isRequired: true,
                             isReadOnly:
-                            controller.postOfficeController.text.isNotEmpty,
+                                controller.postOfficeController.text.isNotEmpty,
                           ),
                         ),
                       ],
                     ),
-
-                    const SizedBox(height: 28),
-
+                    const SizedBox(height: TSizes.v28),
                     Row(
                       children: [
                         Expanded(
                           child: OutlinedButton(
                             onPressed: () => Get.back(),
-                            child: const Text("Cancel"),
+                            child: const Text(TTexts.cancel),
                           ),
                         ),
-
-                        const SizedBox(width: 12),
-
+                        const SizedBox(width: TSizes.v12),
                         Expanded(
                           flex: 2,
                           child: ElevatedButton.icon(
                             icon: const Icon(Icons.add),
-                            label: const Text("Create Area"),
+                            label: const Text(TTexts.uiTextCreateArea),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: TColors.primary,
-                              foregroundColor: Colors.white,
+                              foregroundColor: TColors.white,
                               minimumSize: const Size(
                                 double.infinity,
                                 52,
                               ),
                             ),
                             onPressed: () async {
-                              if (controller.selectedHeadOfficeId.value == null) {
+                              if (controller.selectedHeadOfficeId.value ==
+                                  null) {
                                 Get.snackbar(
                                   "Required",
-                                  "Please select Head Office first",
+                                  TTexts.uiTextPleaseSelectHeadOfficeFirst,
                                 );
                                 return;
                               }
@@ -1495,8 +1466,7 @@ class AddDoctorNewScreen extends StatelessWidget {
                         ),
                       ],
                     ),
-
-                    const SizedBox(height: 12),
+                    const SizedBox(height: TSizes.v12),
                   ],
                 ),
               ),
@@ -1506,8 +1476,6 @@ class AddDoctorNewScreen extends StatelessWidget {
       },
     );
   }
-
-
 
   Widget _priorityButton({
     required String label,
@@ -1523,32 +1491,32 @@ class AddDoctorNewScreen extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
-          color: selected ? color.withOpacity(.12) : Colors.white,
+          color: selected ? color.withOpacity(.12) : TColors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: selected ? color : Colors.grey.shade300,
+            color: selected ? color : TColors.materialGrey300,
             width: selected ? 2 : 1,
           ),
         ),
         child: Column(
           children: [
             CircleAvatar(
-              radius: 16,
+              radius: TSizes.v16,
               backgroundColor: color,
               child: Text(
                 label,
                 style: const TextStyle(
-                  color: Colors.white,
+                  color: TColors.white,
                   fontWeight: FontWeight.bold,
                 ),
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: TSizes.v8),
             Text(
               title,
               style: TextStyle(
                 fontWeight: FontWeight.w600,
-                color: selected ? color : Colors.black87,
+                color: selected ? color : TColors.black87,
               ),
             ),
           ],
@@ -1573,37 +1541,26 @@ class AddDoctorNewScreen extends StatelessWidget {
           vertical: 14,
         ),
         decoration: BoxDecoration(
-          color: selected
-              ? color.withOpacity(.12)
-              : Colors.white,
+          color: selected ? color.withOpacity(.12) : TColors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: selected
-                ? color
-                : Colors.grey.shade300,
+            color: selected ? color : TColors.materialGrey300,
             width: selected ? 2 : 1,
           ),
         ),
         child: Column(
           children: [
-
             Icon(
               icon,
-              size: 28,
-              color: selected
-                  ? color
-                  : Colors.grey,
+              size: TSizes.v28,
+              color: selected ? color : TColors.materialGrey,
             ),
-
-            const SizedBox(height: 8),
-
+            const SizedBox(height: TSizes.v8),
             Text(
               title,
               style: TextStyle(
                 fontWeight: FontWeight.w600,
-                color: selected
-                    ? color
-                    : Colors.black87,
+                color: selected ? color : TColors.black87,
               ),
             ),
           ],
@@ -1627,16 +1584,16 @@ class _ModernCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: TColors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-              color: Colors.grey.withOpacity(0.06),
-              blurRadius: 20,
+              color: TColors.materialGrey.withOpacity(0.06),
+              blurRadius: TSizes.v20,
               offset: const Offset(0, 5)),
           BoxShadow(
-              color: Colors.grey.withOpacity(0.02),
-              blurRadius: 2,
+              color: TColors.materialGrey.withOpacity(0.02),
+              blurRadius: TSizes.v2,
               offset: const Offset(0, 1)),
         ],
       ),
@@ -1682,16 +1639,16 @@ class _ModernTextField extends StatelessWidget {
           children: [
             Text(label,
                 style: const TextStyle(
-                    fontSize: 13,
+                    fontSize: TSizes.v13,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF636E72))),
+                    color: TColors.hex_FF636E72)),
             if (isRequired)
-              const Text(" *",
+              const Text(TTexts.uiTextValue,
                   style: TextStyle(
-                      color: Colors.red, fontWeight: FontWeight.bold)),
+                      color: TColors.materialRed, fontWeight: FontWeight.bold)),
           ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: TSizes.v8),
         TextFormField(
           controller: controller,
           readOnly: isReadOnly,
@@ -1710,47 +1667,44 @@ class _ModernTextField extends StatelessWidget {
           },
           style: const TextStyle(
               fontWeight: FontWeight.w600,
-              fontSize: 14,
-              color: Color(0xFF2D3436)),
+              fontSize: TSizes.v14,
+              color: TColors.hex_FF2D3436),
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: TextStyle(
-              color: Colors.grey[400],
-              fontSize: 13,
+              color: TColors.materialGrey400,
+              fontSize: TSizes.v13,
             ),
-
             prefixText: prefixText != null ? '$prefixText ' : null,
             prefixStyle: const TextStyle(
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
-              fontSize: 14,
+              color: TColors.black87,
+              fontSize: TSizes.v14,
             ),
-
             prefixIcon: icon != null
                 ? Icon(
-              icon,
-              color: TColors.primary.withOpacity(0.8),
-              size: 18,
-            )
+                    icon,
+                    color: TColors.primary.withOpacity(0.8),
+                    size: TSizes.v18,
+                  )
                 : null,
-
             filled: true,
-            fillColor: filledColor ?? const Color(0xFFFAFAFA),
+            fillColor: filledColor ?? TColors.hex_FFFAFAFA,
             contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey.shade200),
+              borderSide: BorderSide(color: TColors.materialGrey200),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey.shade200),
+              borderSide: BorderSide(color: TColors.materialGrey200),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(
                 color: TColors.primary,
-                width: 1.5,
+                width: TSizes.v1_5,
               ),
             ),
           ),

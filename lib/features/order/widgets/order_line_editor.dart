@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../../utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import '../models/order_models.dart';
 import 'order_widgets.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class OrderLineEditor extends StatefulWidget {
   const OrderLineEditor(
@@ -63,13 +65,13 @@ class _OrderLineEditorState extends State<OrderLineEditor> {
         margin: const EdgeInsets.only(bottom: 14),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-            color: Colors.white,
+            color: TColors.white,
             border: Border.all(color: TColors.borderSecondary),
             borderRadius: BorderRadius.circular(16)),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
             const Icon(Icons.medication_outlined, color: TColors.primary),
-            const SizedBox(width: 10),
+            const SizedBox(width: TSizes.v10),
             Expanded(
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -81,14 +83,14 @@ class _OrderLineEditorState extends State<OrderLineEditor> {
                           .whereType<String>()
                           .join(' · '),
                       style: const TextStyle(
-                          fontSize: 11, color: TColors.textSecondary))
+                          fontSize: TSizes.v11, color: TColors.textSecondary))
                 ])),
             IconButton(
                 tooltip: 'Remove ${widget.item.productName}',
                 onPressed: widget.onRemove,
-                icon: const Icon(Icons.close, size: 20)),
+                icon: const Icon(Icons.close, size: TSizes.v20)),
           ]),
-          const SizedBox(height: 16),
+          const SizedBox(height: TSizes.v16),
           OrderFields(children: [
             TextFormField(
               key: ValueKey('quantity-${widget.item.productId}'),
@@ -102,9 +104,9 @@ class _OrderLineEditorState extends State<OrderLineEditor> {
               validator: (v) =>
                   (int.tryParse(v ?? '') ?? 0) <= 0 ? 'Enter quantity' : null,
               decoration: InputDecoration(
-                  labelText: 'Order quantity *',
+                  labelText: TTexts.uiTextOrderQuantity,
                   prefixIcon: IconButton(
-                      tooltip: 'Decrease quantity',
+                      tooltip: TTexts.uiTextDecreaseQuantity,
                       onPressed: () {
                         final value = int.tryParse(_quantity.text) ?? 1;
                         if (value > 1) {
@@ -112,9 +114,9 @@ class _OrderLineEditorState extends State<OrderLineEditor> {
                           _change();
                         }
                       },
-                      icon: const Icon(Icons.remove, size: 18)),
+                      icon: const Icon(Icons.remove, size: TSizes.v18)),
                   suffixIcon: IconButton(
-                      tooltip: 'Increase quantity',
+                      tooltip: TTexts.uiTextIncreaseQuantity,
                       onPressed: () {
                         final value = int.tryParse(_quantity.text) ?? 0;
                         if (value < 999999) {
@@ -122,11 +124,12 @@ class _OrderLineEditorState extends State<OrderLineEditor> {
                           _change();
                         }
                       },
-                      icon: const Icon(Icons.add, size: 18))),
+                      icon: const Icon(Icons.add, size: TSizes.v18))),
             ),
             DropdownButtonFormField<String>(
                 value: _unit,
-                decoration: const InputDecoration(labelText: 'Ordering unit'),
+                decoration:
+                    const InputDecoration(labelText: TTexts.uiTextOrderingUnit),
                 items: orderUnits
                     .map((unit) =>
                         DropdownMenuItem(value: unit, child: Text(unit)))
@@ -144,18 +147,18 @@ class _OrderLineEditorState extends State<OrderLineEditor> {
                 ],
                 onChanged: (_) => _change(),
                 decoration: const InputDecoration(
-                    labelText: 'Free quantity',
-                    helperText: 'Additional quantity, same unit')),
+                    labelText: TTexts.uiTextFreeQuantity,
+                    helperText: TTexts.uiTextAdditionalQuantitySameUnit)),
             TextFormField(
                 controller: _pack,
                 onChanged: (_) => _change(),
                 maxLength: 80,
                 decoration: const InputDecoration(
-                    labelText: 'Pack details (optional)',
-                    hintText: 'e.g. 10 strips × 10 tablets',
+                    labelText: TTexts.uiTextPackDetailsOptional,
+                    hintText: TTexts.uiTextEG10Strips10Tablets,
                     counterText: '')),
           ]),
-          const SizedBox(height: 8),
+          const SizedBox(height: TSizes.v8),
           TextButton.icon(
               onPressed: () => setState(() => _showPrice = !_showPrice),
               icon: Icon(_showPrice ? Icons.expand_less : Icons.expand_more),
@@ -179,7 +182,7 @@ class _OrderLineEditorState extends State<OrderLineEditor> {
                   : const SizedBox(width: double.infinity)),
           if (widget.item.unitRatePaise != null &&
               widget.item.validate() == null) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: TSizes.v12),
             Align(
                 alignment: Alignment.centerRight,
                 child: OrderTag(

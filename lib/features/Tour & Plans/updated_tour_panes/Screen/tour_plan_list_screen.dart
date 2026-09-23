@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
-import '../../../../utils/constants/colors.dart';
-import '../../../../utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 import 'tour_plan_table.dart';
 import '../controller/tour_plan_list_controller.dart';
 import '../model/tour_plan_model.dart';
 import '../wigets/status_chip.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class TourPlanListScreen extends StatelessWidget {
   const TourPlanListScreen({super.key});
@@ -23,7 +23,7 @@ class TourPlanListScreen extends StatelessWidget {
         foregroundColor: TColors.white,
         onPressed: controller.createTourPlan,
         icon: const Icon(Icons.add),
-        label: const Text("Create Tour Plan"),
+        label: const Text(TTexts.uiTextCreateTourPlan),
       ),
       body: SafeArea(
         child: Obx(() {
@@ -55,13 +55,13 @@ class TourPlanListScreen extends StatelessWidget {
                                   controller.submittingPlanId.value,
                             )
                           : LayoutBuilder(
-                          builder: (context, constraints) {
-                            return _buildPlanGrid(
-                              controller,
-                              showTwoColumns: constraints.maxWidth >= 720,
-                            );
-                          },
-                        ),
+                              builder: (context, constraints) {
+                                return _buildPlanGrid(
+                                  controller,
+                                  showTwoColumns: constraints.maxWidth >= 720,
+                                );
+                              },
+                            ),
                 ),
               ),
             ],
@@ -87,7 +87,7 @@ class TourPlanListScreen extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: TColors.primary.withValues(alpha: .18),
-            blurRadius: 18,
+            blurRadius: TSizes.v18,
             offset: const Offset(0, 8),
           ),
         ],
@@ -127,16 +127,16 @@ class TourPlanListScreen extends StatelessWidget {
     return Row(
       children: [
         Container(
-          width: 58,
-          height: 58,
+          width: TSizes.v58,
+          height: TSizes.v58,
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: .16),
+            color: TColors.white.withValues(alpha: .16),
             borderRadius: BorderRadius.circular(16),
           ),
           child: const Icon(
             Icons.calendar_month_rounded,
-            color: Colors.white,
-            size: 32,
+            color: TColors.white,
+            size: TSizes.v32,
           ),
         ),
         const SizedBox(width: TSizes.md),
@@ -145,19 +145,19 @@ class TourPlanListScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                "Tour & Plans",
+                TTexts.tourPlans,
                 style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
+                  color: TColors.white,
+                  fontSize: TSizes.v24,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 5),
+              const SizedBox(height: TSizes.v5),
               Text(
                 "${controller.totalPlans} plans • Plan and track monthly activity",
                 style: const TextStyle(
-                  color: Colors.white70,
-                  height: 1.3,
+                  color: TColors.white70,
+                  height: TSizes.v1_3,
                 ),
               ),
             ],
@@ -171,7 +171,7 @@ class TourPlanListScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: .14),
+        color: TColors.white.withValues(alpha: .14),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -179,13 +179,13 @@ class TourPlanListScreen extends StatelessWidget {
         children: [
           _buildViewOption(
             icon: Icons.table_rows_rounded,
-            label: "Table",
+            label: TTexts.uiTextTable,
             isSelected: controller.isTableView.value,
             onTap: () => controller.changeView(showTable: true),
           ),
           _buildViewOption(
             icon: Icons.grid_view_rounded,
-            label: "Cards",
+            label: TTexts.uiTextCards,
             isSelected: !controller.isTableView.value,
             onTap: () => controller.changeView(showTable: false),
           ),
@@ -210,21 +210,21 @@ class TourPlanListScreen extends StatelessWidget {
           vertical: 9,
         ),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.white : Colors.transparent,
+          color: isSelected ? TColors.white : TColors.transparent,
           borderRadius: BorderRadius.circular(9),
         ),
         child: Row(
           children: [
             Icon(
               icon,
-              size: 18,
-              color: isSelected ? TColors.primary : Colors.white,
+              size: TSizes.v18,
+              color: isSelected ? TColors.primary : TColors.white,
             ),
-            const SizedBox(width: 6),
+            const SizedBox(width: TSizes.v6),
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? TColors.primary : Colors.white,
+                color: isSelected ? TColors.primary : TColors.white,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -268,9 +268,9 @@ class TourPlanListScreen extends StatelessWidget {
 
     return Card(
       margin: EdgeInsets.zero,
-      elevation: 2,
+      elevation: TSizes.v2,
       shadowColor: TColors.primary.withValues(alpha: .12),
-      surfaceTintColor: Colors.transparent,
+      surfaceTintColor: TColors.transparent,
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(TSizes.cardRadiusLg),
@@ -286,8 +286,8 @@ class TourPlanListScreen extends StatelessWidget {
               Row(
                 children: [
                   Container(
-                    width: 46,
-                    height: 46,
+                    width: TSizes.v46,
+                    height: TSizes.v46,
                     decoration: BoxDecoration(
                       color: TColors.primary_shade50,
                       borderRadius: BorderRadius.circular(14),
@@ -297,7 +297,7 @@ class TourPlanListScreen extends StatelessWidget {
                       color: TColors.primary,
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: TSizes.v12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -308,34 +308,34 @@ class TourPlanListScreen extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             color: TColors.textPrimary,
-                            fontSize: 18,
+                            fontSize: TSizes.v18,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(height: 3),
+                        const SizedBox(height: TSizes.v3),
                         const Text(
-                          "Monthly Tour Plan",
+                          TTexts.uiTextMonthlyTourPlan,
                           style: TextStyle(
                             color: TColors.textSecondary,
-                            fontSize: 12,
+                            fontSize: TSizes.v12,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: TSizes.v8),
                   StatusChip(status: plan.status),
                 ],
               ),
-              const SizedBox(height: 14),
-              const Divider(height: 1),
-              const SizedBox(height: 14),
+              const SizedBox(height: TSizes.v14),
+              const Divider(height: TSizes.v1),
+              const SizedBox(height: TSizes.v14),
               Row(
                 children: [
                   Expanded(
                     child: _buildInfoItem(
                       icon: Icons.calendar_view_day_outlined,
-                      label: "Planned Days",
+                      label: TTexts.uiTextPlannedDays,
                       value: plan.days.length.toString(),
                     ),
                   ),
@@ -343,13 +343,13 @@ class TourPlanListScreen extends StatelessWidget {
                   Expanded(
                     child: _buildInfoItem(
                       icon: Icons.schedule_outlined,
-                      label: "Created",
+                      label: TTexts.uiTextCreated,
                       value: _formatDate(plan.createdAt),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: TSizes.v12),
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(
@@ -359,7 +359,7 @@ class TourPlanListScreen extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: remarks.isEmpty
                       ? TColors.softGrey
-                      : Colors.red.withValues(alpha: .06),
+                      : TColors.materialRed.withValues(alpha: .06),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Row(
@@ -368,12 +368,12 @@ class TourPlanListScreen extends StatelessWidget {
                       remarks.isEmpty
                           ? Icons.notes_rounded
                           : Icons.info_outline_rounded,
-                      size: 17,
+                      size: TSizes.v17,
                       color: remarks.isEmpty
                           ? TColors.textSecondary
-                          : Colors.red,
+                          : TColors.materialRed,
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: TSizes.v8),
                     Expanded(
                       child: Text(
                         remarks.isEmpty ? "No remarks added" : remarks,
@@ -382,8 +382,8 @@ class TourPlanListScreen extends StatelessWidget {
                         style: TextStyle(
                           color: remarks.isEmpty
                               ? TColors.textSecondary
-                              : Colors.red,
-                          fontSize: 13,
+                              : TColors.materialRed,
+                          fontSize: TSizes.v13,
                           fontWeight: remarks.isEmpty
                               ? FontWeight.normal
                               : FontWeight.w500,
@@ -403,7 +403,7 @@ class TourPlanListScreen extends StatelessWidget {
                         plan.canEdit
                             ? Icons.edit_outlined
                             : Icons.visibility_outlined,
-                        size: 18,
+                        size: TSizes.v18,
                       ),
                       label: Text(
                         plan.canEdit ? "Edit Plan" : "View Details",
@@ -411,26 +411,28 @@ class TourPlanListScreen extends StatelessWidget {
                     ),
                   ),
                   if (plan.isDraft) ...[
-                    const SizedBox(width: 10),
+                    const SizedBox(width: TSizes.v10),
                     Expanded(
                       child: Obx(() {
                         final isSubmitting =
                             controller.submittingPlanId.value == plan.id;
 
                         return ElevatedButton.icon(
-                          onPressed: controller.submittingPlanId.value.isNotEmpty
-                              ? null
-                              : () => controller.submitDraftFromList(plan),
+                          onPressed:
+                              controller.submittingPlanId.value.isNotEmpty
+                                  ? null
+                                  : () => controller.submitDraftFromList(plan),
                           icon: isSubmitting
                               ? const SizedBox(
-                                  width: 16,
-                                  height: 16,
+                                  width: TSizes.v16,
+                                  height: TSizes.v16,
                                   child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.white,
+                                    strokeWidth: TSizes.v2,
+                                    color: TColors.white,
                                   ),
                                 )
-                              : const Icon(Icons.send_rounded, size: 18),
+                              : const Icon(Icons.send_rounded,
+                                  size: TSizes.v18),
                           label: Text(isSubmitting ? "Submitting" : "Submit"),
                         );
                       }),
@@ -452,8 +454,8 @@ class TourPlanListScreen extends StatelessWidget {
   }) {
     return Row(
       children: [
-        Icon(icon, size: 18, color: TColors.primary),
-        const SizedBox(width: 8),
+        Icon(icon, size: TSizes.v18, color: TColors.primary),
+        const SizedBox(width: TSizes.v8),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -462,17 +464,17 @@ class TourPlanListScreen extends StatelessWidget {
                 label,
                 style: const TextStyle(
                   color: TColors.textSecondary,
-                  fontSize: 11,
+                  fontSize: TSizes.v11,
                 ),
               ),
-              const SizedBox(height: 2),
+              const SizedBox(height: TSizes.v2),
               Text(
                 value,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   color: TColors.textPrimary,
-                  fontSize: 13,
+                  fontSize: TSizes.v13,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -495,19 +497,19 @@ class TourPlanListScreen extends StatelessWidget {
               children: [
                 Icon(
                   Icons.assignment_outlined,
-                  size: 80,
+                  size: TSizes.v80,
                   color: TColors.textSecondary,
                 ),
-                SizedBox(height: 16),
+                SizedBox(height: TSizes.v16),
                 Text(
-                  "No Tour Plans Found",
+                  TTexts.uiTextNoTourPlansFound,
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: TSizes.v18,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                SizedBox(height: 8),
-                Text("Pull down to refresh or create a new Tour Plan."),
+                SizedBox(height: TSizes.v8),
+                Text(TTexts.uiTextPullDownToRefreshOrCreateANew),
               ],
             ),
           ),

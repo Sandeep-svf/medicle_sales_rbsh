@@ -8,7 +8,6 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:medicle_sales_rbsh/features/addDoctor/screens/add_doctro_new_screen.dart';
 import 'package:medicle_sales_rbsh/features/visit/Doctor/screens/ScheduleVisit.dart';
 import 'package:medicle_sales_rbsh/features/visit/Doctor/screens/ScheduleVisitScreen.dart';
-
 import '../../../utils/http/http_client.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/cupertino.dart';
@@ -20,7 +19,6 @@ import 'package:stylish_bottom_bar/stylish_bottom_bar.dart';
 import 'package:medicle_sales_rbsh/features/SalesChartAnalysis/Screen/salesChartHome.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
-import '../../../utils/http/http_client.dart';
 import '../../../utils/local_storage/auth_manager.dart';
 import '../../Blog/screen/blog.dart';
 import '../../Inbox/Screen/InboxScreen.dart';
@@ -36,6 +34,7 @@ import '../attendance/controller/attendance_controller.dart';
 import '../widgets/custrom_drawer.dart';
 import '../../doctor_offline/services/doctor_area_assignment_service.dart';
 import '../../doctor_offline/ui/doctor_area_assignment_screen.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class DashboardScreen extends StatefulWidget {
   @override
@@ -227,36 +226,36 @@ class _DashboardScreenState extends State<DashboardScreen> {
           icon: const Icon(Icons.home),
           selectedIcon: const Icon(Icons.home_filled),
           selectedColor: TColors.primary,
-          unSelectedColor: Colors.grey,
-          title: const Text('Home'),
+          unSelectedColor: TColors.materialGrey,
+          title: const Text(TTexts.home),
         ),
         BottomBarItem(
           icon: const Icon(Icons.folder),
           selectedIcon: const Icon(Icons.folder_open),
           selectedColor: TColors.primary,
-          unSelectedColor: Colors.grey,
-          title: const Text('Files & PDFs'),
+          unSelectedColor: TColors.materialGrey,
+          title: const Text(TTexts.filesAndPdfs),
         ),
         BottomBarItem(
           icon: const Icon(Icons.schedule_outlined),
           selectedIcon: const Icon(Icons.schedule_sharp),
           selectedColor: TColors.primary,
-          unSelectedColor: Colors.grey,
-          title: const Text('Appointments'),
+          unSelectedColor: TColors.materialGrey,
+          title: const Text(TTexts.appointments),
         ),
         BottomBarItem(
           icon: const Icon(Icons.medical_services_outlined),
           selectedIcon: const Icon(Icons.medical_services_outlined),
           selectedColor: TColors.primary,
-          unSelectedColor: Colors.grey,
-          title: const Text('Add Doctor'),
+          unSelectedColor: TColors.materialGrey,
+          title: const Text(TTexts.addDoctorTitle),
         ),
         BottomBarItem(
           icon: const Icon(Icons.inbox_outlined),
           selectedIcon: const Icon(Icons.all_inbox),
           selectedColor: TColors.primary,
-          unSelectedColor: Colors.grey,
-          title: const Text('Inbox'),
+          unSelectedColor: TColors.materialGrey,
+          title: const Text(TTexts.inbox),
         ),
       ];
 
@@ -272,8 +271,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
             textAlign: TextAlign.center,
             style: const TextStyle(
               fontWeight: FontWeight.bold,
-              color: Colors.white,
-              fontSize: 20,
+              color: TColors.white,
+              fontSize: TSizes.v20,
             ),
           ),
         ),
@@ -281,7 +280,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         leading: Builder(
           builder: (context) {
             return IconButton(
-              icon: const Icon(Icons.menu, color: Colors.white),
+              icon: const Icon(Icons.menu, color: TColors.white),
               onPressed: () {
                 Scaffold.of(context).openDrawer();
               },
@@ -295,7 +294,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               IconButton(
                 icon: const Icon(
                   Icons.notifications,
-                  color: Colors.white,
+                  color: TColors.white,
                 ),
                 onPressed: () {
                   // Handle notification icon press
@@ -313,18 +312,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(2),
                     decoration: BoxDecoration(
-                      color: Colors.red,
+                      color: TColors.materialRed,
                       shape: BoxShape.circle,
                     ),
                     constraints: const BoxConstraints(
-                      minWidth: 16,
-                      minHeight: 16,
+                      minWidth: TSizes.v16,
+                      minHeight: TSizes.v16,
                     ),
                     child: Text(
                       '$_notificationCount',
                       style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
+                        color: TColors.white,
+                        fontSize: TSizes.v10,
                       ),
                       textAlign: TextAlign.center,
                     ),

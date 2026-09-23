@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
-
-import '../../../utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import '../controller/investment_request_controller.dart';
 import '../model/investment_request_model.dart';
 import '../screen/add_investment_screen.dart';
 import 'investment_request_details_dialog.dart';
 import 'investment_status_chip.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class InvestmentRequestTableRow extends StatefulWidget {
   final InvestmentRequest request;
@@ -25,209 +26,123 @@ class InvestmentRequestTableRow extends StatefulWidget {
       _InvestmentRequestTableRowState();
 }
 
-class _InvestmentRequestTableRowState
-    extends State<InvestmentRequestTableRow> {
-
+class _InvestmentRequestTableRowState extends State<InvestmentRequestTableRow> {
   bool hovering = false;
 
   InvestmentRequest get request => widget.request;
 
   @override
   Widget build(BuildContext context) {
-
     return MouseRegion(
-
       onEnter: (_) => setState(() => hovering = true),
-
       onExit: (_) => setState(() => hovering = false),
-
       child: AnimatedContainer(
-
         duration: const Duration(milliseconds: 180),
-
         color: hovering
             ? TColors.primary.withOpacity(.04)
             : widget.index.isEven
-            ? Colors.white
-            : Colors.grey.shade50,
-
+                ? TColors.white
+                : TColors.materialGrey50,
         child: InkWell(
-
           onTap: () {},
-
           child: Padding(
-
             padding: const EdgeInsets.symmetric(
               horizontal: 20,
               vertical: 16,
             ),
-
             child: LayoutBuilder(
-
               builder: (_, constraints) {
-
-                final landscape =
-                    constraints.maxWidth > 900;
+                final landscape = constraints.maxWidth > 900;
 
                 return Row(
-
-                  crossAxisAlignment:
-                  CrossAxisAlignment.start,
-
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-
                     ///================================================
                     /// Doctor
                     ///================================================
 
                     Expanded(
-
                       flex: 4,
-
                       child: Row(
-
-                        crossAxisAlignment:
-                        CrossAxisAlignment.start,
-
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-
                           CircleAvatar(
-
-                            radius: 23,
-
+                            radius: TSizes.v23,
                             backgroundColor:
-                            request.paymentColor
-                                .withOpacity(.10),
-
+                                request.paymentColor.withOpacity(.10),
                             child: Text(
-
                               request.avatarLetter,
-
                               style: TextStyle(
                                 color: request.paymentColor,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
-
-                          const SizedBox(width: 14),
-
+                          const SizedBox(width: TSizes.v14),
                           Expanded(
-
                             child: Column(
-
-                              crossAxisAlignment:
-                              CrossAxisAlignment.start,
-
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-
                                 Text(
-
                                   request.displayDoctorName,
-
                                   maxLines: 1,
-
-                                  overflow:
-                                  TextOverflow.ellipsis,
-
+                                  overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
-                                    fontSize: 15,
+                                    fontSize: TSizes.v15,
                                   ),
                                 ),
-
-                                const SizedBox(height: 6),
-
+                                const SizedBox(height: TSizes.v6),
                                 Text(
-
                                   request.displayPurpose,
-
                                   maxLines: 3,
-
-                                  overflow:
-                                  TextOverflow.ellipsis,
-
+                                  overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
-                                    fontSize: 12,
-                                    color:
-                                    Colors.grey.shade600,
-                                    height: 1.35,
+                                    fontSize: TSizes.v12,
+                                    color: TColors.materialGrey600,
+                                    height: TSizes.v1_35,
                                   ),
                                 ),
-
                               ],
                             ),
                           )
-
                         ],
                       ),
                     ),
 
                     if (landscape)
-
                       Expanded(
-
                         flex: 2,
-
                         child: Center(
-
                           child: Container(
-
                             padding: const EdgeInsets.symmetric(
                               horizontal: 12,
                               vertical: 8,
                             ),
-
                             decoration: BoxDecoration(
-
-                              color: request.paymentColor
-                                  .withOpacity(.08),
-
-                              borderRadius:
-                              BorderRadius.circular(20),
-
+                              color: request.paymentColor.withOpacity(.08),
+                              borderRadius: BorderRadius.circular(20),
                             ),
-
                             child: Row(
-
-                              mainAxisSize:
-                              MainAxisSize.min,
-
+                              mainAxisSize: MainAxisSize.min,
                               children: [
-
                                 Icon(
                                   request.paymentIcon,
-                                  size: 16,
-                                  color:
-                                  request.paymentColor,
+                                  size: TSizes.v16,
+                                  color: request.paymentColor,
                                 ),
-
-                                const SizedBox(width: 6),
-
+                                const SizedBox(width: TSizes.v6),
                                 Flexible(
                                   child: Text(
-
-                                    request.paymentMode ??
-                                        "-",
-
+                                    request.paymentMode ?? "-",
                                     maxLines: 1,
-
-                                    overflow:
-                                    TextOverflow
-                                        .ellipsis,
-
+                                    overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
-
-                                      color:
-                                      request.paymentColor,
-
-                                      fontWeight:
-                                      FontWeight.w600,
-
+                                      color: request.paymentColor,
+                                      fontWeight: FontWeight.w600,
                                     ),
                                   ),
                                 )
-
                               ],
                             ),
                           ),
@@ -239,54 +154,29 @@ class _InvestmentRequestTableRowState
                     ///======================================
 
                     Expanded(
-
                       flex: 2,
-
                       child: Center(
-
                         child: SizedBox(
-
-                          width: 110,
-
+                          width: TSizes.v110,
                           child: Container(
-
                             alignment: Alignment.center,
-
-                            padding:
-                            const EdgeInsets.symmetric(
+                            padding: const EdgeInsets.symmetric(
                               vertical: 9,
                             ),
-
                             decoration: BoxDecoration(
-
-                              color: TColors.primary
-                                  .withOpacity(.08),
-
-                              borderRadius:
-                              BorderRadius.circular(10),
-
+                              color: TColors.primary.withOpacity(.08),
+                              borderRadius: BorderRadius.circular(10),
                             ),
-
                             child: Text(
-
                               request.isGift
                                   ? "${request.items.length} Items"
                                   : request.displayAmount,
-
                               textAlign: TextAlign.center,
-
                               maxLines: 1,
-
-                              overflow:
-                              TextOverflow.ellipsis,
-
+                              overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
-
                                 color: TColors.primary,
-
-                                fontWeight:
-                                FontWeight.bold,
-
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
@@ -295,25 +185,17 @@ class _InvestmentRequestTableRowState
                     ),
 
                     if (landscape)
-
                       Expanded(
-
                         flex: 2,
-
                         child: Center(
-
                           child: Text(
-
                             DateFormat(
                               "dd MMM yyyy",
                             ).format(
-                              request.createdAt ??
-                                  DateTime.now(),
+                              request.createdAt ?? DateTime.now(),
                             ),
-
                             style: TextStyle(
-                              color:
-                              Colors.grey.shade700,
+                              color: TColors.materialGrey700,
                             ),
                           ),
                         ),
@@ -324,16 +206,10 @@ class _InvestmentRequestTableRowState
                     ///======================================
 
                     SizedBox(
-
-                      width: 145,
-
+                      width: TSizes.v145,
                       child: Center(
-
                         child: InvestmentStatusChip(
-
-                          status:
-                          request.displayStatus,
-
+                          status: request.displayStatus,
                         ),
                       ),
                     ),
@@ -343,31 +219,17 @@ class _InvestmentRequestTableRowState
                     ///======================================
 
                     SizedBox(
-
-                      width: 55,
-
+                      width: TSizes.v55,
                       child: request.hasProof
-
                           ? IconButton(
-
-                        tooltip:
-                        "Payment Proof",
-
-                        icon: const Icon(
-
-                          Icons.image_outlined,
-
-                          color: Colors.blue,
-
-                        ),
-
-                        onPressed:
-                        _showProofDialog,
-
-                      )
-
+                              tooltip: TTexts.uiTextPaymentProof,
+                              icon: const Icon(
+                                Icons.image_outlined,
+                                color: TColors.materialBlue,
+                              ),
+                              onPressed: _showProofDialog,
+                            )
                           : const SizedBox(),
-
                     ),
 
                     ///======================================
@@ -375,54 +237,37 @@ class _InvestmentRequestTableRowState
                     ///======================================
 
                     SizedBox(
-
-                      width: 50,
-
+                      width: TSizes.v50,
                       child: PopupMenuButton<int>(
-
                         onSelected: _menuSelected,
-
                         itemBuilder: (_) => [
-
                           const PopupMenuItem(
                             value: 1,
-                            child: Text("View"),
+                            child: Text(TTexts.uiTextView),
                           ),
-
                           if (request.canEdit)
                             const PopupMenuItem(
                               value: 2,
-                              child: Text("Edit & Resubmit"),
+                              child: Text(TTexts.uiTextEditResubmit),
                             ),
-
                           if (request.hasProof)
                             const PopupMenuItem(
                               value: 3,
-                              child: Text("Download"),
+                              child: Text(TTexts.download),
                             ),
-
                         ],
-
                       ),
-
                     ),
-
                   ],
                 );
-
               },
-
             ),
-
           ),
-
         ),
-
       ),
-
     );
-
   }
+
   void _menuSelected(int value) async {
     switch (value) {
       case 1:
@@ -469,11 +314,10 @@ class _InvestmentRequestTableRowState
             borderRadius: BorderRadius.circular(18),
           ),
           child: SizedBox(
-            width: 900,
-            height: 650,
+            width: TSizes.v900,
+            height: TSizes.v650,
             child: Column(
               children: [
-
                 /// HEADER
                 Container(
                   padding: const EdgeInsets.symmetric(
@@ -489,48 +333,39 @@ class _InvestmentRequestTableRowState
                   ),
                   child: Row(
                     children: [
-
                       Icon(
                         request.paymentIcon,
-                        color: Colors.white,
+                        color: TColors.white,
                       ),
-
-                      const SizedBox(width: 10),
-
+                      const SizedBox(width: TSizes.v10),
                       Expanded(
                         child: Column(
-                          crossAxisAlignment:
-                          CrossAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-
                             const Text(
-                              "Payment Proof",
+                              TTexts.uiTextPaymentProof,
                               style: TextStyle(
-                                color: Colors.white,
+                                color: TColors.white,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 18,
+                                fontSize: TSizes.v18,
                               ),
                             ),
-
                             Text(
                               request.displayDoctorName,
                               style: const TextStyle(
-                                color: Colors.white70,
+                                color: TColors.white70,
                               ),
                             ),
-
                           ],
                         ),
                       ),
-
                       IconButton(
                         icon: const Icon(
                           Icons.close,
-                          color: Colors.white,
+                          color: TColors.white,
                         ),
                         onPressed: () => Navigator.pop(context),
                       )
-
                     ],
                   ),
                 ),
@@ -539,7 +374,7 @@ class _InvestmentRequestTableRowState
                 Expanded(
                   child: Container(
                     width: double.infinity,
-                    color: Colors.grey.shade100,
+                    color: TColors.materialGrey100,
                     child: InteractiveViewer(
                       minScale: .5,
                       maxScale: 6,
@@ -547,22 +382,18 @@ class _InvestmentRequestTableRowState
                         child: Image.network(
                           request.paymentProof!,
                           fit: BoxFit.contain,
-                          loadingBuilder:
-                              (context, child, progress) {
+                          loadingBuilder: (context, child, progress) {
                             if (progress == null) {
                               return child;
                             }
 
                             return const Center(
-                              child:
-                              CircularProgressIndicator(),
+                              child: CircularProgressIndicator(),
                             );
                           },
-                          errorBuilder:
-                              (_, __, ___) =>
-                          const Icon(
+                          errorBuilder: (_, __, ___) => const Icon(
                             Icons.broken_image,
-                            size: 120,
+                            size: TSizes.v120,
                           ),
                         ),
                       ),
@@ -576,13 +407,12 @@ class _InvestmentRequestTableRowState
                   decoration: BoxDecoration(
                     border: Border(
                       top: BorderSide(
-                        color: Colors.grey.shade300,
+                        color: TColors.materialGrey300,
                       ),
                     ),
                   ),
                   child: Row(
                     children: [
-
                       Expanded(
                         child: Text(
                           request.paymentMode ?? "",
@@ -591,50 +421,38 @@ class _InvestmentRequestTableRowState
                           ),
                         ),
                       ),
-
                       OutlinedButton.icon(
-                        icon:
-                        const Icon(Icons.open_in_new),
-                        label: const Text("Open"),
+                        icon: const Icon(Icons.open_in_new),
+                        label: const Text(TTexts.uiTextOpen),
                         onPressed: () async {
                           await launchUrl(
                             Uri.parse(
                               request.paymentProof!,
                             ),
-                            mode: LaunchMode
-                                .externalApplication,
+                            mode: LaunchMode.externalApplication,
                           );
                         },
                       ),
-
-                      const SizedBox(width: 12),
-
+                      const SizedBox(width: TSizes.v12),
                       ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                          TColors.primary,
-                          foregroundColor:
-                          Colors.white,
+                          backgroundColor: TColors.primary,
+                          foregroundColor: TColors.white,
                         ),
-                        icon:
-                        const Icon(Icons.download),
-                        label:
-                        const Text("Download"),
+                        icon: const Icon(Icons.download),
+                        label: const Text(TTexts.download),
                         onPressed: () async {
                           await launchUrl(
                             Uri.parse(
                               request.paymentProof!,
                             ),
-                            mode: LaunchMode
-                                .externalApplication,
+                            mode: LaunchMode.externalApplication,
                           );
                         },
                       ),
-
                     ],
                   ),
                 ),
-
               ],
             ),
           ),

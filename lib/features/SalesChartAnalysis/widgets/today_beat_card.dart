@@ -3,11 +3,11 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:medicle_sales_rbsh/features/SalesChartAnalysis/enum/day_type.dart';
-
-import '../../../utils/constants/colors.dart';
-import '../../../utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 import '../controller/DashboardController.dart';
 import '../model/SalesChartDashboardModel.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class TodayBeatCard extends StatelessWidget {
   final TodayBeatAssigned? beat;
@@ -31,7 +31,7 @@ class TodayBeatCard extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: TColors.primary.withOpacity(.08),
-            blurRadius: 20,
+            blurRadius: TSizes.v20,
             offset: const Offset(0, 10),
           ),
         ],
@@ -39,17 +39,15 @@ class TodayBeatCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
           //---------------------------------------------------
           // Header
           //---------------------------------------------------
 
           Row(
             children: [
-
               Container(
-                height: 48,
-                width: 48,
+                height: TSizes.v48,
+                width: TSizes.v48,
                 decoration: BoxDecoration(
                   color: TColors.primary_shade50,
                   borderRadius: BorderRadius.circular(14),
@@ -57,48 +55,39 @@ class TodayBeatCard extends StatelessWidget {
                 child: Icon(
                   Icons.location_on_rounded,
                   color: TColors.primary,
-                  size: 26,
+                  size: TSizes.v26,
                 ),
-              )
-                  .animate(onPlay: (controller) => controller.repeat())
-                  .scale(
-                begin: const Offset(.95, .95),
-                end: const Offset(1.08, 1.08),
-                duration: 1500.ms,
-              ),
-
-              const SizedBox(width: 12),
-
+              ).animate(onPlay: (controller) => controller.repeat()).scale(
+                    begin: const Offset(.95, .95),
+                    end: const Offset(1.08, 1.08),
+                    duration: 1500.ms,
+                  ),
+              const SizedBox(width: TSizes.v12),
               const Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-
                     Text(
-                      "TODAY'S BEAT",
+                      TTexts.uiTextTODAYSBEAT,
                       style: TextStyle(
                         color: TColors.textSecondary,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 1.3,
-                        fontSize: 11,
+                        fontSize: TSizes.v11,
                       ),
                     ),
-
-                    SizedBox(height: 3),
-
+                    SizedBox(height: TSizes.v3),
                     Text(
-                      "Field Assignment",
+                      TTexts.uiTextFieldAssignment,
                       style: TextStyle(
                         color: TColors.textPrimary,
                         fontWeight: FontWeight.bold,
-                        fontSize: 17,
+                        fontSize: TSizes.v17,
                       ),
                     ),
-
                   ],
                 ),
               ),
-
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12,
@@ -111,32 +100,27 @@ class TodayBeatCard extends StatelessWidget {
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-
                     Icon(
                       Icons.check_circle,
                       color: TColors.success,
-                      size: 14,
+                      size: TSizes.v14,
                     ),
-
-                    SizedBox(width: 5),
-
+                    SizedBox(width: TSizes.v5),
                     Text(
-                      "TODAY",
+                      TTexts.uiTextTODAY,
                       style: TextStyle(
                         color: TColors.success,
                         fontWeight: FontWeight.bold,
-                        fontSize: 11,
+                        fontSize: TSizes.v11,
                       ),
                     )
-
                   ],
                 ),
               ),
-
             ],
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: TSizes.v20),
 
           //---------------------------------------------------
           // Beat Name
@@ -148,36 +132,32 @@ class TodayBeatCard extends StatelessWidget {
                 : beat?.dayType.displayName ?? "No Activity",
             style: TextStyle(
               color: TColors.textPrimary,
-              fontSize: 25,
+              fontSize: TSizes.v25,
               fontWeight: FontWeight.w800,
             ),
           ),
 
-          const SizedBox(height: 6),
+          const SizedBox(height: TSizes.v6),
 
           Row(
             children: [
-
               const Icon(
                 Icons.calendar_today_rounded,
-                size: 15,
+                size: TSizes.v15,
                 color: TColors.textSecondary,
               ),
-
-              const SizedBox(width: 6),
-
+              const SizedBox(width: TSizes.v6),
               const Text(
-                "Tuesday • 04 Aug 2026",
+                TTexts.uiTextTuesday04Aug2026,
                 style: TextStyle(
                   color: TColors.textSecondary,
                   fontWeight: FontWeight.w500,
                 ),
               ),
-
             ],
           ),
 
-          const SizedBox(height: 18),
+          const SizedBox(height: TSizes.v18),
 
           Container(
             padding: const EdgeInsets.all(14),
@@ -187,29 +167,25 @@ class TodayBeatCard extends StatelessWidget {
             ),
             child: const Row(
               children: [
-
                 Icon(
                   Icons.info_outline,
                   color: TColors.primary,
                 ),
-
-                SizedBox(width: 10),
-
+                SizedBox(width: TSizes.v10),
                 Expanded(
                   child: Text(
-                    "Today's beat is active. Complete your planned visits before switching.",
+                    TTexts.uiTextTodaySBeatIsActiveCompleteYourPlanned,
                     style: TextStyle(
                       color: TColors.textPrimary,
-                      fontSize: 12,
+                      fontSize: TSizes.v12,
                     ),
                   ),
                 )
-
               ],
             ),
           ),
 
-          const SizedBox(height: 22),
+          const SizedBox(height: TSizes.v22),
 
           //---------------------------------------------------
           // Stats
@@ -218,35 +194,29 @@ class TodayBeatCard extends StatelessWidget {
           if (beat?.dayType.showBeat == true)
             Row(
               children: [
-
                 Expanded(
                   child: _BeatStat(
                     icon: Icons.medical_services,
                     value: "${beat?.doctorsCount ?? 0}",
-                    label: "Doctors",
+                    label: TTexts.uiTextDoctors,
                   ),
                 ),
-
-                const SizedBox(width: 10),
-
+                const SizedBox(width: TSizes.v10),
                 Expanded(
                   child: _BeatStat(
                     icon: Icons.local_pharmacy,
                     value: "${beat?.chemistsCount ?? 0}",
-                    label: "Chemists",
+                    label: TTexts.uiTextChemists,
                   ),
                 ),
-
-                const SizedBox(width: 10),
-
+                const SizedBox(width: TSizes.v10),
                 Expanded(
                   child: _BeatStat(
                     icon: Icons.storefront,
                     value: "${beat?.stockistsCount ?? 0}",
-                    label: "Stockists",
+                    label: TTexts.uiTextStockists,
                   ),
                 ),
-
               ],
             )
           else
@@ -259,73 +229,62 @@ class TodayBeatCard extends StatelessWidget {
               ),
               child: Column(
                 children: [
-
                   const Icon(
                     Icons.event_available,
                     color: TColors.primary,
-                    size: 34,
+                    size: TSizes.v34,
                   ),
-
-                  const SizedBox(height: 10),
-
+                  const SizedBox(height: TSizes.v10),
                   Text(
                     beat?.dayType.displayName ?? "No Activity",
                     style: const TextStyle(
-                      fontSize: 18,
+                      fontSize: TSizes.v18,
                       fontWeight: FontWeight.bold,
                       color: TColors.textPrimary,
                     ),
                   ),
-
-                  const SizedBox(height: 6),
-
+                  const SizedBox(height: TSizes.v6),
                   const Text(
-                    "No beat assigned for today.",
+                    TTexts.uiTextNoBeatAssignedForToday,
                     style: TextStyle(
                       color: TColors.textSecondary,
                     ),
                   ),
-
                 ],
               ),
             ),
 
-          const SizedBox(height: 22),
+          const SizedBox(height: TSizes.v22),
 
           Divider(
             color: TColors.borderSecondary,
-            height: 1,
+            height: TSizes.v1,
           ),
 
-          const SizedBox(height: 18),
+          const SizedBox(height: TSizes.v18),
 
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-
               const Text(
-                "Need another beat?",
+                TTexts.uiTextNeedAnotherBeat,
                 style: TextStyle(
                   color: TColors.textSecondary,
-                  fontSize: 12,
+                  fontSize: TSizes.v12,
                 ),
               ),
-
-              const SizedBox(height: 4),
-
+              const SizedBox(height: TSizes.v4),
               const Text(
-                "Switch your beat assignment",
+                TTexts.uiTextSwitchYourBeatAssignment,
                 style: TextStyle(
                   color: TColors.textPrimary,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-
-              const SizedBox(height: 14),
-
+              const SizedBox(height: TSizes.v14),
               SizedBox(
                 width: double.infinity,
-                height: 50,
+                height: TSizes.v50,
                 child: ElevatedButton(
                   onPressed: () async {
                     final controller = Get.find<DashboardController>();
@@ -336,8 +295,8 @@ class TodayBeatCard extends StatelessWidget {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: TColors.primary,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
+                    foregroundColor: TColors.white,
+                    elevation: TSizes.v0,
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
@@ -348,28 +307,23 @@ class TodayBeatCard extends StatelessWidget {
                     mainAxisSize: MainAxisSize.max,
                     children: [
                       const Icon(Icons.swap_horiz_rounded),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: TSizes.v8),
                       Text(
-                        "Switch Today's Beat",
+                        TTexts.uiTextSwitchTodaySBeat,
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
-                          fontSize: 14,
+                          fontSize: TSizes.v14,
                         ),
                       ),
                     ],
                   ),
                 ),
               ),
-
             ],
           )
-
         ],
       ),
-    )
-        .animate()
-        .fade(duration: 500.ms)
-        .slideY(begin: .15);
+    ).animate().fade(duration: 500.ms).slideY(begin: .15);
   }
 }
 
@@ -410,10 +364,9 @@ class _BeatStat extends StatelessWidget {
         ),
         child: Column(
           children: [
-
             Container(
-              height: 42,
-              width: 42,
+              height: TSizes.v42,
+              width: TSizes.v42,
               decoration: BoxDecoration(
                 color: TColors.primary_shade50,
                 borderRadius: BorderRadius.circular(12),
@@ -421,33 +374,28 @@ class _BeatStat extends StatelessWidget {
               child: Icon(
                 icon,
                 color: TColors.primary,
-                size: 22,
+                size: TSizes.v22,
               ),
             ),
-
-            const SizedBox(height: 12),
-
+            const SizedBox(height: TSizes.v12),
             Text(
               value,
               style: const TextStyle(
                 color: TColors.textPrimary,
-                fontSize: 22,
+                fontSize: TSizes.v22,
                 fontWeight: FontWeight.w800,
               ),
             ),
-
-            const SizedBox(height: 4),
-
+            const SizedBox(height: TSizes.v4),
             Text(
               label,
               textAlign: TextAlign.center,
               style: const TextStyle(
                 color: TColors.textSecondary,
-                fontSize: 12,
+                fontSize: TSizes.v12,
                 fontWeight: FontWeight.w500,
               ),
             ),
-
           ],
         ),
       ),

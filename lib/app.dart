@@ -25,7 +25,7 @@ class _AppState extends State<App> with WidgetsBindingObserver {
     super.initState();
     requestNotificationPermission();
     getFCMToken();
-  /*  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    /*  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       print("Foreground message received");
       print("Title: ${message.notification?.title}");
       print("Body: ${message.notification?.body}");
@@ -40,7 +40,6 @@ class _AppState extends State<App> with WidgetsBindingObserver {
         );
       }
     });
-
 
     WidgetsBinding.instance.addObserver(this);
 
@@ -75,13 +74,14 @@ class _AppState extends State<App> with WidgetsBindingObserver {
 
     return GetMaterialApp(
       scaffoldMessengerKey: scaffoldMessengerKey, //  add this
-      navigatorKey: GlobalKey<NavigatorState>(), // optional, keep if already there
+      navigatorKey:
+          GlobalKey<NavigatorState>(), // optional, keep if already there
       debugShowCheckedModeBanner: false,
       themeMode: ThemeMode.light,
       darkTheme: SAppTheme.darkTheme,
       theme: SAppTheme.lightTheme,
       home: const SplashScreen(),
-     // home:  DebugScreen(),
+      // home:  DebugScreen(),
       defaultTransition: Transition.noTransition,
       customTransition: CustomPageTransition(),
     );
@@ -101,6 +101,4 @@ class _AppState extends State<App> with WidgetsBindingObserver {
     String? token = await FirebaseMessaging.instance.getToken();
     print("FCM TOKEN: $token");
   }
-
-
 }

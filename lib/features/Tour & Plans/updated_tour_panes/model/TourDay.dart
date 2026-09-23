@@ -73,13 +73,13 @@ class TourDay {
       collaborationStatus: identical(collaborationStatus, _tourDayUnset)
           ? this.collaborationStatus
           : collaborationStatus as String?,
-      beatId: identical(beatId, _tourDayUnset) ? this.beatId : beatId as String?,
+      beatId:
+          identical(beatId, _tourDayUnset) ? this.beatId : beatId as String?,
       beatName: identical(beatName, _tourDayUnset)
           ? this.beatName
           : beatName as String?,
-      beatId2: identical(beatId2, _tourDayUnset)
-          ? this.beatId2
-          : beatId2 as String?,
+      beatId2:
+          identical(beatId2, _tourDayUnset) ? this.beatId2 : beatId2 as String?,
       beatName2: identical(beatName2, _tourDayUnset)
           ? this.beatName2
           : beatName2 as String?,

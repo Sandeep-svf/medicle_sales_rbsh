@@ -1,5 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 
 class ImageWithLocationWidget extends StatelessWidget {
   final File image;
@@ -35,7 +37,7 @@ class ImageWithLocationWidget extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 10),
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.65),
+              color: TColors.pureBlack.withOpacity(0.65),
               borderRadius: const BorderRadius.only(
                 bottomLeft: Radius.circular(12),
                 bottomRight: Radius.circular(12),
@@ -43,14 +45,15 @@ class ImageWithLocationWidget extends StatelessWidget {
             ),
             child: Row(
               children: [
-                const Icon(Icons.location_on, color: Colors.white, size: 16),
-                const SizedBox(width: 6),
+                const Icon(Icons.location_on,
+                    color: TColors.white, size: TSizes.v16),
+                const SizedBox(width: TSizes.v6),
                 Expanded(
                   child: Text(
                     "Lat: $latitude , Lng: $longitude",
                     style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
+                      color: TColors.white,
+                      fontSize: TSizes.v12,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),

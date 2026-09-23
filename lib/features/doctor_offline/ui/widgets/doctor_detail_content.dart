@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
-
 import '../../models/doctor.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class DoctorDetailContent extends StatelessWidget {
   const DoctorDetailContent({
@@ -29,7 +29,7 @@ class DoctorDetailContent extends StatelessWidget {
           child: Align(
             alignment: AlignmentDirectional.topCenter,
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 1200),
+              constraints: const BoxConstraints(maxWidth: TSizes.v1200),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -95,22 +95,22 @@ class _ProfileQuickFacts extends StatelessWidget {
     final facts = [
       _QuickFact(
         icon: Icons.local_hospital_outlined,
-        label: 'Clinic',
+        label: TTexts.uiTextClinic,
         value: doctor.displayClinic,
       ),
       _QuickFact(
         icon: Icons.business_outlined,
-        label: 'Head office',
+        label: TTexts.uiTextHeadOffice_807fada4,
         value: _valueOrNotAvailable(doctor.headOfficeName),
       ),
       _QuickFact(
         icon: Icons.map_outlined,
-        label: 'Area',
+        label: TTexts.uiTextArea,
         value: _valueOrNotAvailable(doctor.areaName),
       ),
       _QuickFact(
         icon: Icons.location_on_outlined,
-        label: 'Coordinates',
+        label: TTexts.uiTextCoordinates,
         value: doctor.hasValidCoordinates ? 'Available' : 'Not available',
       ),
     ];
@@ -162,7 +162,7 @@ class _QuickFact extends StatelessWidget {
               color: TColors.primary.withValues(alpha: 0.09),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon, size: 18, color: TColors.primary),
+            child: Icon(icon, size: TSizes.v18, color: TColors.primary),
           ),
           const SizedBox(width: TSizes.sm),
           Expanded(
@@ -175,12 +175,12 @@ class _QuickFact extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: Colors.grey.shade600,
+                        color: TColors.materialGrey600,
                         fontWeight: FontWeight.w700,
                         letterSpacing: .4,
                       ),
                 ),
-                const SizedBox(height: 3),
+                const SizedBox(height: TSizes.v3),
                 Text(
                   value,
                   maxLines: 1,
@@ -224,7 +224,7 @@ class _LandscapeTabbedDetails extends StatelessWidget {
                 isScrollable: true,
                 tabAlignment: TabAlignment.start,
                 labelColor: TColors.primary,
-                unselectedLabelColor: Colors.grey.shade600,
+                unselectedLabelColor: TColors.materialGrey600,
                 indicatorColor: TColors.primary,
                 indicatorWeight: 3,
                 indicatorSize: TabBarIndicatorSize.tab,
@@ -232,21 +232,25 @@ class _LandscapeTabbedDetails extends StatelessWidget {
                 unselectedLabelStyle:
                     const TextStyle(fontWeight: FontWeight.w600),
                 labelPadding: const EdgeInsets.symmetric(horizontal: TSizes.md),
-                dividerColor: Colors.transparent,
+                dividerColor: TColors.transparent,
                 tabs: const [
-                  Tab(icon: Icon(Icons.person_outline), text: 'Overview'),
+                  Tab(
+                      icon: Icon(Icons.person_outline),
+                      text: TTexts.uiTextOverview),
                   Tab(
                       icon: Icon(Icons.local_hospital_outlined),
-                      text: 'Practice'),
+                      text: TTexts.uiTextPractice),
                   Tab(
                       icon: Icon(Icons.location_on_outlined),
-                      text: 'Location & Media'),
-                  Tab(icon: Icon(Icons.sync_outlined), text: 'System'),
+                      text: TTexts.uiTextLocationMedia),
+                  Tab(
+                      icon: Icon(Icons.sync_outlined),
+                      text: TTexts.uiTextSystem),
                 ],
               ),
             ),
             SizedBox(
-              height: 680,
+              height: TSizes.v680,
               child: TabBarView(
                 children: [
                   _DetailsTab(
@@ -265,11 +269,11 @@ class _LandscapeTabbedDetails extends StatelessWidget {
                   ),
                   _DetailsTab(
                     children: [
-                      _LocationCard(doctor: doctor, height: 250),
+                      _LocationCard(doctor: doctor, height: TSizes.v250),
                       const SizedBox(height: TSizes.md),
                       if (localPhoto != null) localPhoto!,
                       if (localPhoto != null) const SizedBox(height: TSizes.md),
-                      _GeoImageCard(doctor: doctor, height: 250),
+                      _GeoImageCard(doctor: doctor, height: TSizes.v250),
                     ],
                   ),
                   _DetailsTab(
@@ -330,7 +334,7 @@ class _ProfileHeader extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: TColors.primary.withValues(alpha: 0.1),
-            blurRadius: 20,
+            blurRadius: TSizes.v20,
             offset: const Offset(0, 8),
           ),
         ],
@@ -345,19 +349,19 @@ class _ProfileHeader extends StatelessWidget {
               color: TColors.white,
               border: Border.all(
                 color: TColors.primary.withValues(alpha: 0.5),
-                width: 2,
+                width: TSizes.v2,
               ),
               boxShadow: [
                 BoxShadow(
                   color: TColors.primary.withValues(alpha: 0.16),
-                  blurRadius: 12,
+                  blurRadius: TSizes.v12,
                 ),
               ],
             ),
             child: Hero(
               tag: 'doctor_avatar_${doctor.localId}',
               child: CircleAvatar(
-                radius: 38,
+                radius: TSizes.v38,
                 backgroundColor: TColors.primary.withValues(alpha: 0.1),
                 child: Text(
                   _initial(doctor.displayName),
@@ -454,8 +458,8 @@ class _HeaderStatusChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 15, color: color),
-          const SizedBox(width: 5),
+          Icon(icon, size: TSizes.v15, color: color),
+          const SizedBox(width: TSizes.v5),
           Text(
             label,
             maxLines: 1,
@@ -479,17 +483,17 @@ class _ContactCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _InformationCard(
-      title: 'Contact Information',
+      title: TTexts.uiTextContactInformation,
       icon: Icons.contact_phone_outlined,
       children: [
         _InfoRow(
           icon: Icons.email_outlined,
-          label: 'Email',
+          label: TTexts.email,
           value: doctor.email,
         ),
         _InfoRow(
           icon: Icons.phone_outlined,
-          label: 'Phone',
+          label: TTexts.phone,
           value: doctor.phone,
         ),
       ],
@@ -505,39 +509,39 @@ class _BasicInformationCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _InformationCard(
-      title: 'Basic Information',
+      title: TTexts.uiTextBasicInformation,
       icon: Icons.info_outline,
       children: [
         _InfoRow(
           icon: Icons.badge_outlined,
-          label: 'Registration',
+          label: TTexts.uiTextRegistration,
           value: doctor.registrationNumber,
         ),
         _InfoRow(
           icon: Icons.school_outlined,
-          label: 'Qualification',
+          label: TTexts.uiTextQualification,
           value: doctor.qualification,
         ),
         _InfoRow(
           icon: Icons.calendar_today_outlined,
-          label: 'DOB',
+          label: TTexts.uiTextDOB,
           value: _formatDate(doctor.dateOfBirth),
         ),
         _InfoRow(
           icon: Icons.cake_outlined,
-          label: 'Anniversary',
+          label: TTexts.anniversary,
           value: _formatDate(doctor.anniversary),
         ),
         _InfoRow(
           icon: Icons.work_history_outlined,
-          label: 'Experience',
+          label: TTexts.uiTextExperience,
           value: doctor.yearsOfExperience == null
               ? null
               : '${doctor.yearsOfExperience} Years',
         ),
         _InfoRow(
           icon: Icons.person_outline,
-          label: 'Gender',
+          label: TTexts.gender,
           value: doctor.gender,
         ),
       ],
@@ -553,27 +557,27 @@ class _PracticeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _InformationCard(
-      title: 'Practice Details',
+      title: TTexts.uiTextPracticeDetails,
       icon: Icons.local_hospital_outlined,
       children: [
         _InfoRow(
           icon: Icons.local_hospital_outlined,
-          label: 'Clinic',
+          label: TTexts.uiTextClinic,
           value: doctor.clinicName,
         ),
         _InfoRow(
           icon: Icons.location_city_outlined,
-          label: 'Clinic Address',
+          label: TTexts.uiTextClinicAddress,
           value: doctor.clinicAddress,
         ),
         _InfoRow(
           icon: Icons.schedule_outlined,
-          label: 'Available Timings',
+          label: TTexts.uiTextAvailableTimings,
           value: doctor.availableTimings,
         ),
         _InfoRow(
           icon: Icons.currency_rupee_outlined,
-          label: 'Consultation Fee',
+          label: TTexts.uiTextConsultationFee,
           value: _formatCurrency(doctor.consultationFee),
         ),
       ],
@@ -589,17 +593,17 @@ class _HeadOfficeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _InformationCard(
-      title: 'Head Office',
+      title: TTexts.uiTextHeadOffice,
       icon: Icons.business_outlined,
       children: [
         _InfoRow(
           icon: Icons.store_mall_directory_outlined,
-          label: 'Office Name',
+          label: TTexts.uiTextOfficeName,
           value: doctor.headOfficeName,
         ),
         _InfoRow(
           icon: Icons.map_outlined,
-          label: 'Area',
+          label: TTexts.uiTextArea,
           value: doctor.areaName,
         ),
       ],
@@ -615,39 +619,39 @@ class _AccountMetadataCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _InformationCard(
-      title: 'Account Metadata',
+      title: TTexts.uiTextAccountMetadata,
       icon: Icons.manage_accounts_outlined,
       children: [
         _InfoRow(
           icon: Icons.person_pin_outlined,
-          label: 'Created By',
+          label: TTexts.uiTextCreatedBy,
           value: doctor.createdByName,
         ),
         _InfoRow(
           icon: Icons.access_time,
-          label: 'Created',
+          label: TTexts.uiTextCreated,
           value: _formatTimestamp(doctor.createdAt),
         ),
         _InfoRow(
           icon: Icons.update,
-          label: 'Last Updated',
+          label: TTexts.uiTextLastUpdated,
           value: _formatTimestamp(doctor.updatedAt),
         ),
         _InfoRow(
           icon: Icons.offline_pin_outlined,
-          label: 'Offline Status',
+          label: TTexts.uiTextOfflineStatus,
           value: doctor.localSyncState == DoctorLocalSyncState.synced
               ? 'Downloaded from server'
               : 'Pending local creation',
         ),
         _InfoRow(
           icon: Icons.sync_outlined,
-          label: 'Sync Version',
+          label: TTexts.uiTextSyncVersion,
           value: doctor.syncVersion?.toString(),
         ),
         _InfoRow(
           icon: Icons.account_balance_wallet_outlined,
-          label: 'UCPMP Annual Cap',
+          label: TTexts.uiTextUCPMPAnnualCap,
           value: _formatCurrency(doctor.ucpmpAnnualCap),
         ),
       ],
@@ -673,7 +677,7 @@ class _LocationCard extends StatelessWidget {
       child: Column(
         children: [
           const _CardTitleBar(
-            title: 'Location on Map',
+            title: TTexts.uiTextLocationOnMap,
             icon: Icons.map_outlined,
           ),
           SizedBox(
@@ -700,10 +704,10 @@ class _LocationCard extends StatelessWidget {
                         hasLocation
                             ? Icons.location_on_rounded
                             : Icons.location_off_outlined,
-                        size: 48,
+                        size: TSizes.v48,
                         color: hasLocation
                             ? TColors.primary
-                            : Colors.grey.shade500,
+                            : TColors.materialGrey500,
                       ),
                       const SizedBox(height: TSizes.sm),
                       Text(
@@ -722,7 +726,7 @@ class _LocationCard extends StatelessWidget {
                           textAlign: TextAlign.center,
                           style:
                               Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: Colors.grey.shade700,
+                                    color: TColors.materialGrey700,
                                   ),
                         ),
                       ],
@@ -756,7 +760,7 @@ class _GeoImageCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const _SectionTitle(
-            title: 'Geo Location Image',
+            title: TTexts.uiTextGeoLocationImage,
             icon: Icons.image_outlined,
           ),
           const Divider(),
@@ -767,7 +771,7 @@ class _GeoImageCard extends StatelessWidget {
             child: hasImage
                 ? _NetworkGeoImage(imageUrl: imageUrl)
                 : const _MissingGeoImage(
-                    message: 'No Geo Location Image available',
+                    message: TTexts.uiTextNoGeoLocationImageAvailable,
                   ),
           ),
         ],
@@ -785,9 +789,9 @@ class _NetworkGeoImage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.grey.shade50,
+        color: TColors.materialGrey50,
         borderRadius: BorderRadius.circular(TSizes.borderRadiusLg),
-        border: Border.all(color: Colors.grey.shade300),
+        border: Border.all(color: TColors.materialGrey300),
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -805,7 +809,7 @@ class _NetworkGeoImage extends StatelessWidget {
                 );
               },
               errorBuilder: (_, __, ___) => const _MissingGeoImage(
-                message: 'Geo image is unavailable',
+                message: TTexts.uiTextGeoImageIsUnavailable,
               ),
             ),
             Positioned(
@@ -817,19 +821,20 @@ class _NetworkGeoImage extends StatelessWidget {
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.6),
+                  color: TColors.pureBlack.withValues(alpha: 0.6),
                   borderRadius: BorderRadius.circular(30),
                 ),
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.visibility, color: TColors.white, size: 18),
-                    SizedBox(width: 6),
+                    Icon(Icons.visibility,
+                        color: TColors.white, size: TSizes.v18),
+                    SizedBox(width: TSizes.v6),
                     Text(
-                      'View',
+                      TTexts.uiTextView,
                       style: TextStyle(
                         color: TColors.white,
-                        fontSize: 12,
+                        fontSize: TSizes.v12,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -848,7 +853,7 @@ class _NetworkGeoImage extends StatelessWidget {
       context: context,
       builder: (dialogContext) {
         return Dialog(
-          backgroundColor: Colors.transparent,
+          backgroundColor: TColors.transparent,
           insetPadding: const EdgeInsets.all(12),
           child: Stack(
             alignment: Alignment.topRight,
@@ -864,9 +869,9 @@ class _NetworkGeoImage extends StatelessWidget {
                       url,
                       fit: BoxFit.contain,
                       errorBuilder: (_, __, ___) => const SizedBox(
-                        height: 320,
+                        height: TSizes.v320,
                         child: _MissingGeoImage(
-                          message: 'Geo image is unavailable',
+                          message: TTexts.uiTextGeoImageIsUnavailable,
                         ),
                       ),
                     ),
@@ -876,7 +881,7 @@ class _NetworkGeoImage extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.all(10),
                 child: IconButton.filled(
-                  tooltip: 'Close image',
+                  tooltip: TTexts.uiTextCloseImage,
                   onPressed: () => Navigator.of(dialogContext).pop(),
                   icon: const Icon(Icons.close),
                 ),
@@ -902,9 +907,9 @@ class _MissingGeoImage extends StatelessWidget {
       child: Container(
         width: double.infinity,
         decoration: BoxDecoration(
-          color: Colors.grey.shade50,
+          color: TColors.materialGrey50,
           borderRadius: BorderRadius.circular(TSizes.borderRadiusLg),
-          border: Border.all(color: Colors.grey.shade300),
+          border: Border.all(color: TColors.materialGrey300),
         ),
         child: Center(
           child: Padding(
@@ -913,8 +918,8 @@ class _MissingGeoImage extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  width: 72,
-                  height: 72,
+                  width: TSizes.v72,
+                  height: TSizes.v72,
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: TColors.white,
@@ -929,16 +934,16 @@ class _MissingGeoImage extends StatelessWidget {
                     errorBuilder: (_, __, ___) => const Icon(
                       Icons.image_not_supported_outlined,
                       color: TColors.primary,
-                      size: 36,
+                      size: TSizes.v36,
                     ),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: TSizes.v12),
                 Text(
                   message,
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.grey.shade700,
+                        color: TColors.materialGrey700,
                         fontWeight: FontWeight.w600,
                       ),
                 ),
@@ -1029,13 +1034,13 @@ class _SectionTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 20, color: TColors.primary),
+        Icon(icon, size: TSizes.v20, color: TColors.primary),
         const SizedBox(width: TSizes.sm),
         Expanded(
           child: Text(
             title,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: const Color(0xFF333333),
+                  color: TColors.hex_FF333333,
                   fontWeight: FontWeight.w700,
                 ),
           ),
@@ -1069,7 +1074,7 @@ class _InfoRow extends StatelessWidget {
               color: TColors.primary.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(TSizes.borderRadiusMd),
             ),
-            child: Icon(icon, size: 18, color: TColors.primary),
+            child: Icon(icon, size: TSizes.v18, color: TColors.primary),
           ),
           const SizedBox(width: TSizes.md),
           Expanded(
@@ -1079,15 +1084,15 @@ class _InfoRow extends StatelessWidget {
                 Text(
                   label,
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        color: Colors.grey.shade500,
+                        color: TColors.materialGrey500,
                         fontWeight: FontWeight.w600,
                       ),
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: TSizes.v2),
                 SelectableText(
                   _valueOrNotAvailable(value),
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.black87,
+                        color: TColors.black87,
                         fontWeight: FontWeight.w500,
                       ),
                 ),
@@ -1140,23 +1145,23 @@ class _PriorityPresentation {
     switch (value?.trim().toUpperCase()) {
       case 'A':
         return const _PriorityPresentation(
-          label: 'High Priority',
-          color: Colors.red,
+          label: TTexts.uiTextHighPriority,
+          color: TColors.materialRed,
         );
       case 'B':
         return const _PriorityPresentation(
-          label: 'Medium Priority',
-          color: Colors.orange,
+          label: TTexts.uiTextMediumPriority,
+          color: TColors.materialOrange,
         );
       case 'C':
         return const _PriorityPresentation(
-          label: 'Standard Priority',
-          color: Colors.blueGrey,
+          label: TTexts.uiTextStandardPriority,
+          color: TColors.materialBlueGrey,
         );
       default:
         return const _PriorityPresentation(
-          label: 'Not added',
-          color: Colors.grey,
+          label: TTexts.uiTextNotAdded_a5651658,
+          color: TColors.materialGrey,
         );
     }
   }
@@ -1171,8 +1176,8 @@ BoxDecoration _cardDecoration() {
     ),
     boxShadow: [
       BoxShadow(
-        color: Colors.black.withValues(alpha: 0.06),
-        blurRadius: 15,
+        color: TColors.pureBlack.withValues(alpha: 0.06),
+        blurRadius: TSizes.v15,
         offset: const Offset(0, 6),
       ),
     ],

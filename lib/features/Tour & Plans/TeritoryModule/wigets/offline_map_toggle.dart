@@ -1,154 +1,88 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
-import '../../../../utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import '../controller/territory_controller.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class OfflineMapToggle extends GetView<TerritoryController> {
   const OfflineMapToggle({super.key});
 
   @override
   Widget build(BuildContext context) {
-
     return Obx(() {
-
       return Container(
-
         margin: const EdgeInsets.symmetric(horizontal: 12),
-
         padding: const EdgeInsets.all(4),
-
         decoration: BoxDecoration(
-
-          color: Colors.white,
-
+          color: TColors.white,
           borderRadius: BorderRadius.circular(30),
-
           boxShadow: const [
-
             BoxShadow(
-
-              color: Colors.black12,
-
-              blurRadius: 8,
-
+              color: TColors.black12,
+              blurRadius: TSizes.v8,
             )
-
           ],
-
         ),
-
         child: Row(
-
           children: [
-
             Expanded(
-
               child: GestureDetector(
-
                 onTap: () {
-
                   controller.toggleOfflineMode(false);
-
                 },
-
                 child: AnimatedContainer(
-
                   duration: const Duration(milliseconds: 250),
-
                   padding: const EdgeInsets.symmetric(vertical: 10),
-
                   decoration: BoxDecoration(
-
                     color: controller.isOfflineMode.value
-                        ? Colors.transparent
+                        ? TColors.transparent
                         : TColors.primary,
-
                     borderRadius: BorderRadius.circular(25),
-
                   ),
-
                   child: Text(
-
-                    "🌐 Online",
-
+                    TTexts.uiTextOnline,
                     textAlign: TextAlign.center,
-
                     style: TextStyle(
-
                       color: controller.isOfflineMode.value
-                          ? Colors.black
-                          : Colors.white,
-
+                          ? TColors.pureBlack
+                          : TColors.white,
                       fontWeight: FontWeight.bold,
-
                     ),
-
                   ),
-
                 ),
-
               ),
-
             ),
-
             Expanded(
-
               child: GestureDetector(
-
                 onTap: () {
-
                   controller.toggleOfflineMode(true);
-
                 },
-
                 child: AnimatedContainer(
-
                   duration: const Duration(milliseconds: 250),
-
                   padding: const EdgeInsets.symmetric(vertical: 10),
-
                   decoration: BoxDecoration(
-
                     color: controller.isOfflineMode.value
                         ? TColors.primary
-                        : Colors.transparent,
-
+                        : TColors.transparent,
                     borderRadius: BorderRadius.circular(25),
-
                   ),
-
                   child: Text(
-
-                    "📦 Offline",
-
+                    TTexts.uiTextOffline,
                     textAlign: TextAlign.center,
-
                     style: TextStyle(
-
                       color: controller.isOfflineMode.value
-                          ? Colors.white
-                          : Colors.black,
-
+                          ? TColors.white
+                          : TColors.pureBlack,
                       fontWeight: FontWeight.bold,
-
                     ),
-
                   ),
-
                 ),
-
               ),
-
             ),
-
           ],
-
         ),
-
       );
-
     });
-
   }
 }

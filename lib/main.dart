@@ -24,15 +24,14 @@ import 'features/TrackingOptimizedBgLocation/storage/app_state_dao.dart';
 import 'features/TrackingOptimizedBgLocation/utils/device_info_plus.dart';
 import 'features/TrackingOptimizedBgLocation/background/tracking_upload_work_manager.dart';
 
-
 // ============================================================
 // FIREBASE BACKGROUND MESSAGE
 // ============================================================
 
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(
-    RemoteMessage message,
-    ) async {
+  RemoteMessage message,
+) async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -42,16 +41,13 @@ Future<void> firebaseMessagingBackgroundHandler(
   );
 }
 
-
 // ============================================================
 // FIREBASE IN-APP MESSAGING
 // ============================================================
 
 void initFIAM() {
-  FirebaseInAppMessaging.instance
-      .setMessagesSuppressed(false);
+  FirebaseInAppMessaging.instance.setMessagesSuppressed(false);
 }
-
 
 // ============================================================
 // DEVICE ID
@@ -78,11 +74,9 @@ Future<void> ensureTrackingDeviceId() async {
     // Existing Play Store users will reuse it.
     // --------------------------------------------------------
 
-    final existingDeviceId =
-    await appStateDao.get('device_id');
+    final existingDeviceId = await appStateDao.get('device_id');
 
-    if (existingDeviceId != null &&
-        existingDeviceId.trim().isNotEmpty) {
+    if (existingDeviceId != null && existingDeviceId.trim().isNotEmpty) {
       debugPrint(
         '[DEVICE_ID] Existing ID found: $existingDeviceId',
       );
@@ -138,8 +132,7 @@ Future<void> ensureTrackingDeviceId() async {
     // Read back once for verification.
     // --------------------------------------------------------
 
-    final savedDeviceId =
-    await appStateDao.get('device_id');
+    final savedDeviceId = await appStateDao.get('device_id');
 
     debugPrint(
       '[DEVICE_ID] DB verification: $savedDeviceId',
@@ -154,7 +147,6 @@ Future<void> ensureTrackingDeviceId() async {
     );
   }
 }
-
 
 // ============================================================
 // MAIN
@@ -185,8 +177,7 @@ Future<void> main() async {
     firebaseMessagingBackgroundHandler,
   );
 
-  await FirebaseAnalytics.instance
-      .setAnalyticsCollectionEnabled(true);
+  await FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(true);
 
   initFIAM();
 
@@ -240,14 +231,11 @@ Future<void> main() async {
   // Splash will call ensureRunning() after permissions.
   // =========================================================
 
-  final trackingConfigured =
-  await TrackingServiceManager
-      .instance
-      .configure();
+  final trackingConfigured = await TrackingServiceManager.instance.configure();
 
   debugPrint(
     '[MAIN] Tracking service configured: '
-        '$trackingConfigured',
+    '$trackingConfigured',
   );
 
   // =========================================================
@@ -261,7 +249,6 @@ Future<void> main() async {
   //
   // Background location service will own the upload queue.
   // =========================================================
-
 
   // =========================================================
   // RUN APPLICATION

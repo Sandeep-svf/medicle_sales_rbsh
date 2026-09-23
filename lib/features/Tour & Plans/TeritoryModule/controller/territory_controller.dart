@@ -1,3 +1,4 @@
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
@@ -5,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:get/get.dart';
 import 'package:latlong2/latlong.dart';
-
 
 import '../../../../utils/local_storage/auth_manager.dart';
 import '../../../addClinic/model/clinic.dart';
@@ -22,9 +22,9 @@ import '../service/area_polygon_builder.dart';
 import '../utils/enumsclass.dart';
 import '../wigets/area_details_bottom_sheet.dart';
 import '../wigets/create_beat_bottom_sheet.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class TerritoryController extends GetxController {
-
   final RxBool showBottomTools = false.obs;
   final RxBool showTools = false.obs;
   final authManager = AuthManager();
@@ -49,12 +49,11 @@ class TerritoryController extends GetxController {
   /// SELECTED BEAT
 ////////////////////////////////////////////////////////
 
- // final selectedBeat = Rxn<BeatModel>();
+  // final selectedBeat = Rxn<BeatModel>();
 
   final remarkController = TextEditingController();
 
-  final selectedBeatColor =
-      "#FF0000".obs;
+  final selectedBeatColor = "#FF0000".obs;
 
   final repository = TerritoryRepository.instance;
 
@@ -102,7 +101,6 @@ class TerritoryController extends GetxController {
 
   final highlightedBeat = Rxn<BeatModel>();
 
-
   /////////////////////////////////////////////////////////////////////////////
   /// CREATE BEAT
   /////////////////////////////////////////////////////////////////////////////
@@ -127,8 +125,7 @@ class TerritoryController extends GetxController {
 
   final currentZoom = 13.0.obs;
 
-  final currentCenter =
-      const LatLng(25.5941, 85.1376).obs; // Patna, Bihar
+  final currentCenter = const LatLng(25.5941, 85.1376).obs; // Patna, Bihar
 
   @override
   void onInit() {
@@ -157,9 +154,9 @@ class TerritoryController extends GetxController {
 
     debugPrint(
       "[TerritoryController] HeadOffice -> "
-          "Name: ${headOffice.name}, "
-          "Lat: ${headOffice.latitude}, "
-          "Lng: ${headOffice.longitude}",
+      "Name: ${headOffice.name}, "
+      "Lat: ${headOffice.latitude}, "
+      "Lng: ${headOffice.longitude}",
     );
 
     currentCenter.value = LatLng(
@@ -169,28 +166,22 @@ class TerritoryController extends GetxController {
 
     debugPrint(
       "[TerritoryController] currentCenter -> "
-          "${currentCenter.value.latitude}, "
-          "${currentCenter.value.longitude}",
+      "${currentCenter.value.latitude}, "
+      "${currentCenter.value.longitude}",
     );
   }
 
-
   Future<void> loadAssignedHeadOffices() async {
-
     final user = await authManager.getUserData();
 
     assignedHeadOffices.assignAll(
-
       List<HeadOffice>.from(
         user?.user?.headOffices ?? const <HeadOffice>[],
       ),
-
     );
-
   }
 
   Future<void> toggleOfflineMode(bool value) async {
-
     isOfflineMode.value = value;
 
     if (!value) {
@@ -198,22 +189,13 @@ class TerritoryController extends GetxController {
     }
 
     await checkOfflineAvailability();
-
   }
 
-  Future<void> checkOfflineAvailability() async{
+  Future<void> checkOfflineAvailability() async {}
 
-  }
+  Future<void> downloadOfflineMap() async {}
 
-  Future<void> downloadOfflineMap() async{
-
-  }
-
-  Future<void> deleteOfflineMap() async{
-
-  }
-
-
+  Future<void> deleteOfflineMap() async {}
 
   /// old one for beat edge
   /*LatLng beatCenter(List<AreaModel> areas) {
@@ -242,29 +224,20 @@ class TerritoryController extends GetxController {
   }
 
   void onMapReady() {
-
     _mapReady = true;
 
     if (selectedHeadquarter.value != null) {
-
       moveCamera(
-
         LatLng(
           selectedHeadquarter.value!.latitude,
           selectedHeadquarter.value!.longitude,
         ),
-
         selectedHeadquarter.value!.zoom,
-
       );
-
     }
-
   }
 
-
   void editBeat(BeatModel beat) {
-
     editingBeat.value = beat;
 
     /////////////////////////////////////////////////////
@@ -296,15 +269,10 @@ class TerritoryController extends GetxController {
     /////////////////////////////////////////////////////
 
     Get.bottomSheet(
-
       const CreateBeatBottomSheet(),
-
       isScrollControlled: true,
-
-      backgroundColor: Colors.transparent,
-
+      backgroundColor: TColors.transparent,
     );
-
   }
 
   /////////////////////////////////////////////////////////////////////////////
@@ -312,9 +280,6 @@ class TerritoryController extends GetxController {
   /////////////////////////////////////////////////////////////////////////////
 
   Future<void> loadData() async {
-
-
-
     //////////////////////////////////////////////////////
     /// LOAD HEAD OFFICES FROM LOGIN
     //////////////////////////////////////////////////////
@@ -323,9 +288,12 @@ class TerritoryController extends GetxController {
 
     debugPrint("[TerritoryController] ===== USER FROM SHARED PREF =====");
     debugPrint("[TerritoryController] User Null: ${user == null}");
-    debugPrint("[TerritoryController] Head Office Count: ${user?.user?.headOffices.length}");
-    debugPrint("[TerritoryController] HQ Latitude: ${user?.user?.headOffices.first.latitude}");
-    debugPrint("[TerritoryController] HQ Longitude: ${user?.user?.headOffices.first.longitude}");
+    debugPrint(
+        "[TerritoryController] Head Office Count: ${user?.user?.headOffices.length}");
+    debugPrint(
+        "[TerritoryController] HQ Latitude: ${user?.user?.headOffices.first.latitude}");
+    debugPrint(
+        "[TerritoryController] HQ Longitude: ${user?.user?.headOffices.first.longitude}");
 
     if (user == null) {
       debugPrint("[TerritoryController] User data not found.");
@@ -357,7 +325,7 @@ class TerritoryController extends GetxController {
 
       debugPrint(
         "[TerritoryController] Selected HQ: ${hq.name} "
-            "(${hq.latitude}, ${hq.longitude})",
+        "(${hq.latitude}, ${hq.longitude})",
       );
     }
 
@@ -395,7 +363,7 @@ class TerritoryController extends GetxController {
     /// INITIAL MAP POSITION first area
     //////////////////////////////////////////////////////
 
-   /* if (areas.isNotEmpty) {
+    /* if (areas.isNotEmpty) {
 
       moveCamera(
 
@@ -417,9 +385,7 @@ class TerritoryController extends GetxController {
   /// HQ
   /////////////////////////////////////////////////////////////////////////////
 
-  void changeHeadquarter(
-      HeadquarterModel headquarter) {
-
+  void changeHeadquarter(HeadquarterModel headquarter) {
     selectedHeadquarter.value = headquarter;
 
     currentCenter.value = LatLng(
@@ -430,55 +396,33 @@ class TerritoryController extends GetxController {
     currentZoom.value = headquarter.zoom;
 
     moveCamera(
-
       LatLng(
-
         headquarter.latitude,
-
         headquarter.longitude,
-
       ),
-
       headquarter.zoom,
-
     );
-
   }
 
   void openAreaDetails(AreaModel area) {
-
     selectedArea.value = area;
 
     Get.bottomSheet(
-
       AreaDetailsBottomSheet(
         area: area,
       ),
-
       isScrollControlled: true,
-
-      backgroundColor: Colors.transparent,
-
+      backgroundColor: TColors.transparent,
     );
-
   }
 
   List<BeatModel> beatsForArea(String areaId) {
-
     final beatIds = beatAreas
-
         .where((mapping) => mapping.areaId == areaId)
-
         .map((mapping) => mapping.beatId)
-
         .toSet();
 
-    return beats
-
-        .where((beat) => beatIds.contains(beat.id))
-
-        .toList();
-
+    return beats.where((beat) => beatIds.contains(beat.id)).toList();
   }
 
   /////////////////////////////////////////////////////////////////////////////
@@ -486,7 +430,6 @@ class TerritoryController extends GetxController {
   /////////////////////////////////////////////////////////////////////////////
 
   void selectArea(AreaModel area) {
-
     selectedArea.value = area;
 
     if (selectedAreas.any((e) => e.id == area.id)) {
@@ -503,13 +446,11 @@ class TerritoryController extends GetxController {
     double maxLng = selectedAreas.first.longitude;
 
     for (final area in selectedAreas) {
-
       minLat = area.latitude < minLat ? area.latitude : minLat;
       maxLat = area.latitude > maxLat ? area.latitude : maxLat;
 
       minLng = area.longitude < minLng ? area.longitude : minLng;
       maxLng = area.longitude > maxLng ? area.longitude : maxLng;
-
     }
 
     moveCamera(
@@ -527,24 +468,17 @@ class TerritoryController extends GetxController {
   /// DOCTOR
   /////////////////////////////////////////////////////////////////////////////
 
-  void selectDoctor(
-      DoctorLocationModel doctor) {
-
+  void selectDoctor(DoctorLocationModel doctor) {
     selectedDoctor.value = doctor;
 
     moveCamera(
-
       LatLng(
         doctor.latitude,
         doctor.longitude,
       ),
-
       16.5,
-
     );
-
   }
-
 
   void zoomToAreas(List<AreaModel> areas) {
     if (areas.isEmpty) return;
@@ -571,18 +505,13 @@ class TerritoryController extends GetxController {
   }
 
   int beatCountOfArea(String areaId) {
-    return beatAreas
-        .where((e) => e.areaId == areaId)
-        .length;
+    return beatAreas.where((e) => e.areaId == areaId).length;
   }
-
 
   final Distance distance = const Distance();
 
   AreaModel? areaFromPoint(LatLng point) {
-
     for (final area in visibleAreas) {
-
       final meter = distance.as(
         LengthUnit.Meter,
         point,
@@ -595,20 +524,16 @@ class TerritoryController extends GetxController {
       if (meter <= area.radius) {
         return area;
       }
-
     }
 
     return null;
   }
-
-
 
   /////////////////////////////////////////////////////////////////////////////
   /// BEAT
   /////////////////////////////////////////////////////////////////////////////
 
   void selectBeat(BeatModel beat) {
-
     selectedBeat.value = beat;
 
     final areas = beatAreasOf(beat);
@@ -622,7 +547,6 @@ class TerritoryController extends GetxController {
     if (Get.isBottomSheetOpen ?? false) {
       Get.back();
     }
-
   }
 
   /////////////////////////////////////////////////////////////////////////////
@@ -630,7 +554,6 @@ class TerritoryController extends GetxController {
   /////////////////////////////////////////////////////////////////////////////
 
   void startBeatCreation() {
-
     editingBeat.value = null;
 
     selectedBeat.value = null;
@@ -649,12 +572,11 @@ class TerritoryController extends GetxController {
     Get.bottomSheet(
       const CreateBeatBottomSheet(),
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor: TColors.transparent,
     );
   }
 
   void cancelBeatCreation() {
-
     if (editingBeat.value == null) {
       selectedAreas.clear();
     }
@@ -668,18 +590,14 @@ class TerritoryController extends GetxController {
     if (Get.isBottomSheetOpen ?? false) {
       Get.back();
     }
-
   }
 
   /////////////////////////////////////////////////////////////////////////////
   /// LAYERS
   /////////////////////////////////////////////////////////////////////////////
 
-  void toggleLayer(
-      TerritoryLayer layer) {
-
+  void toggleLayer(TerritoryLayer layer) {
     switch (layer) {
-
       case TerritoryLayer.area:
         showAreas.toggle();
         break;
@@ -691,11 +609,8 @@ class TerritoryController extends GetxController {
       case TerritoryLayer.beat:
         showBeats.toggle();
         break;
-
     }
-
   }
-
 
   /// old
   /*List<AreaModel> get visibleAreas {
@@ -718,7 +633,7 @@ class TerritoryController extends GetxController {
   List<AreaModel> get visibleAreas => areas;
 
   ///old
- /* List<DoctorLocationModel> get visibleDoctors {
+  /* List<DoctorLocationModel> get visibleDoctors {
 
     if (selectedHeadquarter.value == null) {
       return [];
@@ -757,54 +672,38 @@ class TerritoryController extends GetxController {
   /// new
   List<BeatModel> get visibleBeats => beats;
 
-  List<AreaModel> beatAreasOf(
-      BeatModel beat) {
-
+  List<AreaModel> beatAreasOf(BeatModel beat) {
     final ids = beatAreas
-
         .where(
           (e) => e.beatId == beat.id,
-    )
-
+        )
         .map(
           (e) => e.areaId,
-    )
-
+        )
         .toSet();
 
     return areas
-
         .where(
           (e) => ids.contains(e.id),
-    )
-
+        )
         .toList();
-
   }
 
-  int doctorCountOfBeat(
-      BeatModel beat) {
-
+  int doctorCountOfBeat(BeatModel beat) {
     final ids = beatAreas
-
         .where(
           (e) => e.beatId == beat.id,
-    )
-
+        )
         .map(
           (e) => e.areaId,
-    )
-
+        )
         .toSet();
 
     return doctors
-
         .where(
           (e) => ids.contains(e.areaId),
-    )
-
+        )
         .length;
-
   }
 
   Color beatColor(BeatModel beat) {
@@ -815,22 +714,21 @@ class TerritoryController extends GetxController {
         ),
       );
     } catch (_) {
-      return Colors.grey;
+      return TColors.materialGrey;
     }
   }
 
   List<AreaModel> get beatCreationAreas {
-
     return selectedAreas;
-
   }
 
   void moveCamera(
-      LatLng center,
-      double zoom,
-      ) {
+    LatLng center,
+    double zoom,
+  ) {
     debugPrint("[TerritoryController] ===== moveCamera =====");
-    debugPrint("[TerritoryController] Center: ${center.latitude}, ${center.longitude}");
+    debugPrint(
+        "[TerritoryController] Center: ${center.latitude}, ${center.longitude}");
     debugPrint("[TerritoryController] Zoom: $zoom");
     debugPrint("[TerritoryController] _mapReady: $_mapReady");
 
@@ -845,67 +743,48 @@ class TerritoryController extends GetxController {
     }
   }
 
-
   ///////////////////////////////////////////////////////////////////////////
   /// MAP ZOOM
 ///////////////////////////////////////////////////////////////////////////
 
   bool get showDoctorMarkers {
-
     return currentZoom.value >= 14;
-
   }
 
   //temp chnage
 
   bool get showAreaLabels {
-
     return currentZoom.value >= 11;
-
   }
 
   bool get showBeatPolygon {
-
     return currentZoom.value >= 10;
-
   }
 
   int get totalDoctors {
-
     return visibleDoctors.length;
-
   }
 
   int get totalAreas {
-
     return visibleAreas.length;
-
   }
 
   int get totalBeats {
-
     return visibleBeats.length;
-
   }
 
   // new one for beat circle
   LatLng beatCenter(List<AreaModel> areas) {
+    final lat =
+        areas.map((e) => e.latitude).reduce((a, b) => a + b) / areas.length;
 
-    final lat = areas
-        .map((e) => e.latitude)
-        .reduce((a, b) => a + b) /
-        areas.length;
-
-    final lng = areas
-        .map((e) => e.longitude)
-        .reduce((a, b) => a + b) /
-        areas.length;
+    final lng =
+        areas.map((e) => e.longitude).reduce((a, b) => a + b) / areas.length;
 
     return LatLng(lat, lng);
   }
 
   double beatRadius(List<AreaModel> areas) {
-
     final center = beatCenter(areas);
 
     final distance = const Distance();
@@ -913,7 +792,6 @@ class TerritoryController extends GetxController {
     double radius = 0;
 
     for (final area in areas) {
-
       final d = distance.as(
         LengthUnit.Meter,
         center,
@@ -938,31 +816,23 @@ class TerritoryController extends GetxController {
   int get selectedAreaCount => selectedAreas.length;
 
   int get selectedDoctorCount {
-
     if (selectedAreas.isEmpty) {
       return 0;
     }
 
     return doctors.where((doctor) {
-
       return selectedAreas.any(
-            (area) => area.id == doctor.areaId,
+        (area) => area.id == doctor.areaId,
       );
-
     }).length;
-
   }
 
   double get estimatedDistance {
-
     return selectedAreas.length * 2.8;
-
   }
 
   bool get canSaveBeat {
-
     return selectedAreas.isNotEmpty;
-
   }
 
   /*Future<void> createBeat() async {
@@ -1062,18 +932,18 @@ class TerritoryController extends GetxController {
   Future<void> deleteBeat(BeatModel beat) async {
     final confirm = await Get.dialog<bool>(
       AlertDialog(
-        title: const Text("Delete Beat"),
+        title: const Text(TTexts.uiTextDeleteBeat),
         content: Text(
           "Are you sure you want to delete '${beat.beatName}'?",
         ),
         actions: [
           TextButton(
             onPressed: () => Get.back(result: false),
-            child: const Text("Cancel"),
+            child: const Text(TTexts.cancel),
           ),
           ElevatedButton(
             onPressed: () => Get.back(result: true),
-            child: const Text("Delete"),
+            child: const Text(TTexts.uiTextDelete),
           ),
         ],
       ),
@@ -1094,7 +964,7 @@ class TerritoryController extends GetxController {
 
       Get.snackbar(
         "Success",
-        "Beat deleted successfully.",
+        TTexts.uiTextBeatDeletedSuccessfully,
         snackPosition: SnackPosition.BOTTOM,
       );
     } catch (e) {
@@ -1110,7 +980,7 @@ class TerritoryController extends GetxController {
     if (beatNameController.text.trim().isEmpty) {
       Get.snackbar(
         "Beat Name",
-        "Please enter beat name.",
+        TTexts.uiTextPleaseEnterBeatName,
       );
       return;
     }
@@ -1118,7 +988,7 @@ class TerritoryController extends GetxController {
     if (selectedAreas.isEmpty) {
       Get.snackbar(
         "Areas",
-        "Please select at least one area.",
+        TTexts.uiTextPleaseSelectAtLeastOneArea,
       );
       return;
     }
@@ -1134,7 +1004,7 @@ class TerritoryController extends GetxController {
 
       Get.snackbar(
         "Success",
-        "Beat created successfully.",
+        TTexts.uiTextBeatCreatedSuccessfully,
         snackPosition: SnackPosition.BOTTOM,
       );
 
@@ -1147,11 +1017,7 @@ class TerritoryController extends GetxController {
     }
   }
 
-
-
-
   List<LatLng> beatTerritoryPoints(BeatModel beat) {
-
     final areas = beatAreasOf(beat);
 
     if (areas.length < 3) {
@@ -1161,17 +1027,16 @@ class TerritoryController extends GetxController {
     final points = areas
         .map(
           (e) => LatLng(
-        e.latitude,
-        e.longitude,
-      ),
-    )
+            e.latitude,
+            e.longitude,
+          ),
+        )
         .toList();
 
     // Sort clockwise around center
     final center = beatCenter(areas);
 
     points.sort((a, b) {
-
       final angleA = atan2(
         a.latitude - center.latitude,
         a.longitude - center.longitude,
@@ -1183,21 +1048,17 @@ class TerritoryController extends GetxController {
       );
 
       return angleA.compareTo(angleB);
-
     });
 
     return points;
   }
 
   void resetBeatForm() {
-
     beatNameController.clear();
 
     remarkController.clear();
 
-    selectedBeatColor.value =
-    "#FF0000";
-
+    selectedBeatColor.value = "#FF0000";
   }
 
   bool areaBelongsToSelectedBeat(String areaId) {
@@ -1206,9 +1067,7 @@ class TerritoryController extends GetxController {
     }
 
     return beatAreas.any(
-          (e) =>
-      e.areaId == areaId &&
-          e.beatId == selectedBeat.value!.id,
+      (e) => e.areaId == areaId && e.beatId == selectedBeat.value!.id,
     );
   }
 
@@ -1224,7 +1083,7 @@ class TerritoryController extends GetxController {
         ),
       );
     } catch (_) {
-      return Colors.grey;
+      return TColors.materialGrey;
     }
   }
 
@@ -1235,9 +1094,7 @@ class TerritoryController extends GetxController {
       return "";
     }
 
-    return list
-        .map((e) => e.beatName)
-        .join(" | ");
+    return list.map((e) => e.beatName).join(" | ");
   }
 
   bool hasBeat(String areaId) {
@@ -1246,7 +1103,7 @@ class TerritoryController extends GetxController {
 
   List<Color> colorsForArea(String areaId) {
     final area = areas.firstWhereOrNull(
-          (e) => e.id == areaId,
+      (e) => e.id == areaId,
     );
 
     if (area == null) {
@@ -1261,11 +1118,10 @@ class TerritoryController extends GetxController {
           ),
         );
       } catch (_) {
-        return Colors.grey;
+        return TColors.materialGrey;
       }
     }).toList();
   }
-
 
   Future<void> updateBeat() async {
     if (editingBeat.value == null) {
@@ -1275,7 +1131,7 @@ class TerritoryController extends GetxController {
     if (beatNameController.text.trim().isEmpty) {
       Get.snackbar(
         "Beat Name",
-        "Please enter beat name.",
+        TTexts.uiTextPleaseEnterBeatName,
       );
       return;
     }
@@ -1283,7 +1139,7 @@ class TerritoryController extends GetxController {
     if (selectedAreas.isEmpty) {
       Get.snackbar(
         "Areas",
-        "Please select at least one area.",
+        TTexts.uiTextPleaseSelectAtLeastOneArea,
       );
       return;
     }
@@ -1302,7 +1158,7 @@ class TerritoryController extends GetxController {
 
       Get.snackbar(
         "Success",
-        "Beat updated successfully.",
+        TTexts.uiTextBeatUpdatedSuccessfully,
         snackPosition: SnackPosition.BOTTOM,
       );
 
@@ -1317,10 +1173,9 @@ class TerritoryController extends GetxController {
 
   bool isAreaSelected(String areaId) {
     return selectedAreas.any(
-          (area) => area.id == areaId,
+      (area) => area.id == areaId,
     );
   }
-
 
   // draw circle
   List<Polygon> buildAreaPolygons() {
@@ -1335,7 +1190,7 @@ class TerritoryController extends GetxController {
             ),
           );
         } catch (_) {
-          return Colors.grey;
+          return TColors.materialGrey;
         }
       }).toList();
 
@@ -1346,7 +1201,7 @@ class TerritoryController extends GetxController {
             area.longitude,
           ),
           radius: area.radius, // getting from api dynamic value.
-        //  radius: 700, // this is for test
+          //  radius: 700, // this is for test
           colors: colors,
         ),
       );
@@ -1378,8 +1233,8 @@ class TerritoryController extends GetxController {
       polygons.add(
         Polygon(
           points: hull,
-          color: Colors.blue.withOpacity(0.20),
-          borderColor: Colors.blue,
+          color: TColors.materialBlue.withOpacity(0.20),
+          borderColor: TColors.materialBlue,
           borderStrokeWidth: 3,
         ),
       );
@@ -1388,11 +1243,10 @@ class TerritoryController extends GetxController {
     return polygons;
   }*/
 
-
   List<LatLng> _createCircle(
-      LatLng center,
-      double radiusMeters,
-      ) {
+    LatLng center,
+    double radiusMeters,
+  ) {
     const earthRadius = 6378137.0;
 
     final List<LatLng> points = [];
@@ -1403,17 +1257,10 @@ class TerritoryController extends GetxController {
       final dx = radiusMeters * cos(angle);
       final dy = radiusMeters * sin(angle);
 
-      final lat =
-          center.latitude +
-              (dy / earthRadius) * 180 / pi;
+      final lat = center.latitude + (dy / earthRadius) * 180 / pi;
 
-      final lng =
-          center.longitude +
-              (dx /
-                  (earthRadius *
-                      cos(center.latitude * pi / 180))) *
-                  180 /
-                  pi;
+      final lng = center.longitude +
+          (dx / (earthRadius * cos(center.latitude * pi / 180))) * 180 / pi;
 
       points.add(
         LatLng(lat, lng),
@@ -1423,16 +1270,13 @@ class TerritoryController extends GetxController {
     return points;
   }
 
-
-
-
   Color areaFillColor(AreaModel area) {
     final beatList = beatsForArea(area.id);
 
     if (beatList.isEmpty) {
       return isAreaInSelectedHeadquarter(area)
-          ? Colors.blue.withOpacity(.22)
-          : Colors.grey.withOpacity(.08);
+          ? TColors.materialBlue.withOpacity(.22)
+          : TColors.materialGrey.withOpacity(.08);
     }
 
     return beatColor(beatList.first).withOpacity(.25);
@@ -1443,14 +1287,12 @@ class TerritoryController extends GetxController {
 
     if (beatList.isEmpty) {
       return isAreaInSelectedHeadquarter(area)
-          ? Colors.blue
-          : Colors.grey;
+          ? TColors.materialBlue
+          : TColors.materialGrey;
     }
 
     return beatColor(beatList.first);
   }
-
-
 
   List<LatLng> buildDoctorHull(List<LatLng> points) {
     if (points.length < 3) {
@@ -1505,23 +1347,23 @@ class TerritoryController extends GetxController {
           children: [
             ListTile(
               leading: const Icon(Icons.map),
-              title: const Text("View Details"),
+              title: const Text(TTexts.uiTextViewDetails),
               onTap: () {
                 Get.back();
 
                 Get.to(
-                      () => AreaDetailMapScreen(
+                  () => AreaDetailMapScreen(
                     area: area,
-                        doctors: doctors,
-                        chemists: chemists,
-                        stockists: stockists,
+                    doctors: doctors,
+                    chemists: chemists,
+                    stockists: stockists,
                   ),
                 );
               },
             ),
             ListTile(
               leading: const Icon(Icons.add_location_alt),
-              title: const Text("Add To Beat"),
+              title: const Text(TTexts.uiTextAddToBeat),
               onTap: () {
                 Get.back();
                 selectArea(area);
@@ -1534,8 +1376,7 @@ class TerritoryController extends GetxController {
   }
 
   void goToHeadquarter() {
-    final hq = selectedHeadquarter.value ??
-        headquarters.firstOrNull;
+    final hq = selectedHeadquarter.value ?? headquarters.firstOrNull;
 
     if (hq == null) return;
 
@@ -1546,7 +1387,4 @@ class TerritoryController extends GetxController {
       hq.zoom,
     );
   }
-
-
-
 }

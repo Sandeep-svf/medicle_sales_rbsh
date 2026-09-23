@@ -3,6 +3,7 @@ import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 import '../../controllers/doctor_offline_controller.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class DoctorFilterBar extends StatelessWidget {
   const DoctorFilterBar({
@@ -30,13 +31,13 @@ class DoctorFilterBar extends StatelessWidget {
               onChanged: controller.setSearch,
               textInputAction: TextInputAction.search,
               decoration: InputDecoration(
-                labelText: 'Search doctors',
-                hintText: 'Name, clinic, specialty, location',
+                labelText: TTexts.uiTextSearchDoctors,
+                hintText: TTexts.uiTextNameClinicSpecialtyLocation,
                 prefixIcon: const Icon(Icons.search_rounded),
                 suffixIcon: controller.query.search.isEmpty
                     ? null
                     : IconButton(
-                        tooltip: 'Clear search',
+                        tooltip: TTexts.uiTextClearSearch,
                         onPressed: () {
                           searchController.clear();
                           controller.setSearch('');
@@ -48,8 +49,8 @@ class DoctorFilterBar extends StatelessWidget {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(TSizes.inputFieldRadius),
-                  borderSide:
-                      const BorderSide(color: TColors.primary, width: 2),
+                  borderSide: const BorderSide(
+                      color: TColors.primary, width: TSizes.v2),
                 ),
               ),
             ),
@@ -61,7 +62,7 @@ class DoctorFilterBar extends StatelessWidget {
                 SizedBox(
                   width: dropdownWidth,
                   child: _FilterDropdown(
-                    label: 'Priority',
+                    label: TTexts.uiTextPriority,
                     allLabel: 'All priorities',
                     value: controller.query.priority,
                     options: controller.priorityOptions,
@@ -71,7 +72,7 @@ class DoctorFilterBar extends StatelessWidget {
                 SizedBox(
                   width: dropdownWidth,
                   child: _FilterDropdown(
-                    label: 'Head office',
+                    label: TTexts.uiTextHeadOffice_807fada4,
                     allLabel: 'All head offices',
                     value: controller.query.headOfficeId,
                     options: controller.headOfficeOptions,
@@ -81,7 +82,7 @@ class DoctorFilterBar extends StatelessWidget {
                 SizedBox(
                   width: dropdownWidth,
                   child: _FilterDropdown(
-                    label: 'Area',
+                    label: TTexts.uiTextArea,
                     allLabel: 'All areas',
                     value: controller.query.areaId,
                     options: controller.areaOptions,
@@ -99,7 +100,7 @@ class DoctorFilterBar extends StatelessWidget {
                 child: TextButton.icon(
                   onPressed: controller.clearFilters,
                   icon: const Icon(Icons.filter_alt_off_outlined),
-                  label: const Text('Clear filters'),
+                  label: const Text(TTexts.uiTextClearFilters),
                 ),
               ),
             ],

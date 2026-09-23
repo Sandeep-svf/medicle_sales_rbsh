@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
-import '../../../../utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import '../../controller/add_investment_controller.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class DoctorInfoCard extends GetView<AddInvestmentController> {
   const DoctorInfoCard({super.key});
@@ -29,20 +30,18 @@ class DoctorInfoCard extends GetView<AddInvestmentController> {
         child: Row(
           children: [
             CircleAvatar(
-              radius: 30,
+              radius: TSizes.v30,
               backgroundColor: TColors.primary.withOpacity(.12),
               child: Text(
                 doctorName[0].toUpperCase(),
                 style: const TextStyle(
                   color: TColors.primary,
-                  fontSize: 22,
+                  fontSize: TSizes.v22,
                   fontWeight: FontWeight.bold,
                 ),
               ),
             ),
-
-            const SizedBox(width: 16),
-
+            const SizedBox(width: TSizes.v16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -50,24 +49,20 @@ class DoctorInfoCard extends GetView<AddInvestmentController> {
                   Text(
                     doctorName,
                     style: const TextStyle(
-                      fontSize: 18,
+                      fontSize: TSizes.v18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-
-                  const SizedBox(height: 6),
-
+                  const SizedBox(height: TSizes.v6),
                   Text(
-                    "Doctor Selected",
+                    TTexts.uiTextDoctorSelected,
                     style: TextStyle(
-                      color: Colors.grey.shade700,
+                      color: TColors.materialGrey700,
                     ),
                   ),
-
-                  const SizedBox(height: 10),
-
+                  const SizedBox(height: TSizes.v10),
                   Wrap(
-                    spacing: 8,
+                    spacing: TSizes.v8,
                     children: [
                       _chip(
                         "Selected",

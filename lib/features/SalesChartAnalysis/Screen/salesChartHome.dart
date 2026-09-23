@@ -1,14 +1,17 @@
 import 'dart:async';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 
 class SalesChartHomeScreen2 extends StatefulWidget {
   @override
   _DashboardScreenState createState() => _DashboardScreenState();
 }
 
-class _DashboardScreenState extends State<SalesChartHomeScreen2> with TickerProviderStateMixin {
-  final Color primaryColor = Color(0xFFC71D52);
+class _DashboardScreenState extends State<SalesChartHomeScreen2>
+    with TickerProviderStateMixin {
+  final Color primaryColor = TColors.hex_FFC71D52;
 
   late AnimationController callController;
   late AnimationController salesController;
@@ -22,13 +25,19 @@ class _DashboardScreenState extends State<SalesChartHomeScreen2> with TickerProv
   void initState() {
     super.initState();
 
-    callController = AnimationController(vsync: this, duration: Duration(seconds: 1));
-    salesController = AnimationController(vsync: this, duration: Duration(seconds: 1));
-    otherController = AnimationController(vsync: this, duration: Duration(seconds: 1));
+    callController =
+        AnimationController(vsync: this, duration: Duration(seconds: 1));
+    salesController =
+        AnimationController(vsync: this, duration: Duration(seconds: 1));
+    otherController =
+        AnimationController(vsync: this, duration: Duration(seconds: 1));
 
-    callAnimation = Tween<double>(begin: 0, end: 6 / 10).animate(callController);
-    salesAnimation = Tween<double>(begin: 0, end: 3 / 5).animate(salesController);
-    otherAnimation = Tween<double>(begin: 0, end: 5 / 8).animate(otherController);
+    callAnimation =
+        Tween<double>(begin: 0, end: 6 / 10).animate(callController);
+    salesAnimation =
+        Tween<double>(begin: 0, end: 3 / 5).animate(salesController);
+    otherAnimation =
+        Tween<double>(begin: 0, end: 5 / 8).animate(otherController);
 
     Timer(Duration(milliseconds: 300), () {
       callController.forward();
@@ -48,7 +57,7 @@ class _DashboardScreenState extends State<SalesChartHomeScreen2> with TickerProv
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: TColors.white,
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16),
         child: Column(
@@ -59,15 +68,15 @@ class _DashboardScreenState extends State<SalesChartHomeScreen2> with TickerProv
                 _animatedProgressCard("Call Visits", 6, 10, callAnimation),
                 _animatedProgressCard("Product Sales", 3, 5, salesAnimation),
                 _animatedProgressCard("Other Tasks", 5, 8, otherAnimation),
-              ],  
+              ],
             ),
-            SizedBox(height: 24),
+            SizedBox(height: TSizes.v24),
             _sectionTitle("Weekly Sales Trend"),
             _weeklyBarChart(),
-            SizedBox(height: 24),
+            SizedBox(height: TSizes.v24),
             _sectionTitle("Monthly Summary"),
             _monthlySummary(),
-            SizedBox(height: 24),
+            SizedBox(height: TSizes.v24),
             _sectionTitle("User Activity"),
             _userActivityChart(),
           ],
@@ -79,18 +88,20 @@ class _DashboardScreenState extends State<SalesChartHomeScreen2> with TickerProv
   Widget _sectionTitle(String title) {
     return Align(
       alignment: Alignment.centerLeft,
-      child: Text(title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+      child: Text(title,
+          style: TextStyle(fontSize: TSizes.v18, fontWeight: FontWeight.bold)),
     );
   }
 
-  Widget _animatedProgressCard(String title, int done, int total, Animation<double> animation) {
+  Widget _animatedProgressCard(
+      String title, int done, int total, Animation<double> animation) {
     return Expanded(
       child: AnimatedBuilder(
         animation: animation,
         builder: (context, child) {
           return Card(
             margin: EdgeInsets.all(6),
-            elevation: 2,
+            elevation: TSizes.v2,
             child: Padding(
               padding: EdgeInsets.symmetric(vertical: 12),
               child: Column(
@@ -101,14 +112,14 @@ class _DashboardScreenState extends State<SalesChartHomeScreen2> with TickerProv
                     style: TextStyle(fontWeight: FontWeight.bold),
                     textAlign: TextAlign.center,
                   ),
-                  SizedBox(height: 8),
+                  SizedBox(height: TSizes.v8),
                   CircularProgressIndicator(
                     value: animation.value,
                     color: primaryColor,
-                    strokeWidth: 6,
+                    strokeWidth: TSizes.v6,
                     backgroundColor: primaryColor.withOpacity(0.2),
                   ),
-                  SizedBox(height: 8),
+                  SizedBox(height: TSizes.v8),
                   Text('$done / $total'),
                   Text('${total - done} Remaining'),
                 ],
@@ -124,24 +135,24 @@ class _DashboardScreenState extends State<SalesChartHomeScreen2> with TickerProv
     final sales = [1000, 1250, 1700, 1200, 1100, 1050, 1800];
 
     return SizedBox(
-      height: 260,
+      height: TSizes.v260,
       child: BarChart(
         BarChartData(
           maxY: 2200,
           barGroups: List.generate(
             sales.length,
-                (i) => BarChartGroupData(
+            (i) => BarChartGroupData(
               x: i,
               barRods: [
                 BarChartRodData(
                   toY: sales[i].toDouble(),
-                  width: 18,
+                  width: TSizes.v18,
                   borderRadius: BorderRadius.circular(4),
                   color: primaryColor,
                   backDrawRodData: BackgroundBarChartRodData(
                     show: true,
                     toY: 2200,
-                    color: Colors.grey.shade200,
+                    color: TColors.materialGrey200,
                   ),
                 )
               ],
@@ -154,8 +165,8 @@ class _DashboardScreenState extends State<SalesChartHomeScreen2> with TickerProv
               sideTitles: SideTitles(
                 reservedSize: 40,
                 showTitles: true,
-                getTitlesWidget: (value, _) =>
-                    Text(value.toInt().toString(), style: TextStyle(fontSize: 10)),
+                getTitlesWidget: (value, _) => Text(value.toInt().toString(),
+                    style: TextStyle(fontSize: TSizes.v10)),
               ),
             ),
             bottomTitles: AxisTitles(
@@ -163,8 +174,17 @@ class _DashboardScreenState extends State<SalesChartHomeScreen2> with TickerProv
                 reservedSize: 32,
                 showTitles: true,
                 getTitlesWidget: (value, _) {
-                  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-                  return Text(days[value.toInt()], style: TextStyle(fontSize: 10));
+                  const days = [
+                    'Mon',
+                    'Tue',
+                    'Wed',
+                    'Thu',
+                    'Fri',
+                    'Sat',
+                    'Sun'
+                  ];
+                  return Text(days[value.toInt()],
+                      style: TextStyle(fontSize: TSizes.v10));
                 },
               ),
             ),
@@ -176,12 +196,11 @@ class _DashboardScreenState extends State<SalesChartHomeScreen2> with TickerProv
             touchTooltipData: BarTouchTooltipData(
               tooltipPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               tooltipMargin: 8,
-
               getTooltipItem: (group, groupIndex, rod, rodIndex) {
                 return BarTooltipItem(
                   '${rod.toY.toInt()}',
                   TextStyle(
-                    color: Colors.white,
+                    color: TColors.white,
                     fontWeight: FontWeight.bold,
                   ),
                 );
@@ -195,8 +214,6 @@ class _DashboardScreenState extends State<SalesChartHomeScreen2> with TickerProv
     );
   }
 
-
-
   Widget _monthlySummary() {
     return Container(
       padding: EdgeInsets.all(16),
@@ -209,9 +226,9 @@ class _DashboardScreenState extends State<SalesChartHomeScreen2> with TickerProv
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _summaryItem("Total Sales This Month", "₹ 52,500"),
-          SizedBox(height: 8),
+          SizedBox(height: TSizes.v8),
           _summaryItem("Pending Expense", "₹ 8,000"),
-          SizedBox(height: 8),
+          SizedBox(height: TSizes.v8),
           _summaryItem("Total Visits This Week", "24"),
         ],
       ),
@@ -222,7 +239,7 @@ class _DashboardScreenState extends State<SalesChartHomeScreen2> with TickerProv
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(title, style: TextStyle(fontSize: 13)),
+        Text(title, style: TextStyle(fontSize: TSizes.v13)),
         Text(value, style: TextStyle(fontWeight: FontWeight.bold)),
       ],
     );
@@ -232,7 +249,7 @@ class _DashboardScreenState extends State<SalesChartHomeScreen2> with TickerProv
     final activity = [0.5, 1.8, 3.2, 2.7, 5.5, 4.2, 6.3];
 
     return SizedBox(
-      height: 200,
+      height: TSizes.v200,
       child: LineChart(
         LineChartData(
           minY: 0,
@@ -241,7 +258,7 @@ class _DashboardScreenState extends State<SalesChartHomeScreen2> with TickerProv
             LineChartBarData(
               spots: List.generate(
                 activity.length,
-                    (i) => FlSpot(i.toDouble(), activity[i]),
+                (i) => FlSpot(i.toDouble(), activity[i]),
               ),
               isCurved: true,
               barWidth: 2,
@@ -255,8 +272,8 @@ class _DashboardScreenState extends State<SalesChartHomeScreen2> with TickerProv
               sideTitles: SideTitles(
                 reservedSize: 32,
                 showTitles: true,
-                getTitlesWidget: (value, _) =>
-                    Text(value.toInt().toString(), style: TextStyle(fontSize: 10)),
+                getTitlesWidget: (value, _) => Text(value.toInt().toString(),
+                    style: TextStyle(fontSize: TSizes.v10)),
               ),
             ),
             bottomTitles: AxisTitles(
@@ -264,8 +281,17 @@ class _DashboardScreenState extends State<SalesChartHomeScreen2> with TickerProv
                 reservedSize: 28,
                 showTitles: true,
                 getTitlesWidget: (value, _) {
-                  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-                  return Text(days[value.toInt()], style: TextStyle(fontSize: 10));
+                  const days = [
+                    'Mon',
+                    'Tue',
+                    'Wed',
+                    'Thu',
+                    'Fri',
+                    'Sat',
+                    'Sun'
+                  ];
+                  return Text(days[value.toInt()],
+                      style: TextStyle(fontSize: TSizes.v10));
                 },
               ),
             ),

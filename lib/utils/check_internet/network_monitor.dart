@@ -1,19 +1,21 @@
 import 'dart:async';
 import 'dart:io';
-
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import '../../features/addDoctor/services/DoctorService.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 //  Define this globally (top-level)
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
-GlobalKey<ScaffoldMessengerState>();
+    GlobalKey<ScaffoldMessengerState>();
 
 class NetworkMonitor {
   static final NetworkMonitor _instance = NetworkMonitor._internal();
   factory NetworkMonitor() => _instance;
   NetworkMonitor._internal();
-  final ValueNotifier<bool> isOnline = ValueNotifier<bool>(true); // Dashboard toggle variable.
+  final ValueNotifier<bool> isOnline =
+      ValueNotifier<bool>(true); // Dashboard toggle variable.
 
   StreamSubscription<List<ConnectivityResult>>? _subscription;
   bool _isOfflineShown = false;
@@ -25,7 +27,8 @@ class NetworkMonitor {
     _subscription = Connectivity()
         .onConnectivityChanged
         .listen((List<ConnectivityResult> results) async {
-      final result = results.isNotEmpty ? results.first : ConnectivityResult.none;
+      final result =
+          results.isNotEmpty ? results.first : ConnectivityResult.none;
       print('[NetworkMonitor]  Connectivity changed: $result');
 
       if (result == ConnectivityResult.none) {
@@ -33,7 +36,7 @@ class NetworkMonitor {
         isOnline.value = false; // Dashboard toggle
         _showSnackBar("️ No Internet Connection");
         return;
-      }else{
+      } else {
         // only used for dashboard toggle
         isOnline.value = true;
       }
@@ -73,8 +76,9 @@ class NetworkMonitor {
       ..showSnackBar(
         SnackBar(
           content: Text(message, textAlign: TextAlign.center),
-          backgroundColor:
-          message.contains("Back") ? Colors.green : Colors.redAccent,
+          backgroundColor: message.contains("Back")
+              ? TColors.materialGreen
+              : TColors.materialRedAccent,
           behavior: SnackBarBehavior.floating,
           margin: const EdgeInsets.all(12),
           duration: const Duration(seconds: 2),

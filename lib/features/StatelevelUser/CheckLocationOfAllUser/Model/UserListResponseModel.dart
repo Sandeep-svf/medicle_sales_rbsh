@@ -23,7 +23,8 @@ class UserListResponse {
           ? Pagination.fromJson(json['pagination'])
           : null,
       users: json['data']?['users'] != null && json['data']['users'] is List
-          ? List<Usert>.from(json['data']['users'].map((x) => Usert.fromJson(x)))
+          ? List<Usert>.from(
+              json['data']['users'].map((x) => Usert.fromJson(x)))
           : [],
       state: json['data']?['state'] != null
           ? Statey.fromJson(json['data']['state'])

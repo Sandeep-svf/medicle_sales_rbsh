@@ -40,32 +40,21 @@ class AttendanceStatusModel {
     return AttendanceStatusModel(
       date: data["date"] ?? "",
       status: data["status"] ?? "",
-
       punchSessions: (data["punchSessions"] as List? ?? [])
           .map((e) => PunchSessionModel.fromJson(e))
           .toList(),
-
       currentSession: data["currentSession"] ?? -1,
-
       firstPunchIn: data["firstPunchIn"] != null
           ? DateTime.parse(data["firstPunchIn"])
           : null,
-
       lastPunchOut: data["lastPunchOut"] != null
           ? DateTime.parse(data["lastPunchOut"])
           : null,
-
       totalWorkingMinutes: data["totalWorkingMinutes"] ?? 0,
-
       totalBreakMinutes: data["totalBreakMinutes"] ?? 0,
-
-      punchIn: data["punchIn"] != null
-          ? DateTime.parse(data["punchIn"])
-          : null,
-
-      punchOut: data["punchOut"] != null
-          ? DateTime.parse(data["punchOut"])
-          : null,
+      punchIn: data["punchIn"] != null ? DateTime.parse(data["punchIn"]) : null,
+      punchOut:
+          data["punchOut"] != null ? DateTime.parse(data["punchOut"]) : null,
     );
   }
 

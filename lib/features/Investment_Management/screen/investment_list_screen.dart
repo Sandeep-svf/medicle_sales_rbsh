@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
-import '../../../utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import '../controller/investment_request_controller.dart';
 import '../wigets/investment_card_list.dart';
 import '../wigets/investment_header.dart';
 import '../wigets/investment_table.dart';
 import 'add_investment_screen.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class InvestmentListScreen extends StatelessWidget {
   InvestmentListScreen({super.key});
@@ -17,13 +18,13 @@ class InvestmentListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade100,
+      backgroundColor: TColors.materialGrey100,
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: TColors.primary,
-        icon: const Icon(Icons.add, color: Colors.white),
+        icon: const Icon(Icons.add, color: TColors.white),
         label: const Text(
-          "New Request",
-          style: TextStyle(color: Colors.white),
+          TTexts.uiTextNewRequest,
+          style: TextStyle(color: TColors.white),
         ),
         onPressed: _openCreateRequest,
       ),
@@ -37,7 +38,7 @@ class InvestmentListScreen extends StatelessWidget {
                   table: controller.tableView.value,
                   onToggle: controller.toggleView,
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: TSizes.v20),
                 Expanded(child: _buildContent()),
               ],
             ),
@@ -67,7 +68,7 @@ class InvestmentListScreen extends StatelessWidget {
                       controller.errorMessage.value,
                       textAlign: TextAlign.center,
                       style: const TextStyle(
-                        color: Colors.red,
+                        color: TColors.materialRed,
                         fontWeight: FontWeight.w600,
                       ),
                     ),

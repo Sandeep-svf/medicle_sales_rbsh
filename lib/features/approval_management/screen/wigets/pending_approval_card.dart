@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../../../utils/constants/colors.dart';
 import '../../../../utils/constants/sizes.dart';
 import '../../model/pending_approval_model.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class PendingApprovalCard extends StatelessWidget {
   const PendingApprovalCard({
@@ -30,7 +31,7 @@ class PendingApprovalCard extends StatelessWidget {
     return Card(
       elevation: TSizes.cardElevation,
       color: TColors.cardBackground,
-      surfaceTintColor: Colors.transparent,
+      surfaceTintColor: TColors.transparent,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(TSizes.cardRadiusLg),
         side: const BorderSide(
@@ -55,25 +56,20 @@ class PendingApprovalCard extends StatelessWidget {
                         plan.user.name.isNotEmpty ? plan.user.name : "-",
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleMedium
-                            ?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: TColors.textPrimary,
-                        ),
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  color: TColors.textPrimary,
+                                ),
                       ),
                       const SizedBox(height: TSizes.xs),
                       Text(
                         (plan.user.employeeCode ?? "").isNotEmpty
                             ? plan.user.employeeCode!
                             : "-",
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodyMedium
-                            ?.copyWith(
-                          color: TColors.textSecondary,
-                        ),
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: TColors.textSecondary,
+                            ),
                       ),
                     ],
                   ),
@@ -89,15 +85,15 @@ class PendingApprovalCard extends StatelessWidget {
             const SizedBox(height: TSizes.md),
 
             _InfoRow(
-              title: "Planning Month",
+              title: TTexts.uiTextPlanningMonth,
               value:
-              "${DateFormat.MMMM().format(DateTime(plan.year, plan.month))} ${plan.year}",
+                  "${DateFormat.MMMM().format(DateTime(plan.year, plan.month))} ${plan.year}",
             ),
 
             const SizedBox(height: TSizes.spaceBtwItems),
 
             _InfoRow(
-              title: "Submitted On",
+              title: TTexts.uiTextSubmittedOn,
               value: DateFormat("dd MMM yyyy").format(plan.createdAt),
             ),
 
@@ -112,27 +108,23 @@ class PendingApprovalCard extends StatelessWidget {
                 OutlinedButton.icon(
                   onPressed: onView,
                   icon: const Icon(Icons.visibility_outlined),
-                  label: const Text("View"),
+                  label: const Text(TTexts.uiTextView),
                 ),
-
                 const Spacer(),
-
                 OutlinedButton(
                   onPressed: loading ? null : onReturn,
                   style: OutlinedButton.styleFrom(
                     foregroundColor: TColors.warning,
                   ),
-                  child: const Text("Return"),
+                  child: const Text(TTexts.uiTextReturn),
                 ),
-
                 const SizedBox(width: TSizes.sm),
-
                 FilledButton(
                   onPressed: loading ? null : onApprove,
                   style: FilledButton.styleFrom(
                     backgroundColor: TColors.primary,
                   ),
-                  child: const Text("Approve"),
+                  child: const Text(TTexts.uiTextApprove),
                 ),
               ],
             ),
@@ -160,8 +152,8 @@ class _InfoRow extends StatelessWidget {
           child: Text(
             title,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: TColors.textSecondary,
-            ),
+                  color: TColors.textSecondary,
+                ),
           ),
         ),
         Expanded(
@@ -169,8 +161,8 @@ class _InfoRow extends StatelessWidget {
             value,
             textAlign: TextAlign.end,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+                  fontWeight: FontWeight.w600,
+                ),
           ),
         ),
       ],

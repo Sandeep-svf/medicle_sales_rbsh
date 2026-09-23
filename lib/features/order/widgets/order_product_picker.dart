@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../product/model/ProductModel.dart';
-import '../../../utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'order_widgets.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 
 class OrderProductPicker extends StatefulWidget {
   const OrderProductPicker(
@@ -44,11 +46,12 @@ class _OrderProductPickerState extends State<OrderProductPicker> {
                     padding: const EdgeInsets.fromLTRB(20, 16, 8, 12),
                     child: Row(children: [
                       const Expanded(
-                          child: Text('Product catalogue',
+                          child: Text(TTexts.uiTextProductCatalogue,
                               style: TextStyle(
-                                  fontSize: 21, fontWeight: FontWeight.w800))),
+                                  fontSize: TSizes.v21,
+                                  fontWeight: FontWeight.w800))),
                       IconButton(
-                          tooltip: 'Close catalogue',
+                          tooltip: TTexts.uiTextCloseCatalogue,
                           onPressed: () => Navigator.pop(context),
                           icon: const Icon(Icons.close)),
                     ])),
@@ -59,7 +62,7 @@ class _OrderProductPickerState extends State<OrderProductPicker> {
                         onChanged: (text) => setState(() => _query = text),
                         decoration: const InputDecoration(
                             prefixIcon: Icon(Icons.search),
-                            hintText: 'Search name, salt or strength'))),
+                            hintText: TTexts.uiTextSearchNameSaltOrStrength))),
                 Padding(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 20, vertical: 12),
@@ -67,7 +70,8 @@ class _OrderProductPickerState extends State<OrderProductPicker> {
                       Expanded(
                           child: Text('${products.length} available products',
                               style: const TextStyle(
-                                  fontSize: 12, color: TColors.textSecondary))),
+                                  fontSize: TSizes.v12,
+                                  color: TColors.textSecondary))),
                       const OrderTag('Choose multiple', icon: Icons.checklist)
                     ])),
                 Expanded(
@@ -76,7 +80,8 @@ class _OrderProductPickerState extends State<OrderProductPicker> {
                             child: Padding(
                                 padding: EdgeInsets.all(24),
                                 child: Text(
-                                    'No products found. Refresh the catalogue while connected, or try a different search.',
+                                    TTexts
+                                        .uiTextNoProductsFoundRefreshTheCatalogueWhileConnected,
                                     textAlign: TextAlign.center)))
                         : ListView.builder(
                             itemCount: products.length,
@@ -104,7 +109,7 @@ class _OrderProductPickerState extends State<OrderProductPicker> {
                                         color: TColors.primary)),
                                 title: Text(product.name,
                                     style: const TextStyle(
-                                        fontSize: 14,
+                                        fontSize: TSizes.v14,
                                         fontWeight: FontWeight.w700)),
                                 subtitle: Text(
                                     alreadyAdded
@@ -113,7 +118,8 @@ class _OrderProductPickerState extends State<OrderProductPicker> {
                                             .whereType<String>()
                                             .where((e) => e.isNotEmpty)
                                             .join(' · '),
-                                    style: const TextStyle(fontSize: 12)),
+                                    style:
+                                        const TextStyle(fontSize: TSizes.v12)),
                               );
                             })),
                 Padding(
