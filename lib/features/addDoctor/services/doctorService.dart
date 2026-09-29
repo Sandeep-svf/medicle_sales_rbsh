@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:http/http.dart' as http;
+import 'package:medicle_sales_rbsh/utils/http/api_http.dart' as http;
 import 'package:medicle_sales_rbsh/utils/http/http_client.dart';
 
 import '../../../utils/local_storage/auth_manager.dart';
@@ -11,7 +11,7 @@ class DoctorService {
   final _dbHelper = GenericDatabaseHelper<DoctorOfflineModel>();
 
   // API endpoint only for bulk sync
-  final String bulkAddUrl = "${THttpHelper.baseUrl}/doctors/bulk";
+  String get bulkAddUrl => "${THttpHelper.baseUrl}/doctors/bulk";
 
   // Centralized debug logger
   void _debug(String message) {

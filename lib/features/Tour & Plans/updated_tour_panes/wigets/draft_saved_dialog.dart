@@ -4,6 +4,7 @@ import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import '../controller/tour_plan_controller.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 class DraftSavedDialog extends StatelessWidget {
   const DraftSavedDialog({super.key});
@@ -260,10 +261,7 @@ class DraftSavedDialog extends StatelessWidget {
                               ? const SizedBox(
                                   width: TSizes.v18,
                                   height: TSizes.v18,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: TSizes.v2,
-                                    color: TColors.white,
-                                  ),
+                                  child: FieldOmniLoader.compact(),
                                 )
                               : const Icon(Icons.send_rounded),
                           label: Text(

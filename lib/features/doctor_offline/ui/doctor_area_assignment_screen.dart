@@ -3,6 +3,7 @@ import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 import '../services/doctor_area_assignment_service.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 class DoctorAreaAssignmentScreen extends StatefulWidget {
   const DoctorAreaAssignmentScreen({
@@ -227,8 +228,7 @@ class _DoctorAreaAssignmentScreenState
                             ? const SizedBox(
                                 width: TSizes.v16,
                                 height: TSizes.v16,
-                                child: CircularProgressIndicator(
-                                    strokeWidth: TSizes.v2),
+                                child: FieldOmniLoader.compact(),
                               )
                             : const Icon(Icons.search),
                         label: Text(loading
@@ -804,8 +804,7 @@ class _DoctorAssignmentTile extends StatelessWidget {
                   ? const SizedBox(
                       width: TSizes.v17,
                       height: TSizes.v17,
-                      child: CircularProgressIndicator(
-                          strokeWidth: TSizes.v2, color: TColors.white))
+                      child: FieldOmniLoader.compact())
                   : const Icon(Icons.check_circle_outline),
               label: Text(saving ? 'Assigning…' : 'Assign Area'),
               style: FilledButton.styleFrom(

@@ -1,13 +1,13 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:medicle_sales_rbsh/utils/http/api_http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:medicle_sales_rbsh/utils/local_storage/auth_manager.dart';
 import '../utils/device/DeviceInfoHelper.dart';
 import '../utils/http/http_client.dart';
 
 class LocationController {
-  static const String baseUrlData = THttpHelper.baseUrl;
-  static const String apiUrl = '$baseUrlData/location-events';
+  static String get baseUrlData => THttpHelper.baseUrl;
+  static String get apiUrl => '$baseUrlData/location-events';
 
   final double latitude;
   final double longitude;

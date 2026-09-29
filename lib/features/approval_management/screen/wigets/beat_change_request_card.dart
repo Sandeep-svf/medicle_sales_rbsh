@@ -3,6 +3,7 @@ import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 import '../../model/beat_change_request_model.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 class BeatChangeRequestCard extends StatelessWidget {
   const BeatChangeRequestCard({
@@ -277,10 +278,7 @@ class BeatChangeRequestCard extends StatelessWidget {
                         ? const SizedBox(
                             height: TSizes.v18,
                             width: TSizes.v18,
-                            child: CircularProgressIndicator(
-                              strokeWidth: TSizes.v2,
-                              color: TColors.white,
-                            ),
+                            child: FieldOmniLoader.compact(),
                           )
                         : const Icon(Icons.check),
                     label: Text(

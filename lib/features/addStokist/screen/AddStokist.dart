@@ -19,6 +19,9 @@ import '../../../utils/GlobalPermissionHelper/PermissionHelper.dart';
 import '../../../utils/camera/MediaPermissionHelper.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import '../../../utils/http/http_client.dart';
+import '../../../utils/http/api_ui_feedback.dart';
+import '../../../utils/http/api_request_loader.dart';
+import '../../../utils/loder/api_wait_dialog.dart';
 import '../../../utils/local_storage/auth_manager.dart';
 import '../../../utils/loder/CircularLoaderController.dart';
 import '../../addDoctor/screens/map.dart';
@@ -158,13 +161,21 @@ class _PharmaDistributorFormScreenState
   // Utilities & lifecycle
   // ---------------------------
   final ImagePicker _picker = ImagePicker();
-  final dio.Dio _dio = dio.Dio();
+  final dio.Dio _dio = ApiRequestLoader.trackDio(dio.Dio());
   static const String _kPrefix = 'pharma_form_';
 
   @override
   void initState() {
     super.initState();
-    fetchHeadOffices();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        ApiWaitDialog.run(
+          context,
+          title: TTexts.loadingHeadOffices,
+          action: fetchHeadOffices,
+        );
+      }
+    });
     _loadFormDraft();
   }
 
@@ -722,7 +733,7 @@ class _PharmaDistributorFormScreenState
       debugPrint('PharmaDistributorFormScreen: submit error -> $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
+          SnackBar(content: Text(ApiUiFeedback.message(e))),
         );
       }
     } finally {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../utils/constants/colors.dart';
 import '../../../../utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 class LoadingView extends StatelessWidget {
   const LoadingView({
@@ -22,9 +23,7 @@ class LoadingView extends StatelessWidget {
             const SizedBox(
               height: TSizes.loadingIndicatorSize,
               width: TSizes.loadingIndicatorSize,
-              child: CircularProgressIndicator(
-                color: TColors.primary,
-              ),
+              child: FieldOmniLoader.compact(),
             ),
             const SizedBox(
               height: TSizes.lg,

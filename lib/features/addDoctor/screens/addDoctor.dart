@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
+import 'package:medicle_sales_rbsh/utils/http/api_http.dart' as http;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:medicle_sales_rbsh/features/addDoctor/models/HeadofficeModel.dart';
@@ -11,6 +11,7 @@ import 'package:medicle_sales_rbsh/features/addDoctor/screens/add_doctro_new_scr
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../utils/camera/CameraLocationResult.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/responsive/responsive_layout.dart';
 import '../../../utils/helpers/zoom_in_out_anim.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'dart:convert';
@@ -29,6 +30,7 @@ import '../wigets/image_with_location_widget.dart';
 import 'doctorDetails.dart';
 import 'map.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 class AddDoctorScreen extends StatefulWidget {
   const AddDoctorScreen({super.key});
@@ -853,7 +855,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
           Expanded(
             child: Obx(() {
               if (_doctorListController.isLoading.value) {
-                return const Center(child: CircularProgressIndicator());
+                return const Center(child: FieldOmniLoader());
               }
 
               // Filtering the doctor list
@@ -947,7 +949,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
           Expanded(
             child: Obx(() {
               if (_doctorListController.isLoading.value) {
-                return const Center(child: CircularProgressIndicator());
+                return const Center(child: FieldOmniLoader());
               }
 
               final filteredDoctors = _doctorListController.doctorList
@@ -963,7 +965,8 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
               return LayoutBuilder(
                 builder: (context, constraints) {
                   final width = constraints.maxWidth;
-                  final bool isMobile = width < 650;
+                  final bool isMobile =
+                      TResponsive.isPhone(context) || width < 650;
                   final bool isTabletPortrait = width >= 650 && width < 950;
 
                   // --- Card Builder ---

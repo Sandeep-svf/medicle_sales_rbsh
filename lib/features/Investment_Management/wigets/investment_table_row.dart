@@ -10,6 +10,7 @@ import 'investment_request_details_dialog.dart';
 import 'investment_status_chip.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 class InvestmentRequestTableRow extends StatefulWidget {
   final InvestmentRequest request;
@@ -388,7 +389,7 @@ class _InvestmentRequestTableRowState extends State<InvestmentRequestTableRow> {
                             }
 
                             return const Center(
-                              child: CircularProgressIndicator(),
+                              child: FieldOmniLoader(),
                             );
                           },
                           errorBuilder: (_, __, ___) => const Icon(

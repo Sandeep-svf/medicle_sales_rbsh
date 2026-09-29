@@ -6,7 +6,7 @@ class DoctorSearchIndex {
   }
 
   final Map<String, Doctor> _byLocalId = <String, Doctor>{};
-  final Map<String, Set<String>> _searchGrams = <String, Set<String>>{};
+  final Map<String, List<String>> _searchFields = <String, List<String>>{};
   final Map<String, Set<String>> _priorities = <String, Set<String>>{};
   final Map<String, Set<String>> _headOffices = <String, Set<String>>{};
   final Map<String, Set<String>> _areas = <String, Set<String>>{};
@@ -14,7 +14,7 @@ class DoctorSearchIndex {
 
   void rebuild(Iterable<Doctor> doctors) {
     _byLocalId.clear();
-    _searchGrams.clear();
+    _searchFields.clear();
     _priorities.clear();
     _headOffices.clear();
     _areas.clear();
@@ -36,7 +36,7 @@ class DoctorSearchIndex {
       _addExact(_priorities, doctor.priority, doctor.localId);
       _addExact(_headOffices, doctor.headOfficeId, doctor.localId);
       _addExact(_areas, doctor.areaId, doctor.localId);
-      final searchable = [
+      _searchFields[doctor.localId] = [
         doctor.name,
         doctor.clinicName,
         doctor.specialization,
@@ -45,10 +45,7 @@ class DoctorSearchIndex {
         doctor.headOfficeName,
         doctor.areaName,
         doctor.registrationNumber,
-      ].whereType<String>().join(' ').toLowerCase();
-      for (final gram in _grams(searchable)) {
-        (_searchGrams[gram] ??= <String>{}).add(doctor.localId);
-      }
+      ].whereType<String>().map((value) => value.toLowerCase()).toList();
     }
   }
 
@@ -61,20 +58,26 @@ class DoctorSearchIndex {
     );
     candidates = _intersect(candidates, _lookup(_areas, query.areaId));
 
-    final normalizedSearch = query.search.trim().toLowerCase();
-    if (normalizedSearch.length >= 3) {
-      for (final gram in _grams(normalizedSearch)) {
-        candidates = _intersect(candidates, _searchGrams[gram] ?? <String>{});
-        if (candidates?.isEmpty ?? false) break;
-      }
-    }
-
     final sourceIds = candidates ?? _orderedIds.toSet();
+    final normalizedSearch = query.search.trim().toLowerCase();
     final result = <Doctor>[];
     for (final localId in _orderedIds) {
       if (!sourceIds.contains(localId)) continue;
       final doctor = _byLocalId[localId]!;
-      if (query.matches(doctor)) result.add(doctor);
+      if (normalizedSearch.isNotEmpty &&
+          !(_searchFields[localId]?.any(
+                (field) => field.contains(normalizedSearch),
+              ) ??
+              false)) {
+        continue;
+      }
+      if (query.priority != null && doctor.priority != query.priority) continue;
+      if (query.headOfficeId != null &&
+          doctor.headOfficeId != query.headOfficeId) {
+        continue;
+      }
+      if (query.areaId != null && doctor.areaId != query.areaId) continue;
+      result.add(doctor);
     }
     return List<Doctor>.unmodifiable(result);
   }
@@ -100,16 +103,5 @@ class DoctorSearchIndex {
     if (second == null) return first;
     if (first == null) return Set<String>.of(second);
     return first.intersection(second);
-  }
-
-  Set<String> _grams(String value) {
-    final normalized = value.replaceAll(RegExp(r'\s+'), ' ').trim();
-    if (normalized.isEmpty) return const <String>{};
-    if (normalized.length < 3) return <String>{normalized};
-    final grams = <String>{};
-    for (var index = 0; index <= normalized.length - 3; index++) {
-      grams.add(normalized.substring(index, index + 3));
-    }
-    return grams;
   }
 }

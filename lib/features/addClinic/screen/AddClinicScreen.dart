@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import '../../addStokist/widets/AnnualGTurnOverSection.dart';
 import '../controllers/AddChemistController.dart';
@@ -14,6 +13,7 @@ import '../controllers/ClinicListController.dart';
 import '../../addDoctor/screens/map.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 class AddChemistScreen extends StatelessWidget {
   const AddChemistScreen({Key? key}) : super(key: key);
@@ -223,8 +223,7 @@ class AddChemistScreen extends StatelessWidget {
                                         TColors.primary.withOpacity(0.4),
                                   ),
                                   child: controller.isLoading.value
-                                      ? const CircularProgressIndicator(
-                                          color: TColors.white)
+                                      ? const FieldOmniLoader()
                                       : const Text(
                                           TTexts.uiTextCOMPLETEREGISTRATION,
                                           style: TextStyle(
@@ -272,7 +271,7 @@ class AddChemistScreen extends StatelessWidget {
             return Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const CircularProgressIndicator(color: TColors.primary),
+                const FieldOmniLoader(),
                 const SizedBox(height: TSizes.v8),
                 Text(TTexts.uiTextProcessing_272bc02e,
                     style: TextStyle(
@@ -841,7 +840,7 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
                 */ /*Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
                   child: isLoadingHeadOffices
-                      ? const CircularProgressIndicator() // Show loader while fetching head offices
+                      ? const FieldOmniLoader() // Show loader while fetching head offices
                       : DropdownButtonFormField<String>(
                     value: selectedHeadOffice,
                     decoration: const InputDecoration(
@@ -872,7 +871,7 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
                 child: isLoadingHeadOffices
-                    ? const Center(child: CircularProgressIndicator())
+                    ? const Center(child: FieldOmniLoader())
                     : DropdownButtonFormField<String>(
                   // Only set value if it exists in items
                   value: headOffices.any((o) => o['id'].toString() == (selectedHeadOffice ?? ''))
@@ -1074,7 +1073,7 @@ class _AddClinicScreenState extends State<AddClinicScreen> {
                       minimumSize: Size(double.infinity, 50), // Full-width button
                     ),
                     child: isLoading
-                        ? const CircularProgressIndicator(color: TColors.white)
+                        ? const FieldOmniLoader()
                         : const Text("Add Chemist", style: TextStyle(fontSize: 18)),
                   ),
                 ),

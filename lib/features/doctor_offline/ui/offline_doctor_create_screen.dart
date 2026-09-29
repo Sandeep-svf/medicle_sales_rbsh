@@ -6,6 +6,7 @@ import '../controllers/offline_doctor_create_controller.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 class OfflineDoctorCreateScreen extends StatelessWidget {
   const OfflineDoctorCreateScreen({super.key, required this.controller});
@@ -17,8 +18,10 @@ class OfflineDoctorCreateScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: TColors.hex_FFF4F6F9,
-      body: CustomScrollView(
-        slivers: [
+      body: Stack(
+        children: [
+          CustomScrollView(
+            slivers: [
           // 1. APP BAR
           SliverAppBar(
             expandedHeight: 160.0,
@@ -192,6 +195,29 @@ class OfflineDoctorCreateScreen extends StatelessWidget {
               },
             ),
           ),
+            ],
+          ),
+          Obx(
+            () => controller.saving.value
+                ? Positioned.fill(
+                    child: Stack(
+                      children: [
+                        Positioned.fill(
+                          child: AbsorbPointer(
+                            child: ColoredBox(
+                              color: TColors.pureBlack.withValues(alpha: 0.35),
+                            ),
+                          ),
+                        ),
+                        const FieldOmniLoader(
+                          message: 'Saving doctor...',
+                          showSurface: true,
+                        ),
+                      ],
+                    ),
+                  )
+                : const SizedBox.shrink(),
+          ),
         ],
       ),
     );
@@ -222,7 +248,7 @@ class OfflineDoctorCreateScreen extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const CircularProgressIndicator(color: TColors.primary),
+                  const FieldOmniLoader(),
                   const SizedBox(height: TSizes.v8),
                   Text(TTexts.uiTextProcessing_272bc02e,
                       style: TextStyle(
@@ -614,8 +640,7 @@ class OfflineDoctorCreateScreen extends StatelessWidget {
                   child: SizedBox(
                     height: TSizes.v20,
                     width: TSizes.v20,
-                    child: CircularProgressIndicator(
-                        strokeWidth: TSizes.v2, color: TColors.primary),
+                    child: FieldOmniLoader.compact(),
                   ),
                 ),
               );
@@ -939,7 +964,7 @@ class OfflineDoctorCreateScreen extends StatelessWidget {
                   child: controller.isLoadingAreas.value &&
                           controller.areas.isEmpty
                       ? const Center(
-                          child: CircularProgressIndicator(),
+                          child: FieldOmniLoader(),
                         )
                       : filtered.isEmpty
                           ? ListView(

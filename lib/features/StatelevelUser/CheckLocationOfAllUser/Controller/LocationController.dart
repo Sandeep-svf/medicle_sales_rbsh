@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:medicle_sales_rbsh/utils/http/api_http.dart' as http;
 import 'package:medicle_sales_rbsh/utils/local_storage/auth_manager.dart';
 
 import '../Model/UserLocationListModel.dart';

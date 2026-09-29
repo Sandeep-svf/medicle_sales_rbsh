@@ -5,6 +5,7 @@ import 'package:geocoding/geocoding.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 class OfflineDoctorLocationPicker extends StatefulWidget {
   const OfflineDoctorLocationPicker({super.key});
@@ -140,7 +141,7 @@ class _OfflineDoctorLocationPickerState
     return Scaffold(
       appBar: AppBar(title: const Text(TTexts.uiTextSelectLocation)),
       body: _loading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: FieldOmniLoader())
           : _centerLatLng == null
               ? Center(
                   child: ElevatedButton(

@@ -63,12 +63,23 @@ class _DashboardScreenState extends State<SalesChartHomeScreen2>
         child: Column(
           children: [
             _sectionTitle("Daily Target Progress"),
-            Row(
-              children: [
-                _animatedProgressCard("Call Visits", 6, 10, callAnimation),
-                _animatedProgressCard("Product Sales", 3, 5, salesAnimation),
-                _animatedProgressCard("Other Tasks", 5, 8, otherAnimation),
-              ],
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final cards = [
+                  _animatedProgressCard("Call Visits", 6, 10, callAnimation),
+                  _animatedProgressCard("Product Sales", 3, 5, salesAnimation),
+                  _animatedProgressCard("Other Tasks", 5, 8, otherAnimation),
+                ];
+                if (constraints.maxWidth < 600) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: cards,
+                  );
+                }
+                return Row(children: [
+                  for (final card in cards) Expanded(child: card),
+                ]);
+              },
             ),
             SizedBox(height: TSizes.v24),
             _sectionTitle("Weekly Sales Trend"),
@@ -95,39 +106,37 @@ class _DashboardScreenState extends State<SalesChartHomeScreen2>
 
   Widget _animatedProgressCard(
       String title, int done, int total, Animation<double> animation) {
-    return Expanded(
-      child: AnimatedBuilder(
-        animation: animation,
-        builder: (context, child) {
-          return Card(
-            margin: EdgeInsets.all(6),
-            elevation: TSizes.v2,
-            child: Padding(
-              padding: EdgeInsets.symmetric(vertical: 12),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                    textAlign: TextAlign.center,
-                  ),
-                  SizedBox(height: TSizes.v8),
-                  CircularProgressIndicator(
-                    value: animation.value,
-                    color: primaryColor,
-                    strokeWidth: TSizes.v6,
-                    backgroundColor: primaryColor.withOpacity(0.2),
-                  ),
-                  SizedBox(height: TSizes.v8),
-                  Text('$done / $total'),
-                  Text('${total - done} Remaining'),
-                ],
-              ),
+    return AnimatedBuilder(
+      animation: animation,
+      builder: (context, child) {
+        return Card(
+          margin: EdgeInsets.all(6),
+          elevation: TSizes.v2,
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: 12),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: TSizes.v8),
+                CircularProgressIndicator(
+                  value: animation.value,
+                  color: primaryColor,
+                  strokeWidth: TSizes.v6,
+                  backgroundColor: primaryColor.withOpacity(0.2),
+                ),
+                SizedBox(height: TSizes.v8),
+                Text('$done / $total'),
+                Text('${total - done} Remaining'),
+              ],
             ),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -239,7 +248,7 @@ class _DashboardScreenState extends State<SalesChartHomeScreen2>
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(title, style: TextStyle(fontSize: TSizes.v13)),
+        Expanded(child: Text(title, style: TextStyle(fontSize: TSizes.v13))),
         Text(value, style: TextStyle(fontWeight: FontWeight.bold)),
       ],
     );

@@ -3,19 +3,20 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
-import 'package:http/http.dart' as http;
+import 'package:medicle_sales_rbsh/utils/http/api_http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:medicle_sales_rbsh/utils/loder/CircularLoaderController.dart';
 
 import '../../../utils/http/http_client.dart';
+import '../../../utils/http/api_ui_feedback.dart';
 import '../../../utils/local_storage/auth_manager.dart';
 import '../services/DoctorService.dart';
 import 'DoctroController.dart';
 
 /*class AddDoctorController {
 
-  static const String _baseUrl = THttpHelper.baseUrl;
+  static String get _baseUrl => THttpHelper.baseUrl;
 
 
   static Future<void> addDoctor({
@@ -133,7 +134,7 @@ import '../models/DoctorOfflineModel.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class AddDoctorController {
-  static const String _baseUrl = THttpHelper.baseUrl;
+  static String get _baseUrl => THttpHelper.baseUrl;
   static final DoctorService _doctorService = DoctorService();
 
   /// Simple debug logger for consistent output
@@ -245,7 +246,7 @@ class AddDoctorController {
       CircularLoaderController.hideLoader();
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('An error occurred: $e')),
+        SnackBar(content: Text(ApiUiFeedback.message(e))),
       );
     }
   }

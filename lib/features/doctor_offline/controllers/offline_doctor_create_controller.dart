@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:medicle_sales_rbsh/utils/http/api_http.dart' as http;
 import 'package:get/get.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:intl/intl.dart';
@@ -16,6 +16,7 @@ import '../../../utils/local_storage/auth_manager.dart';
 import '../ui/doctor_location_picker.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 class OfflineDoctorCreateController extends GetxController {
   OfflineDoctorCreateController(
@@ -170,7 +171,7 @@ class OfflineDoctorCreateController extends GetxController {
         selectedHeadOfficeId.value = headOffices.first['id'];
       }
       final token = await AuthManager().getAuthToken();
-      const String baseUrl = THttpHelper.baseUrl;
+      final String baseUrl = THttpHelper.baseUrl;
 
       final response = await http.get(
         Uri.parse('$baseUrl/users/my-head-offices'),
@@ -1122,10 +1123,7 @@ class OfflineDoctorCreateController extends GetxController {
                           ? const SizedBox(
                               height: TSizes.v22,
                               width: TSizes.v22,
-                              child: CircularProgressIndicator(
-                                strokeWidth: TSizes.v2,
-                                color: TColors.white,
-                              ),
+                              child: FieldOmniLoader.compact(),
                             )
                           : const Text(
                               TTexts.uiTextVerifyContinue,

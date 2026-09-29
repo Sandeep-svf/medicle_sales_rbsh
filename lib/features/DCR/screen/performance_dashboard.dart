@@ -6,6 +6,8 @@ import '../wigets/dashboard_header.dart';
 import '../wigets/kpi_card.dart';
 import '../wigets/performance_table.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import '../../../utils/responsive/responsive_layout.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 class PerformanceDashboard extends GetView<PerformanceController> {
   const PerformanceDashboard({super.key});
@@ -33,7 +35,7 @@ class PerformanceDashboard extends GetView<PerformanceController> {
       body: Obx(() {
         if (controller.isLoading.value) {
           return const Center(
-            child: CircularProgressIndicator(),
+            child: FieldOmniLoader(),
           );
         }
 
@@ -74,48 +76,60 @@ class PerformanceDashboard extends GetView<PerformanceController> {
                 const SizedBox(height: TSizes.v24),
 
                 /// KPI CARDS
-                GridView.count(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  crossAxisCount: isLandscape ? 4 : 4,
-                  crossAxisSpacing: TSizes.v16,
-                  mainAxisSpacing: TSizes.v16,
-                  childAspectRatio: isLandscape ? 1.55 : 1.2,
-                  children: [
-                    KpiCard(
-                      title: "Doctors",
-                      icon: Icons.medical_services,
-                      scheduled: controller.totalDoctorsScheduled,
-                      confirmed: controller.totalDoctorsConfirmed,
-                      color: TColors.materialBlue,
-                      index: 0,
-                    ),
-                    KpiCard(
-                      title: "Chemists",
-                      icon: Icons.local_pharmacy,
-                      scheduled: controller.totalChemistsScheduled,
-                      confirmed: controller.totalChemistsConfirmed,
-                      color: TColors.materialPurple,
-                      index: 1,
-                    ),
-                    KpiCard(
-                      title: "Stockists",
-                      icon: Icons.store,
-                      scheduled: controller.totalStockistsScheduled,
-                      confirmed: controller.totalStockistsConfirmed,
-                      color: TColors.materialGreen,
-                      index: 2,
-                    ),
-                    KpiCard(
-                      title: "Coverage",
-                      icon: Icons.trending_up,
-                      scheduled: 100,
-                      confirmed: (controller.overallCoverage * 100).round(),
-                      color: TColors.primary,
-                      index: 3,
-                    ),
-                  ],
-                ),
+                LayoutBuilder(builder: (context, constraints) {
+                  final isPhone = TResponsive.isPhone(context);
+                  final columns = isPhone && constraints.maxWidth < 400
+                      ? 1
+                      : isPhone
+                          ? 2
+                          : 4;
+                  final cardWidth =
+                      (constraints.maxWidth - (columns - 1) * TSizes.v16) /
+                          columns;
+                  return GridView.count(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    crossAxisCount: columns,
+                    crossAxisSpacing: TSizes.v16,
+                    mainAxisSpacing: TSizes.v16,
+                    childAspectRatio:
+                        isPhone ? cardWidth / 140 : (isLandscape ? 1.55 : 1.2),
+                    children: [
+                      KpiCard(
+                        title: "Doctors",
+                        icon: Icons.medical_services,
+                        scheduled: controller.totalDoctorsScheduled,
+                        confirmed: controller.totalDoctorsConfirmed,
+                        color: TColors.materialBlue,
+                        index: 0,
+                      ),
+                      KpiCard(
+                        title: "Chemists",
+                        icon: Icons.local_pharmacy,
+                        scheduled: controller.totalChemistsScheduled,
+                        confirmed: controller.totalChemistsConfirmed,
+                        color: TColors.materialPurple,
+                        index: 1,
+                      ),
+                      KpiCard(
+                        title: "Stockists",
+                        icon: Icons.store,
+                        scheduled: controller.totalStockistsScheduled,
+                        confirmed: controller.totalStockistsConfirmed,
+                        color: TColors.materialGreen,
+                        index: 2,
+                      ),
+                      KpiCard(
+                        title: "Coverage",
+                        icon: Icons.trending_up,
+                        scheduled: 100,
+                        confirmed: (controller.overallCoverage * 100).round(),
+                        color: TColors.primary,
+                        index: 3,
+                      ),
+                    ],
+                  );
+                }),
 
                 const SizedBox(height: TSizes.v28),
 

@@ -6,6 +6,7 @@ import '../../../../common/styles/spacying_styling.dart';
 import '../../../../utils/helpers/helper_functions.dart';
 import '../../controllers/AuthController.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -32,7 +33,7 @@ class LoginScreen extends StatelessWidget {
                 Obx(() => authController.isLoading.value
                     ? const Padding(
                   padding: EdgeInsets.only(top: 20),
-                  child: CircularProgressIndicator(),
+                  child: FieldOmniLoader.compact(),
                 )
                     : const SizedBox()),
               ],

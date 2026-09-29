@@ -2,7 +2,7 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
+import 'package:medicle_sales_rbsh/utils/http/api_http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:http_parser/http_parser.dart';
 import '../../../utils/camera/CameraLocationResult.dart';
@@ -14,6 +14,8 @@ import '../screens/map.dart';
 import 'DoctroController.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import '../../../utils/http/api_ui_feedback.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 class AddDoctorNewController extends GetxController {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
@@ -167,7 +169,7 @@ class AddDoctorNewController extends GetxController {
     } catch (e) {
       Get.snackbar(
         "Error",
-        e.toString(),
+        ApiUiFeedback.message(e),
       );
       return false;
     }
@@ -859,7 +861,7 @@ class AddDoctorNewController extends GetxController {
 
       Get.snackbar(
         "Error",
-        e.toString(),
+        ApiUiFeedback.message(e),
       );
     }
   }
@@ -946,7 +948,7 @@ class AddDoctorNewController extends GetxController {
 
     // 2. Show Loader
     Get.dialog(
-      const Center(child: CircularProgressIndicator(color: TColors.primary)),
+      const Center(child: FieldOmniLoader()),
       barrierDismissible: false,
     );
 
@@ -1006,7 +1008,7 @@ class AddDoctorNewController extends GetxController {
         ));
       }
 
-      var streamedResponse = await request.send();
+      var streamedResponse = await http.send(request);
       var response = await http.Response.fromStream(streamedResponse);
 
       // 3. CLOSE LOADER
@@ -1045,7 +1047,7 @@ class AddDoctorNewController extends GetxController {
         Get.back();
       }
       print("[ERROR] Submit Exception: $e");
-      Get.snackbar("Error", "An error occurred: $e",
+      Get.snackbar("Error", ApiUiFeedback.message(e),
           backgroundColor: TColors.materialRed, colorText: TColors.white);
     }
   }
@@ -1361,10 +1363,7 @@ class AddDoctorNewController extends GetxController {
                           ? const SizedBox(
                               height: TSizes.v22,
                               width: TSizes.v22,
-                              child: CircularProgressIndicator(
-                                strokeWidth: TSizes.v2,
-                                color: TColors.white,
-                              ),
+                              child: FieldOmniLoader.compact(),
                             )
                           : const Text(
                               TTexts.uiTextVerifyContinue,

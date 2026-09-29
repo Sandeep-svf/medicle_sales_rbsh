@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:dio/dio.dart' as dio;
 import 'package:get/get.dart';
 import 'package:medicle_sales_rbsh/utils/http/http_client.dart';
+import 'package:medicle_sales_rbsh/utils/http/api_ui_feedback.dart';
+import 'package:medicle_sales_rbsh/utils/http/api_request_loader.dart';
 import 'package:medicle_sales_rbsh/utils/local_storage/auth_manager.dart';
 
 import '../model/InvoiceResponse.dart';
@@ -10,7 +12,7 @@ import '../model/InvoiceResponse.dart';
 class InvoiceController extends GetxController {
   final String baseUrl;
   final String bearerToken;
-  final dio.Dio _dio = dio.Dio();
+  final dio.Dio _dio = ApiRequestLoader.trackDio(dio.Dio());
 
   InvoiceController({
     required this.baseUrl,
@@ -119,9 +121,9 @@ class InvoiceController extends GetxController {
         }
       }
     } on dio.DioException catch (e) {
-      error.value = e.message ?? 'Network error';
+      error.value = ApiUiFeedback.message(e);
     } catch (e) {
-      error.value = e.toString();
+      error.value = ApiUiFeedback.message(e);
     } finally {
       loading.value = false;
       isLoadingMore.value = false;

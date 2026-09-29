@@ -1,15 +1,19 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
+import 'package:medicle_sales_rbsh/utils/http/api_http.dart' as http;
 import 'package:medicle_sales_rbsh/features/addClinic/model/Cilinic_Test_Model.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/responsive/responsive_layout.dart';
 import '../controllers/ClinicListController.dart';
 import '../model/clinic.dart';
 import 'ClinicDetailsScreen.dart';
 import 'AddClinicScreen.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/http/api_ui_feedback.dart';
+import 'package:medicle_sales_rbsh/utils/loder/api_wait_dialog.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 class ClinicListScreen extends StatefulWidget {
   const ClinicListScreen({super.key});
@@ -68,7 +72,7 @@ class _ClinicListScreenState extends State<ClinicListScreen> {
           Expanded(
             child: Obx(() {
               if (_clinicListController.isLoading.value) {
-                return const Center(child: CircularProgressIndicator());
+                return const Center(child: FieldOmniLoader());
               }
 
               final filteredClinics =
@@ -87,7 +91,8 @@ class _ClinicListScreenState extends State<ClinicListScreen> {
                 builder: (context, constraints) {
                   final width = constraints.maxWidth;
                   // Breakpoints (Same as Doctor)
-                  final bool isMobile = width < 600;
+                  final bool isMobile =
+                      TResponsive.isPhone(context) || width < 600;
                   final bool isTabletPortrait = width >= 600 && width < 900;
 
                   // --- CARD BUILDER FUNCTION (Matches buildDoctorCard) ---
@@ -599,7 +604,11 @@ class _ClinicListScreenState extends State<ClinicListScreen> {
   void _showAssignAreaSheet(
     Clinic clinic,
   ) async {
-    final areas = await _clinicListController.fetchAreas();
+    final areas = await ApiWaitDialog.run(
+      context,
+      title: TTexts.loadingAreas,
+      action: _clinicListController.fetchAreas,
+    );
 
     final searchController = TextEditingController();
 
@@ -827,11 +836,19 @@ class _ClinicListScreenState extends State<ClinicListScreen> {
                       return;
                     }
 
-                    final response = await http.get(
-                      Uri.parse(
-                        "https://api.postalpincode.in/pincode/$pin",
-                      ),
-                    );
+                    http.Response response;
+                    try {
+                      response = await ApiWaitDialog.run(
+                        context,
+                        title: TTexts.loadingAreas,
+                        action: () => http.get(Uri.parse(
+                          "https://api.postalpincode.in/pincode/$pin",
+                        )),
+                      );
+                    } catch (error) {
+                      Get.snackbar("Error", ApiUiFeedback.message(error));
+                      return;
+                    }
 
                     final data = jsonDecode(response.body);
 
@@ -1077,12 +1094,15 @@ class _ClinicListScreenState extends State<ClinicListScreen> {
                           TTexts.uiTextCreateArea,
                         ),
                         onPressed: () async {
-                          final createdAreaId =
-                              await _clinicListController.createNewArea(
-                            name: areaController.text.trim(),
-                            pincode: pincode,
-                            postOffice: office['Name'],
-                            headOfficeId: doctor.headOfficeId,
+                          final createdAreaId = await ApiWaitDialog.run(
+                            context,
+                            title: TTexts.savingArea,
+                            action: () => _clinicListController.createNewArea(
+                              name: areaController.text.trim(),
+                              pincode: pincode,
+                              postOffice: office['Name'],
+                              headOfficeId: doctor.headOfficeId,
+                            ),
                           );
 
                           if (createdAreaId != null) {

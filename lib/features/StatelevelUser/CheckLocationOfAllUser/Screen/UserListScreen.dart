@@ -9,6 +9,7 @@ import '../Controller/UserListController.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 /// user_list_screen.dart
 /// A simple Flutter screen that shows a list of users (dummy data)
@@ -131,14 +132,14 @@ class _UserListScreenState extends State<UserListScreen> {
                 ? const SizedBox(
                     width: TSizes.v20,
                     height: TSizes.v20,
-                    child: CircularProgressIndicator())
+                    child: FieldOmniLoader.compact())
                 : const Icon(Icons.my_location),
           )
         ],
       ),
       body: Obx(() {
         if (userListController.isLoading.value) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(child: FieldOmniLoader());
         }
 
         if (userListController.userList.isEmpty) {
@@ -536,7 +537,7 @@ class _UserListScreenState extends State<UserListScreen> {
             onPressed: _gettingLocation ? null : _getCurrentPosition,
             icon: _gettingLocation
                 ? const SizedBox(
-                width: 20, height: 20, child: CircularProgressIndicator())
+                width: 20, height: 20, child: FieldOmniLoader.compact())
                 : const Icon(Icons.my_location),
           )
         ],

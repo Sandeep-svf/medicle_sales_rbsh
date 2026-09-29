@@ -8,6 +8,7 @@ import 'handshake_confirmation_dialog.dart';
 import 'handshake_user_tile.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 class HandshakeRequestCard extends StatefulWidget {
   const HandshakeRequestCard({
@@ -292,7 +293,7 @@ class _HandshakeRequestCardState extends State<HandshakeRequestCard> {
         key: ValueKey('loading'),
         height: TSizes.v110,
         child: Center(
-          child: CircularProgressIndicator(color: TColors.primary),
+          child: FieldOmniLoader(),
         ),
       );
     }
@@ -416,10 +417,7 @@ class _HandshakeRequestCardState extends State<HandshakeRequestCard> {
                   ? const SizedBox(
                       width: TSizes.v17,
                       height: TSizes.v17,
-                      child: CircularProgressIndicator(
-                        strokeWidth: TSizes.v2,
-                        color: TColors.white,
-                      ),
+                      child: FieldOmniLoader.compact(),
                     )
                   : Icon(
                       _sent ? Icons.check_circle : Icons.send_rounded,

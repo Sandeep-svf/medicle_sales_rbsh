@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
+import 'package:medicle_sales_rbsh/utils/http/api_http.dart' as http;
 import 'package:medicle_sales_rbsh/features/expenses/models/ExpenseDefaultValueModel.dart';
 import 'package:medicle_sales_rbsh/utils/http/http_client.dart';
+import 'package:medicle_sales_rbsh/utils/http/api_ui_feedback.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 class ScraperSettingsController extends GetxController {
@@ -12,7 +13,7 @@ class ScraperSettingsController extends GetxController {
   final isLoading = false.obs;
   final errorMessage = ''.obs;
 
-  final String apiUrl = "${THttpHelper.baseUrl}/expenses/settings";
+  String get apiUrl => "${THttpHelper.baseUrl}/expenses/settings";
 
   @override
   void onInit() {
@@ -50,7 +51,7 @@ class ScraperSettingsController extends GetxController {
         print('[$_tag] Error: ${errorMessage.value}');
       }
     } catch (e, stackTrace) {
-      errorMessage.value = 'Error: ${e.toString()}';
+      errorMessage.value = ApiUiFeedback.message(e);
 
       print('[$_tag] Exception: $e');
       print('[$_tag] StackTrace: $stackTrace');
@@ -91,7 +92,7 @@ class ScraperSettingsController extends GetxController {
       print('[$_tag] Exception: $e');
       print('[$_tag] StackTrace: $stackTrace');
 
-      Get.snackbar("Error", e.toString());
+      Get.snackbar("Error", ApiUiFeedback.message(e));
     } finally {
       isLoading.value = false;
       print('[$_tag] Update Complete');

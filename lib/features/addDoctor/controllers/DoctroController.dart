@@ -1,7 +1,7 @@
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
+import 'package:medicle_sales_rbsh/utils/http/api_http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:medicle_sales_rbsh/utils/local_storage/auth_manager.dart';
 import 'dart:convert';
@@ -9,6 +9,7 @@ import '../../../utils/http/http_client.dart';
 import '../../authentication/controllers/AuthController.dart';
 import '../models/DoctorModelList.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import '../../../utils/http/api_ui_feedback.dart';
 
 class DoctorListController extends GetxController {
   var isLoading = false.obs;
@@ -34,7 +35,7 @@ class DoctorListController extends GetxController {
 
   var toDate = DateTime.now().obs;
 
-  static const String _baseUrl = THttpHelper.baseUrl;
+  static String get _baseUrl => THttpHelper.baseUrl;
   AuthManager authManager = AuthManager();
   late String headOffice = "";
 
@@ -105,7 +106,7 @@ class DoctorListController extends GetxController {
     } catch (e) {
       Get.snackbar(
         "Error",
-        e.toString(),
+        ApiUiFeedback.message(e),
       );
     } finally {
       isLoading.value = false;
@@ -150,7 +151,7 @@ class DoctorListController extends GetxController {
     } catch (e) {
       Get.snackbar(
         "Error",
-        e.toString(),
+        ApiUiFeedback.message(e),
       );
     } finally {
       isLoading.value = false;
@@ -201,7 +202,7 @@ class DoctorListController extends GetxController {
     } catch (e) {
       Get.snackbar(
         "Error",
-        e.toString(),
+        ApiUiFeedback.message(e),
       );
     }
   }
@@ -254,7 +255,7 @@ class DoctorListController extends GetxController {
     } catch (e) {
       Get.snackbar(
         "Error",
-        e.toString(),
+        ApiUiFeedback.message(e),
       );
 
       return null;
@@ -338,7 +339,7 @@ class DoctorListController extends GetxController {
       if (Get.isDialogOpen ?? false) Get.back(); // Ensure dialog is closed
       Get.snackbar(
         "Error",
-        "Something went wrong: $e",
+        ApiUiFeedback.message(e),
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: TColors.materialRedAccent,
         colorText: TColors.white,

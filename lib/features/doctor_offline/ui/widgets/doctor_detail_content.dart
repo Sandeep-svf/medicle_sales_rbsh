@@ -4,6 +4,7 @@ import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 import '../../models/doctor.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 class DoctorDetailContent extends StatelessWidget {
   const DoctorDetailContent({
@@ -805,7 +806,7 @@ class _NetworkGeoImage extends StatelessWidget {
               loadingBuilder: (context, child, loadingProgress) {
                 if (loadingProgress == null) return child;
                 return const Center(
-                  child: CircularProgressIndicator(color: TColors.primary),
+                  child: FieldOmniLoader(),
                 );
               },
               errorBuilder: (_, __, ___) => const _MissingGeoImage(

@@ -448,7 +448,8 @@ class HiveEncryptedDoctorLocalDataSource implements DoctorLocalDataSource {
     if (manifest == null) {
       return _activeCache = _MaterializedDataset.empty();
     }
-    return _activeCache = _materialize(manifest);
+    final materialized = await _materialize(manifest);
+    return _activeCache = materialized;
   }
 
   Future<_MaterializedDataset> _materializeStaging() async {
@@ -458,11 +459,15 @@ class HiveEncryptedDoctorLocalDataSource implements DoctorLocalDataSource {
     if (manifest == null) {
       return _stagingCache = _MaterializedDataset.empty();
     }
-    return _stagingCache = _materialize(manifest);
+    final materialized = await _materialize(manifest);
+    return _stagingCache = materialized;
   }
 
-  _MaterializedDataset _materialize(_DatasetManifest manifest) {
+  Future<_MaterializedDataset> _materialize(
+    _DatasetManifest manifest,
+  ) async {
     final dataset = _MaterializedDataset.empty();
+    var processedRecords = 0;
     for (final key in manifest.baseSegmentKeys) {
       final segment = _readSegment(key);
       if (segment.kind != _StoreSegmentKind.snapshot) {
@@ -472,9 +477,17 @@ class HiveEncryptedDoctorLocalDataSource implements DoctorLocalDataSource {
       }
       for (final record in segment.records) {
         dataset.addSnapshotRecord(record);
+        processedRecords++;
+        if (processedRecords % 200 == 0) {
+          await Future<void>.delayed(Duration.zero);
+        }
       }
       for (final deletion in segment.deletes) {
         dataset.applyDeletion(deletion);
+        processedRecords++;
+        if (processedRecords % 200 == 0) {
+          await Future<void>.delayed(Duration.zero);
+        }
       }
     }
     for (final key in manifest.deltaSegmentKeys) {
@@ -486,9 +499,17 @@ class HiveEncryptedDoctorLocalDataSource implements DoctorLocalDataSource {
       }
       for (final record in segment.records) {
         dataset.applyUpsert(record);
+        processedRecords++;
+        if (processedRecords % 200 == 0) {
+          await Future<void>.delayed(Duration.zero);
+        }
       }
       for (final deletion in segment.deletes) {
         dataset.applyDeletion(deletion);
+        processedRecords++;
+        if (processedRecords % 200 == 0) {
+          await Future<void>.delayed(Duration.zero);
+        }
       }
     }
     return dataset;

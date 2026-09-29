@@ -7,6 +7,8 @@ import '../../../addStokist/controllers/StokistListController.dart';
 import '../controllers/ScheduleVisitcontroller.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/http/api_ui_feedback.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 // Imports
 
@@ -236,7 +238,7 @@ class _ScheduleStockistVisitScreenState
           Navigator.pop(context, true);
         }
       } catch (e) {
-        Get.snackbar("Error", "Failed: $e",
+        Get.snackbar("Error", ApiUiFeedback.message(e),
             backgroundColor: TColors.materialRed.withOpacity(0.1),
             colorText: TColors.materialRed);
       } finally {
@@ -516,7 +518,7 @@ class _ScheduleStockistVisitScreenState
               ? const SizedBox(
                   height: TSizes.v24,
                   width: TSizes.v24,
-                  child: CircularProgressIndicator(color: TColors.white))
+                  child: FieldOmniLoader.compact())
               : const Text(TTexts.uiTextConfirmSchedule,
                   style: TextStyle(
                       fontSize: TSizes.v16, fontWeight: FontWeight.bold)),

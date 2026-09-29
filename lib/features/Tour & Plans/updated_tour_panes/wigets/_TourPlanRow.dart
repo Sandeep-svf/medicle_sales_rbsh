@@ -4,6 +4,7 @@ import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 import '../model/tour_plan_model.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 class TourPlanRow extends StatefulWidget {
   const TourPlanRow({
@@ -217,10 +218,7 @@ class TourPlanRowState extends State<TourPlanRow> {
                 ? const SizedBox(
                     width: TSizes.v16,
                     height: TSizes.v16,
-                    child: CircularProgressIndicator(
-                      strokeWidth: TSizes.v2,
-                      color: TColors.white,
-                    ),
+                    child: FieldOmniLoader.compact(),
                   )
                 : const Icon(Icons.send_rounded, size: TSizes.v17),
             label: Text(widget.isSubmitting ? "Submitting" : "Submit"),

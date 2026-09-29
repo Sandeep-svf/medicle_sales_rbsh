@@ -22,6 +22,8 @@ import '../widgets/CompactWeatherWidget.dart';
 import '../widgets/morning_action_center.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/responsive/responsive_layout.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 // -----------------------------------------------------------------------------
 // IMPORTS - YOUR DOMAIN
@@ -139,7 +141,7 @@ class _SalesChartHomeScreenState extends State<SalesChartHomeScreen>
       body: Obx(() {
         if (_dashboardController.isLoading.value) {
           return const Center(
-              child: CircularProgressIndicator(color: AppTheme.primary));
+              child: FieldOmniLoader());
         }
 
         final data = _dashboardController.dashboardData.value?.data;
@@ -147,7 +149,8 @@ class _SalesChartHomeScreenState extends State<SalesChartHomeScreen>
 
         // --- RESPONSIVE LAYOUT BUILDER ---
         return LayoutBuilder(builder: (context, constraints) {
-          final bool isWideScreen = constraints.maxWidth > 800; // Tablet
+          final bool isWideScreen =
+              !TResponsive.isPhone(context) && constraints.maxWidth > 800;
           final bool isLandscape =
               MediaQuery.of(context).orientation == Orientation.landscape;
 
@@ -191,37 +194,59 @@ class _SalesChartHomeScreenState extends State<SalesChartHomeScreen>
                       const SizedBox(height: TSizes.v24),
 
                       /// Existing Revenue Cards
-                      ConstrainedBox(
-                        constraints: BoxConstraints(
-                          minHeight: isLandscape ? 220 : 250,
-                        ),
-                        child: IntrinsicHeight(
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Expanded(
-                                child: _StaggeredItem(
-                                  controller: _entranceController,
-                                  index: 1,
-                                  child: _RevenueIntelligenceCard(
-                                    targets: data.targets,
+                      if (constraints.maxWidth < 600)
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            _StaggeredItem(
+                              controller: _entranceController,
+                              index: 1,
+                              child: _RevenueIntelligenceCard(
+                                targets: data.targets,
+                              ),
+                            ),
+                            const SizedBox(height: TSizes.v12),
+                            _StaggeredItem(
+                              controller: _entranceController,
+                              index: 2,
+                              child: _PerformancePaceCard(
+                                targets: data.targets,
+                              ),
+                            ),
+                          ],
+                        )
+                      else
+                        ConstrainedBox(
+                          constraints: BoxConstraints(
+                            minHeight: isLandscape ? 220 : 250,
+                          ),
+                          child: IntrinsicHeight(
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Expanded(
+                                  child: _StaggeredItem(
+                                    controller: _entranceController,
+                                    index: 1,
+                                    child: _RevenueIntelligenceCard(
+                                      targets: data.targets,
+                                    ),
                                   ),
                                 ),
-                              ),
-                              const SizedBox(width: TSizes.v12),
-                              Expanded(
-                                child: _StaggeredItem(
-                                  controller: _entranceController,
-                                  index: 2,
-                                  child: _PerformancePaceCard(
-                                    targets: data.targets,
+                                const SizedBox(width: TSizes.v12),
+                                Expanded(
+                                  child: _StaggeredItem(
+                                    controller: _entranceController,
+                                    index: 2,
+                                    child: _PerformancePaceCard(
+                                      targets: data.targets,
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
-                      ),
 
                       const SizedBox(height: TSizes.v30),
 
@@ -1334,7 +1359,7 @@ class _SalesChartHomeScreenState extends State<SalesChartHomeScreen> {
     if (_dashboardController.isLoading) {
       return Scaffold(
         backgroundColor: TColors.white,
-        body: Center(child: CircularProgressIndicator()),
+        body: Center(child: FieldOmniLoader()),
       );
     }
 
@@ -1385,7 +1410,7 @@ class _SalesChartHomeScreenState extends State<SalesChartHomeScreen> {
                     future: authManager.getUserData(), // your function
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator());
+                        return const Center(child: FieldOmniLoader());
                       }
 
                       if (!snapshot.hasData || snapshot.data?.user == null) {
@@ -1756,7 +1781,7 @@ class _DashboardScreenState extends State<SalesChartHomeScreen> with TickerProvi
               future: authManager.getUserData(), // your function
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
+                  return const Center(child: FieldOmniLoader());
                 }
 
                 if (!snapshot.hasData || snapshot.data?.user == null) {

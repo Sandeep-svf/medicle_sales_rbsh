@@ -3,6 +3,7 @@ import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 import '../../models/doctor.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 class DoctorListCard extends StatelessWidget {
   const DoctorListCard({
@@ -360,7 +361,7 @@ class _CardActionButton extends StatelessWidget {
         icon: busy
             ? const SizedBox.square(
                 dimension: 17,
-                child: CircularProgressIndicator(strokeWidth: TSizes.v2),
+                child: FieldOmniLoader.compact(),
               )
             : Icon(icon, size: TSizes.v17),
         label: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis),

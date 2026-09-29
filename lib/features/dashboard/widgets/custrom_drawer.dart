@@ -14,6 +14,8 @@ import 'package:medicle_sales_rbsh/features/report/screens/report.dart';
 import 'package:medicle_sales_rbsh/features/salesActivity/screens/salesActivity.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/constants/image_strings.dart';
+import 'package:medicle_sales_rbsh/utils/http/http_client.dart';
 import 'package:medicle_sales_rbsh/utils/helpers/helper_functions.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
@@ -40,6 +42,7 @@ import '../../marketing/screen/marketing.dart';
 import '../../ticket/screen/ticketscreen.dart';
 import '../../visit/Doctor/screens/ScheduleVisit.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import '../../../utils/responsive/responsive_layout.dart';
 
 class CustomDrawer extends StatefulWidget {
   final Function(Widget, String) onMenuSelected;
@@ -98,7 +101,11 @@ class _CustomDrawerState extends State<CustomDrawer> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: TSizes.v350,
+      width: TResponsive.isPhone(context)
+          ? (MediaQuery.sizeOf(context).width * 0.88)
+              .clamp(0.0, TSizes.v350)
+              .toDouble()
+          : TSizes.v350,
       child: Drawer(
         child: Column(
           children: [
@@ -358,6 +365,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                         onConfirmBtnTap: () async {
                           Get.back();
                           await AuthManager().logout();
+                          THttpHelper.resetCompany();
                           Get.offAll(() => LoginScreen());
                         },
                       );
@@ -407,37 +415,55 @@ class _CustomDrawerState extends State<CustomDrawer> {
 
         return Container(
           color: dark ? TColors.pureBlack : TColors.materialGrey300,
-          padding: EdgeInsets.symmetric(vertical: 25, horizontal: 16),
+          padding: EdgeInsets.symmetric(vertical: 20, horizontal: 16),
           width: double.infinity,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              CircleAvatar(
-                radius: TSizes.v27,
-                backgroundColor: TColors.primary,
-                child:
-                    Icon(Icons.person, size: TSizes.v50, color: TColors.white),
-              ),
-              SizedBox(width: TSizes.v16),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              Row(
                 children: [
-                  Text(
-                    user.user!.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: TSizes.v18,
-                      fontWeight: FontWeight.bold,
+                  SizedBox(
+                    width: TSizes.v70,
+                    height: TSizes.v54,
+                    child: user.company?.logoUrl?.isNotEmpty == true &&
+                            THttpHelper.companyLogoUrl != null
+                        ? Image.network(
+                            THttpHelper.companyLogoUrl!,
+                            fit: BoxFit.contain,
+                            errorBuilder: (_, __, ___) => Image.asset(
+                              TImages.darkAppLogoSmall,
+                              fit: BoxFit.contain,
+                            ),
+                          )
+                        : Image.asset(
+                            TImages.darkAppLogoSmall,
+                            fit: BoxFit.contain,
+                          ),
+                  ),
+                  SizedBox(width: TSizes.v16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          user.user!.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: TSizes.v18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          user.user!.email,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontSize: TSizes.v14),
+                        ),
+                      ],
                     ),
                   ),
-                  Text(
-                    user.user!.email,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: TSizes.v14),
-                  ),
-                ],
+              ],
               ),
             ],
           ),
@@ -454,18 +480,23 @@ class _CustomDrawerState extends State<CustomDrawer> {
       width: double.infinity,
       child: Row(
         children: [
-          const CircleAvatar(
-              radius: TSizes.v50, backgroundColor: TColors.materialGrey),
+          Image.asset(
+            TImages.darkAppLogoSmall,
+            width: TSizes.v70,
+            height: TSizes.v54,
+            fit: BoxFit.contain,
+          ),
           const SizedBox(width: TSizes.v16),
-          Column(
+          const Expanded(
+              child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
+            children: [
               Text(TTexts.uiTextLoading,
                   style: TextStyle(fontSize: TSizes.v18)),
               Text(TTexts.uiTextPleaseWait,
                   style: TextStyle(fontSize: TSizes.v14)),
             ],
-          ),
+          )),
         ],
       ),
     );
@@ -678,6 +709,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                       onConfirmBtnTap: () async {
                         Get.back();
                         await AuthManager().logout();
+                        THttpHelper.resetCompany();
                         Get.offAll(() => LoginScreen());
                       },
                     );

@@ -9,6 +9,7 @@ import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import '../controller/TicketController.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 class TicketScreen extends StatefulWidget {
   const TicketScreen({super.key});
@@ -351,7 +352,7 @@ class _TicketScreenState extends State<TicketScreen>
         return const Padding(
           padding: EdgeInsets.all(40.0),
           child: Center(
-            child: CircularProgressIndicator(color: TColors.primary),
+            child: FieldOmniLoader(),
           ),
         );
       }
@@ -817,8 +818,7 @@ class _TicketScreenState extends State<TicketScreen>
               ? const SizedBox(
                   height: TSizes.v24,
                   width: TSizes.v24,
-                  child: CircularProgressIndicator(
-                      color: TColors.white, strokeWidth: TSizes.v3),
+                  child: FieldOmniLoader.compact(),
                 )
               : const Row(
                   mainAxisAlignment: MainAxisAlignment.center,

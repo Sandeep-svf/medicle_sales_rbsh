@@ -218,6 +218,7 @@ dependencies:
 
   # For JSON encoding/decoding (already in Dart, but include if using serializers)
   dart_jsonwebtoken: ^3.0.1 # optional if you handle tokens locally
+  video_player: ^2.10.1
 
 
 

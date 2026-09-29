@@ -16,6 +16,7 @@ import 'widgets/doctor_filter_bar.dart';
 import 'widgets/doctor_list_card.dart';
 import 'widgets/doctor_sync_banner.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 class DoctorOfflineScreen extends StatefulWidget {
   const DoctorOfflineScreen({
@@ -101,7 +102,10 @@ class _DoctorOfflineScreenState extends State<DoctorOfflineScreen> {
                 ),
           floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
           body: SafeArea(
-            child: LayoutBuilder(
+            child: !controller.syncStatus.hasCachedData &&
+                    controller.syncStatus.isBusy
+                ? FieldOmniLoader(message: controller.syncStatus.message)
+                : LayoutBuilder(
               builder: (context, constraints) {
                 return RefreshIndicator(
                   onRefresh: controller.refreshDoctors,

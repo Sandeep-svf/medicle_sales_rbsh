@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:image/image.dart' as img;
-import 'package:http/http.dart' as http;
+import 'package:medicle_sales_rbsh/utils/http/api_http.dart' as http;
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/services.dart';
 import 'package:http_parser/http_parser.dart';
@@ -20,11 +20,15 @@ import 'package:quickalert/widgets/quickalert_dialog.dart';
 import '../../../../../../utils/LocationHelper/LocationHelper.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/responsive/responsive_layout.dart';
+import 'package:medicle_sales_rbsh/utils/http/api_ui_feedback.dart';
 import '../../../../../../utils/local_storage/auth_manager.dart';
 import '../../../../common/Model/DoctorVisitResponse.dart';
 import '../../../../utils/camera/CameraLocationResult.dart';
 import '../../../../utils/camera/image_overlay_utils.dart';
 import '../../../../utils/http/http_client.dart';
+import '../../../../utils/http/api_ui_feedback.dart';
+import '../../../../utils/loder/api_wait_dialog.dart';
 import '../../../addDoctor/controllers/DoctroController.dart';
 import '../../GeoVerificationScreen.dart';
 import '../controllers/doctor_visit_product_controller.dart';
@@ -34,6 +38,8 @@ import '../services/pending_visit_sync_service.dart';
 import '../services/visit_confirmation_service.dart';
 import '../services/doctor_offline_upload_coordinator.dart';
 import 'ScheduleVisitScreen.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
+import 'package:medicle_sales_rbsh/utils/http/api_request_loader.dart';
 
 class VisitDoctorScreen extends StatefulWidget {
   const VisitDoctorScreen({super.key});
@@ -352,7 +358,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                       children: const [
                         SizedBox(
                           height: TSizes.v260,
-                          child: Center(child: CircularProgressIndicator()),
+                          child: Center(child: FieldOmniLoader()),
                         ),
                       ],
                     ),
@@ -419,7 +425,8 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                         Expanded(
                           child: LayoutBuilder(
                             builder: (context, constraints) {
-                              bool isTablet = constraints.maxWidth > 600;
+                              bool isTablet = !TResponsive.isPhone(context) &&
+                                  constraints.maxWidth > 600;
 
                               // 3. Reusable Card Builder Function
                               Widget buildCard(VisitSalesLogModel doctorVisit) {
@@ -1285,7 +1292,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                     width: double.maxFinite,
                     child: Obx(() {
                       if (productController.isLoading.value) {
-                        return const Center(child: CircularProgressIndicator());
+                        return const Center(child: FieldOmniLoader());
                       }
                       if (productController.productList.isEmpty) {
                         return const Center(
@@ -1670,12 +1677,9 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
     if (result == null) return null;
 
     // 2. Show Loader
-    QuickAlert.show(
-      context: context,
-      type: QuickAlertType.loading,
-      title: TTexts.uiTextProcessing,
-      text: TTexts.uiTextAddingWatermarkLogo,
-      disableBackBtn: true,
+    FieldOmniLoadingDialog.show(
+      context,
+      message: TTexts.uiTextAddingWatermarkLogo,
     );
 
     try {
@@ -1798,6 +1802,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
 
     if (!confirmed) return;
 
+    ApiRequestLoader.suppressOverlay();
     QuickAlert.show(
         context: context,
         type: QuickAlertType.loading,
@@ -1955,6 +1960,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
         text: TTexts.uiTextVisitCouldNotBeSavedPleaseTryAgain,
       );
     } finally {
+      ApiRequestLoader.resumeOverlay();
       debugPrint("VisitConfirmationController: Confirm Visit Finished");
 
       debugPrint(
@@ -1965,11 +1971,9 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
   // 2. NEW: UPLOAD DOCTOR GEO IMAGE
   Future<bool> _uploadDoctorGeoImage(
       BuildContext context, String doctorId, File imageFile) async {
-    QuickAlert.show(
-      context: context,
-      type: QuickAlertType.loading,
-      title: TTexts.uiTextUploading,
-      text: TTexts.uiTextPleaseWait,
+    FieldOmniLoadingDialog.show(
+      context,
+      message: TTexts.uiTextPleaseWait,
     );
 
     try {
@@ -2005,7 +2009,7 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
 
       request.files.add(multipartFile);
 
-      var streamedResponse = await request.send();
+      var streamedResponse = await http.send(request);
       var response = await http.Response.fromStream(streamedResponse);
 
       Navigator.of(context, rootNavigator: true).pop(); // Close Loader
@@ -2019,14 +2023,16 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
         QuickAlert.show(
           context: context,
           type: QuickAlertType.error,
-          text: "Upload Failed: ${response.statusCode}\n${response.body}",
+          text: TTexts.requestFailed,
         );
         return false;
       }
     } catch (e) {
       Navigator.of(context, rootNavigator: true).pop();
       QuickAlert.show(
-          context: context, type: QuickAlertType.error, text: "Error: $e");
+          context: context,
+          type: QuickAlertType.error,
+          text: ApiUiFeedback.message(e));
       return false;
     }
   }
@@ -2639,11 +2645,19 @@ class _VisitDoctorScreenState extends State<VisitDoctorScreen>
                       return;
                     }
 
-                    final response = await http.get(
-                      Uri.parse(
-                        "https://api.postalpincode.in/pincode/$pin",
-                      ),
-                    );
+                    http.Response response;
+                    try {
+                      response = await ApiWaitDialog.run(
+                        context,
+                        title: TTexts.loadingAreas,
+                        action: () => http.get(Uri.parse(
+                          "https://api.postalpincode.in/pincode/$pin",
+                        )),
+                      );
+                    } catch (error) {
+                      Get.snackbar("Error", ApiUiFeedback.message(error));
+                      return;
+                    }
 
                     final data = jsonDecode(response.body);
 

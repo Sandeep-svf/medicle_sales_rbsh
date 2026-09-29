@@ -7,6 +7,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/http/api_request_loader.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 class PdfViewerPage extends StatefulWidget {
   final String pdfUrl;
@@ -35,7 +37,7 @@ class _PdfViewerPageState extends State<PdfViewerPage> {
 
       final path = '${dir.path}/${widget.fileName}';
 
-      await Dio().download(
+      await ApiRequestLoader.trackDio(Dio()).download(
         widget.pdfUrl,
         path,
       );
@@ -70,7 +72,7 @@ class _PdfViewerPageState extends State<PdfViewerPage> {
                 ? const SizedBox(
                     width: TSizes.v20,
                     height: TSizes.v20,
-                    child: CircularProgressIndicator(),
+                    child: FieldOmniLoader.compact(),
                   )
                 : const Icon(
                     Icons.download,

@@ -1,17 +1,18 @@
 import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
+import 'package:medicle_sales_rbsh/utils/http/api_http.dart' as http;
 import 'package:medicle_sales_rbsh/utils/http/http_client.dart';
 import '../model/ProductModel.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/http/api_ui_feedback.dart';
 
 class ProductController extends GetxController {
   var isLoading = false.obs;
   var productList = <Product>[].obs;
-  String baseUrl = THttpHelper.baseUrl;
+  String get baseUrl => THttpHelper.baseUrl;
 
-  final String apiUrl = "${THttpHelper.baseUrl}/products";
+  String get apiUrl => "${THttpHelper.baseUrl}/products";
   final String logPrefix = "[ProductController]";
 
   Future<void> fetchProducts() async {
@@ -33,7 +34,7 @@ class ProductController extends GetxController {
       }
     } catch (e) {
       debugPrint('$logPrefix Exception: $e');
-      Get.snackbar('Exception', e.toString());
+      Get.snackbar('Error', ApiUiFeedback.message(e));
     } finally {
       isLoading.value = false;
       debugPrint('$logPrefix Loading complete');

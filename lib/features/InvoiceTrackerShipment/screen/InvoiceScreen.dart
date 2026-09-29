@@ -19,7 +19,12 @@ import '../controller/InvoiceController.dart';
 import 'PdfViewerPage.dart';
 import 'WebviewPage.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/responsive/responsive_layout.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/http/api_ui_feedback.dart';
+import 'package:medicle_sales_rbsh/utils/http/api_request_loader.dart';
+import 'package:medicle_sales_rbsh/utils/loder/api_wait_dialog.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 // --- PROJECT IMPORTS ---
 // Replace these with your actual paths if they differ
@@ -74,7 +79,7 @@ class _InvoiceScreenState extends State<InvoiceScreen>
       Get.put(InvoiceController(baseUrl: '', bearerToken: ''));
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  final Dio _dio = Dio();
+  final Dio _dio = ApiRequestLoader.trackDio(Dio());
 
   // --- Animation Controllers ---
   late AnimationController _headerAnimController;
@@ -225,12 +230,16 @@ class _InvoiceScreenState extends State<InvoiceScreen>
       final auth = AuthManager();
       final token = await auth.getAuthToken();
 
-      final response = await _dio.get(
-        '${THttpHelper.baseUrl}/invoice-tracking/$invoiceId/signed-url',
-        options: Options(
-          headers: {
-            'Authorization': 'Bearer $token',
-          },
+      final response = await ApiWaitDialog.run(
+        context,
+        title: TTexts.loadingInvoice,
+        action: () => _dio.get(
+          '${THttpHelper.baseUrl}/invoice-tracking/$invoiceId/signed-url',
+          options: Options(
+            headers: {
+              'Authorization': 'Bearer $token',
+            },
+          ),
         ),
       );
 
@@ -247,7 +256,7 @@ class _InvoiceScreenState extends State<InvoiceScreen>
     } catch (e) {
       Get.snackbar(
         "Error",
-        e.toString(),
+        ApiUiFeedback.message(e),
       );
     }
   }
@@ -268,7 +277,8 @@ class _InvoiceScreenState extends State<InvoiceScreen>
 
   @override
   Widget build(BuildContext context) {
-    final isTablet = MediaQuery.of(context).size.width > 700;
+    final isTablet = !TResponsive.isPhone(context) &&
+        MediaQuery.of(context).size.width > 700;
 
     return Scaffold(
       backgroundColor: AppTheme.background,
@@ -421,7 +431,7 @@ class _InvoiceScreenState extends State<InvoiceScreen>
                   return const Padding(
                     padding: EdgeInsets.symmetric(vertical: 20),
                     child: Center(
-                      child: CircularProgressIndicator(),
+                      child: FieldOmniLoader(),
                     ),
                   );
                 }),
@@ -482,7 +492,7 @@ class _InvoiceScreenState extends State<InvoiceScreen>
           Positioned(
             left: 24,
             bottom: 80, // Adjusted for the new margin
-            right: 150,
+            right: TResponsive.isNarrow(context) ? 24 : 150,
             child: FadeTransition(
               opacity: _fadeAnimation,
               child: Column(
@@ -781,7 +791,7 @@ class _InvoiceScreenState extends State<InvoiceScreen>
     try {
       Get.dialog(
         const Center(
-          child: CircularProgressIndicator(),
+          child: FieldOmniLoader(),
         ),
         barrierDismissible: false,
       );
@@ -806,7 +816,7 @@ class _InvoiceScreenState extends State<InvoiceScreen>
 
       Get.snackbar(
         "Error",
-        e.toString(),
+        ApiUiFeedback.message(e),
         snackPosition: SnackPosition.BOTTOM,
       );
     }

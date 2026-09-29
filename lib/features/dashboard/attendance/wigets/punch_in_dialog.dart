@@ -5,6 +5,7 @@ import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 import '../controller/attendance_controller.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 class PunchInDialog extends GetView<AttendanceController> {
   const PunchInDialog({super.key});
@@ -96,9 +97,7 @@ class PunchInDialog extends GetView<AttendanceController> {
                           ? const SizedBox(
                               width: TSizes.v28,
                               height: TSizes.v28,
-                              child: CircularProgressIndicator(
-                                strokeWidth: TSizes.v3,
-                              ),
+                              child: FieldOmniLoader.compact(),
                             )
                           : CupertinoSwitch(
                               value: false,

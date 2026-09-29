@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/cupertino.dart';
-import 'package:http/http.dart' as http;
+import 'package:medicle_sales_rbsh/utils/http/api_http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:medicle_sales_rbsh/utils/constants/api_constants.dart';
 import 'package:medicle_sales_rbsh/utils/http/http_client.dart';
@@ -9,7 +9,7 @@ import '../../../utils/local_storage/auth_manager.dart';
 import '../models/other_expense_request.dart';
 
 class OtherExpenseController {
-  static const String baseUrl = THttpHelper.baseUrl;
+  static String get baseUrl => THttpHelper.baseUrl;
 
   final AuthManager authManager = AuthManager();
 
@@ -42,7 +42,7 @@ class OtherExpenseController {
         ),
       );
 
-      final streamedResponse = await request.send();
+      final streamedResponse = await http.send(request);
 
       final response = await http.Response.fromStream(
         streamedResponse,

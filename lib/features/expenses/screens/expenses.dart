@@ -16,7 +16,9 @@ import '../controllers/expenseController.dart';
 import '../models/NewExpenseModel.dart';
 import '../models/expanseModel.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/responsive/responsive_layout.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 class ExpensesScreen extends StatefulWidget {
   const ExpensesScreen({super.key});
@@ -520,8 +522,8 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    final bool isTablet = size.width > 700;
-    final bool isLandscape =
+    final bool isTablet = !TResponsive.isPhone(context) && size.width > 700;
+    final bool isLandscape = !TResponsive.isPhone(context) &&
         MediaQuery.of(context).orientation == Orientation.landscape;
 
     return Scaffold(
@@ -558,33 +560,43 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () => _pickDateRange(context),
-                        icon: const Icon(Icons.date_range),
-                        label: Text(
-                          fromDate == null || toDate == null
-                              ? "Select Date Range"
-                              : "${DateFormat('dd MMM').format(fromDate!)} - ${DateFormat('dd MMM yyyy').format(toDate!)}",
-                        ),
-                      ),
+                LayoutBuilder(builder: (context, constraints) {
+                  final dateButton = OutlinedButton.icon(
+                    onPressed: () => _pickDateRange(context),
+                    icon: const Icon(Icons.date_range),
+                    label: Text(
+                      fromDate == null || toDate == null
+                          ? "Select Date Range"
+                          : "${DateFormat('dd MMM').format(fromDate!)} - ${DateFormat('dd MMM yyyy').format(toDate!)}",
                     ),
+                  );
+                  final pdfButton = ElevatedButton.icon(
+                    onPressed: () async {
+                      final data = await _expenseController.fetchExpenses();
+                      final filtered = _filterExpenses(data);
+                      await _generatePdf(filtered);
+                    },
+                    icon: const Icon(Icons.picture_as_pdf),
+                    label: const Text(TTexts.uiTextDownloadPDF),
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor: TColors.materialRed),
+                  );
+                  if (constraints.maxWidth < 380) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        dateButton,
+                        const SizedBox(height: TSizes.v8),
+                        pdfButton,
+                      ],
+                    );
+                  }
+                  return Row(children: [
+                    Expanded(child: dateButton),
                     const SizedBox(width: TSizes.v8),
-                    ElevatedButton.icon(
-                      onPressed: () async {
-                        final data = await _expenseController.fetchExpenses();
-                        final filtered = _filterExpenses(data);
-                        await _generatePdf(filtered);
-                      },
-                      icon: const Icon(Icons.picture_as_pdf),
-                      label: const Text(TTexts.uiTextDownloadPDF),
-                      style: ElevatedButton.styleFrom(
-                          backgroundColor: TColors.materialRed),
-                    ),
-                  ],
-                ),
+                    pdfButton,
+                  ]);
+                }),
                 const SizedBox(height: TSizes.v8),
                 Wrap(
                   spacing: TSizes.v8,
@@ -614,7 +626,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
           ),
           Expanded(
             child: _isLoadingExpenses
-                ? const Center(child: CircularProgressIndicator())
+                ? const Center(child: FieldOmniLoader())
                 : _filterExpenses(_allExpenses).isEmpty
                     ? const Center(
                         child: Text(TTexts.uiTextNoExpensesAvailable))

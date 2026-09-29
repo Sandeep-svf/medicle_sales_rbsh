@@ -103,31 +103,41 @@ class PendingApprovalCard extends StatelessWidget {
 
             const SizedBox(height: TSizes.md),
 
-            Row(
-              children: [
-                OutlinedButton.icon(
-                  onPressed: onView,
-                  icon: const Icon(Icons.visibility_outlined),
-                  label: const Text(TTexts.uiTextView),
+            LayoutBuilder(builder: (context, constraints) {
+              final viewButton = OutlinedButton.icon(
+                onPressed: onView,
+                icon: const Icon(Icons.visibility_outlined),
+                label: const Text(TTexts.uiTextView),
+              );
+              final returnButton = OutlinedButton(
+                onPressed: loading ? null : onReturn,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: TColors.warning,
                 ),
+                child: const Text(TTexts.uiTextReturn),
+              );
+              final approveButton = FilledButton(
+                onPressed: loading ? null : onApprove,
+                style: FilledButton.styleFrom(
+                  backgroundColor: TColors.primary,
+                ),
+                child: const Text(TTexts.uiTextApprove),
+              );
+              if (constraints.maxWidth < 340) {
+                return Wrap(
+                  spacing: TSizes.sm,
+                  runSpacing: TSizes.sm,
+                  children: [viewButton, returnButton, approveButton],
+                );
+              }
+              return Row(children: [
+                viewButton,
                 const Spacer(),
-                OutlinedButton(
-                  onPressed: loading ? null : onReturn,
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: TColors.warning,
-                  ),
-                  child: const Text(TTexts.uiTextReturn),
-                ),
+                returnButton,
                 const SizedBox(width: TSizes.sm),
-                FilledButton(
-                  onPressed: loading ? null : onApprove,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: TColors.primary,
-                  ),
-                  child: const Text(TTexts.uiTextApprove),
-                ),
-              ],
-            ),
+                approveButton,
+              ]);
+            }),
           ],
         ),
       ),

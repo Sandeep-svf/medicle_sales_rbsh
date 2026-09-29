@@ -5,6 +5,7 @@ import 'package:medicle_sales_rbsh/features/DCR/wigets/table_header.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import '../model/performance_model.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import '../../../utils/responsive/responsive_layout.dart';
 
 class PerformanceTable extends StatelessWidget {
   final List<PerformanceModel> employees;
@@ -22,7 +23,7 @@ class PerformanceTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final table = Container(
       decoration: BoxDecoration(
         color: TColors.white,
         borderRadius: BorderRadius.circular(18),
@@ -49,6 +50,11 @@ class PerformanceTable extends StatelessWidget {
           ),
         ],
       ),
+    );
+    if (!TResponsive.isPhone(context)) return table;
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: SizedBox(width: 900, child: table),
     );
   }
 }

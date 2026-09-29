@@ -18,6 +18,7 @@ import '../../../utils/local_storage/auth_manager.dart';
 import 'order_detail.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 class OrderAttachment {
   const OrderAttachment(this.bytes, this.name, this.mime);
@@ -508,8 +509,7 @@ class _OrderCreateScreenState extends State<OrderCreateScreen> {
                                     icon: _saving
                                         ? const SizedBox.square(
                                             dimension: 18,
-                                            child: CircularProgressIndicator(
-                                                strokeWidth: TSizes.v2))
+                                            child: FieldOmniLoader.compact())
                                         : Icon(_step == 2
                                             ? Icons.save_outlined
                                             : Icons.arrow_forward_rounded),

@@ -6,6 +6,8 @@ import 'NotificaitonDetailsScreen.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/http/api_ui_feedback.dart';
+import 'package:medicle_sales_rbsh/utils/loder/api_wait_dialog.dart';
 
 class NotificationScreen extends StatefulWidget {
   @override
@@ -29,7 +31,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
     super.initState();
     _notificationController =
         NotificationController(userId: userId, token: token);
-    fetchNotifications();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) fetchNotifications();
+    });
   }
 
   // Fetch notifications
@@ -38,8 +42,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
       isLoading = true; // Show loader when the API request is in progress
     });
     try {
-      final fetchedNotifications =
-          await _notificationController.fetchNotifications();
+      final fetchedNotifications = await ApiWaitDialog.run(
+        context,
+        title: TTexts.loadingNotifications,
+        action: _notificationController.fetchNotifications,
+      );
       setState(() {
         notifications = fetchedNotifications;
         isLoading = false;
@@ -48,7 +55,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
       setState(() {
         isLoading = false; // Hide loader on error
       });
-      print("Error fetching notifications: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(ApiUiFeedback.message(e))),
+        );
+      }
     }
   }
 
@@ -59,7 +70,12 @@ class _NotificationScreenState extends State<NotificationScreen> {
           true; // Show loader when the delete API request is in progress
     });
     try {
-      await _notificationController.deleteNotification(notificationId);
+      await ApiWaitDialog.run(
+        context,
+        title: TTexts.deletingNotification,
+        action: () =>
+            _notificationController.deleteNotification(notificationId),
+      );
       setState(() {
         notifications
             .removeWhere((notification) => notification.id == notificationId);
@@ -77,10 +93,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
         title: TTexts.uiTextSuccess,
       );
     } catch (e) {
+      if (mounted) setState(() => isLoading = false);
       QuickAlert.show(
         context: context,
         type: QuickAlertType.error,
-        text: TTexts.uiTextFailedToDeleteTheNotification,
+        text: ApiUiFeedback.message(e),
         confirmBtnText: TTexts.uiTextRetry,
         onConfirmBtnTap: () {
           Navigator.of(context).pop(); // Close the dialog

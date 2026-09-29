@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:http/http.dart' as http;
+import 'package:medicle_sales_rbsh/utils/http/api_http.dart' as http;
 import 'package:medicle_sales_rbsh/utils/http/http_client.dart';
 import 'package:uuid/uuid.dart';
 
@@ -163,8 +163,8 @@ class UploadQueueDrainer {
         'data': events,
       });
 
-      client = http.Client();
-      const endpoint = '${THttpHelper.baseUrl}/offline-bg-tracking';
+      client = http.TrackedClient(trackActivity: false);
+      final endpoint = '${THttpHelper.baseUrl}/offline-bg-tracking';
       trackingConsoleLog(
         'UploadQueueDrainer',
         'POST $endpoint started for ${rows.length} rows.',

@@ -7,8 +7,8 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart' as geo;
 import 'package:in_app_update/in_app_update.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:video_player/video_player.dart';
 
-import '../../../../utils/constants/image_strings.dart';
 import '../../../../utils/local_storage/auth_manager.dart';
 
 import '../../../TrackingOptimizedBgLocation/service/tracking_service_manager.dart';
@@ -20,7 +20,7 @@ import '../../../dashboard/screen/dashboard.dart';
 import '../login/login.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
-import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/http/api_request_loader.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -31,6 +31,9 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
   StreamSubscription<RemoteMessage>? _foregroundMessageSubscription;
+  late final VideoPlayerController _splashVideoController;
+  final Completer<bool> _splashVideoStarted = Completer<bool>();
+  bool _splashVideoReady = false;
 
   bool _startupRunning = false;
 
@@ -41,6 +44,10 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
+    ApiRequestLoader.suppressOverlay();
+    _splashVideoController =
+        VideoPlayerController.asset('assets/app_icon/splash_video.mp4');
+    unawaited(_initializeSplashVideo());
 
     // Listen to foreground Firebase notifications.
     _foregroundMessageSubscription = FirebaseMessaging.onMessage.listen(
@@ -63,6 +70,25 @@ class _SplashScreenState extends State<SplashScreen> {
         _startFlow();
       },
     );
+  }
+
+  Future<void> _initializeSplashVideo() async {
+    try {
+      await _splashVideoController.initialize();
+      if (!mounted) return;
+      await _splashVideoController.setLooping(true);
+      await _splashVideoController.play();
+      if (mounted) {
+        setState(() => _splashVideoReady = true);
+        _splashVideoStarted.complete(true);
+      }
+    } catch (error) {
+      debugPrint('[SPLASH] Video could not play: $error');
+    } finally {
+      if (!_splashVideoStarted.isCompleted) {
+        _splashVideoStarted.complete(false);
+      }
+    }
   }
 
   // =========================================================
@@ -1498,6 +1524,11 @@ class _SplashScreenState extends State<SplashScreen> {
       '${token != null}',
     );
 
+    await _splashVideoStarted.future.timeout(
+      const Duration(seconds: 5),
+      onTimeout: () => false,
+    );
+
     await Future.delayed(
       const Duration(seconds: 2),
     );
@@ -1619,6 +1650,8 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void dispose() {
     _foregroundMessageSubscription?.cancel();
+    _splashVideoController.dispose();
+    ApiRequestLoader.resumeOverlay();
 
     super.dispose();
   }
@@ -1631,12 +1664,18 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: TColors.white,
-      body: Center(
-        child: Image.asset(
-          TImages.lightAppLogo,
-          height: TSizes.v150,
-        ),
-      ),
+      body: _splashVideoReady
+          ? SizedBox.expand(
+              child: FittedBox(
+                fit: BoxFit.contain,
+                child: SizedBox(
+                  width: _splashVideoController.value.size.width,
+                  height: _splashVideoController.value.size.height,
+                  child: VideoPlayer(_splashVideoController),
+                ),
+              ),
+            )
+          : const SizedBox.expand(),
     );
   }
 

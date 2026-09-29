@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 class WebViewPage extends StatefulWidget {
   final String url;
@@ -52,7 +53,7 @@ class _WebViewPageState extends State<WebViewPage> {
                 child: SizedBox(
                   width: TSizes.v18,
                   height: TSizes.v18,
-                  child: CircularProgressIndicator(strokeWidth: TSizes.v2),
+                  child: FieldOmniLoader.compact(),
                 ),
               ),
             )

@@ -1,14 +1,16 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart'; // for debugPrint
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:medicle_sales_rbsh/utils/http/api_http.dart' as http;
 
 import '../../../utils/http/http_client.dart';
 import '../../../utils/local_storage/auth_manager.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import '../../../utils/http/api_ui_feedback.dart';
+import '../../../utils/loder/api_wait_dialog.dart';
 
 class AddExpenseController with ChangeNotifier {
-  final String apiUrl = "${THttpHelper.baseUrl}/expenses";
+  String get apiUrl => "${THttpHelper.baseUrl}/expenses";
   AuthManager authManager = AuthManager();
 
   Future<void> addExpense({
@@ -48,10 +50,14 @@ class AddExpenseController with ChangeNotifier {
       debugPrint("[AddExpenseController] POST URL: $apiUrl");
       debugPrint("[AddExpenseController] Body: $expenseData");
 
-      final response = await http.post(
-        Uri.parse(apiUrl),
-        headers: {"Content-Type": "application/json"},
-        body: json.encode(expenseData),
+      final response = await ApiWaitDialog.run(
+        context,
+        title: TTexts.savingExpense,
+        action: () => http.post(
+          Uri.parse(apiUrl),
+          headers: {"Content-Type": "application/json"},
+          body: json.encode(expenseData),
+        ),
       );
 
       debugPrint("Example Response: ${response.statusCode} - ${response.body}");
@@ -69,7 +75,7 @@ class AddExpenseController with ChangeNotifier {
         debugPrint("[AddExpenseController] Failed: ${response.statusCode}");
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed: ${response.body}')),
+            const SnackBar(content: Text(TTexts.requestFailed)),
           );
         }
       }
@@ -77,7 +83,7 @@ class AddExpenseController with ChangeNotifier {
       debugPrint("[AddExpenseController] Exception: $e");
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
+          SnackBar(content: Text(ApiUiFeedback.message(e))),
         );
       }
     }

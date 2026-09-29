@@ -1,14 +1,47 @@
+import 'dart:async';
 import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'dart:io';
+import 'package:medicle_sales_rbsh/utils/http/api_http.dart' as http;
 
 import '../local_storage/auth_manager.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'api_ui_feedback.dart';
 
 class THttpHelper {
-  static const String baseUrl =
-      'https://test.gluckscare.com/api'; // API base URL development
-  // static const String baseUrl = 'https://apiv2.gluckscare.com/api'; // API base URL prod
-  // static const String baseUrl = 'https://api.gluckscare.com/api'; // API base URL production
+  static const String defaultBaseUrl = 'https://test.gluckscare.com/api';
+  static String _baseUrl = defaultBaseUrl;
+  static String? _backendUrl;
+  static String? _companyLogoPath;
+
+  static String get baseUrl => _baseUrl;
+  static String? get companyLogoUrl {
+    final path = _companyLogoPath;
+    final backend = _backendUrl;
+    if (path == null || path.isEmpty || backend == null || backend.isEmpty) {
+      return null;
+    }
+    final parsedPath = Uri.tryParse(path);
+    if (parsedPath?.hasScheme == true) return path;
+    return Uri.parse('${backend.replaceFirst(RegExp(r'/+$'), '')}/')
+        .resolve(path.replaceFirst(RegExp(r'^/+'), ''))
+        .toString();
+  }
+
+  static void configureCompany({String? backendUrl, String? logoUrl}) {
+    if (backendUrl == null || backendUrl.trim().isEmpty) return;
+    final normalizedBackend = backendUrl.trim().replaceFirst(RegExp(r'/+$'), '');
+    _backendUrl = normalizedBackend;
+    _baseUrl = normalizedBackend.endsWith('/api')
+        ? normalizedBackend
+        : '$normalizedBackend/api';
+    _companyLogoPath = logoUrl;
+  }
+
+  static void resetCompany() {
+    _baseUrl = defaultBaseUrl;
+    _backendUrl = null;
+    _companyLogoPath = null;
+  }
 
   // newly added for pass auth token as well
   static Future<Map<String, dynamic>> authGet(
@@ -16,15 +49,13 @@ class THttpHelper {
   ) async {
     final token = await AuthManager().getAuthToken();
 
-    final response = await http.get(
-      Uri.parse('$baseUrl/$endpoint'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-    );
-
-    return _handleResponse(response);
+    return _send(() => http.get(
+          Uri.parse('$baseUrl/$endpoint'),
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+          },
+        ));
   }
 
   static Future<Map<String, dynamic>> authPost(
@@ -33,16 +64,14 @@ class THttpHelper {
   ) async {
     final token = await AuthManager().getAuthToken();
 
-    final response = await http.post(
-      Uri.parse('$baseUrl/$endpoint'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-      body: json.encode(data),
-    );
-
-    return _handleResponse(response);
+    return _send(() => http.post(
+          Uri.parse('$baseUrl/$endpoint'),
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+          },
+          body: json.encode(data),
+        ));
   }
 
   static Future<Map<String, dynamic>> authPut(
@@ -51,16 +80,14 @@ class THttpHelper {
   ) async {
     final token = await AuthManager().getAuthToken();
 
-    final response = await http.put(
-      Uri.parse('$baseUrl/$endpoint'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-      body: json.encode(data),
-    );
-
-    return _handleResponse(response);
+    return _send(() => http.put(
+          Uri.parse('$baseUrl/$endpoint'),
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+          },
+          body: json.encode(data),
+        ));
   }
 
   static Future<Map<String, dynamic>> authDelete(
@@ -68,48 +95,55 @@ class THttpHelper {
   ) async {
     final token = await AuthManager().getAuthToken();
 
-    final response = await http.delete(
-      Uri.parse('$baseUrl/$endpoint'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-    );
-
-    return _handleResponse(response);
+    return _send(() => http.delete(
+          Uri.parse('$baseUrl/$endpoint'),
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+          },
+        ));
   }
 
   // Helper method to make a GET request
   static Future<Map<String, dynamic>> get(String endpoint) async {
-    final response = await http.get(Uri.parse('$baseUrl/$endpoint'));
-    return _handleResponse(response);
+    return _send(() => http.get(Uri.parse('$baseUrl/$endpoint')));
   }
 
   // Helper method to make a POST request
   static Future<Map<String, dynamic>> post(
       String endpoint, dynamic data) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/$endpoint'),
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode(data),
-    );
-    return _handleResponse(response);
+    return _send(() => http.post(
+          Uri.parse('$baseUrl/$endpoint'),
+          headers: {'Content-Type': 'application/json'},
+          body: json.encode(data),
+        ));
   }
 
   // Helper method to make a PUT request
   static Future<Map<String, dynamic>> put(String endpoint, dynamic data) async {
-    final response = await http.put(
-      Uri.parse('$baseUrl/$endpoint'),
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode(data),
-    );
-    return _handleResponse(response);
+    return _send(() => http.put(
+          Uri.parse('$baseUrl/$endpoint'),
+          headers: {'Content-Type': 'application/json'},
+          body: json.encode(data),
+        ));
   }
 
   // Helper method to make a DELETE request
   static Future<Map<String, dynamic>> delete(String endpoint) async {
-    final response = await http.delete(Uri.parse('$baseUrl/$endpoint'));
-    return _handleResponse(response);
+    return _send(() => http.delete(Uri.parse('$baseUrl/$endpoint')));
+  }
+
+  static Future<Map<String, dynamic>> _send(
+      Future<http.Response> Function() request) async {
+    try {
+      return _handleResponse(await request());
+    } on SocketException catch (error) {
+      throw ApiException(statusCode: 0, message: ApiUiFeedback.message(error));
+    } on http.ClientException catch (error) {
+      throw ApiException(statusCode: 0, message: ApiUiFeedback.message(error));
+    } on TimeoutException catch (error) {
+      throw ApiException(statusCode: 0, message: ApiUiFeedback.message(error));
+    }
   }
 
   // Handle the HTTP response

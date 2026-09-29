@@ -4,15 +4,18 @@ import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:medicle_sales_rbsh/utils/http/http_client.dart';
+import 'package:medicle_sales_rbsh/utils/http/api_ui_feedback.dart';
+import 'package:medicle_sales_rbsh/utils/http/api_request_loader.dart';
 import 'package:medicle_sales_rbsh/utils/local_storage/auth_manager.dart';
 
 import '../model/HolidayLeaves.dart';
 import '../model/LeaveType.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 class LeaveController extends GetxController {
-  final Dio _dio = Dio();
-  final String baseUrl = THttpHelper.baseUrl;
+  final Dio _dio = ApiRequestLoader.trackDio(Dio());
+  String get baseUrl => THttpHelper.baseUrl;
 
   static const String _tag = "[LeaveController]";
 
@@ -156,7 +159,7 @@ class LeaveController extends GetxController {
         fetchAllData();
       }
     } catch (e) {
-      Get.snackbar("Error", "Failed to apply: ${e.toString()}",
+      Get.snackbar("Error", ApiUiFeedback.message(e),
           backgroundColor: TColors.materialRed.withOpacity(0.2));
     } finally {
       isSubmitting(false);
@@ -165,7 +168,7 @@ class LeaveController extends GetxController {
 
   Future<void> cancelLeave(String leaveId) async {
     try {
-      Get.dialog(const Center(child: CircularProgressIndicator()),
+      Get.dialog(const Center(child: FieldOmniLoader()),
           barrierDismissible: false);
       final response = await _dio.put('/leaves/$leaveId/cancel');
       Get.back();

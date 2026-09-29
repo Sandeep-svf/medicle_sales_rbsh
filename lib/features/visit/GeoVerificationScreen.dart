@@ -6,16 +6,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:http_parser/http_parser.dart';
-import 'package:http/http.dart' as http;
+import 'package:medicle_sales_rbsh/utils/http/api_http.dart' as http;
 import 'package:image/image.dart' as img;
 import 'package:intl/intl.dart';
 import 'package:quickalert/quickalert.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 import 'package:medicle_sales_rbsh/utils/http/http_client.dart';
+import 'package:medicle_sales_rbsh/utils/http/api_ui_feedback.dart';
 import 'package:medicle_sales_rbsh/utils/local_storage/auth_manager.dart';
 import '../../../../utils/camera/CameraLocationResult.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 // --- YOUR IMPORTS ---
 
@@ -202,17 +204,11 @@ class _GeoVerificationScreenState extends State<GeoVerificationScreen>
     final saveOfflineImage = widget.saveOfflineImage;
 
     // 1. Loading Popup with Primary Color
-    QuickAlert.show(
-      context: context,
-      type: QuickAlertType.loading,
-      title: saveOfflineImage == null ? "Uploading..." : "Saving Offline...",
-      text: saveOfflineImage == null
+    FieldOmniLoadingDialog.show(
+      context,
+      message: saveOfflineImage == null
           ? "Verifying Location"
           : "Encrypting geo image for sync",
-      disableBackBtn: true,
-      barrierColor: TColors.pureBlack.withOpacity(0.7),
-      confirmBtnColor: TColors.primary, // <--- PINK BUTTON
-      headerBackgroundColor: TColors.primary, // <--- PINK HEADER
     );
 
     try {
@@ -263,7 +259,7 @@ class _GeoVerificationScreenState extends State<GeoVerificationScreen>
           contentType: MediaType('image', 'jpeg'));
       request.files.add(multipartFile);
 
-      var response = await http.Response.fromStream(await request.send());
+      var response = await http.Response.fromStream(await http.send(request));
       Navigator.pop(context); // Pop Loader
 
       if (response.statusCode == 200 || response.statusCode == 201) {
@@ -295,7 +291,7 @@ class _GeoVerificationScreenState extends State<GeoVerificationScreen>
       QuickAlert.show(
         context: context,
         type: QuickAlertType.error,
-        text: "Error: $e",
+        text: ApiUiFeedback.message(e),
         confirmBtnColor: TColors.primary, // <--- PINK BUTTON
       );
     }

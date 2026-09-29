@@ -7,6 +7,8 @@ import 'package:medicle_sales_rbsh/features/addClinic/controllers/ClinicListCont
 import '../controllers/ScheduleVisitcontroller.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/http/api_ui_feedback.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 // Adjust imports
 
@@ -236,7 +238,7 @@ class _ScheduleChemistVisitScreenState extends State<ScheduleChemistVisitScreen>
           Navigator.pop(context, true);
         }
       } catch (e) {
-        Get.snackbar("Error", "Failed: $e",
+        Get.snackbar("Error", ApiUiFeedback.message(e),
             backgroundColor: TColors.materialRed.withOpacity(0.1),
             colorText: TColors.materialRed);
       } finally {
@@ -550,8 +552,7 @@ class _ScheduleChemistVisitScreenState extends State<ScheduleChemistVisitScreen>
               ? const SizedBox(
                   height: TSizes.v24,
                   width: TSizes.v24,
-                  child: CircularProgressIndicator(
-                      color: TColors.white, strokeWidth: TSizes.v2))
+                  child: FieldOmniLoader.compact())
               : const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [

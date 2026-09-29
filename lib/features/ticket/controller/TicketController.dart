@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:medicle_sales_rbsh/utils/http/api_http.dart' as http;
 import 'package:get/get.dart';
 import 'package:medicle_sales_rbsh/utils/http/http_client.dart';
 // Ensure this import path is correct in your actual project
@@ -13,7 +13,7 @@ class TicketController extends GetxController {
   RxBool isLoading = true.obs; // Loading state for tickets list
 
   final String _debugPrefix = '[TicketController]';
-  final baseUrl = THttpHelper.baseUrl;
+  String get baseUrl => THttpHelper.baseUrl;
 
   @override
   void onInit() {

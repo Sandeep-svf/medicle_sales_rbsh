@@ -3,12 +3,14 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/responsive/responsive_layout.dart';
 import '../DayType.dart';
 import '../controller/tour_plan_controller.dart';
 import '../wigets/DayDetailsPanel.dart';
 import '../wigets/custom_calander_grid.dart';
 import '../wigets/day_editor_pannel.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 class TourPlanDetailsScreen extends StatefulWidget {
   const TourPlanDetailsScreen({
@@ -86,7 +88,7 @@ class _TourPlanDetailsScreenState extends State<TourPlanDetailsScreen> {
               child: Obx(() {
                 if (controller.isLoading.value) {
                   return const Center(
-                    child: CircularProgressIndicator(),
+                    child: FieldOmniLoader(),
                   );
                 }
 
@@ -161,19 +163,28 @@ class _TourPlanDetailsScreenState extends State<TourPlanDetailsScreen> {
               ],
             ),
           ),
-          OutlinedButton.icon(
-            onPressed: controller.isLoading.value
-                ? null
-                : () => controller.changePlanningMonth(context),
-            icon: const Icon(
-              Icons.calendar_month,
-              color: TColors.white,
+          if (TResponsive.isPhone(context))
+            IconButton(
+              tooltip: controller.monthTitle,
+              onPressed: controller.isLoading.value
+                  ? null
+                  : () => controller.changePlanningMonth(context),
+              icon: const Icon(Icons.calendar_month, color: TColors.white),
+            )
+          else
+            OutlinedButton.icon(
+              onPressed: controller.isLoading.value
+                  ? null
+                  : () => controller.changePlanningMonth(context),
+              icon: const Icon(
+                Icons.calendar_month,
+                color: TColors.white,
+              ),
+              label: Text(
+                controller.monthTitle,
+                style: TextStyle(color: TColors.white),
+              ),
             ),
-            label: Text(
-              controller.monthTitle,
-              style: TextStyle(color: TColors.white),
-            ),
-          ),
         ],
       ),
     );
@@ -183,6 +194,21 @@ class _TourPlanDetailsScreenState extends State<TourPlanDetailsScreen> {
   Widget _buildSummary(
     TourPlanController controller,
   ) {
+    final tiles = [
+      _summaryTile("Month", controller.monthTitle, Icons.calendar_today),
+      _summaryTile("Status", controller.tourPlan.value?.status ?? "Draft",
+          Icons.edit_note),
+      _summaryTile(
+        "Planned",
+        "${controller.monthDays.where((e) => e.type != DayType.unassigned && e.type != DayType.holiday).length}/${controller.monthDays.length}",
+        Icons.task_alt,
+      ),
+      _summaryTile(
+        "Working Days",
+        "${controller.monthDays.where((e) => e.type == DayType.field || e.type == DayType.jointWork || e.type == DayType.meeting || e.type == DayType.office || e.type == DayType.transit).length}",
+        Icons.work,
+      ),
+    ];
     return Container(
       margin: const EdgeInsets.all(
         TSizes.lg,
@@ -201,38 +227,23 @@ class _TourPlanDetailsScreenState extends State<TourPlanDetailsScreen> {
           padding: const EdgeInsets.all(
             TSizes.lg,
           ),
-          child: Row(
-            children: [
-              Expanded(
-                child: _summaryTile(
-                  "Month",
-                  controller.monthTitle,
-                  Icons.calendar_today,
+          child: TResponsive.isPhone(context)
+              ? SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      for (final tile in tiles) ...[
+                        SizedBox(width: 170, child: tile),
+                        const SizedBox(width: TSizes.md),
+                      ],
+                    ],
+                  ),
+                )
+              : Row(
+                  children: [
+                    for (final tile in tiles) Expanded(child: tile),
+                  ],
                 ),
-              ),
-              Expanded(
-                child: _summaryTile(
-                  "Status",
-                  controller.tourPlan.value?.status ?? "Draft",
-                  Icons.edit_note,
-                ),
-              ),
-              Expanded(
-                child: _summaryTile(
-                  "Planned",
-                  "${controller.monthDays.where((e) => e.type != DayType.unassigned && e.type != DayType.holiday).length}/${controller.monthDays.length}",
-                  Icons.task_alt,
-                ),
-              ),
-              Expanded(
-                child: _summaryTile(
-                  "Working Days",
-                  "${controller.monthDays.where((e) => e.type == DayType.field || e.type == DayType.jointWork || e.type == DayType.meeting || e.type == DayType.office || e.type == DayType.transit).length}",
-                  Icons.work,
-                ),
-              ),
-            ],
-          ),
         ),
       ),
     );
@@ -516,9 +527,7 @@ class _TourPlanDetailsScreenState extends State<TourPlanDetailsScreen> {
                   ? const SizedBox(
                       width: TSizes.v18,
                       height: TSizes.v18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: TSizes.v2,
-                      ),
+                      child: FieldOmniLoader.compact(),
                     )
                   : const Icon(
                       Icons.save_outlined,
@@ -557,10 +566,7 @@ class _TourPlanDetailsScreenState extends State<TourPlanDetailsScreen> {
                   ? const SizedBox(
                       width: 18,
                       height: 18,
-                      child: CircularProgressIndicator(
-                        color: TColors.white,
-                        strokeWidth: 2,
-                      ),
+                      child: FieldOmniLoader.compact(),
                     )
                   : Icon(
                       controller.currentStatus.value == "Returned"

@@ -2,20 +2,20 @@ import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
+import 'package:medicle_sales_rbsh/utils/http/api_http.dart' as http;
 import 'package:medicle_sales_rbsh/utils/http/http_client.dart';
 
 import '../../../../utils/local_storage/auth_manager.dart';
 import '../../../authentication/models/UserModel.dart';
 import '../Model/UserListResponseModel.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import '../../../../utils/http/api_ui_feedback.dart';
 
 class UserListController extends GetxController {
   var isLoading = false.obs;
   var userList = <Usert>[].obs;
 
-  static const String _baseUrl =
-      THttpHelper.baseUrl; // Replace with your base URL
+  static String get _baseUrl => THttpHelper.baseUrl;
   AuthManager authManager = AuthManager();
 
   @override
@@ -108,7 +108,7 @@ class UserListController extends GetxController {
       if (Get.isDialogOpen!) Get.back();
       Get.snackbar(
         "Error",
-        "Something went wrong: $e",
+        ApiUiFeedback.message(e),
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: TColors.materialRedAccent,
         colorText: TColors.white,

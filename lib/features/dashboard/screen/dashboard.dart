@@ -12,7 +12,7 @@ import '../../../utils/http/http_client.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:medicle_sales_rbsh/utils/http/api_http.dart' as http;
 import 'package:in_app_update/in_app_update.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:stylish_bottom_bar/stylish_bottom_bar.dart';
@@ -35,6 +35,7 @@ import '../widgets/custrom_drawer.dart';
 import '../../doctor_offline/services/doctor_area_assignment_service.dart';
 import '../../doctor_offline/ui/doctor_area_assignment_screen.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import '../../../utils/responsive/responsive_layout.dart';
 
 class DashboardScreen extends StatefulWidget {
   @override
@@ -120,7 +121,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     AuthManager authManager = AuthManager();
     final token = await authManager.getAuthToken();
 
-    const baseUrl = THttpHelper.baseUrl;
+    final baseUrl = THttpHelper.baseUrl;
     final fcmToken = await getFCMToken();
 
     final url = Uri.parse('$baseUrl/users/fcm-token');
@@ -219,6 +220,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
         InboxScreen()
       ];
 
+  void _selectTab(int index) {
+    setState(() {
+      selectedIndex = index;
+      _currentTitle = [
+        TTexts.dashboard,
+        TTexts.filesAndPdfs,
+        TTexts.appointments,
+        TTexts.addDoctor,
+        TTexts.inbox,
+      ][index];
+      _currentScreen = _buildScreens()[index];
+    });
+  }
+
   // working fine.
 
   List<BottomBarItem> _navBarsItems() => [
@@ -269,6 +284,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
           child: Text(
             _currentTitle,
             textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: const TextStyle(
               fontWeight: FontWeight.bold,
               color: TColors.white,
@@ -339,31 +356,54 @@ class _DashboardScreenState extends State<DashboardScreen> {
         userRole: userRole ?? '', // Pass userRole to CustomDrawer
       ),
       body: _currentScreen,
-      bottomNavigationBar: StylishBottomBar(
-        option: BubbleBarOptions(
-          barStyle: BubbleBarStyle.horizontal,
-          bubbleFillStyle: BubbleFillStyle.outlined,
-          opacity: 0.3,
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
-        ),
-        iconSpace: 10.0,
-        items: _navBarsItems(),
-        hasNotch: true,
-        currentIndex: selectedIndex,
-        onTap: (index) {
-          setState(() {
-            selectedIndex = index;
-            _currentTitle = [
-              TTexts.dashboard,
-              TTexts.filesAndPdfs,
-              TTexts.appointments,
-              TTexts.addDoctor,
-              TTexts.inbox,
-            ][index];
-            _currentScreen = _buildScreens()[index];
-          });
-        },
-      ),
+      bottomNavigationBar: TResponsive.isPhone(context)
+          ? NavigationBar(
+              height: 64,
+              selectedIndex: selectedIndex,
+              labelBehavior:
+                  NavigationDestinationLabelBehavior.onlyShowSelected,
+              onDestinationSelected: _selectTab,
+              destinations: const [
+                NavigationDestination(
+                  icon: Icon(Icons.home_outlined),
+                  selectedIcon: Icon(Icons.home_filled),
+                  label: TTexts.home,
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.folder_outlined),
+                  selectedIcon: Icon(Icons.folder_open),
+                  label: TTexts.files,
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.schedule_outlined),
+                  selectedIcon: Icon(Icons.schedule),
+                  label: TTexts.visits,
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.person_add_outlined),
+                  selectedIcon: Icon(Icons.person_add),
+                  label: TTexts.addDoctor,
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.inbox_outlined),
+                  selectedIcon: Icon(Icons.all_inbox),
+                  label: TTexts.inbox,
+                ),
+              ],
+            )
+          : StylishBottomBar(
+              option: BubbleBarOptions(
+                barStyle: BubbleBarStyle.horizontal,
+                bubbleFillStyle: BubbleFillStyle.outlined,
+                opacity: 0.3,
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+              ),
+              iconSpace: 10.0,
+              items: _navBarsItems(),
+              hasNotch: true,
+              currentIndex: selectedIndex,
+              onTap: _selectTab,
+            ),
     );
   }
 

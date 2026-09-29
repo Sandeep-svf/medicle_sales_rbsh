@@ -1,10 +1,11 @@
 import 'dart:convert';
 import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
+import 'package:medicle_sales_rbsh/utils/http/api_http.dart' as http;
 
 // Keep your existing imports
 import 'package:medicle_sales_rbsh/utils/local_storage/auth_manager.dart';
 import '../../../utils/http/http_client.dart';
+import '../../../utils/http/api_ui_feedback.dart';
 import '../models/Holiday.dart';
 
 class HolidayController extends GetxController {
@@ -97,7 +98,7 @@ class HolidayController extends GetxController {
         throw Exception('HTTP error ${response.statusCode}');
       }
     } catch (e) {
-      errorMessage.value = e.toString();
+      errorMessage.value = ApiUiFeedback.message(e);
       holidays.clear(); // Clear list on error if desired
     } finally {
       // Turn off loading

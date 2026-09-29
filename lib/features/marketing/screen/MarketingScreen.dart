@@ -5,10 +5,12 @@ import 'package:get/get.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:medicle_sales_rbsh/utils/http/http_client.dart';
+import 'package:medicle_sales_rbsh/utils/http/api_ui_feedback.dart';
 import '../controller/MarketingController.dart';
 import '../model/PdfItem.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 /*
 
@@ -119,7 +121,7 @@ class MarketingScreen extends StatelessWidget {
 
             Expanded(
               child: isLoading
-                  ? const Center(child: CircularProgressIndicator())
+                  ? const Center(child: FieldOmniLoader())
                   : items.isEmpty
                   ? Center(
                 child: Text(
@@ -222,7 +224,7 @@ class MarketingScreen extends StatelessWidget {
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (_) => const Center(child: CircularProgressIndicator()),
+        builder: (_) => const Center(child: FieldOmniLoader()),
       );
 
       final signedUrl = await c.getSignedUrl(item.fileKey); // PdfService.fetchSignedUrl
@@ -414,7 +416,7 @@ class MarketingScreen extends StatelessWidget {
           children: [
             Expanded(
               child: isLoading
-                  ? const Center(child: CircularProgressIndicator())
+                  ? const Center(child: FieldOmniLoader())
                   : items.isEmpty
                       ? const Center(child: Text(TTexts.uiTextNoFilesAvailable))
                       : isGrid
@@ -507,7 +509,7 @@ class MarketingScreen extends StatelessWidget {
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (_) => const Center(child: CircularProgressIndicator()),
+        builder: (_) => const Center(child: FieldOmniLoader()),
       );
 
       final signedUrl = await c.getSignedUrlById(item.id);
@@ -537,7 +539,7 @@ class MarketingScreen extends StatelessWidget {
       if (Navigator.canPop(context)) Navigator.of(context).pop();
       if (kDebugMode) debugPrint("MarketingScreen _onOpen error: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Failed to load PDF: $e")),
+        SnackBar(content: Text(ApiUiFeedback.message(e))),
       );
     }
   }

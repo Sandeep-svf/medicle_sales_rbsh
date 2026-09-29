@@ -8,6 +8,7 @@ import '../wigets/investment_table.dart';
 import 'add_investment_screen.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 class InvestmentListScreen extends StatelessWidget {
   InvestmentListScreen({super.key});
@@ -50,7 +51,7 @@ class InvestmentListScreen extends StatelessWidget {
 
   Widget _buildContent() {
     if (controller.isLoading.value) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(child: FieldOmniLoader());
     }
 
     if (controller.errorMessage.value.isNotEmpty) {

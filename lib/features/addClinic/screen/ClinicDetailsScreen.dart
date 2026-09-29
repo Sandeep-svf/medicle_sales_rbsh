@@ -4,7 +4,9 @@ import 'package:intl/intl.dart';
 import '../model/clinic.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/responsive/responsive_layout.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 const Color kPrimaryColor = TColors.hex_FFC71D52;
 const Color kBackgroundColor = TColors.hex_FFF4F6F9;
@@ -41,8 +43,10 @@ class ClinicDetailScreen extends StatelessWidget {
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
-            bool isTablet = constraints.maxWidth > 600;
-            bool isLandscape = constraints.maxWidth > 900;
+            bool isTablet =
+                !TResponsive.isPhone(context) && constraints.maxWidth > 600;
+            bool isLandscape =
+                !TResponsive.isPhone(context) && constraints.maxWidth > 900;
 
             if (isLandscape) return _buildLandscapeLayout(context);
             if (isTablet) return _buildTabletPortraitLayout(context);
@@ -486,7 +490,7 @@ class ClinicDetailScreen extends StatelessWidget {
                                   progress == null
                                       ? child
                                       : const Center(
-                                          child: CircularProgressIndicator()),
+                                          child: FieldOmniLoader()),
                               errorBuilder: (ctx, err, stack) => const Center(
                                   child: Icon(Icons.broken_image,
                                       color: TColors.materialGrey)),

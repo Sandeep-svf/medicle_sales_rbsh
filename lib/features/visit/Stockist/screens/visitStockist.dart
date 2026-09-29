@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
+import 'package:medicle_sales_rbsh/utils/http/api_http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:quickalert/models/quickalert_type.dart';
@@ -11,13 +11,17 @@ import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 import '../../../../../../utils/LocationHelper/LocationHelper.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/responsive/responsive_layout.dart';
 import '../../../../../../utils/local_storage/auth_manager.dart';
 import '../../../../common/Model/DoctorVisitResponse.dart';
 import '../../../../utils/http/http_client.dart';
+import '../../../../utils/http/api_ui_feedback.dart';
+import '../../../../utils/loder/api_wait_dialog.dart';
 import '../../../addStokist/controllers/StokistListController.dart';
 import '../controllers/visitListController.dart';
 import '../models/visitSalesData.dart';
 import 'ScheduleStockistVisitScreen.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 // Import Stockist Controller and Model
 
@@ -188,7 +192,7 @@ class _VisitStockistScreenState extends State<VisitStockistScreen> {
               listenable: _visitListController,
               builder: (context, child) {
                 if (_visitListController.isLoading) {
-                  return const Center(child: CircularProgressIndicator());
+                  return const Center(child: FieldOmniLoader());
                 } else if (_visitListController.salesList.isEmpty) {
                   return _buildEmptyState();
                 } else {
@@ -222,7 +226,8 @@ class _VisitStockistScreenState extends State<VisitStockistScreen> {
                         Expanded(
                           child: LayoutBuilder(
                             builder: (context, constraints) {
-                              bool isTablet = constraints.maxWidth > 600;
+                              bool isTablet = !TResponsive.isPhone(context) &&
+                                  constraints.maxWidth > 600;
 
                               Widget buildCard(StockistVisit visit) {
                                 final stockistName = visit.stockist?.firmName ??
@@ -653,17 +658,22 @@ class _VisitStockistScreenState extends State<VisitStockistScreen> {
           }
 
           try {
-            Position pos = await Geolocator.getCurrentPosition(
-                desiredAccuracy: LocationAccuracy.high);
-
-            final response = await http.put(
-              Uri.parse(
-                  '${THttpHelper.baseUrl}/stockist-visits/${visit.id}/confirm'),
-              headers: {'Content-Type': 'application/json'},
-              body: json.encode({
-                'userLatitude': pos.latitude,
-                'userLongitude': pos.longitude,
-              }),
+            final response = await ApiWaitDialog.run(
+              context,
+              visitConfirmation: true,
+              action: () async {
+                final pos = await Geolocator.getCurrentPosition(
+                    desiredAccuracy: LocationAccuracy.high);
+                return http.put(
+                  Uri.parse(
+                      '${THttpHelper.baseUrl}/stockist-visits/${visit.id}/confirm'),
+                  headers: {'Content-Type': 'application/json'},
+                  body: json.encode({
+                    'userLatitude': pos.latitude,
+                    'userLongitude': pos.longitude,
+                  }),
+                );
+              },
             );
 
             if (response.statusCode == 200) {
@@ -681,10 +691,10 @@ class _VisitStockistScreenState extends State<VisitStockistScreen> {
                 Get.snackbar("Error", res.message ?? "Failed");
               }
             } else {
-              Get.snackbar("Error", "Server error: ${response.statusCode}");
+              Get.snackbar("Error", TTexts.requestFailed);
             }
           } catch (e) {
-            Get.snackbar("Error", e.toString());
+            Get.snackbar("Error", ApiUiFeedback.message(e));
           }
         });
   }

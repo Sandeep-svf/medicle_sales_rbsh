@@ -8,6 +8,7 @@ import 'package:medicle_sales_rbsh/features/authentication/screens/onboarding/sp
 import 'package:medicle_sales_rbsh/utils/anim/CustomPageTransition.dart';
 import 'package:medicle_sales_rbsh/utils/check_internet/network_monitor.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/http/api_request_loader.dart';
 import 'package:medicle_sales_rbsh/utils/notificationservice/PushNotificationService.dart';
 import 'package:medicle_sales_rbsh/utils/theam/theme.dart';
 import 'package:flutter/services.dart';
@@ -74,8 +75,7 @@ class _AppState extends State<App> with WidgetsBindingObserver {
 
     return GetMaterialApp(
       scaffoldMessengerKey: scaffoldMessengerKey, //  add this
-      navigatorKey:
-          GlobalKey<NavigatorState>(), // optional, keep if already there
+      navigatorKey: ApiRequestLoader.navigatorKey,
       debugShowCheckedModeBanner: false,
       themeMode: ThemeMode.light,
       darkTheme: SAppTheme.darkTheme,

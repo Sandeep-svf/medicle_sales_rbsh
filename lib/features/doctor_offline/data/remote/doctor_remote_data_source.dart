@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:http/http.dart' as http;
+import 'package:medicle_sales_rbsh/utils/http/api_http.dart' as http;
 import 'package:medicle_sales_rbsh/utils/http/http_client.dart';
 import 'package:medicle_sales_rbsh/utils/local_storage/auth_manager.dart';
 
@@ -41,16 +41,16 @@ class HttpDoctorRemoteDataSource implements DoctorRemoteDataSource {
   HttpDoctorRemoteDataSource({
     required DoctorAuthTokenProvider tokenProvider,
     http.Client? client,
-    String baseUrl = THttpHelper.baseUrl,
+    String? baseUrl,
     Duration timeout = const Duration(seconds: 25),
   })  : _tokenProvider = tokenProvider,
-        _client = client ?? http.Client(),
+        _client = client ?? http.TrackedClient(),
         _ownsClient = client == null,
-        _baseUri = Uri.parse(baseUrl),
+        _baseUri = Uri.parse(baseUrl ?? THttpHelper.baseUrl),
         _timeout = timeout {
     if (_baseUri.scheme != 'https' || _baseUri.host.isEmpty) {
       throw ArgumentError.value(
-        baseUrl,
+        baseUrl ?? THttpHelper.baseUrl,
         'baseUrl',
         'Doctor sync requires a valid HTTPS base URL.',
       );

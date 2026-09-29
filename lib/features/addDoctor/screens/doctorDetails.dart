@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
+import 'package:medicle_sales_rbsh/utils/http/api_http.dart' as http;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
@@ -18,7 +18,9 @@ import '../../../utils/camera/image_overlay_utils.dart';
 import '../../../utils/loder/CircularLoaderController.dart';
 import '../models/doctor_details_model.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/responsive/responsive_layout.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 // --- Project Imports ---
 
@@ -58,7 +60,7 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
       if (controller.isLoading.value || controller.doctor.value == null) {
         return const Scaffold(
           body: Center(
-            child: CircularProgressIndicator(),
+            child: FieldOmniLoader(),
           ),
         );
       }
@@ -77,7 +79,8 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
           children: [
             LayoutBuilder(
               builder: (context, constraints) {
-                if (constraints.maxWidth > 600) {
+                if (!TResponsive.isPhone(context) &&
+                    constraints.maxWidth > 600) {
                   return _buildTabletLayout(context, constraints);
                 } else {
                   return _buildMobileLayout(context);
@@ -88,9 +91,7 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
               Container(
                 color: TColors.black54,
                 child: const Center(
-                  child: CircularProgressIndicator(
-                    color: TColors.white,
-                  ),
+                  child: FieldOmniLoader(),
                 ),
               ),
           ],
@@ -312,7 +313,7 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
               loadingBuilder: (context, child, loadingProgress) {
                 if (loadingProgress == null) return child;
                 return const Center(
-                    child: CircularProgressIndicator(color: TColors.primary));
+                    child: FieldOmniLoader());
               },
             ),
           ),
@@ -585,7 +586,7 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
 
       print("Uploading to: $url");
 
-      var streamedResponse = await request.send();
+      var streamedResponse = await http.send(request);
       var response = await http.Response.fromStream(streamedResponse);
 
       print("Status: ${response.statusCode}");

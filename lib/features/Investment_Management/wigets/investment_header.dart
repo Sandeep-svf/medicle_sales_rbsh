@@ -18,35 +18,37 @@ class InvestmentHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    const heading = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                TTexts.uiTextMyInvestmentRequests,
-                style: TextStyle(
-                  fontSize: TSizes.v28,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              SizedBox(height: TSizes.v6),
-              Text(
-                TTexts.uiTextTrackEveryRequestThroughApprovalPayout,
-                style: TextStyle(
-                  color: TColors.materialGrey,
-                  fontSize: TSizes.v15,
-                ),
-              )
-            ],
+        Text(
+          TTexts.uiTextMyInvestmentRequests,
+          style: TextStyle(
+            fontSize: TSizes.v28,
+            fontWeight: FontWeight.bold,
           ),
         ),
-        InvestmentToggle(
-          table: table,
-          onChanged: onToggle,
+        SizedBox(height: TSizes.v6),
+        Text(
+          TTexts.uiTextTrackEveryRequestThroughApprovalPayout,
+          style: TextStyle(
+            color: TColors.materialGrey,
+            fontSize: TSizes.v15,
+          ),
         )
       ],
+    );
+    final toggle = InvestmentToggle(table: table, onChanged: onToggle);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < 600) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [heading, const SizedBox(height: TSizes.md), toggle],
+          );
+        }
+        return Row(children: [Expanded(child: heading), toggle]);
+      },
     );
   }
 }

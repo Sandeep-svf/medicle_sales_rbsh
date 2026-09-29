@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
+import 'package:medicle_sales_rbsh/utils/http/api_http.dart' as http;
 
 import '../../../../utils/http/http_client.dart';
 import '../../../../utils/local_storage/auth_manager.dart';
@@ -18,7 +18,7 @@ class DoctorVisitProductController {
     http.Client? client,
   })  : _cacheRepository = cacheRepository ?? VisitCacheRepository(),
         _connectivity = connectivity ?? Connectivity(),
-        _client = client ?? http.Client(),
+        _client = client ?? http.TrackedClient(),
         _ownsClient = client == null;
 
   static const String _cacheKey = 'doctor_visit_products';

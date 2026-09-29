@@ -4,7 +4,7 @@ import 'dart:io';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
+import 'package:medicle_sales_rbsh/utils/http/api_http.dart' as http;
 
 import '../../../../utils/http/http_client.dart';
 import '../../../../utils/local_storage/auth_manager.dart';
@@ -26,7 +26,7 @@ class PendingVisitSyncService {
   })  : _repository = repository ?? PendingVisitRepository(),
         _scheduleRepository = scheduleRepository ?? PendingScheduleRepository(),
         _authManager = authManager ?? AuthManager(),
-        _client = client ?? http.Client(),
+        _client = client ?? http.TrackedClient(),
         _ownsClient = client == null,
         _baseUrl = baseUrl ?? THttpHelper.baseUrl;
 

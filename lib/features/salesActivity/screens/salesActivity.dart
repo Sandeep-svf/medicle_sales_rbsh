@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 import '../controllers/SalesController.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 class SalesactivityScreen extends StatefulWidget {
   const SalesactivityScreen({super.key});
@@ -207,7 +208,7 @@ class _SalesactivityScreenState extends State<SalesactivityScreen> {
       body: Consumer<SalesController>(
         builder: (context, salesController, child) {
           if (salesController.isLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: FieldOmniLoader());
           }
 
           if (salesController.salesList.isEmpty) {

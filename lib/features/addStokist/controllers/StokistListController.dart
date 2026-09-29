@@ -1,11 +1,12 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
+import 'package:medicle_sales_rbsh/utils/http/api_http.dart' as http;
 import '../../../utils/http/http_client.dart';
 import '../../../utils/local_storage/auth_manager.dart';
 import '../model/Stokist.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import '../../../utils/http/api_ui_feedback.dart';
 
 class StokistListController extends GetxController {
   var isLoading = false.obs;
@@ -16,7 +17,7 @@ class StokistListController extends GetxController {
   // 2. Filtered List (For Search)
   var filteredStokistList = <Stockist>[].obs;
 
-  static const String _baseUrl = THttpHelper.baseUrl;
+  static String get _baseUrl => THttpHelper.baseUrl;
   final AuthManager authManager = AuthManager();
 
   @override
@@ -80,7 +81,7 @@ class StokistListController extends GetxController {
     } catch (e) {
       Get.snackbar(
         "Error",
-        e.toString(),
+        ApiUiFeedback.message(e),
       );
     }
   }
@@ -127,7 +128,7 @@ class StokistListController extends GetxController {
     } catch (e) {
       Get.snackbar(
         "Error",
-        e.toString(),
+        ApiUiFeedback.message(e),
       );
       return null;
     } finally {
@@ -203,7 +204,7 @@ class StokistListController extends GetxController {
   var isLoading = false.obs;
   var stokistList = <Stockist>[].obs;
 
-  static const String _baseUrl = THttpHelper.baseUrl;
+  static String get _baseUrl => THttpHelper.baseUrl;
   final AuthManager authManager = AuthManager();
  // late String headOffice;
 

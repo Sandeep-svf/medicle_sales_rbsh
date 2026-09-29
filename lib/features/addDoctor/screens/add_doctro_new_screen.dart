@@ -6,6 +6,7 @@ import '../controllers/add_doctor_new_controller.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 class AddDoctorNewScreen extends StatelessWidget {
   const AddDoctorNewScreen({Key? key}) : super(key: key);
@@ -242,8 +243,7 @@ class AddDoctorNewScreen extends StatelessWidget {
                                         const SizedBox(
                                           height: TSizes.v18,
                                           width: TSizes.v18,
-                                          child: CircularProgressIndicator(
-                                              strokeWidth: TSizes.v2),
+                                          child: FieldOmniLoader.compact(),
                                         ),
                                     ],
                                   ),
@@ -309,7 +309,7 @@ class AddDoctorNewScreen extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const CircularProgressIndicator(color: TColors.primary),
+                  const FieldOmniLoader(),
                   const SizedBox(height: TSizes.v8),
                   Text(TTexts.uiTextProcessing_272bc02e,
                       style: TextStyle(
@@ -699,8 +699,7 @@ class AddDoctorNewScreen extends StatelessWidget {
                   child: SizedBox(
                     height: TSizes.v20,
                     width: TSizes.v20,
-                    child: CircularProgressIndicator(
-                        strokeWidth: TSizes.v2, color: TColors.primary),
+                    child: FieldOmniLoader.compact(),
                   ),
                 ),
               );
@@ -1017,7 +1016,7 @@ class AddDoctorNewScreen extends StatelessWidget {
                   height: TSizes.v220,
                   child: controller.isLoadingAreas.value
                       ? const Center(
-                          child: CircularProgressIndicator(),
+                          child: FieldOmniLoader.compact(),
                         )
                       : filtered.isEmpty
                           ? ListView(

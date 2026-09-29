@@ -110,6 +110,7 @@ class ApprovalManagementScreen extends StatelessWidget {
       return LayoutBuilder(
         builder: (context, constraints) {
           final isWide = constraints.maxWidth >= 900;
+          final contentWidth = constraints.maxWidth - TSizes.lg * 2;
 
           return SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
@@ -119,9 +120,7 @@ class ApprovalManagementScreen extends StatelessWidget {
               runSpacing: TSizes.lg,
               children: controller.pendingApprovals.map((plan) {
                 return SizedBox(
-                  width: isWide
-                      ? (constraints.maxWidth - TSizes.lg) / 2
-                      : constraints.maxWidth,
+                  width: isWide ? (contentWidth - TSizes.lg) / 2 : contentWidth,
                   child: PendingApprovalCard(
                     plan: plan,
                     loading: controller.isApproving.value ||
@@ -180,6 +179,7 @@ class ApprovalManagementScreen extends StatelessWidget {
       return LayoutBuilder(
         builder: (context, constraints) {
           final isWide = constraints.maxWidth >= 900;
+          final contentWidth = constraints.maxWidth - TSizes.lg * 2;
 
           return SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
@@ -189,9 +189,7 @@ class ApprovalManagementScreen extends StatelessWidget {
               runSpacing: TSizes.lg,
               children: controller.beatChangeRequests.map((request) {
                 return SizedBox(
-                  width: isWide
-                      ? (constraints.maxWidth - TSizes.lg) / 2
-                      : constraints.maxWidth,
+                  width: isWide ? (contentWidth - TSizes.lg) / 2 : contentWidth,
                   child: BeatChangeRequestCard(
                     request: request,
                     loading: controller.isBeatResponding.value,
@@ -246,6 +244,7 @@ class ApprovalManagementScreen extends StatelessWidget {
       return LayoutBuilder(
         builder: (context, constraints) {
           final isWide = constraints.maxWidth >= 900;
+          final contentWidth = constraints.maxWidth - TSizes.lg * 2;
 
           return SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
@@ -255,9 +254,7 @@ class ApprovalManagementScreen extends StatelessWidget {
               runSpacing: TSizes.lg,
               children: controller.collaborations.map((request) {
                 return SizedBox(
-                  width: isWide
-                      ? (constraints.maxWidth - TSizes.lg) / 2
-                      : constraints.maxWidth,
+                  width: isWide ? (contentWidth - TSizes.lg) / 2 : contentWidth,
                   child: CollaborationRequestCard(
                     request: request,
                     loading: controller.isResponding.value,

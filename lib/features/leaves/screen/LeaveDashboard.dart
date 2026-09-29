@@ -8,6 +8,7 @@ import '../controller/LeaveController.dart';
 import '../model/LeaveType.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 class LeaveDashboard extends StatelessWidget {
   const LeaveDashboard({super.key});
@@ -54,7 +55,7 @@ class LeaveDashboard extends StatelessWidget {
             child: Obx(() {
               if (controller.isLoading.value) {
                 return const Center(
-                    child: CircularProgressIndicator(color: TColors.primary));
+                    child: FieldOmniLoader());
               }
 
               return RefreshIndicator(
@@ -171,7 +172,8 @@ class LeaveDashboard extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Column(
+          const Expanded(
+              child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(TTexts.uiTextMyLeaves,
@@ -187,7 +189,8 @@ class LeaveDashboard extends StatelessWidget {
                       fontSize: TSizes.v14,
                       fontWeight: FontWeight.w400)),
             ],
-          ),
+          )),
+          const SizedBox(width: TSizes.sm),
           Material(
             color: TColors.transparent,
             child: InkWell(
@@ -807,9 +810,7 @@ class LeaveDashboard extends StatelessWidget {
                                 ? const SizedBox(
                                     height: TSizes.v24,
                                     width: TSizes.v24,
-                                    child: CircularProgressIndicator(
-                                        color: TColors.white,
-                                        strokeWidth: TSizes.v2_5))
+                                    child: FieldOmniLoader.compact())
                                 : const Text(TTexts.uiTextSubmitRequest,
                                     style: TextStyle(
                                         fontSize: TSizes.v17,

@@ -1,9 +1,10 @@
 import 'dart:convert';
 
 import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
+import 'package:medicle_sales_rbsh/utils/http/api_http.dart' as http;
 
 import '../../../utils/http/http_client.dart';
+import '../../../utils/http/api_ui_feedback.dart';
 import '../../../utils/local_storage/auth_manager.dart';
 import '../models/doctor_details_model.dart';
 
@@ -15,7 +16,7 @@ class DoctorDetailsController extends GetxController {
 
   final String doctorId;
 
-  static const String _baseUrl = THttpHelper.baseUrl;
+  static String get _baseUrl => THttpHelper.baseUrl;
 
   final AuthManager authManager = AuthManager();
 
@@ -113,7 +114,7 @@ class DoctorDetailsController extends GetxController {
 
       Get.snackbar(
         "Error",
-        e.toString(),
+        ApiUiFeedback.message(e),
       );
     } finally {
       isLoading.value = false;

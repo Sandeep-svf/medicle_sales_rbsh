@@ -7,6 +7,7 @@ import '../controller/tour_plan_list_controller.dart';
 import '../model/tour_plan_model.dart';
 import '../wigets/status_chip.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 class TourPlanListScreen extends StatelessWidget {
   const TourPlanListScreen({super.key});
@@ -29,9 +30,7 @@ class TourPlanListScreen extends StatelessWidget {
         child: Obx(() {
           if (controller.isLoading.value) {
             return const Center(
-              child: CircularProgressIndicator(
-                color: TColors.primary,
-              ),
+              child: FieldOmniLoader(),
             );
           }
 
@@ -426,10 +425,7 @@ class TourPlanListScreen extends StatelessWidget {
                               ? const SizedBox(
                                   width: TSizes.v16,
                                   height: TSizes.v16,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: TSizes.v2,
-                                    color: TColors.white,
-                                  ),
+                                  child: FieldOmniLoader.compact(),
                                 )
                               : const Icon(Icons.send_rounded,
                                   size: TSizes.v18),

@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:http/http.dart' as http;
+import 'package:medicle_sales_rbsh/utils/http/api_http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import '../../../utils/local_storage/auth_manager.dart';
 import '../models/order_models.dart';
@@ -19,7 +19,7 @@ class HttpOrderRemoteDataSource implements OrderRemoteDataSource {
       {http.Client? client,
       String? endpoint,
       Future<String?> Function()? tokenProvider})
-      : _client = client ?? http.Client(),
+      : _client = client ?? http.TrackedClient(),
         _ownsClient = client == null,
         _endpoint =
             endpoint ?? const String.fromEnvironment('ORDER_CREATE_URL'),

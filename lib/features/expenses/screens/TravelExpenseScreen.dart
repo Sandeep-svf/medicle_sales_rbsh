@@ -17,6 +17,7 @@ import '../models/TravelAllowenceRequestModel.dart';
 import '../models/TravelDetails.dart';
 import '../models/other_expense_request.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 class AddAllowanceScreen extends StatefulWidget {
   final bool isEditMode;
@@ -835,10 +836,7 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
                     ? const SizedBox(
                         height: TSizes.v20,
                         width: TSizes.v20,
-                        child: CircularProgressIndicator(
-                          color: TColors.white,
-                          strokeWidth: TSizes.v2,
-                        ),
+                        child: FieldOmniLoader.compact(),
                       )
                     : Text(widget.isEditMode ? "Update" : "Submit"),
               ),

@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:medicle_sales_rbsh/utils/http/api_http.dart' as http;
 import 'package:medicle_sales_rbsh/utils/http/http_client.dart';
 import 'package:medicle_sales_rbsh/utils/local_storage/storage_utility.dart';
 import '../../../utils/local_storage/auth_manager.dart';
@@ -17,8 +17,8 @@ class SalesController with ChangeNotifier {
   List<SalesLogModel> get salesList => _salesList;
   bool get isLoading => _isLoading;
 
-  final String fetchApiUrl = THttpHelper.baseUrl;
-  final String addApiUrl = THttpHelper.baseUrl;
+  String get fetchApiUrl => THttpHelper.baseUrl;
+  String get addApiUrl => THttpHelper.baseUrl;
 
   /// Fetch sales list from the server
   Future<void> fetchSalesList() async {

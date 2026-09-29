@@ -7,9 +7,11 @@ import 'package:path_provider/path_provider.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../utils/http/http_client.dart';
+import '../../../utils/http/api_request_loader.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 class MarketingScreenOld extends StatefulWidget {
   const MarketingScreenOld({super.key});
@@ -50,7 +52,7 @@ class _MarketingScreenState extends State<MarketingScreenOld> {
 
   Future<void> fetchPdfList() async {
     try {
-      Dio dio = Dio();
+      Dio dio = ApiRequestLoader.trackDio(Dio());
       Response response = await dio.get("${THttpHelper.baseUrl}/pdfs");
 
       if (response.statusCode == 200 && response.data is List) {
@@ -75,7 +77,7 @@ class _MarketingScreenState extends State<MarketingScreenOld> {
   Future<String?> fetchSignedUrl(String fileKey) async {
     try {
       String url = "${THttpHelper.baseUrl}/pdfs/signed-url/$fileKey";
-      Dio dio = Dio();
+      Dio dio = ApiRequestLoader.trackDio(Dio());
       Response response = await dio.get(url);
 
       if (response.statusCode == 200 && response.data["fileUrl"] != null) {
@@ -98,7 +100,7 @@ class _MarketingScreenState extends State<MarketingScreenOld> {
         return filePath; // Return cached file
       }
 
-      Dio dio = Dio();
+      Dio dio = ApiRequestLoader.trackDio(Dio());
       Response response = await dio.get(url,
           options: Options(responseType: ResponseType.bytes));
 
@@ -175,7 +177,7 @@ class _MarketingScreenState extends State<MarketingScreenOld> {
         ],
       ),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: FieldOmniLoader())
           : pdfFiles.isEmpty
               ? const Center(child: Text(TTexts.uiTextNoFilesAvailable))
               : _isGridView

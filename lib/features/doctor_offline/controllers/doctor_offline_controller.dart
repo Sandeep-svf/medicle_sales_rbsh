@@ -8,7 +8,7 @@ import '../../visit/Doctor/models/pending_area_assignment_model.dart';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
+import 'package:medicle_sales_rbsh/utils/http/api_http.dart' as http;
 
 import '../../../utils/camera/CameraLocationResult.dart';
 import '../../../utils/camera/image_overlay_utils.dart';

@@ -6,6 +6,7 @@ import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../../../utils/http/http_client.dart';
+import '../../../utils/http/api_request_loader.dart';
 import '../model/PdfItem.dart';
 
 
@@ -106,17 +107,18 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 import '../../../utils/http/http_client.dart';
+import '../../../utils/http/api_request_loader.dart';
 import '../model/PdfItem.dart';
 
 class PdfService {
   final Dio _dio;
 
   PdfService([Dio? dio])
-      : _dio = dio ??
+      : _dio = ApiRequestLoader.trackDio(dio ??
             Dio(BaseOptions(
               connectTimeout: const Duration(seconds: 20),
               receiveTimeout: const Duration(seconds: 30),
-            ));
+            )));
 
   Future<List<PdfItem>> fetchList() async {
     final url = "${THttpHelper.baseUrl}/pdfs";

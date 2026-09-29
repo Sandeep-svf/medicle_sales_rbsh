@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:get/get_rx/src/rx_types/rx_types.dart';
-import 'package:http/http.dart' as http;
+import 'package:medicle_sales_rbsh/utils/http/api_http.dart' as http;
 import 'package:intl/intl.dart';
 
 import '../../../../utils/http/http_client.dart';
@@ -44,7 +44,7 @@ class VisitListController with ChangeNotifier {
   List<VisitSalesLogModel> get salesList => _visitList;
   bool get isLoading => _isLoading;
 
-  final String fetchApiUrl = THttpHelper.baseUrl;
+  String get fetchApiUrl => THttpHelper.baseUrl;
   VisitDateFilter _currentFilter = VisitDateFilter.today;
   DateTime? _currentStartDate;
   DateTime? _currentEndDate;

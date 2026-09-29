@@ -1,14 +1,16 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:medicle_sales_rbsh/utils/http/api_http.dart' as http;
 import 'package:medicle_sales_rbsh/utils/local_storage/auth_manager.dart';
 import '../../../utils/http/http_client.dart';
 import '../../../utils/local_storage/storage_utility.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import '../../../utils/http/api_ui_feedback.dart';
+import '../../../utils/loder/api_wait_dialog.dart';
 
 class AddSalesController {
-  static const String _baseUrl = THttpHelper.baseUrl;
-  static const apiUrl = '$_baseUrl/sales';
+  static String get _baseUrl => THttpHelper.baseUrl;
+  static String get apiUrl => '$_baseUrl/sales';
   String? userId;
   AuthManager authManager = AuthManager();
 
@@ -31,10 +33,14 @@ class AddSalesController {
     debugPrint("SalesController: Sales Data: ${json.encode(salesData)}");
 
     try {
-      final response = await http.post(
-        Uri.parse(apiUrl),
-        headers: {"Content-Type": "application/json"},
-        body: json.encode(salesData),
+      final response = await ApiWaitDialog.run(
+        context,
+        title: TTexts.savingSale,
+        action: () => http.post(
+          Uri.parse(apiUrl),
+          headers: {"Content-Type": "application/json"},
+          body: json.encode(salesData),
+        ),
       );
 
       // Log the response code and body
@@ -61,7 +67,7 @@ class AddSalesController {
 
       // Catch any error and show error snack bar
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('An error occurred: $e')),
+        SnackBar(content: Text(ApiUiFeedback.message(e))),
       );
     }
   }

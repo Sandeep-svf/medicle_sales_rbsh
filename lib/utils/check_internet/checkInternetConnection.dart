@@ -39,7 +39,7 @@ Future<bool> checkInternetConnection(BuildContext context) async {
 void _showNoInternetSnackBar(BuildContext context) {
   ScaffoldMessenger.of(context).showSnackBar(
     const SnackBar(
-      content: Text(TTexts.uiTextNoInternetConnection),
+      content: Text(TTexts.networkUnavailable),
       backgroundColor: TColors.materialRedAccent,
       duration: Duration(seconds: 2),
     ),

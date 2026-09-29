@@ -11,6 +11,7 @@ import '../Model/UserLocationListModel.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 class RouteMapScreen extends StatefulWidget {
   const RouteMapScreen({super.key});
@@ -183,7 +184,7 @@ class _RouteMapScreenState extends State<RouteMapScreen> {
         children: [
           // Display loading indicator while route is being fetched
           if (_isLoading)
-            Center(child: CircularProgressIndicator())
+            Center(child: FieldOmniLoader())
           else
             GoogleMap(
               initialCameraPosition: CameraPosition(

@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
+import 'package:medicle_sales_rbsh/utils/http/api_http.dart' as http;
 import 'dart:convert';
 import '../../../utils/http/http_client.dart';
+import '../../../utils/http/api_ui_feedback.dart';
 import '../../addDoctor/screens/map.dart';
 import '../controllers/ClinicListController.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 class AddClinicDialog extends StatefulWidget {
   final ClinicListController controller;
@@ -77,7 +79,7 @@ class _AddClinicDialogState extends State<AddClinicDialog> {
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Failed to submit: $e")),
+        SnackBar(content: Text(ApiUiFeedback.message(e))),
       );
     } finally {
       setState(() => isLoading = false);
@@ -152,7 +154,7 @@ class _AddClinicDialogState extends State<AddClinicDialog> {
               ? const SizedBox(
                   height: TSizes.v18,
                   width: TSizes.v18,
-                  child: CircularProgressIndicator(strokeWidth: TSizes.v2))
+                  child: FieldOmniLoader.compact())
               : const Text(TTexts.submit),
         ),
       ],

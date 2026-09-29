@@ -6,6 +6,7 @@ import '../controller/InvoiceController.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 class SendEmailSheet extends StatefulWidget {
   final dynamic invoice;
@@ -396,7 +397,7 @@ class _SendEmailSheetState extends State<SendEmailSheet> {
                 child: ElevatedButton(
                   onPressed: sending ? null : sendEmail,
                   child: sending
-                      ? const CircularProgressIndicator()
+                      ? const FieldOmniLoader()
                       : const Text(
                           TTexts.uiTextSendEmail,
                         ),

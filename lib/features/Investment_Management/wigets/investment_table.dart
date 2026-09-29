@@ -5,6 +5,7 @@ import '../controller/investment_request_controller.dart';
 import 'investment_table_row.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/responsive/responsive_layout.dart';
 
 class InvestmentRequestTable extends GetView<InvestmentRequestController> {
   const InvestmentRequestTable({super.key});
@@ -14,7 +15,7 @@ class InvestmentRequestTable extends GetView<InvestmentRequestController> {
     return Obx(() {
       final requests = controller.investmentRequests;
 
-      return Container(
+      final table = Container(
         decoration: BoxDecoration(
           color: TColors.white,
           borderRadius: BorderRadius.circular(22),
@@ -321,6 +322,11 @@ class InvestmentRequestTable extends GetView<InvestmentRequestController> {
             ),
           ],
         ),
+      );
+      if (!TResponsive.isPhone(context)) return table;
+      return SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: SizedBox(width: TSizes.v900, child: table),
       );
     });
   }

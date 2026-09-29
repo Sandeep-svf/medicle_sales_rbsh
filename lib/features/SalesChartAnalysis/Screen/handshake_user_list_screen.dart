@@ -6,6 +6,7 @@ import '../widgets/handshake_confirmation_dialog.dart';
 import '../widgets/handshake_user_tile.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 class HandshakePageResult {
   const HandshakePageResult({
@@ -311,10 +312,7 @@ class _HandshakeUserListScreenState extends State<HandshakeUserListScreen> {
                     ? const SizedBox(
                         width: TSizes.v17,
                         height: TSizes.v17,
-                        child: CircularProgressIndicator(
-                          strokeWidth: TSizes.v2,
-                          color: TColors.white,
-                        ),
+                        child: FieldOmniLoader.compact(),
                       )
                     : const Icon(Icons.send_rounded, size: TSizes.v18),
                 label: Text(_submitting ? 'Sending...' : 'Submit'),

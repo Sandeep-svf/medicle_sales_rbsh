@@ -12,6 +12,7 @@ import 'order_create.dart';
 import 'order_detail.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 class OrderScreen extends StatefulWidget {
   const OrderScreen(
@@ -256,9 +257,7 @@ class _OrderScreenState extends State<OrderScreen> with WidgetsBindingObserver {
                                               ? const SizedBox.square(
                                                   dimension: 20,
                                                   child:
-                                                      CircularProgressIndicator(
-                                                          strokeWidth:
-                                                              TSizes.v2))
+                                                      FieldOmniLoader.compact())
                                               : const Icon(Icons.sync))
                                     ]),
                                     const Text(
@@ -330,7 +329,7 @@ class _OrderScreenState extends State<OrderScreen> with WidgetsBindingObserver {
                                 child: Padding(
                                     padding: EdgeInsets.all(48),
                                     child: Center(
-                                        child: CircularProgressIndicator())))
+                                        child: FieldOmniLoader())))
                           else if (_loadError != null)
                             SliverToBoxAdapter(
                                 child: Padding(

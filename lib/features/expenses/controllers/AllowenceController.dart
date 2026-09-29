@@ -2,14 +2,14 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:http/http.dart' as http;
+import 'package:medicle_sales_rbsh/utils/http/api_http.dart' as http;
 import 'package:medicle_sales_rbsh/utils/http/http_client.dart';
 import '../models/TravelAllowenceRequestModel.dart';
 import '../models/DailyAllowenceRequestModel.dart';
 
 class AllowanceController {
   //static const String _baseUrl = 'https://medi-glucks-erp.onrender.com/api/expenses';
-  static const String _baseUrl = "${THttpHelper.baseUrl}/expenses";
+  static String get _baseUrl => "${THttpHelper.baseUrl}/expenses";
   static const String _logPrefix = 'AllowanceController';
 
   static Future<bool> submitTravelAllowance(

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 import '../doctor_offline_module.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
@@ -95,13 +96,8 @@ class _DoctorOfflineEntryScreenState extends State<DoctorOfflineEntryScreen> {
             child: Padding(
               padding: const EdgeInsets.all(TSizes.lg),
               child: _loading
-                  ? const Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        CircularProgressIndicator(color: TColors.primary),
-                        SizedBox(height: TSizes.md),
-                        Text(TTexts.uiTextOpeningSecureOfflineDoctorStorage),
-                      ],
+                  ? const FieldOmniLoader(
+                      message: TTexts.uiTextOpeningSecureOfflineDoctorStorage,
                     )
                   : Column(
                       mainAxisSize: MainAxisSize.min,

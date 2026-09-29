@@ -4,7 +4,7 @@ import 'services/doctor_creation_store.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:http/http.dart' as http;
+import 'package:medicle_sales_rbsh/utils/http/api_http.dart' as http;
 import 'package:medicle_sales_rbsh/utils/http/http_client.dart';
 import 'package:medicle_sales_rbsh/utils/local_storage/auth_manager.dart';
 import 'package:path/path.dart' as path;
@@ -67,7 +67,7 @@ class DoctorOfflineModule {
     String? authorizedScopeId,
     String? deltaHeadOfficeId,
     String? environment,
-    String baseUrl = THttpHelper.baseUrl,
+    String? baseUrl,
     AuthManager? authManager,
     DoctorAuthTokenProvider? tokenProvider,
     DoctorEncryptionKeyProvider? encryptionKeyProvider,
@@ -77,7 +77,8 @@ class DoctorOfflineModule {
     String? supportDirectoryPath,
     DoctorSyncLog? syncLog,
   }) async {
-    final parsedBaseUri = Uri.parse(baseUrl);
+    final resolvedBaseUrl = baseUrl ?? THttpHelper.baseUrl;
+    final parsedBaseUri = Uri.parse(resolvedBaseUrl);
     final scope = DoctorOfflineScope(
       environment: environment ?? _normalizedEnvironment(parsedBaseUri),
       accountId: accountId,
@@ -102,7 +103,7 @@ class DoctorOfflineModule {
       authorizedScopeId: authorizedScopeId,
       deltaHeadOfficeId: deltaHeadOfficeId,
       environment: environment,
-      baseUrl: baseUrl,
+      baseUrl: resolvedBaseUrl,
       authManager: authManager,
       tokenProvider: tokenProvider,
       encryptionKeyProvider: encryptionKeyProvider,
@@ -129,7 +130,7 @@ class DoctorOfflineModule {
     String? authorizedScopeId,
     String? deltaHeadOfficeId,
     String? environment,
-    String baseUrl = THttpHelper.baseUrl,
+    String? baseUrl,
     AuthManager? authManager,
     DoctorAuthTokenProvider? tokenProvider,
     DoctorEncryptionKeyProvider? encryptionKeyProvider,
@@ -139,10 +140,11 @@ class DoctorOfflineModule {
     String? supportDirectoryPath,
     DoctorSyncLog? syncLog,
   }) async {
-    final parsedBaseUri = Uri.parse(baseUrl);
+    final resolvedBaseUrl = baseUrl ?? THttpHelper.baseUrl;
+    final parsedBaseUri = Uri.parse(resolvedBaseUrl);
     if (parsedBaseUri.scheme != 'https' || parsedBaseUri.host.isEmpty) {
       throw ArgumentError.value(
-        baseUrl,
+        resolvedBaseUrl,
         'baseUrl',
         'Doctor sync requires a valid HTTPS base URL.',
       );
@@ -191,7 +193,7 @@ class DoctorOfflineModule {
         tokenProvider: tokenProvider ??
             AuthManagerDoctorAuthTokenProvider(authManager: authentication),
         client: httpClient,
-        baseUrl: baseUrl,
+        baseUrl: resolvedBaseUrl,
       );
       repository = DoctorRepositoryImpl(
         localDataSource: localDataSource,
@@ -210,7 +212,7 @@ class DoctorOfflineModule {
         database: await DoctorCreationStore.openDatabaseAt(storagePath),
         directory: storagePath,
         encryptionKey: encryptionKey,
-        baseUrl: baseUrl,
+        baseUrl: resolvedBaseUrl,
         tokenProvider: tokenProvider?.readToken ?? authentication.getAuthToken,
         scopeGuard: () async => await authentication.getUserId() == accountId,
       );

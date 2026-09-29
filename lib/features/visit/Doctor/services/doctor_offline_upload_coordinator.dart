@@ -3,7 +3,7 @@ import 'dart:convert';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
+import 'package:medicle_sales_rbsh/utils/http/api_http.dart' as http;
 import 'package:medicle_sales_rbsh/features/doctor_offline/doctor_offline.dart';
 import 'package:medicle_sales_rbsh/utils/http/http_client.dart';
 import 'package:medicle_sales_rbsh/utils/local_storage/auth_manager.dart';
@@ -29,7 +29,7 @@ class DoctorOfflineUploadCoordinator {
   })  : _scheduleRepository = scheduleRepository ?? PendingScheduleRepository(),
         _visitRepository = visitRepository ?? PendingVisitRepository(),
         _authManager = authManager ?? AuthManager(),
-        _client = client ?? http.Client(),
+        _client = client ?? http.TrackedClient(),
         _ownsClient = client == null,
         _visitSyncService = visitSyncService ??
             PendingVisitSyncService(

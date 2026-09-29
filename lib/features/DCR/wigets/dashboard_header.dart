@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import '../enum/performance_filter_type.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import '../../../utils/responsive/responsive_layout.dart';
 
 class DashboardHeader extends StatelessWidget {
   final TextEditingController searchController;
@@ -61,7 +62,7 @@ class DashboardHeader extends StatelessWidget {
 
         const SizedBox(height: TSizes.v20),
 
-        if (isLandscape)
+        if (isLandscape && !TResponsive.isPhone(context))
           Row(
             children: [
               Expanded(child: _searchBox()),
@@ -108,43 +109,39 @@ class DashboardHeader extends StatelessWidget {
             children: [
               _searchBox(),
               const SizedBox(height: TSizes.v12),
-              Row(
+              Wrap(
+                spacing: TSizes.v8,
+                runSpacing: TSizes.v8,
                 children: [
-                  Wrap(
-                    spacing: TSizes.v8,
-                    runSpacing: TSizes.v8,
-                    children: [
-                      _filterChip(
-                        "Today",
-                        PerformanceFilterType.today,
-                        onToday,
-                      ),
-                      _filterChip(
-                        "Weekly",
-                        PerformanceFilterType.weekly,
-                        onWeekly,
-                      ),
-                      _filterChip(
-                        "Monthly",
-                        PerformanceFilterType.monthly,
-                        onMonthly,
-                      ),
-                      _filterChip(
-                        "Custom",
-                        PerformanceFilterType.custom,
-                        onCustom,
-                      ),
-                      _actionButton(
-                        icon: Icons.sort,
-                        label: "Sort",
-                        onTap: onSortTap,
-                      ),
-                      _actionButton(
-                        icon: Icons.download_outlined,
-                        label: "Export",
-                        onTap: onExportTap,
-                      ),
-                    ],
+                  _filterChip(
+                    "Today",
+                    PerformanceFilterType.today,
+                    onToday,
+                  ),
+                  _filterChip(
+                    "Weekly",
+                    PerformanceFilterType.weekly,
+                    onWeekly,
+                  ),
+                  _filterChip(
+                    "Monthly",
+                    PerformanceFilterType.monthly,
+                    onMonthly,
+                  ),
+                  _filterChip(
+                    "Custom",
+                    PerformanceFilterType.custom,
+                    onCustom,
+                  ),
+                  _actionButton(
+                    icon: Icons.sort,
+                    label: "Sort",
+                    onTap: onSortTap,
+                  ),
+                  _actionButton(
+                    icon: Icons.download_outlined,
+                    label: "Export",
+                    onTap: onExportTap,
                   ),
                 ],
               )

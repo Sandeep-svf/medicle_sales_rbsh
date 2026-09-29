@@ -4,7 +4,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:cryptography/cryptography.dart';
-import 'package:http/http.dart' as http;
+import 'package:medicle_sales_rbsh/utils/http/api_http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:path/path.dart' as path;
 import 'package:sqflite/sqflite.dart';
@@ -26,7 +26,7 @@ class DoctorCreationStore {
     required this.scopeGuard,
     http.Client? client,
   })  : _key = SecretKey(encryptionKey),
-        _client = client ?? http.Client(),
+        _client = client ?? http.TrackedClient(),
         _ownsClient = client == null;
 
   final Database database;

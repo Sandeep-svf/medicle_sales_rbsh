@@ -2,11 +2,13 @@ class UserModel {
   final String? token;
   final double? meterRange;
   final User? user;
+  final Company? company;
 
   UserModel({
     this.token,
     this.meterRange,
     this.user,
+    this.company,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -14,6 +16,9 @@ class UserModel {
       token: json['token'],
       meterRange: _readMeterRange(json['meter_range'] ?? json['meterRange']),
       user: json['user'] != null ? User.fromJson(json['user']) : null,
+      company: json['company'] is Map
+          ? Company.fromJson(Map<String, dynamic>.from(json['company'] as Map))
+          : null,
     );
   }
 
@@ -22,6 +27,7 @@ class UserModel {
       'token': token,
       'meter_range': meterRange,
       'user': user?.toJson(),
+      'company': company?.toJson(),
     };
   }
 
@@ -29,6 +35,46 @@ class UserModel {
     if (value is num) return value.toDouble();
     return double.tryParse(value?.toString() ?? '');
   }
+}
+
+class Company {
+  final String id;
+  final String companyName;
+  final String slug;
+  final String? logoUrl;
+  final String? backendUrl;
+  final String? subdomain;
+  final String? status;
+
+  const Company({
+    required this.id,
+    required this.companyName,
+    required this.slug,
+    this.logoUrl,
+    this.backendUrl,
+    this.subdomain,
+    this.status,
+  });
+
+  factory Company.fromJson(Map<String, dynamic> json) => Company(
+        id: json['id']?.toString() ?? '',
+        companyName: json['companyName']?.toString() ?? '',
+        slug: json['slug']?.toString() ?? '',
+        logoUrl: json['logoUrl']?.toString(),
+        backendUrl: json['backendUrl']?.toString(),
+        subdomain: json['subdomain']?.toString(),
+        status: json['status']?.toString(),
+      );
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'companyName': companyName,
+        'slug': slug,
+        'logoUrl': logoUrl,
+        'backendUrl': backendUrl,
+        'subdomain': subdomain,
+        'status': status,
+      };
 }
 
 class User {

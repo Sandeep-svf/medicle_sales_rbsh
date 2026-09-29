@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../features/addDoctor/services/DoctorService.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
 //  Define this globally (top-level)
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
@@ -34,7 +35,7 @@ class NetworkMonitor {
       if (result == ConnectivityResult.none) {
         _isOfflineShown = true;
         isOnline.value = false; // Dashboard toggle
-        _showSnackBar("️ No Internet Connection");
+        _showSnackBar(TTexts.networkUnavailable);
         return;
       } else {
         // only used for dashboard toggle
@@ -51,7 +52,7 @@ class NetworkMonitor {
           }
         }
       } on SocketException {
-        _showSnackBar(" Internet Unreachable");
+        _showSnackBar(TTexts.networkUnavailable);
       }
     });
   }

@@ -1,52 +1,48 @@
 import 'package:flutter/material.dart';
-
-import '../constants/colors.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
+import 'package:medicle_sales_rbsh/utils/http/api_request_loader.dart';
+
+import 'fieldomni_loader.dart';
 
 class CircularLoaderController {
-  static bool _isLoading = false; // Track whether the loader is running
+  static bool _isLoading = false;
   static BuildContext? _context;
 
-  // Method to show the loader
   static void showLoader(BuildContext context) {
-    if (_isLoading) {
-      // If loader is already running, don't show a new one
-      return;
-    }
+    if (_isLoading) return;
 
-    _context = context; // Store the context
-    _isLoading = true; // Set the loader status to running
-
-    // Show the loading indicator
-    showDialog(
+    _context = context;
+    _isLoading = true;
+    ApiRequestLoader.suppressOverlay();
+    showDialog<void>(
       context: context,
-      barrierDismissible: false, // Prevent dismissing by tapping outside
-      builder: (BuildContext context) {
-        return WillPopScope(
-          onWillPop: () async => false, // Prevent closing the dialog
-          child: const Dialog(
-            backgroundColor: TColors.transparent,
-            child: Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(TColors.primary),
-              ),
-            ),
+      barrierDismissible: false,
+      builder: (context) => const PopScope(
+        canPop: false,
+        child: Dialog(
+          backgroundColor: TColors.transparent,
+          child: FieldOmniLoader(
+            message: 'Please wait...',
+            showSurface: true,
           ),
-        );
-      },
-    );
+        ),
+      ),
+    ).catchError((Object _) {
+      _isLoading = false;
+      _context = null;
+      ApiRequestLoader.resumeOverlay();
+    });
   }
 
-  // Method to hide the loader
   static void hideLoader() {
-    if (!_isLoading || _context == null) {
-      // If loader is not running or context is null, no need to hide
-      return;
+    if (!_isLoading || _context == null) return;
+
+    _isLoading = false;
+    final context = _context!;
+    _context = null;
+    if (context.mounted && Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
     }
-
-    _isLoading = false; // Set the loader status to stopped
-
-    // Close the dialog (hide loader)
-    Navigator.of(_context!).pop();
+    ApiRequestLoader.resumeOverlay();
   }
 }

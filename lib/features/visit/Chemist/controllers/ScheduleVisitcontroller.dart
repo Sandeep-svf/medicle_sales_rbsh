@@ -1,14 +1,15 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:medicle_sales_rbsh/utils/http/api_http.dart' as http;
 import 'package:intl/intl.dart';
 
 import '../../../../utils/http/http_client.dart';
 import '../../../../utils/local_storage/auth_manager.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import '../../../../utils/http/api_ui_feedback.dart';
 
 class StockistVisitController {
-  static const String url = '${THttpHelper.baseUrl}/chemist-visits';
+  static String get url => '${THttpHelper.baseUrl}/chemist-visits';
 
   // Function to create a doctor visit (static method)
   static Future<void> createDoctorVisit({
@@ -105,7 +106,7 @@ class StockistVisitController {
       if (context.mounted) {
         // Check if context is still mounted
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Network error: $error')),
+          SnackBar(content: Text(ApiUiFeedback.message(error))),
         );
       }
     }

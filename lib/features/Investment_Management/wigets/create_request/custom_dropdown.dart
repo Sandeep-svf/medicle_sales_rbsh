@@ -5,6 +5,7 @@ import '../../../addDoctor/controllers/DoctroController.dart';
 import '../../controller/add_investment_controller.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 class DoctorDropdown extends StatelessWidget {
   const DoctorDropdown({super.key});
@@ -17,7 +18,7 @@ class DoctorDropdown extends StatelessWidget {
     return Obx(() {
       if (doctorController.isLoading.value) {
         return const Center(
-          child: CircularProgressIndicator(),
+          child: FieldOmniLoader(),
         );
       }
 

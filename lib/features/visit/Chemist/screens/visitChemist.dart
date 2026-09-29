@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
+import 'package:medicle_sales_rbsh/utils/http/api_http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:medicle_sales_rbsh/common/Model/SMResponseModel.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
@@ -13,14 +13,18 @@ import 'package:quickalert/widgets/quickalert_dialog.dart';
 import '../../../../../../utils/LocationHelper/LocationHelper.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/responsive/responsive_layout.dart';
 import '../../../../../../utils/local_storage/auth_manager.dart';
 import '../../../../common/Model/DoctorVisitResponse.dart';
 import '../../../../utils/http/http_client.dart';
+import '../../../../utils/http/api_ui_feedback.dart';
+import '../../../../utils/loder/api_wait_dialog.dart';
 import 'package:medicle_sales_rbsh/features/addClinic/controllers/ClinicListController.dart';
 import '../../../product/controller/ProductController.dart';
 import '../controllers/visitListController.dart';
 import '../models/ChemisVisitModel.dart';
 import 'ScheduleChemistVisitScreen.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 // Use ClinicController for Chemists
 // Import the new Schedule Screen
@@ -198,7 +202,7 @@ class _VisitChemistScreenState extends State<VisitChemistScreen> {
               listenable: _visitListController,
               builder: (context, child) {
                 if (_visitListController.isLoading) {
-                  return const Center(child: CircularProgressIndicator());
+                  return const Center(child: FieldOmniLoader());
                 } else if (_visitListController.salesList.isEmpty) {
                   // Custom Empty State
                   return _buildEmptyState();
@@ -237,7 +241,8 @@ class _VisitChemistScreenState extends State<VisitChemistScreen> {
                         Expanded(
                           child: LayoutBuilder(
                             builder: (context, constraints) {
-                              bool isTablet = constraints.maxWidth > 600;
+                              bool isTablet = !TResponsive.isPhone(context) &&
+                                  constraints.maxWidth > 600;
 
                               // 3. Reusable Card Builder Function
                               Widget buildCard(ChemistVisitModel visit) {
@@ -793,17 +798,22 @@ class _VisitChemistScreenState extends State<VisitChemistScreen> {
           }
 
           try {
-            Position pos = await Geolocator.getCurrentPosition(
-                desiredAccuracy: LocationAccuracy.high);
-
-            final response = await http.put(
-              Uri.parse(
-                  '${THttpHelper.baseUrl}/chemist-visits/${visit.id}/confirm'),
-              headers: {'Content-Type': 'application/json'},
-              body: json.encode({
-                'userLatitude': pos.latitude,
-                'userLongitude': pos.longitude,
-              }),
+            final response = await ApiWaitDialog.run(
+              context,
+              visitConfirmation: true,
+              action: () async {
+                final pos = await Geolocator.getCurrentPosition(
+                    desiredAccuracy: LocationAccuracy.high);
+                return http.put(
+                  Uri.parse(
+                      '${THttpHelper.baseUrl}/chemist-visits/${visit.id}/confirm'),
+                  headers: {'Content-Type': 'application/json'},
+                  body: json.encode({
+                    'userLatitude': pos.latitude,
+                    'userLongitude': pos.longitude,
+                  }),
+                );
+              },
             );
 
             if (response.statusCode == 200) {
@@ -827,10 +837,10 @@ class _VisitChemistScreenState extends State<VisitChemistScreen> {
                 Get.snackbar("Error", body['message'] ?? "Failed to confirm.");
               }
             } else {
-              Get.snackbar("Error", "Server error: ${response.statusCode}");
+              Get.snackbar("Error", TTexts.requestFailed);
             }
           } catch (e) {
-            Get.snackbar("Error", "Unexpected error: $e");
+            Get.snackbar("Error", ApiUiFeedback.message(e));
           }
         });
   }
@@ -920,7 +930,11 @@ class _VisitChemistScreenState extends State<VisitChemistScreen> {
   Future<void> _showAssignAreaBottomSheet(
     ChemistVisitModel chemistVisit,
   ) async {
-    final allAreas = await _visitListController.fetchAreas();
+    final allAreas = await ApiWaitDialog.run(
+      context,
+      title: TTexts.loadingAreas,
+      action: _visitListController.fetchAreas,
+    );
 
     debugPrint(
       "TOTAL AREAS => ${allAreas.length}",
@@ -979,9 +993,14 @@ class _VisitChemistScreenState extends State<VisitChemistScreen> {
                       onTap: () async {
                         Get.back();
 
-                        await _visitListController.assignAreaToChemist(
-                          chemistId: chemistVisit.chemistId,
-                          areaId: area["id"],
+                        await ApiWaitDialog.run(
+                          context,
+                          title: TTexts.savingArea,
+                          action: () =>
+                              _visitListController.assignAreaToChemist(
+                            chemistId: chemistVisit.chemistId,
+                            areaId: area["id"],
+                          ),
                         );
 
                         await _visitListController.fetchVisitList(
@@ -1234,11 +1253,19 @@ class _VisitChemistScreenState extends State<VisitChemistScreen> {
                       return;
                     }
 
-                    final response = await http.get(
-                      Uri.parse(
-                        "https://api.postalpincode.in/pincode/$pin",
-                      ),
-                    );
+                    http.Response response;
+                    try {
+                      response = await ApiWaitDialog.run(
+                        context,
+                        title: TTexts.loadingAreas,
+                        action: () => http.get(Uri.parse(
+                          "https://api.postalpincode.in/pincode/$pin",
+                        )),
+                      );
+                    } catch (error) {
+                      Get.snackbar("Error", ApiUiFeedback.message(error));
+                      return;
+                    }
 
                     final data = jsonDecode(response.body);
 
@@ -1411,21 +1438,29 @@ class _VisitChemistScreenState extends State<VisitChemistScreen> {
                           TTexts.uiTextCreateArea,
                         ),
                         onPressed: () async {
-                          final createdAreaId =
-                              await _visitListController.createArea(
-                            areaName: areaController.text.trim(),
-                            pincode: pincode,
-                            postOffice: office['Name'] ?? '',
-                            headOfficeId: chemist.headOfficeId ?? '',
+                          final createdAreaId = await ApiWaitDialog.run(
+                            context,
+                            title: TTexts.savingArea,
+                            action: () => _visitListController.createArea(
+                              areaName: areaController.text.trim(),
+                              pincode: pincode,
+                              postOffice: office['Name'] ?? '',
+                              headOfficeId: chemist.headOfficeId ?? '',
+                            ),
                           );
 
                           if (createdAreaId == null) {
                             return;
                           }
 
-                          await _visitListController.assignAreaToChemist(
-                            chemistId: chemist.id,
-                            areaId: createdAreaId,
+                          await ApiWaitDialog.run(
+                            context,
+                            title: TTexts.savingArea,
+                            action: () =>
+                                _visitListController.assignAreaToChemist(
+                              chemistId: chemist.id,
+                              areaId: createdAreaId,
+                            ),
                           );
 
                           Get.back();

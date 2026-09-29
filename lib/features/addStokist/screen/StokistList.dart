@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:medicle_sales_rbsh/utils/http/api_http.dart' as http;
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
@@ -11,7 +11,11 @@ import 'AddStokist.dart';
 import 'StokistDetailsScreen.dart';
 import '../model/Stokist.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/responsive/responsive_layout.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/http/api_ui_feedback.dart';
+import 'package:medicle_sales_rbsh/utils/loder/api_wait_dialog.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 class StokistListScreen extends StatefulWidget {
   const StokistListScreen({Key? key}) : super(key: key);
@@ -81,7 +85,7 @@ class _StokistListScreenState extends State<StokistListScreen> {
           Expanded(
             child: Obx(() {
               if (_stokistController.isLoading.value) {
-                return const Center(child: CircularProgressIndicator());
+                return const Center(child: FieldOmniLoader());
               }
 
               // Filter Logic
@@ -107,7 +111,8 @@ class _StokistListScreenState extends State<StokistListScreen> {
                 builder: (context, constraints) {
                   final width = constraints.maxWidth;
                   // Breakpoints matching your reference
-                  final bool isMobile = width < 600;
+                  final bool isMobile =
+                      TResponsive.isPhone(context) || width < 600;
                   final bool isTabletPortrait = width >= 600 && width < 900;
 
                   // --- Card Builder Helper ---
@@ -539,7 +544,11 @@ class _StokistListScreenState extends State<StokistListScreen> {
   void _showAssignAreaSheet(
     Stockist clinic,
   ) async {
-    final areas = await _stokistController.fetchAreas();
+    final areas = await ApiWaitDialog.run(
+      context,
+      title: TTexts.loadingAreas,
+      action: _stokistController.fetchAreas,
+    );
 
     final searchController = TextEditingController();
 
@@ -767,11 +776,19 @@ class _StokistListScreenState extends State<StokistListScreen> {
                       return;
                     }
 
-                    final response = await http.get(
-                      Uri.parse(
-                        "https://api.postalpincode.in/pincode/$pin",
-                      ),
-                    );
+                    http.Response response;
+                    try {
+                      response = await ApiWaitDialog.run(
+                        context,
+                        title: TTexts.loadingAreas,
+                        action: () => http.get(Uri.parse(
+                          "https://api.postalpincode.in/pincode/$pin",
+                        )),
+                      );
+                    } catch (error) {
+                      Get.snackbar("Error", ApiUiFeedback.message(error));
+                      return;
+                    }
 
                     final data = jsonDecode(response.body);
 
@@ -1017,12 +1034,15 @@ class _StokistListScreenState extends State<StokistListScreen> {
                           TTexts.uiTextCreateArea,
                         ),
                         onPressed: () async {
-                          final createdAreaId =
-                              await _stokistController.createNewArea(
-                            name: areaController.text.trim(),
-                            pincode: pincode,
-                            postOffice: office['Name'],
-                            headOfficeId: doctor.headOfficeId,
+                          final createdAreaId = await ApiWaitDialog.run(
+                            context,
+                            title: TTexts.savingArea,
+                            action: () => _stokistController.createNewArea(
+                              name: areaController.text.trim(),
+                              pincode: pincode,
+                              postOffice: office['Name'],
+                              headOfficeId: doctor.headOfficeId,
+                            ),
                           );
 
                           if (createdAreaId != null) {

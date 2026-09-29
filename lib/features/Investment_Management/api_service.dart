@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:http/http.dart' as http;
+import 'package:medicle_sales_rbsh/utils/http/api_http.dart' as http;
 
 import '../../utils/http/http_client.dart';
 
@@ -211,7 +211,7 @@ class InvestmentApiService {
       ),
     );
 
-    final streamedResponse = await request.send().timeout(requestTimeout);
+    final streamedResponse = await http.send(request).timeout(requestTimeout);
     return http.Response.fromStream(streamedResponse).timeout(requestTimeout);
   }
 

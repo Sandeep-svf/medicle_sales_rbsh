@@ -4,6 +4,7 @@ import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
 import '../controller/DashboardController.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 class DashboardBeatReasonDialog extends StatelessWidget {
   const DashboardBeatReasonDialog({super.key});
@@ -207,10 +208,7 @@ class DashboardBeatReasonDialog extends StatelessWidget {
                           ? const SizedBox(
                               height: TSizes.v18,
                               width: TSizes.v18,
-                              child: CircularProgressIndicator(
-                                strokeWidth: TSizes.v2,
-                                color: TColors.white,
-                              ),
+                              child: FieldOmniLoader.compact(),
                             )
                           : const Icon(Icons.check_circle_outline),
                       label: Text(

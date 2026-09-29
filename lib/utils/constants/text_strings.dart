@@ -1,5 +1,17 @@
 /// This class contains all the App Text in String formats.
 class TTexts {
+  static const String networkUnavailable =
+      'No internet connection. Please check your connection and try again.';
+  static const String requestFailed =
+      'Unable to complete the request. Please try again.';
+  static const String loadingNotifications = 'Loading notifications...';
+  static const String deletingNotification = 'Deleting notification...';
+  static const String loadingAreas = 'Finding available areas...';
+  static const String loadingHeadOffices = 'Loading head offices...';
+  static const String savingSale = 'Saving sale...';
+  static const String savingExpense = 'Saving expense...';
+  static const String loadingInvoice = 'Opening invoice...';
+  static const String savingArea = 'Saving area...';
   // -- role
   static const String stateHead = "State head";
   static const String user = "User";
@@ -121,6 +133,7 @@ class TTexts {
   // -- Marketing
   static const String marketing = "Marketing";
   static const String filesAndPdfs = "Files & PDFs";
+  static const String files = "Files";
   static const String faildToLoaddPdf = "Failed to load PDF";
   static const String projectProposal = "Project Proposal";
   static const String designMockup = "Design Mockup";

@@ -6,6 +6,7 @@ import '../controller/DashboardController.dart';
 import '../model/dashboard_beat_model.dart';
 import 'dashboard_beat_reason_dialog.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 class DashboardBeatBottomSheet extends StatelessWidget {
   const DashboardBeatBottomSheet({super.key});
@@ -94,7 +95,7 @@ class DashboardBeatBottomSheet extends StatelessWidget {
               child: Obx(() {
                 if (controller.dashboardBeatLoading.value) {
                   return const Center(
-                    child: CircularProgressIndicator(),
+                    child: FieldOmniLoader(),
                   );
                 }
 
@@ -193,10 +194,7 @@ class DashboardBeatBottomSheet extends StatelessWidget {
                               ? const SizedBox(
                                   width: TSizes.v18,
                                   height: TSizes.v18,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: TSizes.v2,
-                                    color: TColors.white,
-                                  ),
+                                  child: FieldOmniLoader.compact(),
                                 )
                               : const Icon(
                                   Icons.check_circle_outline,

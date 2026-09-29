@@ -2,7 +2,7 @@ import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:medicle_sales_rbsh/utils/http/api_http.dart' as http;
 import 'package:get/get.dart';
 import 'package:medicle_sales_rbsh/features/authentication/screens/login/login.dart';
 import 'package:medicle_sales_rbsh/utils/http/http_client.dart';

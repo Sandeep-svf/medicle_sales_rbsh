@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:medicle_sales_rbsh/utils/http/api_http.dart' as http;
 import 'package:get/get.dart';
 import 'package:medicle_sales_rbsh/features/authentication/screens/login/login.dart';
 import 'package:medicle_sales_rbsh/utils/http/http_client.dart';
@@ -11,13 +11,15 @@ import '../models/UserModel.dart';
 import '../models/headoffice.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import '../../../utils/http/api_ui_feedback.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 class AuthController extends GetxController {
   var isLoading = false.obs;
   var user = Rxn<UserModel>(); // Store user model in state
 
-  static const String _baseUrl = THttpHelper.baseUrl;
+  static String get _baseUrl => THttpHelper.baseUrl;
 
   Future<void> login(String email, String password, String deviceID) async {
     print(
@@ -67,10 +69,7 @@ class AuthController extends GetxController {
                   SizedBox(
                     height: TSizes.v20, // Adjust circle size
                     width: TSizes.v20,
-                    child: CircularProgressIndicator(
-                      color: TColors.white,
-                      strokeWidth: TSizes.v2_5, // Slightly thinner stroke
-                    ),
+                    child: FieldOmniLoader.compact(),
                   ),
                 ],
               ),
@@ -84,8 +83,8 @@ class AuthController extends GetxController {
       final response = await http.post(
         Uri.parse("$_baseUrl/auth/login"),
         headers: {"Content-Type": "application/json"},
-        // body: jsonEncode({"email": email, "password": password, "deviceId" : deviceID}),
-        body: jsonEncode({"email": email, "password": password}),
+       //  body: jsonEncode({"email": email, "password": password, "deviceId" : deviceID}),
+         body: jsonEncode({"email": email, "password": password}),
       );
 
       print("AuthController: deviceID  - deviceID: ${deviceID}");
@@ -110,6 +109,10 @@ class AuthController extends GetxController {
           print("AuthController: 'user' key found, parsing UserModel");
           // Parse the JSON into UserModel
           UserModel userModel = UserModel.fromJson(data);
+          THttpHelper.configureCompany(
+            backendUrl: userModel.company?.backendUrl,
+            logoUrl: userModel.company?.logoUrl,
+          );
 
           // Extract the token
           String? token = userModel.token;
@@ -155,7 +158,7 @@ class AuthController extends GetxController {
       if (Get.isDialogOpen ?? false) {
         Get.back(); // Close loading overlay in case of error
       }
-      Get.snackbar("AuthController Error", "Something went wrong: $e");
+      Get.snackbar("AuthController Error", ApiUiFeedback.message(e));
     } finally {
       print("AuthController: Resetting isLoading to false");
       isLoading.value = false;
@@ -182,6 +185,7 @@ class AuthController extends GetxController {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     print("AuthController: Removing 'userData' from SharedPreferences");
     await prefs.remove("userData");
+    THttpHelper.resetCompany();
     user.value = null;
     print("AuthController: Navigating to LoginScreen");
     Get.offAll(() => const LoginScreen());

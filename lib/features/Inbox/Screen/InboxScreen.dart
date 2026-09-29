@@ -3,6 +3,8 @@ import 'package:medicle_sales_rbsh/features/Inbox/service/MailService.dart';
 
 import '../service/AuthService.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
+import 'package:medicle_sales_rbsh/utils/http/api_ui_feedback.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 class InboxScreen extends StatefulWidget {
   const InboxScreen({super.key});
@@ -41,7 +43,7 @@ class _InboxScreenState extends State<InboxScreen> {
       });
     } catch (e) {
       setState(() {
-        error = e.toString();
+        error = ApiUiFeedback.message(e);
         loading = false;
       });
     }
@@ -51,7 +53,7 @@ class _InboxScreenState extends State<InboxScreen> {
   Widget build(BuildContext context) {
     if (loading) {
       return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+        body: Center(child: FieldOmniLoader()),
       );
     }
 

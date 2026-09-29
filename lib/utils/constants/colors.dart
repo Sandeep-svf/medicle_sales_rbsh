@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/*class TColors {
+class TColors {
   // App theme colors
   static const Color primary = Color(0xFFC71D52);
   static const Color primary_shade100 = Color(0xFFFFCDD7);
@@ -251,9 +251,9 @@ import 'package:flutter/material.dart';
   static const Color hex_FFFFEBEE = Color(0xFFFFEBEE);
   static const Color hex_FFFFF3E0 = Color(0xFFFFF3E0);
   static const Color hex_FFFFF5D6 = Color(0xFFFFF5D6);
-}*/
+}
 
-import 'package:flutter/material.dart';
+/*
 
 class TColors {
   // FieldOmni brand colors
@@ -507,4 +507,4 @@ class TColors {
   static const Color hex_FFFFEBEE = Color(0xFFFFEBEE);
   static const Color hex_FFFFF3E0 = Color(0xFFFFF3E0);
   static const Color hex_FFFFF5D6 = Color(0xFFF0FCFA);
-}
+}*/

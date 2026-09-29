@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:medicle_sales_rbsh/utils/constants/colors.dart';
 import '../../controller/add_investment_controller.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
+import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
 class SubmitButtons extends GetView<AddInvestmentController> {
   const SubmitButtons({super.key});
@@ -29,10 +30,7 @@ class SubmitButtons extends GetView<AddInvestmentController> {
               ? const SizedBox(
                   width: TSizes.v18,
                   height: TSizes.v18,
-                  child: CircularProgressIndicator(
-                    strokeWidth: TSizes.v2,
-                    color: TColors.white,
-                  ),
+                  child: FieldOmniLoader.compact(),
                 )
               : const Icon(
                   Icons.send,

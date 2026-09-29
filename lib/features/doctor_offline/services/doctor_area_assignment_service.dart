@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:http/http.dart' as http;
+import 'package:medicle_sales_rbsh/utils/http/api_http.dart' as http;
 import 'package:uuid/uuid.dart';
 import '../../visit/Doctor/models/pending_area_assignment_model.dart';
 import '../../visit/Doctor/repository/pending_area_assignment_repository.dart';
@@ -56,7 +56,7 @@ class DoctorAreaAssignmentService {
       : _authManager = authManager ?? AuthManager(),
         _assignmentRepository =
             assignmentRepository ?? PendingAreaAssignmentRepository(),
-        _client = client ?? http.Client(),
+        _client = client ?? http.TrackedClient(),
         _ownsClient = client == null;
 
   final AuthManager _authManager;

@@ -2,7 +2,7 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
+import 'package:medicle_sales_rbsh/utils/http/api_http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 
 // --- Project Imports ---
@@ -10,6 +10,7 @@ import '../../../utils/camera/CameraLocationResult.dart';
 import '../../../utils/camera/image_overlay_utils.dart';
 import '../../../utils/constants/colors.dart';
 import '../../../utils/http/http_client.dart';
+import '../../../utils/http/api_ui_feedback.dart';
 import '../../../utils/local_storage/auth_manager.dart';
 import '../controllers/ClinicListController.dart';
 import '../../addDoctor/screens/map.dart';
@@ -84,7 +85,7 @@ class AddChemistController extends GetxController {
         }
       }
     } catch (e) {
-      Get.snackbar("Error", "Failed to load Head Offices: $e",
+      Get.snackbar("Error", ApiUiFeedback.message(e),
           backgroundColor: TColors.materialRed, colorText: TColors.white);
     } finally {
       isLoadingHeadOffices.value = false;
@@ -218,7 +219,7 @@ class AddChemistController extends GetxController {
       print("Submitting to: $uri");
       print("Fields: ${request.fields}");
 
-      var streamedResponse = await request.send();
+      var streamedResponse = await http.send(request);
       var response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode == 201 || response.statusCode == 200) {
@@ -252,7 +253,7 @@ class AddChemistController extends GetxController {
             backgroundColor: TColors.materialRed, colorText: TColors.white);
       }
     } catch (e) {
-      Get.snackbar("Error", "$e",
+      Get.snackbar("Error", ApiUiFeedback.message(e),
           backgroundColor: TColors.materialRed, colorText: TColors.white);
     } finally {
       isLoading.value = false;
