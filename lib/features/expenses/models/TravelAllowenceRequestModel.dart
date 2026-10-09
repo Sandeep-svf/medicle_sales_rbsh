@@ -5,12 +5,14 @@ class TravelAllowanceRequest {
   final String category;
   final String description;
   final String bill;
+  final double? amount;
   final String date; // <-- Add this
   final List<TravelDetail> travelDetails;
 
   TravelAllowanceRequest({
     required this.userId,
     required this.description,
+    this.amount,
     required this.date, // <-- Add this
     required this.travelDetails,
     this.category = "travel",
@@ -22,6 +24,7 @@ class TravelAllowanceRequest {
     "category": category,
     "description": description,
     "bill": bill,
+    if (amount != null) "amount": amount,
     "date": date, // <-- Add this
     "travelDetails": travelDetails.map((e) => e.toJson()).toList(),
   };

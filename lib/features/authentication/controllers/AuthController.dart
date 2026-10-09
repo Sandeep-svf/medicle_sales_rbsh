@@ -4,7 +4,6 @@ import 'package:medicle_sales_rbsh/utils/http/api_http.dart' as http;
 import 'package:get/get.dart';
 import 'package:medicle_sales_rbsh/features/authentication/screens/login/login.dart';
 import 'package:medicle_sales_rbsh/utils/http/http_client.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:medicle_sales_rbsh/features/dashboard/screen/dashboard.dart';
 import '../../../utils/local_storage/auth_manager.dart';
 import '../models/UserModel.dart';
@@ -109,7 +108,7 @@ class AuthController extends GetxController {
           print("AuthController: 'user' key found, parsing UserModel");
           // Parse the JSON into UserModel
           UserModel userModel = UserModel.fromJson(data);
-          THttpHelper.configureCompany(
+          await THttpHelper.configureCompany(
             backendUrl: userModel.company?.backendUrl,
             logoUrl: userModel.company?.logoUrl,
           );
@@ -182,9 +181,7 @@ class AuthController extends GetxController {
   // Logout function to clear user data
   Future<void> logout() async {
     print("AuthController: logout() initiated");
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    print("AuthController: Removing 'userData' from SharedPreferences");
-    await prefs.remove("userData");
+    await AuthManager().logout();
     THttpHelper.resetCompany();
     user.value = null;
     print("AuthController: Navigating to LoginScreen");

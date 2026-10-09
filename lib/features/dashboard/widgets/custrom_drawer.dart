@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../screen/home20/home20_screen.dart';
 import 'package:get/get.dart';
 import 'package:medicle_sales_rbsh/features/MarketingMaterials/Screens/MarketingMaterials.dart';
 import 'package:medicle_sales_rbsh/features/SalesChartAnalysis/Screen/salesChartHome.dart';
@@ -9,6 +10,7 @@ import 'package:medicle_sales_rbsh/features/addProduct/screens/addProduct.dart';
 import 'package:medicle_sales_rbsh/features/approval_management/screen/approval_management_screen.dart';
 import 'package:medicle_sales_rbsh/features/doctor_offline/doctor_offline.dart';
 import 'package:medicle_sales_rbsh/features/expenses/screens/expenses.dart';
+import 'package:medicle_sales_rbsh/features/expenses/screens/expense20/expense20_screen.dart';
 import 'package:medicle_sales_rbsh/features/order/screens/order.dart';
 import 'package:medicle_sales_rbsh/features/report/screens/report.dart';
 import 'package:medicle_sales_rbsh/features/salesActivity/screens/salesActivity.dart';
@@ -32,6 +34,9 @@ import '../../PtsPtrCalculator/PtsPtrCalculator.dart';
 import '../../SalesChartAnalysis/Screen/salesChartHome2.dart';
 import '../../Tour & Plans/Screen/tour_plane_doctor_screen.dart';
 import '../../Tour & Plans/TeritoryModule/screen/territory_map_screen.dart';
+import '../../Tour & Plans/TeritoryModule/screen/bihar_territory_test_screen.dart';
+import '../../Tour & Plans/TeritoryModule/screen/pincode_territory_screen.dart';
+import '../../Tour & Plans/TeritoryModule/screen/map_beat_management/map_beat_management_screen.dart';
 import '../../Tour & Plans/updated_tour_panes/Screen/tour_plan_list_screen.dart';
 import '../../addStokist/screen/StokistList.dart';
 import '../../authentication/models/UserModel.dart';
@@ -120,6 +125,13 @@ class _CustomDrawerState extends State<CustomDrawer> {
                         SalesChartHomeScreen(), TTexts.dashboard),
                     isSelected: widget.currentScreen == TTexts.dashboard,
                   ),
+                  _buildDrawerItem(
+                    icon: Icons.dashboard_customize_outlined,
+                    text: Home20Screen.menuTitle,
+                    onTap: () => widget.onMenuSelected(
+                        const Home20Screen(), Home20Screen.menuTitle),
+                    isSelected: widget.currentScreen == Home20Screen.menuTitle,
+                  ),
 
                   // Conditionally show the "User List" item if the role is "State Head"
                   if (widget.userRole == 'State Head')
@@ -178,6 +190,33 @@ class _CustomDrawerState extends State<CustomDrawer> {
                     onTap: () => widget.onMenuSelected(
                         TerritoryMapScreen(), TTexts.beatManagement),
                     isSelected: widget.currentScreen == TTexts.beatManagement,
+                  ),
+                  _buildDrawerItem(
+                    icon: Icons.map_rounded,
+                    text: 'Bihar Territory Test',
+                    onTap: () => widget.onMenuSelected(
+                      const BiharTerritoryTestScreen(),
+                      'Bihar Territory Test',
+                    ),
+                    isSelected: widget.currentScreen == 'Bihar Territory Test',
+                  ),
+                  _buildDrawerItem(
+                    icon: Icons.add_location_alt_outlined,
+                    text: 'MAP BEAT MANAGEMENT',
+                    onTap: () => widget.onMenuSelected(
+                      const MapBeatManagementScreen(),
+                      'MAP BEAT MANAGEMENT',
+                    ),
+                    isSelected: widget.currentScreen == 'MAP BEAT MANAGEMENT',
+                  ),
+                  _buildDrawerItem(
+                    icon: Icons.markunread_mailbox_outlined,
+                    text: 'Pincode Territory',
+                    onTap: () => widget.onMenuSelected(
+                      const PincodeTerritoryScreen(),
+                      'Pincode Territory',
+                    ),
+                    isSelected: widget.currentScreen == 'Pincode Territory',
                   ),
                   /* _buildDrawerItem(
                     icon: Icons.report,
@@ -302,6 +341,14 @@ class _CustomDrawerState extends State<CustomDrawer> {
                     onTap: () => widget.onMenuSelected(
                         ExpensesScreen(), TTexts.expenses),
                     isSelected: widget.currentScreen == TTexts.expenses,
+                  ),
+                  _buildDrawerItem(
+                    icon: Icons.receipt_long_outlined,
+                    text: Expense20Screen.menuTitle,
+                    onTap: () => widget.onMenuSelected(
+                        const Expense20Screen(), Expense20Screen.menuTitle),
+                    isSelected:
+                        widget.currentScreen == Expense20Screen.menuTitle,
                   ),
                   /*_buildDrawerItem(
                     icon: Icons.post_add,
@@ -463,7 +510,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                       ],
                     ),
                   ),
-              ],
+                ],
               ),
             ],
           ),

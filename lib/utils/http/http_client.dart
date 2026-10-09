@@ -9,14 +9,23 @@ import 'api_ui_feedback.dart';
 
 class THttpHelper {
   static const String defaultBaseUrl = 'https://test.gluckscare.com/api';
-  static String _baseUrl = defaultBaseUrl;
-  static String? _backendUrl;
+ // static const String defaultBaseUrl = 'https://api.gluckscare.com/api';
   static String? _companyLogoPath;
 
-  static String get baseUrl => _baseUrl;
+  // Enable exactly one line: null uses the saved company backend.
+  //static const String? _backendOverride = null;
+   static const String? _backendOverride = 'https://test.gluckscare.com/api';
+
+  static String get baseUrl => _backendOverride ?? _savedBaseUrl;
+
+  static String get _savedBaseUrl {
+    final backend = AuthManager.cachedBackendUrl;
+    if (backend == null) return defaultBaseUrl;
+    return backend.endsWith('/api') ? backend : '$backend/api';
+  }
   static String? get companyLogoUrl {
     final path = _companyLogoPath;
-    final backend = _backendUrl;
+    final backend = AuthManager.cachedBackendUrl;
     if (path == null || path.isEmpty || backend == null || backend.isEmpty) {
       return null;
     }
@@ -27,19 +36,28 @@ class THttpHelper {
         .toString();
   }
 
-  static void configureCompany({String? backendUrl, String? logoUrl}) {
-    if (backendUrl == null || backendUrl.trim().isEmpty) return;
-    final normalizedBackend = backendUrl.trim().replaceFirst(RegExp(r'/+$'), '');
-    _backendUrl = normalizedBackend;
-    _baseUrl = normalizedBackend.endsWith('/api')
-        ? normalizedBackend
-        : '$normalizedBackend/api';
+  static Future<void> configureCompany({
+    String? backendUrl,
+    String? logoUrl,
+  }) async {
+    await AuthManager().saveBackendUrl(backendUrl);
     _companyLogoPath = logoUrl;
   }
 
+  /// Restore the persisted backend before services build their request URLs.
+  static Future<void> initialize() async {
+    final authManager = AuthManager();
+    final backend = await authManager.getBackendUrl();
+    final savedUser = await authManager.getUserData();
+    // Migrate existing installations that only stored the full login response.
+    if (backend == null) {
+      await authManager.saveBackendUrl(savedUser?.company?.backendUrl);
+    }
+    _companyLogoPath = savedUser?.company?.logoUrl;
+  }
+
   static void resetCompany() {
-    _baseUrl = defaultBaseUrl;
-    _backendUrl = null;
+    AuthManager.resetBackendUrlCache();
     _companyLogoPath = null;
   }
 

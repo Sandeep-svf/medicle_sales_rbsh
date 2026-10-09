@@ -16,6 +16,10 @@ import '../models/DailyAllowenceRequestModel.dart';
 import '../models/TravelAllowenceRequestModel.dart';
 import '../models/TravelDetails.dart';
 import '../models/other_expense_request.dart';
+import '../models/allowance_deduction.dart';
+import '../services/allowance_visit_service.dart';
+import 'widgets/allowance_review_dialog.dart';
+import 'widgets/allowance_status_style.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 import 'package:medicle_sales_rbsh/utils/loder/fieldomni_loader.dart';
 
@@ -71,7 +75,8 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
   @override
   void initState() {
     super.initState();
-    selectedExpenseDate = DateTime.now();
+    selectedExpenseDate = DateTime.tryParse(
+      widget.existingData?['date']?.toString() ?? '') ?? DateTime.now();
     _loadSettingsAndPrefill();
 
     // Show DCR policy every time user lands on this screen.
@@ -140,17 +145,19 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
             List<Map<String, dynamic>>.from(data['travelDetails'] ?? []);
         trips = travelDetails.map((t) {
           final km = (t['km'] as num).toDouble();
-          final fare = km * farePerKm;
+          final fare = km * (settings?.ratePerKm ?? farePerKm);
           return {
             'from': t['from'],
             'to': t['to'],
             'km': km,
             'fare': fare,
             'tripType': 'One Way',
-            'remark': data['description'],
+            'remark': AllowanceDeduction.removePreviousRemark(
+              data['description']?.toString() ?? ''),
           };
         }).toList();
-        remarkController.text = data['description'] ?? '';
+        remarkController.text = AllowanceDeduction.removePreviousRemark(
+          data['description']?.toString() ?? '');
       } else if (selectedCategory == 'Daily Allowance') {
         switch (data['dailyAllowanceType']) {
           case 'headoffice':
@@ -179,7 +186,8 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
               (settings?.outsideHeadOfficeAmount ?? 0).toStringAsFixed(2);
         }
 
-        daDescriptionController.text = data['description'] ?? '';
+        daDescriptionController.text = AllowanceDeduction.removePreviousRemark(
+          data['description']?.toString() ?? '');
       }
     }
   }
@@ -263,7 +271,29 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
 
   double get totalFare => trips.fold(0, (sum, t) => sum + t['fare']);
 
+  Future<AllowanceDeduction?> _reviewAllowance(
+    String userId, String category, double grossAmount,
+  ) async {
+    if (settingsController.scraperSettings.value == null) {
+      throw const AllowanceVisitException(
+        'Allowance rates are unavailable. Please reopen this screen and retry.');
+    }
+    final date = selectedExpenseDate ?? DateTime.now();
+    final visits = await AllowanceVisitService().fetchForDay(userId, date);
+    final deduction = AllowanceDeduction.calculate(
+      category: category, date: DateFormat('yyyy-MM-dd').format(date),
+      grossAmount: grossAmount, visits: visits,
+    );
+    if (!mounted) return null;
+    final confirmed = await showDialog<bool>(
+      context: context, barrierDismissible: false,
+      builder: (_) => AllowanceReviewDialog(deduction: deduction),
+    );
+    return confirmed == true ? deduction : null;
+  }
+
   void _submitData() async {
+    if (isLoading) return;
     debugPrint("Submit button clicked");
 
     setState(() => isLoading = true);
@@ -281,6 +311,7 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
       }
 
       bool success = false;
+      String? submissionError;
 
       if (selectedCategory == 'Travel Allowance') {
         if (trips.isEmpty) {
@@ -288,6 +319,9 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
           setState(() => isLoading = false);
           return;
         }
+
+        final deduction = await _reviewAllowance(userId, 'travel', totalFare);
+        if (deduction == null || !mounted) return;
 
         final travelDetails = trips
             .map((t) => {
@@ -300,9 +334,10 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
         final payload = {
           'userId': userId,
           'category': 'travel',
-          'description': remarkController.text.trim().isEmpty
+          'description': deduction.appendTo(remarkController.text.trim().isEmpty
               ? "$tripType: Travel Allowance submission"
-              : "$tripType: ${remarkController.text.trim()}",
+              : "$tripType: ${remarkController.text.trim()}"),
+          'amount': deduction.payableAmount,
           'bill': '',
           'date': DateFormat('yyyy-MM-dd')
               .format(selectedExpenseDate ?? DateTime.now()),
@@ -319,6 +354,7 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
             userId: userId,
             description: payload['description']?.toString() ?? '',
             category: "travel",
+            amount: deduction.payableAmount,
             //added
             bill: "",
             date: DateFormat('yyyy-MM-dd')
@@ -333,8 +369,10 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
                     ))
                 .toList(),
           );
-          success =
-              await AllowanceController.submitTravelAllowance(travelRequest);
+          success = await AllowanceController.submitTravelAllowance(
+            travelRequest,
+            onError: (message) => submissionError = message,
+          );
         }
 
         if (success) {
@@ -376,10 +414,15 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
             dailyAllowanceType = 'headoffice';
         }
 
+        final deduction = await _reviewAllowance(userId, 'daily',
+          double.tryParse(daAmountController.text) ?? 0);
+        if (deduction == null || !mounted) return;
+
         final payload = {
           'userId': userId,
           'category': 'daily',
-          'description': daDescriptionController.text.trim(),
+          'description': deduction.appendTo(daDescriptionController.text.trim()),
+          'amount': deduction.payableAmount,
           'bill': '',
           'dailyAllowanceType': dailyAllowanceType,
           'date': DateFormat('yyyy-MM-dd')
@@ -393,6 +436,7 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
           );
         } else {
           final daRequest = DailyAllowanceRequest(
+            amount: deduction.payableAmount,
             userId: userId,
             description: (payload['description'] as String?) ?? '',
             dailyAllowanceType:
@@ -470,21 +514,24 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
 
       if (!success) {
         Fluttertoast.showToast(
-          msg: widget.isEditMode
-              ? "You can not updated expense more than once."
-              : "Failed to submit ${selectedCategory!.toLowerCase()}",
+          msg: submissionError ??
+              (widget.isEditMode
+                  ? "You can not updated expense more than once."
+                  : "Failed to submit ${selectedCategory!.toLowerCase()}"),
           backgroundColor: TColors.materialRed,
           textColor: TColors.white,
         );
       }
     } catch (e) {
       Fluttertoast.showToast(
-        msg: "Exception: ${e.toString()}",
+        msg: e is AllowanceVisitException
+            ? e.message
+            : "Exception: ${e.toString()}",
         backgroundColor: TColors.materialRed,
         textColor: TColors.white,
       );
     } finally {
-      setState(() => isLoading = false);
+      if (mounted) setState(() => isLoading = false);
     }
   }
 
@@ -975,8 +1022,10 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
                               Expanded(
                                 child: Text(
                                   TTexts.uiTextAllowanceEligibilityIsCalculated +
-                                      'based on the number of Doctor and '
-                                          'Chemist calls completed during the day.',
+                                      'based on confirmed Doctor and Chemist '
+                                          'visits for the expense date. When counts '
+                                          'differ, the lower tier applies. Zero '
+                                          'chemist visits means 0% TA and DA.',
                                   style: TextStyle(
                                     fontSize: TSizes.v13_5,
                                     height: TSizes.v1_4,
@@ -1010,8 +1059,8 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
                                   chemistCall: '5 or more',
                                   ta: '100%',
                                   da: '100%',
-                                  backgroundColor: TColors.hex_FFE8F5E1,
-                                  statusColor: TColors.hex_FF2E7D32,
+                                  backgroundColor: TColors.allowanceFullBg,
+                                  statusColor: TColors.allowanceFullText,
                                 ),
                                 _buildDcrRow(
                                   doctorCall: '10 - 11',
@@ -1019,32 +1068,32 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
                                   ta: '100%',
                                   da: '100%',
                                   daNote: 'Recorded as FLAG',
-                                  backgroundColor: TColors.hex_FFE5F1FB,
-                                  statusColor: TColors.hex_FF1565C0,
+                                  backgroundColor: TColors.allowancePartialBg,
+                                  statusColor: TColors.allowancePartialText,
                                 ),
                                 _buildDcrRow(
                                   doctorCall: '8 - 9',
                                   chemistCall: '3',
                                   ta: '100%',
                                   da: '50%',
-                                  backgroundColor: TColors.hex_FFFFF5D6,
-                                  statusColor: TColors.hex_FFF9A825,
+                                  backgroundColor: TColors.allowancePartialBg,
+                                  statusColor: TColors.allowancePartialText,
                                 ),
                                 _buildDcrRow(
                                   doctorCall: '7',
                                   chemistCall: '2',
                                   ta: '50%',
                                   da: '50%',
-                                  backgroundColor: TColors.hex_FFFFE9DA,
-                                  statusColor: TColors.hex_FFEF6C00,
+                                  backgroundColor: TColors.allowancePartialBg,
+                                  statusColor: TColors.allowancePartialText,
                                 ),
                                 _buildDcrRow(
                                   doctorCall: 'Less than 7',
                                   chemistCall: '1',
                                   ta: '0%',
                                   da: '0%',
-                                  backgroundColor: TColors.hex_FFFFE2E2,
-                                  statusColor: TColors.hex_FFC62828,
+                                  backgroundColor: TColors.errorBg,
+                                  statusColor: TColors.error,
                                   isLast: true,
                                 ),
                               ],
@@ -1061,17 +1110,18 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
                             vertical: 12,
                           ),
                           decoration: BoxDecoration(
-                            color: TColors.materialAmber.withOpacity(0.10),
+                            color: TColors.allowancePartialBg,
                             borderRadius: BorderRadius.circular(10),
                             border: Border.all(
-                              color: TColors.materialAmber.withOpacity(0.30),
+                              color: TColors.allowancePartialAccent
+                                  .withValues(alpha: .3),
                             ),
                           ),
                           child: const Row(
                             children: [
                               Icon(
                                 Icons.flag_outlined,
-                                color: TColors.hex_FFB7791F,
+                                color: TColors.allowancePartialText,
                                 size: TSizes.v20,
                               ),
                               SizedBox(width: TSizes.v10),
@@ -1082,7 +1132,7 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
                                           'is recorded as FLAG.',
                                   style: TextStyle(
                                     fontSize: TSizes.v13,
-                                    color: TColors.hex_FF744210,
+                                    color: TColors.allowancePartialText,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
@@ -1318,22 +1368,27 @@ class _AddAllowanceScreenState extends State<AddAllowanceScreen> {
     String value,
     Color color,
   ) {
+    final percent = int.tryParse(value.replaceAll('%', ''));
+    final statusColor =
+        percent == null ? color : AllowanceStatusStyle.foreground(percent);
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: 11,
         vertical: 5,
       ),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.10),
+        color: percent == null
+            ? color.withValues(alpha: .1)
+            : AllowanceStatusStyle.background(percent),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: color.withOpacity(0.25),
+          color: statusColor.withValues(alpha: .25),
         ),
       ),
       child: Text(
         value,
         style: TextStyle(
-          color: color,
+          color: statusColor,
           fontSize: TSizes.v13_5,
           fontWeight: FontWeight.w700,
         ),

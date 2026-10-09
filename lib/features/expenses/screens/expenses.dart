@@ -15,6 +15,7 @@ import '../controllers/addExpenseController.dart';
 import '../controllers/expenseController.dart';
 import '../models/NewExpenseModel.dart';
 import '../models/expanseModel.dart';
+import '../models/allowance_deduction.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 import 'package:medicle_sales_rbsh/utils/responsive/responsive_layout.dart';
 import 'package:medicle_sales_rbsh/utils/constants/sizes.dart';
@@ -753,13 +754,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
           ],
         ),
         const SizedBox(height: TSizes.v16),
-        Text(
-          e.description,
-          style: const TextStyle(
-            fontSize: TSizes.v16,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
+        _buildExpenseRemark(e),
         const SizedBox(height: TSizes.v12),
         Row(
           children: [
@@ -945,6 +940,38 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
     );
   }
 
+  Widget _buildExpenseRemark(ExpenseModel expense) {
+    final lines = expense.description.split('\n');
+    final deductionLines = lines.where(
+      (line) => line.startsWith(AllowanceDeduction.remarkPrefix)).toList();
+    if ((expense.category != 'travel' && expense.category != 'daily') ||
+        deductionLines.isEmpty) {
+      return Text(expense.description, style: const TextStyle(
+        fontSize: TSizes.v16, fontWeight: FontWeight.w500));
+    }
+    final manual = AllowanceDeduction.removePreviousRemark(expense.description);
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      if (manual.isNotEmpty) ...[
+        Text(manual, style: const TextStyle(
+          fontSize: TSizes.v16, fontWeight: FontWeight.w500)),
+        const SizedBox(height: TSizes.v10),
+      ],
+      Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(color: TColors.light,
+          borderRadius: BorderRadius.circular(12)),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          const Text('DCR allowance deduction', style: TextStyle(
+            color: TColors.primary, fontWeight: FontWeight.w600)),
+          const SizedBox(height: TSizes.v6),
+          Text(deductionLines.last.replaceFirst(AllowanceDeduction.remarkPrefix, '').trim(),
+            style: const TextStyle(color: TColors.textPrimary, height: 1.5)),
+        ]),
+      ),
+    ]);
+  }
+
   Widget _buildAllowanceCard(
     ExpenseModel e,
   ) {
@@ -1045,6 +1072,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
 
     final Map<String, dynamic> existingData = {
       'category': e.category,
+      'date': e.date,
       'description': e.description,
       'dailyAllowanceType': e.dailyAllowanceType,
       'travelDetails': e.travelDetails

@@ -13,9 +13,12 @@ class AllowanceController {
   static const String _logPrefix = 'AllowanceController';
 
   static Future<bool> submitTravelAllowance(
-      TravelAllowanceRequest request) async {
+    TravelAllowanceRequest request, {
+    void Function(String message)? onError,
+  }) async {
     try {
       debugPrint(
+          '$_logPrefix: Sending Travel Allowance request: ${_baseUrl}'
           '$_logPrefix: Sending Travel Allowance request: ${jsonEncode(request.toJson())}');
 
       final response = await http.post(
@@ -32,15 +35,21 @@ class AllowanceController {
       }
 
       if (response.statusCode == 400) {
+        String message = "Invalid request";
         try {
           final body = jsonDecode(response.body);
-          Fluttertoast.showToast(
-            msg: body['message'] ?? "Invalid request",
-          );
+          if (body is Map &&
+              body['message'] is String &&
+              (body['message'] as String).trim().isNotEmpty) {
+            message = body['message'] as String;
+          }
         } catch (_) {
-          Fluttertoast.showToast(
-            msg: "Invalid request",
-          );
+          // Keep the fallback when the error response is not valid JSON.
+        }
+        if (onError != null) {
+          onError(message);
+        } else {
+          Fluttertoast.showToast(msg: message);
         }
       }
 

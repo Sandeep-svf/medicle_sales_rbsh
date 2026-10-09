@@ -10,6 +10,36 @@ class AuthManager {
   static const String headOfficeKey = "head_offices";
   static const String tokenKey = "token";
   static const String roleKey = "role";
+  static const String backendUrlKey = "backend_url";
+  static String? _cachedBackendUrl;
+
+  /// Loaded before startup requests and updated whenever the login changes.
+  static String? get cachedBackendUrl => _cachedBackendUrl;
+
+  static void resetBackendUrlCache() => _cachedBackendUrl = null;
+
+  Future<void> saveBackendUrl(String? backendUrl) async {
+    final prefs = await SharedPreferences.getInstance();
+    final normalized = backendUrl?.trim().replaceFirst(RegExp(r'/+$'), '');
+    if (normalized == null || normalized.isEmpty) {
+      await prefs.remove(backendUrlKey);
+      _cachedBackendUrl = null;
+    } else {
+      await prefs.setString(backendUrlKey, normalized);
+      _cachedBackendUrl = normalized;
+    }
+  }
+
+  Future<String?> getBackendUrl() async {
+    final prefs = await SharedPreferences.getInstance();
+    // Background isolates may have an older SharedPreferences cache.
+    await prefs.reload();
+    final value = prefs.getString(backendUrlKey);
+    _cachedBackendUrl = value == null || value.trim().isEmpty
+        ? null
+        : value.trim().replaceFirst(RegExp(r'/+$'), '');
+    return _cachedBackendUrl;
+  }
 
   ///  Save User Data in SharedPreferences
   Future<void> saveUserData(UserModel user) async {
@@ -124,5 +154,6 @@ class AuthManager {
   Future<void> logout() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.clear(); // Clear all saved data
+    resetBackendUrlCache();
   }
 }

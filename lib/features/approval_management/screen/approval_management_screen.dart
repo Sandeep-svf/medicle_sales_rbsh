@@ -16,11 +16,30 @@ import 'wigets/pending_approval_card.dart';
 import 'wigets/return_dialog.dart';
 import 'package:medicle_sales_rbsh/utils/constants/text_strings.dart';
 
-class ApprovalManagementScreen extends StatelessWidget {
-  ApprovalManagementScreen({super.key});
+class ApprovalManagementScreen extends StatefulWidget {
+  const ApprovalManagementScreen({super.key});
 
-  final ApprovalManagementController controller =
-      Get.put(ApprovalManagementController());
+  @override
+  State<ApprovalManagementScreen> createState() =>
+      _ApprovalManagementScreenState();
+}
+
+class _ApprovalManagementScreenState extends State<ApprovalManagementScreen> {
+  final ApprovalManagementController controller = ApprovalManagementController();
+
+  @override
+  void initState() {
+    super.initState();
+    // The dashboard embeds this screen without creating a GetX route.
+    // Own the controller here so reopening cannot reuse another session's role.
+    controller.loadData();
+  }
+
+  @override
+  void dispose() {
+    controller.onClose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {

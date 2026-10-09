@@ -44,7 +44,7 @@ class ApprovalManagementController extends GetxController {
 
   final RxBool isBeatResponding = false.obs;
 
-  bool get isUser => userRole.value.toLowerCase() == "user";
+  bool get isUser => userRole.value.trim().toLowerCase() == "user";
 
   @override
   void onInit() {
@@ -64,7 +64,16 @@ class ApprovalManagementController extends GetxController {
 
       isLoading.value = true;
 
-      userRole.value = await AuthManager().getUserRole() ?? "";
+      final authManager = AuthManager();
+      final currentUser = await authManager.getUserData();
+      // Prefer the current login response over the separate legacy role key.
+      userRole.value = currentUser?.user?.role ??
+          await authManager.getUserRole() ??
+          "";
+
+      pendingApprovals.clear();
+      beatChangeRequests.clear();
+      collaborations.clear();
 
       debugPrint("$_tag User Role : ${userRole.value}");
       debugPrint("$_tag isUser : $isUser");

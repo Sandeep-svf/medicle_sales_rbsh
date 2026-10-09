@@ -164,6 +164,7 @@ class UploadQueueDrainer {
       });
 
       client = http.TrackedClient(trackActivity: false);
+      await THttpHelper.initialize();
       final endpoint = '${THttpHelper.baseUrl}/offline-bg-tracking';
       trackingConsoleLog(
         'UploadQueueDrainer',

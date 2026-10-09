@@ -159,6 +159,9 @@ dependencies:
 # sensor
   sensors_plus: ^5.0.1
 
+# package name chnager
+  change_app_package_name: ^1.5.0
+
 
 
 
@@ -219,6 +222,7 @@ dependencies:
   # For JSON encoding/decoding (already in Dart, but include if using serializers)
   dart_jsonwebtoken: ^3.0.1 # optional if you handle tokens locally
   video_player: ^2.10.1
+  clipper2: ^0.0.3
 
 
 
@@ -257,7 +261,12 @@ flutter:
   assets:
     - assets/logos/
     - assets/app_icon/
+    - lib/utils/json_data/bihar_json.geojson
+    - lib/utils/json_data/datagov_pincodes.geojson
+    - lib/utils/json_data/Datagov_Pincode_Boundaries.geojson
     - assets/images/dummy.jpeg
+    - assets/images/home20_banner.png
+    - assets/images/home20_product.png
     - assets/images/pdf.png
     - assets/upload_queue.csv
 

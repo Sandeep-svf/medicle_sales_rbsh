@@ -1,6 +1,27 @@
 import 'package:flutter/material.dart';
 
 class TColors {
+  static const double expenseMutedOpacity = 0.4;
+  static const double expenseSummaryOpacity = 0.45;
+
+  // Fifteen distinct swatches reserved for Map Beat Management.
+  static const Map<String, Color> mapBeatPalette = {
+    'Red': Color(0xFFE6194B),
+    'Green': Color(0xFF3CB44B),
+    'Yellow': Color(0xFFFFE119),
+    'Blue': Color(0xFF4363D8),
+    'Orange': Color(0xFFF58231),
+    'Purple': Color(0xFF911EB4),
+    'Cyan': Color(0xFF42D4F4),
+    'Magenta': Color(0xFFF032E6),
+    'Lime': Color(0xFFBFEF45),
+    'Pink': Color(0xFFFABED4),
+    'Teal': Color(0xFF469990),
+    'Lavender': Color(0xFFDCBEFF),
+    'Brown': Color(0xFF9A6324),
+    'Maroon': Color(0xFF800000),
+    'Navy': Color(0xFF000075),
+  };
   // App theme colors
   static const Color primary = Color(0xFFC71D52);
   static const Color primary_shade100 = Color(0xFFFFCDD7);
@@ -80,6 +101,13 @@ class TColors {
 // Travel & Allowance
   static const Color travelBg = Color(0xFFFDE8EE);
   static const Color allowanceBg = Color(0xFFFFF5E8);
+
+  // Expense eligibility: full allowance (green) and partial / flagged (amber).
+  static const Color allowanceFullText = Color(0xFF2E7D32);
+  static const Color allowanceFullBg = Color(0xFFE8F5E9);
+  static const Color allowancePartialText = Color(0xFF8A6500);
+  static const Color allowancePartialBg = Color(0xFFFFF8E1);
+  static const Color allowancePartialAccent = Color(0xFFF9A825);
 
 // Icon Containers
   static const Color iconBg = Color(0xFFFDE8EE);
@@ -253,9 +281,7 @@ class TColors {
   static const Color hex_FFFFF5D6 = Color(0xFFFFF5D6);
 }
 
-/*
-
-class TColors {
+/*class TColors {
   // FieldOmni brand colors
   static const Color secondary = Color(0xFF00C8B6);
   static const Color primary_shade50 = Color(0xFFF0FCFA);
@@ -329,6 +355,12 @@ class TColors {
   // Travel & Allowance
   static const Color travelBg = Color(0xFFF0FCFA);
   static const Color allowanceBg = Color(0xFFE4F7F5);
+  // Expense-only eligibility colors; shared brand palette aliases remain unchanged.
+  static const Color allowanceFullText = Color(0xFF2E7D32);
+  static const Color allowanceFullBg = Color(0xFFE8F5E9);
+  static const Color allowancePartialText = Color(0xFF8A6500);
+  static const Color allowancePartialBg = Color(0xFFFFF8E1);
+  static const Color allowancePartialAccent = Color(0xFFF9A825);
 
   // Icon Containers
   static const Color iconBg = Color(0xFFD7F7F2);

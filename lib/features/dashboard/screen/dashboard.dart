@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'home20/home20_screen.dart';
+import 'home20/home20_widgets.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_in_app_messaging/firebase_in_app_messaging.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -43,6 +45,7 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
+  Map<String, dynamic> _home20User = {};
   final DoctorOfflineUploadCoordinator _syncService =
       DoctorOfflineUploadCoordinator();
   Widget _currentScreen = SalesChartHomeScreen(); // Default screen
@@ -208,7 +211,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
     Navigator.of(context).pop(); // Close the drawer
     setState(() {
       _currentTitle = title;
-      _currentScreen = screen;
+      _currentScreen = screen is Home20Screen
+          ? Home20Screen(
+              showHeader: false,
+              loadDashboard: screen.loadDashboard,
+              onUserLoaded: (user) {
+                if (mounted) setState(() => _home20User = user);
+              })
+          : screen;
     });
   }
 
@@ -280,20 +290,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Center(
-          child: Text(
-            _currentTitle,
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              color: TColors.white,
-              fontSize: TSizes.v20,
-            ),
-          ),
-        ),
-        centerTitle: true,
+        titleSpacing:
+            _currentTitle == Home20Screen.menuTitle ? TSizes.v4 : null,
+        title: _currentTitle == Home20Screen.menuTitle
+            ? Home20AppBarGreeting(user: _home20User)
+            : Center(
+                child: Text(
+                  _currentTitle,
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: TColors.white,
+                    fontSize: TSizes.v20,
+                  ),
+                ),
+              ),
+        centerTitle: _currentTitle != Home20Screen.menuTitle,
         leading: Builder(
           builder: (context) {
             return IconButton(
@@ -305,6 +319,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
           },
         ),
         actions: [
+          if (_currentTitle == Home20Screen.menuTitle) ...[
+            const Home20Clock(compact: true),
+            Home20ProfileButton(user: _home20User),
+          ],
           // Notification Icon with Badge
           Stack(
             children: [

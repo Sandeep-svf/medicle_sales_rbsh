@@ -15,7 +15,6 @@ import 'features/salesActivity/controllers/SalesController.dart';
 
 import 'utils/notificationservice/PushNotificationService.dart';
 import 'utils/http/http_client.dart';
-import 'utils/local_storage/auth_manager.dart';
 
 // ============================================================
 // TRACKING
@@ -157,13 +156,7 @@ Future<void> ensureTrackingDeviceId() async {
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final savedUser = await AuthManager().getUserData();
-  if (savedUser?.company != null) {
-    THttpHelper.configureCompany(
-      backendUrl: savedUser!.company!.backendUrl,
-      logoUrl: savedUser.company!.logoUrl,
-    );
-  }
+  await THttpHelper.initialize();
 
   debugPrint(
     '[MAIN] ========================================',

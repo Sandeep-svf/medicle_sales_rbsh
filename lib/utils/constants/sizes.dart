@@ -1,4 +1,22 @@
 class TSizes {
+  static const double expensePolicyHeightFraction = 0.88;
+  static const double expenseFormWidthFraction = 0.42;
+  static const double expenseHistoryHeightFraction = 0.6;
+  static const double expenseDetailsHeightFraction = 0.85;
+  static const double v470 = 470.0;
+  static const double v640 = 640.0;
+
+  static const double v0_4 = 0.4;
+  static const double v205 = 205.0;
+  static const double v760 = 760.0;
+  static const double v980 = 980.0;
+
+  static const int expenseDialogAnimationMs = 320;
+  static const int expenseSelectionAnimationMs = 180;
+  static const double expenseDialogBarrierOpacity = 0.35;
+  static const double expenseDialogInitialScale = 0.94;
+  static const double expenseDialogHeightFraction = 0.9;
+
   // Padding and margin sizes
   static const double xs = 4.0;
   static const double sm = 8.0;

@@ -532,6 +532,7 @@ class _RevenueIntelligenceCard extends StatelessWidget {
         boxShadow: AppTheme.cardShadow,
       ),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
@@ -553,7 +554,7 @@ class _RevenueIntelligenceCard extends StatelessWidget {
                       fontWeight: FontWeight.w600)),
             ],
           ),
-          const Spacer(),
+          const SizedBox(height: TSizes.v16),
 
           Row(
             children: [
@@ -614,7 +615,7 @@ class _RevenueIntelligenceCard extends StatelessWidget {
             ],
           ),
 
-          const Spacer(),
+          const SizedBox(height: TSizes.v16),
 
           // Enhanced Footer: Variance + Projection
           Container(
@@ -708,6 +709,7 @@ class _PerformancePaceCard extends StatelessWidget {
         boxShadow: AppTheme.cardShadow,
       ),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
@@ -730,7 +732,7 @@ class _PerformancePaceCard extends StatelessWidget {
             ],
           ),
 
-          const Spacer(),
+          const SizedBox(height: TSizes.v16),
 
           Center(
             child: Row(
@@ -782,7 +784,7 @@ class _PerformancePaceCard extends StatelessWidget {
             ),
           ),
 
-          const Spacer(),
+          const SizedBox(height: TSizes.v16),
 
           // Actionable Footer: Required Daily Run Rate
           Container(
