@@ -1,0 +1,4 @@
+Generated with the built-in image_gen tool for Home 2.0 product previews.
+
+Prompt:
+Product-mockup: one isolated premium generic pharmaceutical syrup bottle and its matching cardboard carton standing side by side, amber glass bottle with white cap, clean white packaging with restrained magenta and pink accents matching a pharmaceutical sales dashboard. Vertical composition with both objects fully visible, studio product photography, crisp edges, subtle natural grounding shadow, transparent background. No legible text, no brand names, no logos, no watermark, no medical claims. This is a dummy product thumbnail, visually readable at small size.
